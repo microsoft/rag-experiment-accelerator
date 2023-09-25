@@ -1,0 +1,2 @@
+bleu,fuzzy,leve,jaccard,hamming,jaro_w,cosine,lcsseq,lcsstr,MiniLM,bert_base,bert_large,bert_large_stsb,distilbert_nli_stsb,multilingual_MiniLM
+541.8225781690738,1466.0,601.0,713.0,157.0,1198.0,1074.0,628.0,418.0,1343.0,1450.0,1480.0,1275.0,1246.0,1415.0

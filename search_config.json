@@ -1,0 +1,13 @@
+{
+    "name_prefix": "finance",
+    "chunking": {
+        "chunk_size": [1000, 500],
+        "overall_size": [100]
+    },
+    "embedding_dimension" : [768],
+    "efConstruction" : [400 ],
+    "efsearch": [400],
+    "rerank": "TRUE",
+    "re_rank_threshold": 3,
+    "search_types" : ["search_for_manual_hybrid" ]
+}
