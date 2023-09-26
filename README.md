@@ -44,7 +44,7 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 1. **Clone the Repository**: Begin by cloning the accelerator's repository from its [GitHub repository](https://github.com/your-repo/search-experiment-accelerator.git).
 
 ```bash
-git clone https://github.com/your-repo/search-experiment-accelerator.git
+git clone https://github.com/your-repo/rag-experiment-accelerator.git
 ```
 
 ## How to use
@@ -56,10 +56,6 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 3. Execute 02_qa_generation.py to generate Question-Answer pairs using Azure OpenAI.
 4. Execute 03_querying.py to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context.
 5. Execute 04_evaluation.py to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
-
-```bash
-git clone https://github.com/your-repo/rag-experiment-accelerator.git
-```
 
 ## Contributing
 
