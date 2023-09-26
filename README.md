@@ -58,7 +58,7 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 5. Execute 04_evaluation.py to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
 
 ```bash
-git clone https://github.com/your-repo/search-experiment-accelerator.git
+git clone https://github.com/your-repo/rag-experiment-accelerator.git
 ```
 
 ## Contributing
