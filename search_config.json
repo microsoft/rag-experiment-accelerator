@@ -2,7 +2,7 @@
     "name_prefix": "finance",
     "chunking": {
         "chunk_size": [1000, 500],
-        "overall_size": [100]
+        "overlap_size": [100]
     },
     "embedding_dimension" : [768],
     "efConstruction" : [400 ],

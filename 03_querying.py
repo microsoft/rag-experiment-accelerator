@@ -35,7 +35,7 @@ with open('search_config.json', 'r') as json_file:
     data = json.load(json_file)
 
 chunk_sizes = data["chunking"]["chunk_size"]
-overall_size = data["chunking"]["overall_size"]
+overlap_size = data["chunking"]["overlap_size"]
 
 embedding_dimensions = data["embedding_dimension"]
 efConstructions = data["efConstruction"]
@@ -112,7 +112,7 @@ if os.path.exists(directory_path) and os.path.isdir(directory_path):
 os.makedirs(directory_path)
 
 for config_item in chunk_sizes:
-    for overlap in overall_size:
+    for overlap in overlap_size:
         for dimension in embedding_dimensions:
             for efConstruction in efConstructions:
                 for efsearch in efsearchs:
