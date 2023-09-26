@@ -34,12 +34,12 @@ The **RAG Experiment Accelerator** is config driven and offers a robust array of
 
 8. **Metrics and Evaluation**: Users are afforded the liberty to define custom evaluation metrics, thereby enabling precise and granular assessment of search algorithm performance. It includes distance based, cosine, semantic similarity plus more metrics out of the box.
 
-9. **Report Generation**: The **Search Engine Experiment Accelerator** automates the process of report generation, complete with visually compelling visualizations that facilitate effortless analysis and effortless sharing of experiment findings.
+9. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visually compelling visualizations that facilitate effortless analysis and effortless sharing of experiment findings.
 
 
 ## Installation
 
-To harness the capabilities of the **Search Engine Experiment Accelerator**, follow these installation steps:
+To harness the capabilities of the **RAG Experiment Accelerator**, follow these installation steps:
 
 1. **Clone the Repository**: Begin by cloning the accelerator's repository from its [GitHub repository](https://github.com/your-repo/search-experiment-accelerator.git).
 
@@ -49,7 +49,7 @@ git clone https://github.com/your-repo/search-experiment-accelerator.git
 
 ## How to use
 
-To harness the capabilities of the **Search Engine Experiment Accelerator**, follow these steps:
+To harness the capabilities of the **RAG Experiment Accelerator**, follow these steps:
 
 1. Modify the search_config.json file with hyper-parameters relevant to the experiment.
 2. Execute 01_index.py to generate Azure Cognitive Search indexes and ingest data into the indexes.
