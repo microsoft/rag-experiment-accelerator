@@ -10,7 +10,7 @@ with open('search_config.json', 'r') as json_file:
     data = json.load(json_file)
 
 chunk_sizes = data["chunking"]["chunk_size"]
-overall_size = data["chunking"]["overall_size"]
+overlap_size = data["chunking"]["overlap_size"]
 
 embedding_dimensions = data["embedding_dimension"]
 efConstructions = data["efConstruction"]
@@ -23,7 +23,7 @@ chat_deployment_name=os.environ['CHAT_DEPLOYMENT_NAME']
 experiment_name=os.environ['EXPERIMENT_NAME']
 
 for config_item in chunk_sizes:
-    for overlap in overall_size:
+    for overlap in overlap_size:
         for dimension in embedding_dimensions:
             for efConstruction in efConstructions:
                 for efsearch in efsearchs:

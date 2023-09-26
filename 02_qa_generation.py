@@ -16,7 +16,7 @@ with open('search_config.json', 'r') as json_file:
     data = json.load(json_file)
 
 chunk_sizes = data["chunking"]["chunk_size"]
-overall_size = data["chunking"]["overall_size"]
+overlap_size = data["chunking"]["overlap_size"]
 
 embedding_dimensions = data["embedding_dimension"]
 efConstructions = data["efConstruction"]
