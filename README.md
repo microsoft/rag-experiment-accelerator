@@ -44,7 +44,7 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 1. **Clone the Repository**: Begin by cloning the accelerator's repository from its [GitHub repository](https://github.com/your-repo/search-experiment-accelerator.git).
 
 ```bash
-git clone https://github.com/your-repo/rag-experiment-accelerator.git
+git clone https://github.com/microsoft/rag-experiment-accelerator.git
 ```
 
 ## How to use
