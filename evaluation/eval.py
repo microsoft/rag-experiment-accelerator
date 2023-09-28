@@ -144,7 +144,7 @@ def generate_metrics(experiment_name, run_id):
                                     name=label)
                                 )
         
-        fig.update_layout(xaxis_title='steps',
+        fig.update_layout(xaxis_title='run name',
                         yaxis_title=metric,
                         font=dict(size=15)
                         )
@@ -164,7 +164,7 @@ def draw_hist_df(df, run_id):
 
 data_list = []
 
-def evaluate_prompts(exp_name, data_path):
+def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efsearch):
     run_name = f"{exp_name}_{formatted_datetime}"
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
@@ -221,17 +221,21 @@ def evaluate_prompts(exp_name, data_path):
 
     sum_df.to_csv(f"eval_score/sum_{formatted_datetime}.csv", index=False)
     df.to_csv(f"eval_score/{formatted_datetime}.csv", index=False)
+    mlflow.log_param("chunk_size",chunk_size )
+    mlflow.log_param("chunk_overlap",chunk_overlap )
+    mlflow.log_param("embedding_dimension",embedding_dimension )
+    mlflow.log_param("efConstruction",efConstruction )
+    mlflow.log_param("efsearch",efsearch )
     mlflow.log_param("run_metrics",sum_dict )
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(f"eval_score/{formatted_datetime}.csv")
     mlflow.log_artifact(f"eval_score/sum_{formatted_datetime}.csv")
     run_id = mlflow.active_run().info.run_id
-    mlflow.end_run()
+    
     draw_hist_df(sum_df,run_id)
     generate_metrics(exp_name, run_id)
+    mlflow.end_run()
 
 
-if __name__ == "__main__":
-    compare_sentence_bleu("ritesh is great", "i am great")
 
 

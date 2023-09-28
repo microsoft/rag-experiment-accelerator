@@ -1,14 +1,6 @@
-from operator import itemgetter
-import fitz
+
+
 import json
-import os
-import pytesseract
-from PIL import Image, ImageEnhance, ImageFilter
-import spacy
-import re
-import time
-from sentence_transformers import SentenceTransformer
-import openai
 import hashlib
 import json
 from azure.core.credentials import AzureKeyCredential  
@@ -47,8 +39,8 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension):
         input_data['content'] = str(chunk["content"])
         input_data['filename'] = "test"
         input_data['contentVector'] = chunk["content_vector"][0]
-        input_data['contentSummary'] = generate_embedding(dimension,str(Preprocess(summary)))[0]
-        input_data['contentTitle'] =  generate_embedding(dimension,str(Preprocess(title )))[0]
+        input_data['contentSummary'] = generate_embedding(dimension,str(pre_process.preprocess(summary)))[0]
+        input_data['contentTitle'] =  generate_embedding(dimension,str(pre_process.preprocess(title)))[0]
         documents.append(input_data)
 
     results = search_client.upload_documents(documents)  

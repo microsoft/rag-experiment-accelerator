@@ -71,7 +71,7 @@ rerank_prompt_instruction = """A list of documents is shown below. Each document
         }
     """
 
-do_need_multiple_prompt_instruction = """classify the given question into either 'HIGH' or 'LOW'. If the question must absolutely be broken down into smaller questions to search for an answer because it is not straightforward then provide a single word response as 'HIGH' and if the question is not complex and straightforward then provide a single word response as 'LOW'. Do not generate any other text apart from 'YES' or 'NO' and this is non-compromising requirement. 
+do_need_multiple_prompt_instruction1 = """classify the given question into either 'HIGH' or 'LOW'. If the question must absolutely be broken down into smaller questions to search for an answer because it is not straightforward then provide a single word response as 'HIGH' and if the question is not complex and straightforward then provide a single word response as 'LOW'. Do not generate any other text apart from 'YES' or 'NO' and this is non-compromising requirement. 
     e.g. 
     How was Ritesh Modi life different before, during, and after YC?
     HIGH
@@ -89,7 +89,14 @@ do_need_multiple_prompt_instruction = """classify the given question into either
     LOW
     """
 
-multiple_prompt_instruction = """Generate two  questions in json format based on given schema for user question if it needs multiple questions to search relevant, complete and comprehensive answer. Always generate accurate  json without any compromise. The output absolutely must only contains json and nothing apart from json. This is a non-compromising requirement.
+do_need_multiple_prompt_instruction = """Classify the complexity of a given question as either 'high' or 'low' based on the following criteria. Assume all and complete information on all topics and subjects is already available to you to answer the question. No additional input or information is required apart from the contextual information you already have. You have all the information already available to answer the question. Do not output anything apart from either high or low.
+
+Questions that require critical thinking, detailed understanding of any topic and subject, are considered 'low' in complexity.
+Questions such as statistical analytics are considered 'high' in complexity.
+
+"""
+
+multiple_prompt_instruction = """Generate two questions in json format based on given schema for user question if it needs multiple questions to search relevant, complete and comprehensive answer. Always generate accurate json without any compromise. The output absolutely must only contains json and nothing apart from json. This is a non-compromising requirement.
     schema: 
     {
         questions:[ "question1", "question2", "questionN" ]
