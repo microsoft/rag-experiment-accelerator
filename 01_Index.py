@@ -56,7 +56,7 @@ for config_item in chunk_sizes:
                     for docs in all_docs:
                         chunk_dict = {}
                         chunk_dict["content"] = docs.page_content
-                        chunk_dict["content_vector"] = generate_embedding(dimension, str(Preprocess(docs.page_content)))
+                        chunk_dict["content_vector"] = generate_embedding(dimension, str(pre_process.preprocess( docs.page_content)))
                         data_load.append(chunk_dict)
                     upload_data(data_load,service_endpoint,index_name,key, dimension)
 

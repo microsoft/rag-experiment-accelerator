@@ -14,7 +14,7 @@ def create_client(service_endpoint,index_name, key ):
     return (client, index_client)
 
 def search_for_match_semantic(client, size, query):
-    res = generate_embedding(size, query)
+    res = generate_embedding(size, str(pre_process.preprocess(query)))
 
     vector1 = Vector(value=res[0], k=5, fields="contentVector")  
     vector2 = Vector(value=res[0], k=5, fields="contentTitle, contentSummary")  
@@ -34,7 +34,7 @@ def search_for_match_semantic(client, size, query):
     return results
 
 def search_for_match_Hybrid_multi(client, size, query):
-    res = generate_embedding(size,  query)
+    res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
 
     vector1 = Vector(value=res[0], k=5, fields="contentVector")  
@@ -55,7 +55,7 @@ def search_for_match_Hybrid_multi(client, size, query):
     return results
 
 def search_for_match_Hybrid_cross(client, size, query):
-    res = generate_embedding(size,  query)
+    res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
     vector1 = Vector(value=res[0], k=5, fields="contentVector")  
     vector2 = Vector(value=res[0], k=5, fields="contentTitle, contentSummary")  
@@ -88,7 +88,7 @@ def search_for_match_text(client, size, query):
     return results
 
 def search_for_match_pure_vector(client, size, query):
-    res = generate_embedding(size,  query)
+    res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
     vector1 = Vector(value=res[0], k=5, fields="contentVector")  
 
@@ -107,7 +107,7 @@ def search_for_match_pure_vector(client, size, query):
 
 
 def search_for_match_pure_vector_multi(client, size, query):
-    res = generate_embedding(size,  query)
+    res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
     vector1 = Vector(value=res[0], k=5, fields="contentVector")  
     vector2 = Vector(value=res[0], k=5, fields="contentTitle")  
@@ -128,7 +128,7 @@ def search_for_match_pure_vector_multi(client, size, query):
 
 
 def search_for_match_pure_vector_cross(client, size, query):
-    res = generate_embedding(size,  query)
+    res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
     vector1 = Vector(value=res[0], k=5, fields="contentVector, contentTitle, contentSummary")  
 

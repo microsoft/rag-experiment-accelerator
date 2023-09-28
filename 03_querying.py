@@ -3,10 +3,7 @@ import json
 import shutil
 import re
 from dotenv import load_dotenv  
-from init_Index.create_index import create_acs_index
-from doc_loader.pdfLoader import load_pdf_files
-from embedding.gen_embeddings import generate_embedding
-from ingest_data.acs_ingest import upload_data, we_need_multiple_questions, do_we_need_multiple_questions
+from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
 from search_type.acs_search_methods import  (
     search_for_match_pure_vector_multi,
     search_for_match_semantic,
@@ -26,7 +23,6 @@ from reranking.llm_reranker import rerank_documents
 
 
 load_dotenv()  
-experiment_name=os.environ['EXPERIMENT_NAME']
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
 key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
@@ -155,7 +151,7 @@ for config_item in chunk_sizes:
                                             if int(value) > re_rank_threshold:
                                                 new_docs.append(int(numeric_data[0]))
 
-                                            esult = [context[i] for i in new_docs]
+                                            result = [context[i] for i in new_docs]
                                     except:
                                         result = context
                                 else:

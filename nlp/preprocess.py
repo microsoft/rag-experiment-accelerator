@@ -18,7 +18,7 @@ class Preprocess:
 
 
     def remove_punct(self,text):
-        return ''.join(c for c in text if c not in punctuation)
+        return ' '.join(c for c in text if c not in punctuation)
 
     def remove_Tags(self,text):
         cleaned_text = re.sub('<[^<]+?>', '', text)
@@ -51,8 +51,7 @@ class Preprocess:
         sentence_tokens = self.sentence_tokenize(lower_text)
         word_list = []
         for each_sent in sentence_tokens:
-            lemmatizzed_sent = self.lemmatize(each_sent)
-            clean_text = self.remove_punct(lemmatizzed_sent)
+            clean_text = self.remove_punct(each_sent)
             clean_text = self.remove_Tags(clean_text)
             clean_text = self.remove_stopwords(clean_text)
             word_tokens = self.word_tokenize(clean_text)

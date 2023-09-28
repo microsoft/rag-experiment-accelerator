@@ -1,8 +1,6 @@
 
 from sentence_transformers import SentenceTransformer
 
-
-
 def generate_embedding(size, chunk):
     if size == 384:
         model = SentenceTransformer('all-MiniLM-L6-v2')

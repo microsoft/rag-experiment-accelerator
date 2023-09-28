@@ -1,13 +1,13 @@
 {
-    "name_prefix": "finance",
+    "name_prefix": "humanresource",
     "chunking": {
-        "chunk_size": [1000, 500],
-        "overlap_size": [100]
+        "chunk_size": [500],
+        "overlap_size": [200]
     },
-    "embedding_dimension" : [768],
+    "embedding_dimension" : [1024,768],
     "efConstruction" : [400 ],
     "efsearch": [400],
-    "rerank": "TRUE",
+    "rerank": "False",
     "re_rank_threshold": 3,
-    "search_types" : ["search_for_manual_hybrid" ]
+    "search_types" : ["search_for_manual_hybrid", "search_for_match_Hybrid_multi","search_for_match_semantic" ]
 }

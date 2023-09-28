@@ -1,6 +1,6 @@
 import numpy as np
-from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader, PyPDFDirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import PyPDFDirectoryLoader
 
 
 def load_pdf_files(folder_path, chunk_size, overlap_size):
