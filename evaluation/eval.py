@@ -13,6 +13,7 @@ import warnings
 from rouge_score import rouge_scorer
 import json
 import ast
+import time
 from fuzzywuzzy import fuzz
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -24,7 +25,9 @@ import mlflow
 from mlflow import MlflowClient
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.subplots as sp
 import os
+
 
 warnings.filterwarnings("ignore") 
 
@@ -36,9 +39,9 @@ algs = textdistance.algorithms
 pd.set_option('display.max_columns', None)
 
 all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-bert_base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
-bert_large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
-bert_large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
+base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
+large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
+large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
 distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
 paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
@@ -74,12 +77,12 @@ def remove_spaces(text):
 #    scores = scorer.score(value1, value2)
 #    return scores
 
-def compare_sentence_bleu(value1, value2):
+def bleu(value1, value2):
     score = sentence_bleu(str.split(value1), value2)
     return score * 100
 
 
-def compare_fuzzy_document_values(doc1, doc2):
+def fuzzy(doc1, doc2):
     differences = []
     fuzzy_compare_values( doc1, doc2, differences)
     
@@ -102,29 +105,70 @@ def semantic_compare_values(value1, value2, differences, model_type):
 
     differences.append(similarity_score * 100)
 
+def levenshtein(value1, value2):
+    score = int(algs.levenshtein.normalized_similarity(value1, value2) * 100)
+    return score
+
+def jaccard(value1, value2):
+    score = int(algs.jaccard.normalized_similarity(value1, value2) * 100)
+    return score
+
+def hamming(value1, value2):
+    score = int(algs.hamming.normalized_similarity(value1, value2) * 100)
+    return score
+
+def jaro_winkler(value1, value2):
+    score = int(algs.jaro_winkler.normalized_similarity(value1, value2) * 100)
+    return score
+
+def cosine(value1, value2):
+    score = int(algs.cosine.normalized_similarity(value1, value2) * 100)
+    return score
+
+def lcsseq(value1, value2):
+    score = int(algs.lcsseq.normalized_similarity(value1, value2) * 100)
+    return score
+
+def lcsstr(value1, value2):
+    score = int(algs.lcsstr.normalized_similarity(value1, value2) * 100)
+    return score
+
 def generate_metrics(experiment_name, run_id):
 
     experiment = dict(client.get_experiment_by_name(experiment_name))
-    runs_list = client.search_runs([experiment['experiment_id']], filter_string="attributes.status = 'Finished'")
+    runs_list = client.search_runs([experiment['experiment_id']])
  
     models_metrics = {}
     metrics_to_plot = []
     runs_id_to_plot = []
 
-    for run in runs_list:
-        run_dict = run.to_dictionary()
-        single_run_id = run_dict['info']['run_id']
-        runs_id_to_plot.append(single_run_id)
-        metrics = ast.literal_eval(run.data.params['run_metrics'])
+    if len(runs_list) > 0:
+        for run in runs_list:
+            run_dict = run.to_dictionary()
+            single_run_id = run_dict['info']['run_id']
+            runs_id_to_plot.append(single_run_id)
+            if run.data.params.get("run_metrics", {}) != {}:
+                metrics = ast.literal_eval(run.data.params['run_metrics'])
 
-        for metric_type, metric_value in metrics.items():
-            if models_metrics.get(metric_type, {}) == {}:
-                metrics_to_plot.append(metric_type)
-                models_metrics[metric_type] = {}
-                models_metrics[metric_type][single_run_id] = metric_value
-            else:
-                models_metrics[metric_type][single_run_id]= metric_value
-        print(models_metrics)
+                for metric_type, metric_value in metrics.items():
+                    if models_metrics.get(metric_type, {}) == {}:
+                        metrics_to_plot.append(metric_type)
+                        models_metrics[metric_type] = {}
+                        models_metrics[metric_type][single_run_id] = metric_value
+                    else:
+                        models_metrics[metric_type][single_run_id]= metric_value
+                print(models_metrics)
+    else:
+        current_run = client.get_run(run_id)
+        if run.data.params.get("run_metrics", {}) != {}:
+            metrics = ast.literal_eval(current_run.data.params['run_metrics'])
+            for metric_type, metric_value in metrics.items():
+                if models_metrics.get(metric_type, {}) == {}:
+                    metrics_to_plot.append(metric_type)
+                    models_metrics[metric_type] = {}
+                    models_metrics[metric_type][run_id] = metric_value
+                else:
+                    models_metrics[metric_type][run_id]= metric_value
                 
     x_axis = []
     y_axis = []
@@ -158,61 +202,97 @@ def generate_metrics(experiment_name, run_id):
         y_axis = []
 
 def draw_hist_df(df, run_id):
-    fig = px.bar(x=df.columns, y = df.values.tolist())
-    plot_name = "metrics.html"
+    fig = px.bar(x=df.columns, y = df.values.tolist(),title="metric comparison", color=df.columns,labels=dict(x="Metric Type", y="Score", color="Metric Type"))
+    plot_name = "all_metrics_current_run.html"
     client.log_figure(run_id, fig, plot_name)
 
-data_list = []
+
+def compute_metrics(actual, expected, metric_type):
+    if metric_type == "lcsstr":
+        score = lcsstr(actual, expected)
+    elif metric_type == "lcsseq":
+        score = lcsseq(actual, expected)
+    elif metric_type == "cosine":
+        score = cosine(actual, expected)
+    elif metric_type == "jaro_winkler":
+        score = jaro_winkler(actual, expected)
+    elif metric_type == "hamming":
+        score = hamming(actual, expected)
+    elif metric_type == "jaccard":
+        score = jaccard(actual, expected)
+    elif metric_type == "levenshtein":
+        score = levenshtein(actual, expected)
+    elif metric_type == "fuzzy":
+        score = fuzzy(actual, expected)
+    elif metric_type == "bert_all_MiniLM_L6_v2":
+        score = compare_semantic_document_values(actual, expected,all_MiniLM_L6_v2 )
+    elif metric_type == "bert_base_nli_mean_tokens":
+        score = compare_semantic_document_values(actual, expected,base_nli_mean_tokens )
+    elif metric_type == "bert_large_nli_mean_tokens":
+        score = compare_semantic_document_values(actual, expected,large_nli_mean_tokens )
+    elif metric_type == "bert_large_nli_stsb_mean_tokens":
+        score = compare_semantic_document_values(actual, expected,large_nli_stsb_mean_tokens )
+    elif metric_type == "bert_distilbert_base_nli_stsb_mean_tokens":
+        score = compare_semantic_document_values(actual, expected,distilbert_base_nli_stsb_mean_tokens )
+    elif metric_type == "bert_paraphrase_multilingual_MiniLM_L12_v2":
+        score = compare_semantic_document_values(actual, expected,paraphrase_multilingual_MiniLM_L12_v2 )
+    else:
+        pass
+
+    return score
 
 def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efsearch):
+    with open('search_config.json', 'r') as json_file:
+        data = json.load(json_file)
+
+    metric_types = data["metric_types"]
+    data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
+    time.sleep(30)
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
-
+    
+    run_id = mlflow.active_run().info.run_id
     with open(data_path, 'r') as file:
         for line in file: 
-            if len(line) < 5:
-                continue
             data = json.loads(line)
             actual = data.get("actual")
             expected = data.get("expected")
             search_type = data.get("search_type")
+            rerank = data.get("rerank")
+            rerank_type = data.get("rerank_type")
+            crossencoder_model = data.get("crossencoder_model")
+            llm_re_rank_threshold = data.get("llm_re_rank_threshold")
+            retrieve_num_of_documents = data.get("retrieve_num_of_documents")
+            cross_encoder_at_k = data.get("cross_encoder_at_k")
+            question_count = data.get("question_count")
 
             actual = remove_spaces(lower(actual))
             expected = remove_spaces(lower(expected))
 
-            # distance based evaluation
-            leve = int(algs.levenshtein.normalized_similarity(actual, expected) * 100)
-            jaccard = int(algs.jaccard.normalized_similarity(actual, expected) * 100)
-            hamming = int(algs.hamming.normalized_similarity(actual, expected) * 100)
-            jaro_w = int(algs.jaro_winkler.normalized_similarity(actual, expected) * 100)
+            metric_dic = {}
+            for metric_type in metric_types:
+                score = compute_metrics(actual, expected, metric_type)
+                metric_dic[metric_type] = score
+            metric_dic["actual"] = actual
+            metric_dic["expected"] = expected
+            metric_dic["search_type"] = search_type
+            data_list.append(metric_dic)
 
-            # token based evaluation
-            fuzz_s = compare_fuzzy_document_values(actual, expected)
-            cosine = int(algs.cosine.normalized_similarity(actual, expected) * 100)
-
-            # sequence based evaluation
-            lcsseq = int(algs.lcsseq.normalized_similarity(actual, expected) * 100)
-            lcsstr = int(algs.lcsstr.normalized_similarity(actual, expected) * 100)
-            
-            # semantic similarity evaluation
-            all_MiniLM_L6_v2_output = compare_semantic_document_values(actual, expected,all_MiniLM_L6_v2 )
-            bert_base_nli_mean_tokens_output = compare_semantic_document_values(actual, expected,bert_base_nli_mean_tokens )
-            bert_large_nli_mean_tokens_output = compare_semantic_document_values(actual, expected,bert_large_nli_mean_tokens )
-            bert_large_nli_stsb_mean_tokens_output = compare_semantic_document_values(actual, expected,bert_large_nli_stsb_mean_tokens )
-            distilbert_base_nli_stsb_mean_tokens_output = compare_semantic_document_values(actual, expected,distilbert_base_nli_stsb_mean_tokens )
-            paraphrase_multilingual_MiniLM_L12_v2_output = compare_semantic_document_values(actual, expected,paraphrase_multilingual_MiniLM_L12_v2 )
-
-            bleu = compare_sentence_bleu(actual, expected)
-            data_list.append({"bleu": bleu, "fuzzy":fuzz_s,"leve": leve,"jaccard":jaccard,"hamming":hamming,"jaro_w":jaro_w,"cosine":cosine,"lcsseq":lcsseq,"lcsstr":lcsstr,"MiniLM":all_MiniLM_L6_v2_output,"bert_base":bert_base_nli_mean_tokens_output,"bert_large":bert_large_nli_mean_tokens_output,"bert_large_stsb":bert_large_nli_stsb_mean_tokens_output,"distilbert_nli_stsb":distilbert_base_nli_stsb_mean_tokens_output,"multilingual_MiniLM":paraphrase_multilingual_MiniLM_L12_v2_output,"actual":actual, "expected":expected, "search_type": search_type})
-
-    columns_to_remove = ['actual', 'expected', 'search_type']
+    run_id = mlflow.active_run().info.run_id
+    columns_to_remove = ['actual', 'expected']
+    additional_columns_to_remove = ['search_type']
     df = pd.DataFrame(data_list)
-    print(df.head(20))
+    df.to_csv(f"eval_score/{formatted_datetime}.csv", index=False)
+    print(df.head())
     
     temp_df = df.drop(columns=columns_to_remove)
     
-    sum_all_columns = temp_df.sum()
+    draw_search_chart(temp_df, run_id)
+    
+    temp_df = temp_df.drop(columns=additional_columns_to_remove)
+    
+    sum_all_columns = temp_df.sum() / question_count
     sum_df = pd.DataFrame([sum_all_columns], columns=temp_df.columns)
     
     sum_dict = {}
@@ -220,8 +300,14 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
         sum_dict[col_name] = float(sum_df[col_name].values)
 
     sum_df.to_csv(f"eval_score/sum_{formatted_datetime}.csv", index=False)
-    df.to_csv(f"eval_score/{formatted_datetime}.csv", index=False)
-    mlflow.log_param("chunk_size",chunk_size )
+
+    mlflow.log_param("question_count",question_count )
+    mlflow.log_param("rerank",rerank )
+    mlflow.log_param("rerank_type",rerank_type )
+    mlflow.log_param("crossencoder_model",crossencoder_model )
+    mlflow.log_param("llm_re_rank_threshold",llm_re_rank_threshold )
+    mlflow.log_param("retrieve_num_of_documents",retrieve_num_of_documents )
+    mlflow.log_param("cross_encoder_at_k",cross_encoder_at_k )
     mlflow.log_param("chunk_overlap",chunk_overlap )
     mlflow.log_param("embedding_dimension",embedding_dimension )
     mlflow.log_param("efConstruction",efConstruction )
@@ -230,12 +316,32 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(f"eval_score/{formatted_datetime}.csv")
     mlflow.log_artifact(f"eval_score/sum_{formatted_datetime}.csv")
-    run_id = mlflow.active_run().info.run_id
-    
     draw_hist_df(sum_df,run_id)
     generate_metrics(exp_name, run_id)
     mlflow.end_run()
+    time.sleep(10)
 
 
+def draw_search_chart(temp_df, run_id):
 
+    grouped = temp_df.groupby('search_type')
+    summed_column = grouped.sum().reset_index()  
+    num_columns = len(summed_column.columns)
+    fig = sp.make_subplots(rows=num_columns + 1, cols= 1)
+    for index, row_data in summed_column.iterrows():
+        search_type = row_data[0]
+        row_data = row_data[1:]
+        df = row_data.reset_index(name='metric_value')
+        df = df.rename(columns={'index': 'metric_type'})
+        fig.add_trace(
+            go.Bar(x=df["metric_type"], y=df["metric_value"], name=search_type, ),
+            row=index + 1, col=1,
+        )
+
+        fig.update_xaxes(title_text='Metric type', row=index + 1, col=1)
+        fig.update_yaxes(title_text='score', row=index + 1, col=1)
+    fig.update_layout(font=dict(size=15), title_text="Search type comparison across metric types",
+                        height=4000, width=800)
+    plot_name = "search_type_current_run.html"
+    client.log_figure(run_id, fig, plot_name)
 

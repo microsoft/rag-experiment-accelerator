@@ -6,13 +6,13 @@ openai.api_base = os.environ['OPENAI_ENDPOINT']
 openai.api_version = os.environ['OPENAI_API_VERSION'] # "2023-03-15-preview"
 
 
-def generate_response(sys_message,prompt,engine_model):
+def generate_response(sys_message,prompt,engine_model, temperature):
     prompt_structure = [{
         'role': 'system',
         'content': sys_message,
     }]
     
     prompt_structure.append({'role': 'user', 'content': prompt})
-    response = openai.ChatCompletion.create(engine=engine_model, messages=prompt_structure, temperature=0)
+    response = openai.ChatCompletion.create(engine=engine_model, messages=prompt_structure, temperature=temperature)
     answer = response.choices[0]['message']['content']
     return answer

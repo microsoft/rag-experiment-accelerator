@@ -18,7 +18,8 @@ efsearchs = data["efsearch"]
 name_prefix = data["name_prefix"]
 search_variants = data["search_types"]
 all_index_config = "generated_index_names"
-chat_deployment_name=os.environ['CHAT_DEPLOYMENT_NAME']
+chat_model_name=data["chat_model_name"]
+temperature = data["openai_temperature"]
 
 for chunk_size in chunk_sizes:
     for overlap in overlap_size:
@@ -28,5 +29,5 @@ for chunk_size in chunk_sizes:
                     index_name = f"{name_prefix}-{chunk_size}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
                     print(f"{name_prefix}-{chunk_size}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
                     write_path = f"./outputs/eval_output_{index_name}.jsonl"
-                    eval.evaluate_prompts(index_name, write_path, chunk_size, overlap, dimension , efConstruction, efsearch)
+                    eval.evaluate_prompts(name_prefix, write_path, chunk_size, overlap, dimension , efConstruction, efsearch)
                             
