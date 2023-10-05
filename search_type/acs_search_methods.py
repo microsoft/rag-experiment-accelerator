@@ -13,17 +13,17 @@ def create_client(service_endpoint,index_name, key ):
     index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
     return (client, index_client)
 
-def search_for_match_semantic(client, size, query):
+def search_for_match_semantic(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size, str(pre_process.preprocess(query)))
 
-    vector1 = Vector(value=res[0], k=5, fields="contentVector")  
-    vector2 = Vector(value=res[0], k=5, fields="contentTitle, contentSummary")  
+    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
+    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
 
     try:
         results = client.search(  
             search_text=query,  
             vectors=[vector1, vector2], 
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
             query_type="semantic", query_language="en-us", semantic_configuration_name='my-semantic-config', query_caption="extractive", query_answer="extractive",
         )
@@ -33,19 +33,19 @@ def search_for_match_semantic(client, size, query):
         print(str(e))
     return results
 
-def search_for_match_Hybrid_multi(client, size, query):
+def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
 
-    vector1 = Vector(value=res[0], k=5, fields="contentVector")  
-    vector2 = Vector(value=res[0], k=5, fields="contentTitle")  
-    vector3 = Vector(value=res[0], k=5, fields="contentSummary") 
+    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
+    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")  
+    vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary") 
 
     try:
         results = client.search(  
             search_text=query,  
             vectors=[vector1,vector2,vector3], 
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
 
@@ -54,17 +54,17 @@ def search_for_match_Hybrid_multi(client, size, query):
         print(str(e))
     return results
 
-def search_for_match_Hybrid_cross(client, size, query):
+def search_for_match_Hybrid_cross(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
-    vector1 = Vector(value=res[0], k=5, fields="contentVector")  
-    vector2 = Vector(value=res[0], k=5, fields="contentTitle, contentSummary")  
+    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
+    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
 
     try:
         results = client.search(  
             search_text=query,  
             vectors=[vector1, vector2], 
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
 
@@ -73,12 +73,12 @@ def search_for_match_Hybrid_cross(client, size, query):
         print(str(e))
     return results
 
-def search_for_match_text(client, size, query):
+def search_for_match_text(client, size, query,retrieve_num_of_documents):
 
     try:
         results = client.search(  
             search_text=query,  
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
 
@@ -87,16 +87,16 @@ def search_for_match_text(client, size, query):
         print(str(e))
     return results
 
-def search_for_match_pure_vector(client, size, query):
+def search_for_match_pure_vector(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
-    vector1 = Vector(value=res[0], k=5, fields="contentVector")  
+    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
 
     try:
         results = client.search(  
             search_text=None,  
             vectors=[vector1], 
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
 
@@ -106,18 +106,18 @@ def search_for_match_pure_vector(client, size, query):
     return results
 
 
-def search_for_match_pure_vector_multi(client, size, query):
+def search_for_match_pure_vector_multi(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
-    vector1 = Vector(value=res[0], k=5, fields="contentVector")  
-    vector2 = Vector(value=res[0], k=5, fields="contentTitle")  
-    vector3 = Vector(value=res[0], k=5, fields="contentSummary") 
+    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
+    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")  
+    vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary") 
 
     try:
         results = client.search(  
             search_text=None,  
             vectors=[vector1, vector2, vector3], 
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
 
@@ -127,16 +127,16 @@ def search_for_match_pure_vector_multi(client, size, query):
     return results
 
 
-def search_for_match_pure_vector_cross(client, size, query):
+def search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
-    vector1 = Vector(value=res[0], k=5, fields="contentVector, contentTitle, contentSummary")  
+    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector, contentTitle, contentSummary")  
 
     try:
         results = client.search(  
             search_text=None,  
             vectors=[vector1], 
-            top=5,
+            top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
 
@@ -145,11 +145,11 @@ def search_for_match_pure_vector_cross(client, size, query):
         print(str(e))
     return results
 
-def search_for_manual_hybrid(client, size, query):
+def search_for_manual_hybrid(client, size, query,retrieve_num_of_documents):
     context = []
-    text_context = search_for_match_text(client, size, query)
-    vector_context = search_for_match_pure_vector_cross(client, size, query)
-    semantic_context = search_for_match_semantic(client, size, query)
+    text_context = search_for_match_text(client, size, query,retrieve_num_of_documents)
+    vector_context = search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_documents)
+    semantic_context = search_for_match_semantic(client, size, query,retrieve_num_of_documents)
     
     for result in text_context:  
         context_item = {}

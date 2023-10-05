@@ -25,9 +25,9 @@ embedding_dimensions = data["embedding_dimension"]
 efConstructions = data["efConstruction"]
 efsearchs = data["efsearch"]
 name_prefix = data["name_prefix"]
-
+chat_model_name=data["chat_model_name"]
 all_index_config = "generated_index_names"
-
+temperature = data["openai_temperature"]
 index_dict = {}
 index_dict["indexes"] = []
 
@@ -58,7 +58,7 @@ for config_item in chunk_sizes:
                         chunk_dict["content"] = docs.page_content
                         chunk_dict["content_vector"] = generate_embedding(dimension, str(pre_process.preprocess( docs.page_content)))
                         data_load.append(chunk_dict)
-                    upload_data(data_load,service_endpoint,index_name,key, dimension)
+                    upload_data(data_load,service_endpoint,index_name,key, dimension, chat_model_name, temperature)
 
 
     
