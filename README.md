@@ -47,6 +47,28 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 git clone https://github.com/microsoft/rag-experiment-accelerator.git
 ```
 
+2. **setup env file**: create .env file at top folder level and provide data for items mentioned:
+
+```bash
+
+AZURE_SEARCH_SERVICE_ENDPOINT=
+AZURE_SEARCH_ADMIN_KEY=
+OPENAI_ENDPOINT=
+OPENAI_API_KEY=
+OPENAI_API_VERSION=
+OPENAI_EMBEDDING_DEPLOYED_MODEL=
+SUBSCRIPTION_ID=
+WORKSPACE_NAME=
+RESOURCE_GROUP_NAME=
+
+```
+3. Execute the requirements.txt in a conda or virtual environment to install the dependencies.
+
+```bash
+python -m pip install -f requirements.txt
+
+```
+
 ## How to use
 
 To harness the capabilities of the **RAG Experiment Accelerator**, follow these steps:
@@ -56,6 +78,57 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 3. Execute 02_qa_generation.py to generate Question-Answer pairs using Azure OpenAI.
 4. Execute 03_querying.py to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context.
 5. Execute 04_evaluation.py to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
+
+
+# Description of configuration elements
+
+```json
+{
+    "name_prefix": "Name of experiment, search index name used for tracking and comparing jobs",
+    "chunking": {
+        "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
+        "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
+    },
+    "embedding_dimension" : "embedding Size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
+    "efConstruction" : "efConstruction value determines the value of Azure Cognitive Search vector configuration." ,
+    "efsearch":  "efsearch value determines the value of Azure Cognitive Search vector configuration.",
+    "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
+    "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder", 
+    "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
+    "cross_encoder_at_k": "determines the threshold when using cross-encoding re-ranking. Chunks with given rank value are selected." ,
+    "crossencoder_model" :"determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base",
+    "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi,       search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
+    "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
+    "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
+    "chat_model_name":  "determines the OpenAI model" ,
+    "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1."
+}
+```
+
+## Reports
+
+The solution is integrated with AzureML and uses MLFlow to manage experiments, jobs and artifacts. Following are some of the reports generated as part of evaluation flow.
+
+### Metric Comparison
+
+![Metric Comparison](./images/metric_comparison.png)
+
+### Metric Analysis
+
+![Alt text](./images/metric_analysis.png)
+
+### Hyper Parameters
+
+![Hyper Parameters](./images/hyper-parameters.png)
+
+### Sample Metrics
+
+![Sample Metrics](./images/sample_metric.png)
+
+### Search evaluation
+
+![Search evaluation](./images/search_chart.png)
+
 
 ## Contributing
 
