@@ -72,7 +72,7 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
     return search_response
 
 
-def query_acs_multi(search_client, dimension, user_prompt, original_prompt, search_type,retrieve_num_of_documents):
+def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type,retrieve_num_of_documents):
     context = []
     for question in user_prompt:
         search_response = []
@@ -86,7 +86,7 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, sear
 
         if rerank == "TRUE":
             if rerank_type == "llm":
-                reranked = llm_rerank_documents(context, user_prompt,chat_model_name, temperature )
+                reranked = llm_rerank_documents(search_response, user_prompt,chat_model_name, temperature )
                 try:
                     new_docs = []
                     for key, value in reranked['documents'].items():
@@ -95,11 +95,11 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, sear
                         if int(value) > llm_re_rank_threshold:
                             new_docs.append(int(numeric_data[0]))
 
-                        result = [context[i] for i in new_docs]
+                        result = [search_response[i] for i in new_docs]
                 except:
-                    result = context
+                    result = search_response
             elif rerank_type == "crossencoder":
-                result = cross_encoder_rerank_documents(context,user_prompt,output_prompt,crossencoder_model,cross_encoder_at_k )
+                result = cross_encoder_rerank_documents(search_response,question,output_prompt,crossencoder_model,cross_encoder_at_k )
         else:
             result = context
 
@@ -138,14 +138,14 @@ for config_item in chunk_sizes:
                             for s_v in search_variants:
                                 context = []
                                 is_multi_question = do_we_need_multiple_questions(user_prompt,chat_model_name,temperature)
-                                if re.search(r'\bHIGH\b', is_multi_question):
+                                if re.search(r'\bHIGH\b', is_multi_question.upper()):
                                     try:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                         new_questions['questions'].append(user_prompt)
                                     except:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                         new_questions['questions'].append(user_prompt)
-                                    context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, s_v,retrieve_num_of_documents)
+                                    context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents)
                                     result = context
                                 else:
                                     search_response = query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents)
