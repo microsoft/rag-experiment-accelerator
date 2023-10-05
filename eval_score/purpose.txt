@@ -1,1 +1,0 @@
-This folder is meant for runtime storing of reports and csv files.
