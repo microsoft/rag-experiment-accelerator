@@ -52,6 +52,9 @@ mlflow_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 client = MlflowClient(mlflow_tracking_uri)
 
+if not os.path.exists("./eval_score"):
+    os.makedirs("./eval_score")
+
 def process_text(text):
     doc = nlp(str(text))
     result = []
