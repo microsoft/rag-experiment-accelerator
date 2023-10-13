@@ -12,7 +12,6 @@ from embedding.gen_embeddings import generate_embedding
 from nlp.preprocess import Preprocess
 import pandas as pd
 
-
 pre_process = Preprocess()
 
 def my_hash(s):
@@ -39,7 +38,6 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
         input_data['title'] = title
         input_data['summary'] = summary
         input_data['content'] = str(chunk["content"])
-        # TODO: fix this "test"
         input_data['filename'] = "test"
         input_data['contentVector'] = chunk["content_vector"][0]
         input_data['contentSummary'] = generate_embedding(dimension,str(pre_process.preprocess(summary)))[0]
@@ -82,4 +80,3 @@ def do_we_need_multiple_questions(question, model_name, temperature):
     if re.search(r'\bHIGH\b', response1.upper()):
         return True
     return False
-    # return response1
