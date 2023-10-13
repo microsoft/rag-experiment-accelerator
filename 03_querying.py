@@ -3,6 +3,7 @@ import json
 import shutil
 import re
 from dotenv import load_dotenv  
+from evaluation.eval import evaluate_search_results
 from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
 from search_type.acs_search_methods import  (
     search_for_match_pure_vector_multi,
@@ -48,7 +49,6 @@ llm_re_rank_threshold = data["llm_re_rank_threshold"]
 cross_encoder_at_k = data["cross_encoder_at_k"]
 temperature = data["openai_temperature"]
 
-
 def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents):
     if s_v == "search_for_match_semantic":
         search_response = search_for_match_semantic(search_client, dimension, user_prompt, retrieve_num_of_documents)
@@ -72,20 +72,24 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
     return search_response
 
 
-def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type,retrieve_num_of_documents):
+def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type,retrieve_num_of_documents, qna_context):
     context = []
+    # QUESTION: do we compare aginst output_prompt and qna_context individually and take the average or together?
+    content_to_evaluate_against = output_prompt + qna_context
     for question in user_prompt:
         search_response = []
         response = query_acs(search_client,dimension,question, search_type,retrieve_num_of_documents)
 
-        for result in response:  
-            print(f"Score: {result['@search.score']}")  
-            print(f"Content: {result['content']}")  
-            print("++++++++++++++++++++++++++++++++++")
-            search_response.append(result['content'])
+        additional_context = evaluate_search_results(response, content_to_evaluate_against)
+        search_response.extend(additional_context)
 
         if rerank == "TRUE":
             if rerank_type == "llm":
+                # QUESTION:
+                # we are passing user_prompt here which is a list of three question
+                # the original_user_prompt and the two new generated questions
+                # then we pass it into the prompt is this right?
+                # should we actually be passing the question or just the original user prompt?
                 reranked = llm_rerank_documents(search_response, user_prompt,chat_model_name, temperature )
                 try:
                     new_docs = []
@@ -94,7 +98,9 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, outp
                         numeric_data = re.findall(r'\d+\.\d+|\d+', key)
                         if int(value) > llm_re_rank_threshold:
                             new_docs.append(int(numeric_data[0]))
-
+                        # QUESTION: the llm consistenly sends back a list of docs starting at 1 not 0
+                        # is this a bug?
+                        # I also get back scores that are greater than 10 often
                         result = [search_response[i] for i in new_docs]
                 except:
                     result = search_response
@@ -135,25 +141,29 @@ for config_item in chunk_sizes:
                             data = json.loads(line)
                             user_prompt = data.get("user_prompt")
                             output_prompt = data.get("output_prompt")
+                            qna_context = data.get("context")
                             for s_v in search_variants:
                                 context = []
                                 is_multi_question = do_we_need_multiple_questions(user_prompt,chat_model_name,temperature)
-                                if re.search(r'\bHIGH\b', is_multi_question.upper()):
+                                is_multi_question = False
+                                if is_multi_question:
                                     try:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
+                                        # Is adding the original prompt to this what is intended?
+                                        # we end up searching for docs for the orginal question and then using the llm to answer it and provide that as context only to call that again
+                                        # with its answer as context
                                         new_questions['questions'].append(user_prompt)
                                     except:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                         new_questions['questions'].append(user_prompt)
-                                    context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents)
+                                        
+                                    context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents, qna_context)
                                     result = context
                                 else:
                                     search_response = query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents)
-                                    for result in search_response:  
-                                        print(f"Score: {result['@search.score']}")  
-                                        print(f"Content: {result['content']}")  
-                                        print("++++++++++++++++++++++++++++++++++")
-                                        context.append(result['content'])
+                                    content_to_evaluate_against = user_prompt + qna_context
+                                    additional_context = evaluate_search_results(search_response, content_to_evaluate_against)
+                                    context.extend(additional_context)
 
                                 if rerank == "TRUE":
                                     if rerank_type == "llm":

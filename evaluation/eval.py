@@ -28,6 +28,8 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
 
+from evaluation.spacy_evaluator import SpacyEvaluator
+
 
 warnings.filterwarnings("ignore") 
 
@@ -348,3 +350,49 @@ def draw_search_chart(temp_df, run_id):
     plot_name = "search_type_current_run.html"
     client.log_figure(run_id, fig, plot_name)
 
+
+def get_recall_score(is_relevant_results: list[bool], total_relevant_docs: int):
+    if total_relevant_docs == 0: 
+        return 0
+
+    num_of_relevant_docs = is_relevant_results.count(True)
+    
+    return num_of_relevant_docs/total_relevant_docs
+
+
+def get_precision_score(is_relevant_results: list[bool]):
+    num_of_recommended_docs = len(is_relevant_results)
+    if num_of_recommended_docs == 0: 
+        return 0
+
+    num_of_relevant_docs = is_relevant_results.count(True)
+    
+    return num_of_relevant_docs/num_of_recommended_docs
+
+def evaluate_search_results(search_response, content_to_evalute_against):
+    context = []
+    is_relevant_results: list[bool] = []
+    for recommended_doc in search_response:  
+        print("++++++++++++++++++++++++++++++++++")
+        print(f"Content: {recommended_doc['content']}")
+        print(f"Search Score: {recommended_doc['@search.score']}")
+
+        evaluator = SpacyEvaluator()
+        is_relevant = evaluator.is_relevant(recommended_doc["content"], content_to_evalute_against)
+        is_relevant_results.append(is_relevant)
+
+        # if is_relevant:
+        context.append(recommended_doc['content']) 
+
+    precision_score = get_precision_score(is_relevant_results)
+    print("++++++++++++++++++++++++++++++++++")
+    print(f"Precision Score: {precision_score}")
+
+    # TODO: how do we know the total number of relevant docs in the search index?
+    # hardcoding a value that is larger than what was recommended
+    total_relevent_docs = len(is_relevant_results) + 3
+    recall_score = get_recall_score(is_relevant_results, total_relevent_docs)
+    print(f"Recall Score: {recall_score}")
+
+    # TODO: get scores into a csv?
+    return context
