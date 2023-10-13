@@ -72,19 +72,17 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
     return search_response
 
 
-def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type,retrieve_num_of_documents, qna_context):
+def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type, retrieve_num_of_documents, qna_context):
     context = []
     evaluation_content = output_prompt + qna_context
     for question in user_prompt:
-        search_response = []
         response = query_acs(search_client,dimension,question, search_type,retrieve_num_of_documents)
 
-        additional_context = evaluate_search_results(response, evaluation_content)
-        search_response.extend(additional_context)
+        search_response_content = evaluate_search_results(response, evaluation_content)
 
         if rerank == "TRUE":
             if rerank_type == "llm":
-                reranked = llm_rerank_documents(search_response, user_prompt,chat_model_name, temperature )
+                reranked = llm_rerank_documents(search_response_content, user_prompt,chat_model_name, temperature )
                 try:
                     new_docs = []
                     for key, value in reranked['documents'].items():
@@ -92,11 +90,11 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, outp
                         numeric_data = re.findall(r'\d+\.\d+|\d+', key)
                         if int(value) > llm_re_rank_threshold:
                             new_docs.append(int(numeric_data[0]))
-                        result = [search_response[i] for i in new_docs]
+                        result = [search_response_content[i] for i in new_docs]
                 except:
-                    result = search_response
+                    result = search_response_content
             elif rerank_type == "crossencoder":
-                result = cross_encoder_rerank_documents(search_response,question,output_prompt,crossencoder_model,cross_encoder_at_k )
+                result = cross_encoder_rerank_documents(search_response_content, question,output_prompt, crossencoder_model, cross_encoder_at_k)
         else:
             result = context
 
@@ -144,13 +142,12 @@ for config_item in chunk_sizes:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                         new_questions['questions'].append(user_prompt)
                                     context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents, qna_context)
-                                    result = context
                                 else:
                                     search_response = query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents)
                                     evaluation_content = user_prompt + qna_context
-                                    additional_context = evaluate_search_results(search_response, evaluation_content)
-                                    context.extend(additional_context)
+                                    context = evaluate_search_results(search_response, evaluation_content)
 
+                                result = context
                                 if rerank == "TRUE":
                                     if rerank_type == "llm":
                                         reranked = llm_rerank_documents(context, user_prompt,chat_model_name,temperature )

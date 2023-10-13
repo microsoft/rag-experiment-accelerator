@@ -12,10 +12,10 @@ class SpacyEvaluator():
         return nlp_doc1.similarity(nlp_doc2)
 
     def is_relevant(self, doc1: str, doc2: str):
-        simularity = self.similarity(doc1, doc2)
-        print(f"Simularity Score: {simularity}")
+        similarity = self.similarity(doc1, doc2)
+        print(f"Similarity Score: {similarity}")
 
-        if simularity > self.similarity_threshold:
+        if similarity > self.similarity_threshold:
             return True
         
         return False
