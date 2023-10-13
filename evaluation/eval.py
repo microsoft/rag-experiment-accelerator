@@ -381,6 +381,9 @@ def evaluate_search_results(search_response, content_to_evalute_against):
         is_relevant = evaluator.is_relevant(recommended_doc["content"], content_to_evalute_against)
         is_relevant_results.append(is_relevant)
 
+        # QUESTION: 
+        # I am passing the doc onto the context reguardless of the score
+        # should we be checking if the doc is relevant before passing it onto the context?
         # if is_relevant:
         context.append(recommended_doc['content']) 
 
