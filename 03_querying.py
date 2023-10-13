@@ -139,12 +139,8 @@ for config_item in chunk_sizes:
                                 context = []
                                 is_multi_question = do_we_need_multiple_questions(user_prompt,chat_model_name,temperature)
                                 if re.search(r'\bHIGH\b', is_multi_question.upper()):
-                                    try:
-                                        new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
-                                        new_questions['questions'].append(user_prompt)
-                                    except:
-                                        new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
-                                        new_questions['questions'].append(user_prompt)
+                                    new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
+                                    new_questions['questions'].append(user_prompt)
                                     context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents)
                                     result = context
                                 else:

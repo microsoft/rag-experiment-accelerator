@@ -1,14 +1,25 @@
 
 import os
 import json
-from dotenv import load_dotenv  
+from dotenv import load_dotenv 
+
+load_dotenv()  
+
+
 from init_Index.create_index import create_acs_index
 from doc_loader.pdfLoader import load_pdf_files
 from embedding.gen_embeddings import generate_embedding
 from ingest_data.acs_ingest import upload_data, generate_qna
 from nlp.preprocess import Preprocess
+from spacy import cli
 
-load_dotenv()  
+import nltk
+
+nltk.download('punkt', force=True)
+nltk.download('stopwords', force=True)
+
+cli.download("en_core_web_md")
+
 pre_process = Preprocess()
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
