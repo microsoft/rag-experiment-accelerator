@@ -74,9 +74,6 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
 
 def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type,retrieve_num_of_documents, qna_context):
     context = []
-    # QUESTION: 
-    # do we compare against output_prompt and qna_context individually and take the average; 
-    # or just add the strings together so we only evaluate against one thing?
     content_to_evaluate_against = output_prompt + qna_context
     for question in user_prompt:
         search_response = []
@@ -87,11 +84,6 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, outp
 
         if rerank == "TRUE":
             if rerank_type == "llm":
-                # QUESTION:
-                # we are passing user_prompt here which is a list of three questions, the original_user_prompt and the two new generated questions
-                # we then pass it into the prompt as a list? Is this what is intended?
-                # Or should we be passing the current question? 
-                # Or should we be passing the original user prompt?
                 reranked = llm_rerank_documents(search_response, user_prompt,chat_model_name, temperature )
                 try:
                     new_docs = []
@@ -100,9 +92,6 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, outp
                         numeric_data = re.findall(r'\d+\.\d+|\d+', key)
                         if int(value) > llm_re_rank_threshold:
                             new_docs.append(int(numeric_data[0]))
-                        # NOTE: the llm consistenly sends back a list of docs starting at 1 not 0, 
-                        # I need to look more into this but we might be getting the wrong index
-                        # I also often get back scores that are greater than 10, do we need error handling and/or a modified prompt when we rerank via llm?
                         result = [search_response[i] for i in new_docs]
                 except:
                     result = search_response
@@ -150,8 +139,6 @@ for config_item in chunk_sizes:
                                 if re.search(r'\bHIGH\b', is_multi_question.upper()):
                                     try:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
-                                        # Question:
-                                        # What is the reason for adding the user_prompt to the new questions?
                                         new_questions['questions'].append(user_prompt)
                                     except:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))

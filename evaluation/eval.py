@@ -381,21 +381,14 @@ def evaluate_search_results(search_response, content_to_evalute_against):
         is_relevant = evaluator.is_relevant(recommended_doc["content"], content_to_evalute_against)
         is_relevant_results.append(is_relevant)
 
-        # QUESTION: 
-        # I am passing the doc onto the context reguardless of the score
-        # should we be checking if the doc is relevant before passing it onto the context?
-        # if is_relevant:
         context.append(recommended_doc['content']) 
 
     precision_score = get_precision_score(is_relevant_results)
     print("++++++++++++++++++++++++++++++++++")
     print(f"Precision Score: {precision_score}")
 
-    # QUESTION: how do we know the total number of relevant docs in the search index?
-    # I am hardcoding a value that is larger than what was recommended for now
     total_relevent_docs = len(is_relevant_results) + 3
     recall_score = get_recall_score(is_relevant_results, total_relevent_docs)
     print(f"Recall Score: {recall_score}")
 
-    # TODO: get scores into a csv?
     return context

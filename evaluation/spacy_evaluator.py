@@ -4,7 +4,6 @@ class SpacyEvaluator():
 
     def __init__(self, similarity_threshold=0.8, model='en_core_web_lg') -> None:
         self.nlp = spacy.load(model)
-        # QUESTION: what is a good default for the threshold?
         self.similarity_threshold = similarity_threshold
     
     def similarity(self, doc1: str, doc2: str):
