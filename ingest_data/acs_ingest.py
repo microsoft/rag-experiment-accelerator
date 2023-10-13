@@ -3,7 +3,6 @@
 import json
 import hashlib
 import json
-import re
 from azure.core.credentials import AzureKeyCredential  
 from azure.search.documents import SearchClient  
 import llm.prompts
