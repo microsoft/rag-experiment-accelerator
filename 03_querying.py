@@ -147,7 +147,7 @@ for config_item in chunk_sizes:
                             for s_v in search_variants:
                                 context = []
                                 is_multi_question = do_we_need_multiple_questions(user_prompt,chat_model_name,temperature)
-                                if is_multi_question:
+                                if re.search(r'\bHIGH\b', is_multi_question.upper()):
                                     try:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                         # Question:
