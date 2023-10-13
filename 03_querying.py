@@ -74,12 +74,12 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
 
 def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type,retrieve_num_of_documents, qna_context):
     context = []
-    content_to_evaluate_against = output_prompt + qna_context
+    evaluation_content = output_prompt + qna_context
     for question in user_prompt:
         search_response = []
         response = query_acs(search_client,dimension,question, search_type,retrieve_num_of_documents)
 
-        additional_context = evaluate_search_results(response, content_to_evaluate_against)
+        additional_context = evaluate_search_results(response, evaluation_content)
         search_response.extend(additional_context)
 
         if rerank == "TRUE":
@@ -143,13 +143,12 @@ for config_item in chunk_sizes:
                                     except:
                                         new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                         new_questions['questions'].append(user_prompt)
-                                        
                                     context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents, qna_context)
                                     result = context
                                 else:
                                     search_response = query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents)
-                                    content_to_evaluate_against = user_prompt + qna_context
-                                    additional_context = evaluate_search_results(search_response, content_to_evaluate_against)
+                                    evaluation_content = user_prompt + qna_context
+                                    additional_context = evaluate_search_results(search_response, evaluation_content)
                                     context.extend(additional_context)
 
                                 if rerank == "TRUE":

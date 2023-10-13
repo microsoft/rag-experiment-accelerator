@@ -361,27 +361,28 @@ def get_recall_score(is_relevant_results: list[bool], total_relevant_docs: int):
 
 
 def get_precision_score(is_relevant_results: list[bool]):
-    num_of_recommended_docs = len(is_relevant_results)
-    if num_of_recommended_docs == 0: 
+    total_docs = len(is_relevant_results)
+    if total_docs == 0: 
         return 0
 
-    num_of_relevant_docs = is_relevant_results.count(True)
+    total_relevant_docs = is_relevant_results.count(True)
     
-    return num_of_relevant_docs/num_of_recommended_docs
+    return total_relevant_docs/total_docs
 
-def evaluate_search_results(search_response, content_to_evalute_against):
+
+def evaluate_search_results(search_response, evaluation_content: str):
     context = []
     is_relevant_results: list[bool] = []
-    for recommended_doc in search_response:  
+    for response in search_response:  
         print("++++++++++++++++++++++++++++++++++")
-        print(f"Content: {recommended_doc['content']}")
-        print(f"Search Score: {recommended_doc['@search.score']}")
+        print(f"Content: {response['content']}")
+        print(f"Search Score: {response['@search.score']}")
 
         evaluator = SpacyEvaluator()
-        is_relevant = evaluator.is_relevant(recommended_doc["content"], content_to_evalute_against)
+        is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
         is_relevant_results.append(is_relevant)
 
-        context.append(recommended_doc['content']) 
+        context.append(response['content']) 
 
     precision_score = get_precision_score(is_relevant_results)
     print("++++++++++++++++++++++++++++++++++")
