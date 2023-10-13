@@ -65,6 +65,10 @@ RESOURCE_GROUP_NAME=
 3. Execute the requirements.txt in a conda or virtual environment to install the dependencies.
 
 ```bash
+conda create -n rag-test python=3.10
+
+conda activate rag-test
+
 python -m pip install -f requirements.txt
 
 ```

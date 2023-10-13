@@ -6,7 +6,7 @@ openai
 spacy
 scikit-learn
 pytesseract
-azure-search-documents
+azure-search-documents==11.4.0b8
 python-dotenv
 pinecone-client
 pymupdf
