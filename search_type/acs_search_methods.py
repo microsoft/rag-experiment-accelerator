@@ -18,7 +18,8 @@ def search_for_match_semantic(client, size, query,retrieve_num_of_documents):
 
     vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
     vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
-    context = []
+
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=query,  
@@ -28,14 +29,14 @@ def search_for_match_semantic(client, size, query,retrieve_num_of_documents):
             query_type="semantic", query_language="en-us", semantic_configuration_name='my-semantic-config', query_caption="extractive", query_answer="extractive",
         )
 
-        context = get_results(results)
+        formatted_search_results = format_results(results)
 
     except Exception as e:
-        results = ""
         print(str(e))
-    return context
+    return formatted_search_results
 
-# TODO: this seems to be broken, I cannot itterate over the results after it leaves this function
+# TODO: Figure out what is going on here. For some of these search functions, I cannot itterate over the results after it leaves this python file, so calling format_results on search_results which enables me to do so
+# This also will provide the same format that somes back from search_for_manual_hybrid
 def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
@@ -44,8 +45,7 @@ def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents)
     vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")  
     vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary") 
 
-    context = []
-
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=query,  
@@ -54,22 +54,12 @@ def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents)
             select=["title", "content", "summary"],
         )
 
-        context = get_results(results)
-
+        formatted_search_results = format_results(results)
 
     except Exception as e:
-        results = ""
         print(str(e))
-    return context
+    return formatted_search_results
 
-def get_results(results):
-    context = []
-    for result in results:  
-        context_item = {}
-        context_item['@search.score'] = result['@search.score']
-        context_item['content'] =  result['content']
-        context.append(context_item)
-    return context
 
 def search_for_match_Hybrid_cross(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
@@ -77,6 +67,7 @@ def search_for_match_Hybrid_cross(client, size, query,retrieve_num_of_documents)
     vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
     vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
 
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=query,  
@@ -85,13 +76,14 @@ def search_for_match_Hybrid_cross(client, size, query,retrieve_num_of_documents)
             select=["title", "content", "summary"],
         )
 
+        formatted_search_results = format_results(results)
+
     except Exception as e:
-        results = ""
         print(str(e))
-    return results
+    return formatted_search_results
 
 def search_for_match_text(client, size, query,retrieve_num_of_documents):
-
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=query,  
@@ -99,16 +91,17 @@ def search_for_match_text(client, size, query,retrieve_num_of_documents):
             select=["title", "content", "summary"],
         )
 
+        formatted_search_results = format_results(results)
+
     except Exception as e:
-        results = ""
         print(str(e))
-    return results
+    return formatted_search_results
 
 def search_for_match_pure_vector(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
     vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
-
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=None,  
@@ -116,11 +109,11 @@ def search_for_match_pure_vector(client, size, query,retrieve_num_of_documents):
             top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
+        formatted_search_results = format_results(results)
 
     except Exception as e:
-        results = ""
         print(str(e))
-    return results
+    return formatted_search_results
 
 
 def search_for_match_pure_vector_multi(client, size, query,retrieve_num_of_documents):
@@ -130,6 +123,7 @@ def search_for_match_pure_vector_multi(client, size, query,retrieve_num_of_docum
     vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")  
     vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary") 
 
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=None,  
@@ -137,11 +131,11 @@ def search_for_match_pure_vector_multi(client, size, query,retrieve_num_of_docum
             top=retrieve_num_of_documents,
             select=["title", "content", "summary"],
         )
+        formatted_search_results = format_results(results)
 
     except Exception as e:
-        results = ""
         print(str(e))
-    return results
+    return formatted_search_results
 
 
 def search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_documents):
@@ -149,6 +143,7 @@ def search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_docum
 
     vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector, contentTitle, contentSummary")  
 
+    formatted_search_results = []
     try:
         results = client.search(  
             search_text=None,  
@@ -157,31 +152,29 @@ def search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_docum
             select=["title", "content", "summary"],
         )
 
+        formatted_search_results = format_results(results)
+
     except Exception as e:
-        results = ""
         print(str(e))
-    return results
+    return formatted_search_results
 
 def search_for_manual_hybrid(client, size, query,retrieve_num_of_documents):
-    context = []
+    results = []
     text_context = search_for_match_text(client, size, query,retrieve_num_of_documents)
     vector_context = search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_documents)
     semantic_context = search_for_match_semantic(client, size, query,retrieve_num_of_documents)
-    
-    for result in text_context:  
-        context_item = {}
-        context_item['@search.score'] = result['@search.score']
-        context_item['content'] =  result['content']
-        context.append(context_item)
-    for result in vector_context:  
-        context_item = {}
-        context_item['@search.score'] = result['@search.score']
-        context_item['content'] =  result['content']
-        context.append(context_item)
-    for result in semantic_context:  
-        context_item = {}
-        context_item['@search.score'] = result['@search.score']
-        context_item['content'] =  result['content']
-        context.append(context_item)
 
-    return context
+    results.extend(text_context)
+    results.extend(vector_context)
+    results.extend(semantic_context)
+
+    return results
+
+def format_results(results):
+    formatted_results = []
+    for result in results:  
+        context_item = {}
+        context_item['@search.score'] = result['@search.score']
+        context_item['content'] =  result['content']
+        formatted_results.append(context_item)
+    return formatted_results

@@ -149,7 +149,7 @@ for config_item in chunk_sizes:
                                     evaluation_content = user_prompt + qna_context
                                     context, avg_precision_score = evaluate_search_results(search_response, evaluation_content)
 
-                                avg_precision_score_total = avg_precision_score_total + avg_precision_score
+                                avg_precision_score_total += avg_precision_score
                                 num_of_avg_precision_scores += 1
 
                                 result = context

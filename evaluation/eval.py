@@ -412,7 +412,6 @@ def evaluate_search_results(search_response, evaluation_content: str):
             average_precision_results.append(precision_score)
 
         avg_precision_score = get_avg_precision_score(average_precision_results)
-        print("++++++++++++++++++++++++++++++++++")
         print(f"Average Precision Score: {avg_precision_score}@{k}")
 
         recall_score = get_recall_score(is_relevant_results, total_relevent_docs)
