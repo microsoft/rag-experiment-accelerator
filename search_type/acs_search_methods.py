@@ -18,7 +18,7 @@ def search_for_match_semantic(client, size, query,retrieve_num_of_documents):
 
     vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
     vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
-
+    context = []
     try:
         results = client.search(  
             search_text=query,  
@@ -28,11 +28,14 @@ def search_for_match_semantic(client, size, query,retrieve_num_of_documents):
             query_type="semantic", query_language="en-us", semantic_configuration_name='my-semantic-config', query_caption="extractive", query_answer="extractive",
         )
 
+        context = get_results(results)
+
     except Exception as e:
         results = ""
         print(str(e))
-    return results
+    return context
 
+# TODO: this seems to be broken, I cannot itterate over the results after it leaves this function
 def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))
 
@@ -40,6 +43,8 @@ def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents)
     vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
     vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")  
     vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary") 
+
+    context = []
 
     try:
         results = client.search(  
@@ -49,10 +54,22 @@ def search_for_match_Hybrid_multi(client, size, query,retrieve_num_of_documents)
             select=["title", "content", "summary"],
         )
 
+        context = get_results(results)
+
+
     except Exception as e:
         results = ""
         print(str(e))
-    return results
+    return context
+
+def get_results(results):
+    context = []
+    for result in results:  
+        context_item = {}
+        context_item['@search.score'] = result['@search.score']
+        context_item['content'] =  result['content']
+        context.append(context_item)
+    return context
 
 def search_for_match_Hybrid_cross(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size,  str(pre_process.preprocess(query)))

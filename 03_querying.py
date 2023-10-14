@@ -75,10 +75,12 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
 def query_acs_multi(search_client, dimension, user_prompt, original_prompt, output_prompt, search_type, retrieve_num_of_documents, qna_context):
     context = []
     evaluation_content = output_prompt + qna_context
+    avg_precision_score_total = 0
     for question in user_prompt:
         response = query_acs(search_client,dimension,question, search_type,retrieve_num_of_documents)
 
-        search_response_content = evaluate_search_results(response, evaluation_content)
+        search_response_content, avg_precision_score  = evaluate_search_results(response, evaluation_content)
+        avg_precision_score_total += avg_precision_score
 
         if rerank == "TRUE":
             if rerank_type == "llm":
@@ -103,7 +105,9 @@ def query_acs_multi(search_client, dimension, user_prompt, original_prompt, outp
         context.append(openai_response)
         print(openai_response)
 
-    return context
+    avg_precision_score_total = avg_precision_score_total/len(user_prompt)
+
+    return context, avg_precision_score_total
 
 directory_path = './outputs'
 if os.path.exists(directory_path) and os.path.isdir(directory_path):
@@ -123,6 +127,8 @@ for config_item in chunk_sizes:
                 for efsearch in efsearchs:
                     index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
                     print(f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
+                    avg_precision_score_total = 0
+                    num_of_avg_precision_scores = 0
                     
                     search_client, index_client = create_client(service_endpoint, index_name, os.getenv("AZURE_SEARCH_ADMIN_KEY") )
                     with open(jsonl_file_path, 'r') as file:
@@ -137,11 +143,14 @@ for config_item in chunk_sizes:
                                 if re.search(r'\bHIGH\b', is_multi_question.upper()):
                                     new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
                                     new_questions['questions'].append(user_prompt)
-                                    context = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents, qna_context)
+                                    context, avg_precision_score = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents, qna_context)
                                 else:
                                     search_response = query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents)
                                     evaluation_content = user_prompt + qna_context
-                                    context = evaluate_search_results(search_response, evaluation_content)
+                                    context, avg_precision_score = evaluate_search_results(search_response, evaluation_content)
+
+                                avg_precision_score_total = avg_precision_score_total + avg_precision_score
+                                num_of_avg_precision_scores += 1
 
                                 result = context
                                 if rerank == "TRUE":
@@ -184,6 +193,8 @@ for config_item in chunk_sizes:
                                 with open(write_path, 'a') as out:
                                     json_string = json.dumps(output)
                                     out.write(json_string + "\n")
+                    map_score = avg_precision_score_total/num_of_avg_precision_scores
+                    print(f"MAP Score: {map_score}")
                     search_client.close()
                     index_client.close()
                     data_version = create_data_asset(write_path, index_name)

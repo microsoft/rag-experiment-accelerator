@@ -370,27 +370,55 @@ def get_precision_score(is_relevant_results: list[bool]):
     
     return total_relevant_docs/total_docs
 
+def get_avg_precision_score(scores: list[float]):
+    if len(scores) == 0:
+        return 0
+    return sum(scores)/len(scores)
+
+def get_mean_avg_precision_score(average_score, num_of_average_scores):
+    return average_score/num_of_average_scores
+
 
 def evaluate_search_results(search_response, evaluation_content: str):
     context = []
     is_relevant_results: list[bool] = []
-    for response in search_response:  
+    average_precision_results = []
+
+    evaluator = SpacyEvaluator()
+
+    # This is determining the total num of relevant docs by finding out how many documents are relevant from the returned search results.
+    # Our understanding was that recall should actually tell us the total number of relevant docs in the whole index, not what was returned in the search repsonse
+    # Is that correct? How would we know the total number of relevant docs in the index?
+    total_relevent_docs = 0
+    for response in search_response:
+        is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
+        if is_relevant:
+            total_relevent_docs += 1
+    
+    avg_precision_score = 0
+    for i ,response in enumerate(search_response):  
+        k = i + 1
         print("++++++++++++++++++++++++++++++++++")
         print(f"Content: {response['content']}")
         print(f"Search Score: {response['@search.score']}")
-
-        evaluator = SpacyEvaluator()
         is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
+
         is_relevant_results.append(is_relevant)
+        precision_score = get_precision_score(is_relevant_results)
+        print(f"Precision Score: {precision_score}@{k}")
+
+        # only use relevant items when calculating the average
+        if is_relevant:
+            average_precision_results.append(precision_score)
+
+        avg_precision_score = get_avg_precision_score(average_precision_results)
+        print("++++++++++++++++++++++++++++++++++")
+        print(f"Average Precision Score: {avg_precision_score}@{k}")
+
+        recall_score = get_recall_score(is_relevant_results, total_relevent_docs)
+        print(f"Recall Score: {recall_score}@{k}")
 
         context.append(response['content']) 
 
-    precision_score = get_precision_score(is_relevant_results)
-    print("++++++++++++++++++++++++++++++++++")
-    print(f"Precision Score: {precision_score}")
 
-    total_relevent_docs = len(is_relevant_results) + 3
-    recall_score = get_recall_score(is_relevant_results, total_relevent_docs)
-    print(f"Recall Score: {recall_score}")
-
-    return context
+    return context, avg_precision_score
