@@ -1,16 +1,16 @@
 {
-    "name_prefix": "testmanagement2",
+    "name_prefix": "moofin201",
     "chunking": {
-        "chunk_size": [1000],
-        "overlap_size": [100]
+        "chunk_size": [1000,2000,4000],
+        "overlap_size": [200]
     },
-    "embedding_dimension" : [1024],
+    "embedding_dimension" : [768],
     "efConstruction" : [400 ],
     "efsearch": [400],
     "rerank": "TRUE",
     "rerank_type": "crossencoder",
     "llm_re_rank_threshold": 3,
-    "cross_encoder_at_k": 5,
+    "cross_encoder_at_k": 4,
     "crossencoder_model" :"cross-encoder/stsb-roberta-base",
     "search_types" : ["search_for_manual_hybrid", "search_for_match_Hybrid_multi","search_for_match_semantic" ],
     "retrieve_num_of_documents": 5,
