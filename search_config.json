@@ -1,7 +1,7 @@
 {
     "name_prefix": "moofin201",
     "chunking": {
-        "chunk_size": [1000],
+        "chunk_size": [1000,2000,4000],
         "overlap_size": [200]
     },
     "embedding_dimension" : [768],
