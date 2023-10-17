@@ -1,0 +1,1 @@
+{"rerank": "TRUE", "rerank_type": "crossencoder", "crossencoder_model": "cross-encoder/stsb-roberta-base", "llm_re_rank_threshold": 3, "retrieve_num_of_documents": 5, "cross_encoder_at_k": 4, "question_count": 6, "actual": "Test actual", "expected": "Test expected values", "search_type": "search_for_manual_hybrid"}
