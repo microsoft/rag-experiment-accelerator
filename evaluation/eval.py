@@ -30,6 +30,7 @@ import os
 from spacy import cli
 
 from evaluation.spacy_evaluator import SpacyEvaluator
+from sklearn import metrics
 
 
 warnings.filterwarnings("ignore") 
@@ -361,39 +362,20 @@ def get_recall_score(is_relevant_results: list[bool], total_relevant_docs: int):
     return num_of_relevant_docs/total_relevant_docs
 
 
-def get_precision_score(is_relevant_results: list[bool]):
-    total_docs = len(is_relevant_results)
-    if total_docs == 0: 
-        return 0
-
-    total_relevant_docs = is_relevant_results.count(True)
-    
-    return total_relevant_docs/total_docs
-
-def get_avg_precision_score(scores: list[float]):
-    if len(scores) == 0:
-        return 0
-    return sum(scores)/len(scores)
-
-def get_mean_avg_precision_score(average_score, num_of_average_scores):
-    return average_score/num_of_average_scores
-
-
-def evaluate_search_results(search_response, evaluation_content: str):
-    context = []
-    is_relevant_results: list[bool] = []
+def evaluate_search_results(search_response, evaluation_content: str, search_relevancy_threshold: float):
+    content = []
+    recall_scores = []
+    precision_scores = []
     average_precision_results = []
+    is_relevant_results: list[bool] = []
+    is_relevant_predictions: list[bool] = []
 
-    evaluator = SpacyEvaluator()
+    evaluator = SpacyEvaluator(similarity_threshold=search_relevancy_threshold)
 
-    # This is determining the total num of relevant docs by finding out how many documents are relevant from the returned search results.
-    # Our understanding was that recall should actually tell us the total number of relevant docs in the whole index, not what was returned in the search repsonse
-    # Is that correct? How would we know the total number of relevant docs in the index?
-    total_relevent_docs = 0
+    total_relevent_docs = []
     for response in search_response:
         is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
-        if is_relevant:
-            total_relevent_docs += 1
+        total_relevent_docs.append(is_relevant)
     
     avg_precision_score = 0
     for i ,response in enumerate(search_response):  
@@ -401,23 +383,32 @@ def evaluate_search_results(search_response, evaluation_content: str):
         print("++++++++++++++++++++++++++++++++++")
         print(f"Content: {response['content']}")
         print(f"Search Score: {response['@search.score']}")
-        is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
 
+        is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
         is_relevant_results.append(is_relevant)
-        precision_score = get_precision_score(is_relevant_results)
+        is_relevant_predictions.append(True)
+
+        precision_score = metrics.precision_score(y_true=is_relevant_results, y_pred=is_relevant_predictions, average='binary')
         print(f"Precision Score: {precision_score}@{k}")
+        precision_scores.append(f"{precision_score}@{k}")
 
         # only use relevant items when calculating the average
         if is_relevant:
             average_precision_results.append(precision_score)
 
-        avg_precision_score = get_avg_precision_score(average_precision_results)
-        print(f"Average Precision Score: {avg_precision_score}@{k}")
-
-        recall_score = get_recall_score(is_relevant_results, total_relevent_docs)
+        recall_score = get_recall_score(is_relevant_results, sum(total_relevent_docs))
         print(f"Recall Score: {recall_score}@{k}")
+        recall_scores.append(f"{recall_score}@{k}")
 
-        context.append(response['content']) 
+        # TODO: should we only append content when it is relevant?
+        content.append(response['content']) 
 
+    avg_precision_score = sum(average_precision_results)/len(average_precision_results) 
+    result = {
+        "content": content,
+        "average_precision_score": avg_precision_score,
+        "recall_scores": recall_scores,
+        "precision_scores": precision_scores
+    }  
 
-    return context, avg_precision_score
+    return result
