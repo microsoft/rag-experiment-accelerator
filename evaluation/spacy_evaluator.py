@@ -15,7 +15,4 @@ class SpacyEvaluator():
         similarity = self.similarity(doc1, doc2)
         print(f"Similarity Score: {similarity}")
 
-        if similarity > self.similarity_threshold:
-            return True
-        
-        return False
+        return similarity > self.similarity_threshold
