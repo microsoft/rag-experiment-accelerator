@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import re
+from config.config import Config
 from dotenv import load_dotenv  
 from evaluation.eval import evaluate_search_results
 from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
@@ -26,31 +27,10 @@ from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_docume
 load_dotenv()  
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
-key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
+search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
-with open('search_config.json', 'r') as json_file:
-    data = json.load(json_file)
 
-chunk_sizes = data["chunking"]["chunk_size"]
-overlap_size = data["chunking"]["overlap_size"]
-
-embedding_dimensions = data["embedding_dimension"]
-efConstructions = data["efConstruction"]
-efsearchs = data["efsearch"]
-name_prefix = data["name_prefix"]
-search_variants = data["search_types"]
-all_index_config = "generated_index_names"
-chat_model_name=data["chat_model_name"]
-retrieve_num_of_documents = data["retrieve_num_of_documents"]
-crossencoder_model = data["crossencoder_model"]
-rerank_type = data["rerank_type"]
-rerank = data["rerank"]
-llm_re_rank_threshold = data["llm_re_rank_threshold"]
-cross_encoder_at_k = data["cross_encoder_at_k"]
-temperature = data["openai_temperature"]
-search_relevancy_threshold = data.get("search_relevancy_threshold", 0.8)
-
-def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents):
+def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
     if s_v == "search_for_match_semantic":
         search_response = search_for_match_semantic(search_client, dimension, user_prompt, retrieve_num_of_documents)
     elif s_v == "search_for_match_Hybrid_multi":
@@ -72,63 +52,59 @@ def query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documen
 
     return search_response
 
-
-def rerank_documents(search_response_content,chat_model_name, user_prompt, temperature, llm_re_rank_threshold, question, output_prompt, rerank_type):
+# why do we pass in user_prompt and question?
+# see line around 153
+def rerank_documents(search_response_content, user_prompt, question, output_prompt, config: Config):
     result = []
-    if rerank_type == "llm":
-        reranked = llm_rerank_documents(search_response_content, user_prompt,chat_model_name, temperature )
+    if config.rerank_type == "llm":
+        reranked = llm_rerank_documents(search_response_content, user_prompt, config.chat_model_name, config.temperature )
         try:
             new_docs = []
             for key, value in reranked['documents'].items():
                 key = key.replace('document_', '')
                 numeric_data = re.findall(r'\d+\.\d+|\d+', key)
-                if int(value) > llm_re_rank_threshold:
+                if int(value) > config.llm_re_rank_threshold:
                     new_docs.append(int(numeric_data[0]))
                 result = [search_response_content[i] for i in new_docs]
         except:
             result = search_response_content
-    elif rerank_type == "crossencoder":
-        result = cross_encoder_rerank_documents(search_response_content, question, output_prompt, crossencoder_model, cross_encoder_at_k)
+    elif config.rerank_type == "crossencoder":
+        result = cross_encoder_rerank_documents(search_response_content, question, output_prompt, config.crossencoder_model, config.cross_encoder_at_k)
 
     return result
 
 
 
-def query_acs_multi(search_client, dimension, questions, original_prompt, output_prompt, search_type, retrieve_num_of_documents, qna_context, search_relevancy_threshold):
+def query_acs_multi(search_client, dimension, questions, original_prompt, output_prompt, search_type, config: Config):
     context = []
-    search_eval_metrics = []
-    evaluation_content = output_prompt + qna_context
-    avg_precision_score_total = 0
+    search_results = []
     for question in questions:
-        response = query_acs(search_client,dimension,question, search_type,retrieve_num_of_documents)
-
-        search_eval_result = evaluate_search_results(response, evaluation_content, search_relevancy_threshold)
-        search_eval_content = search_eval_result['content'] # TODO: just use the dict, dont create new var
-        avg_precision_score_total += search_eval_result['average_precision_score']
-
-        metric = {
-            "question": question,
-            "recall_scores": search_eval_result['recall_scores'],
-            "precision_scores": search_eval_result['precision_scores'],
-        }
-        search_eval_metrics.append(metric)
+        response = query_acs(search_client,dimension,question, search_type, config.retrieve_num_of_documents)
+        search_results.append({'question': question, 'search_results': response})
+        docs = []
+        for r in response:
+            docs.append(r['content'])
     
-        if rerank == "TRUE":
-            prompt_instruction_context = rerank_documents(search_eval_content, chat_model_name, questions, temperature, llm_re_rank_threshold, question, output_prompt, rerank_type)
+        if config.rerank:
+            prompt_instruction_context = rerank_documents(docs, questions, question, output_prompt, config)
         else:
-            prompt_instruction_context = search_eval_content
+            prompt_instruction_context = docs
 
         full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        openai_response = generate_response(full_prompt_instruction,original_prompt,chat_model_name, temperature)
+        openai_response = generate_response(full_prompt_instruction, original_prompt, config.chat_model_name, config.temperature)
         context.append(openai_response)
         print(openai_response)
 
-    avg_precision_score_result = avg_precision_score_total/len(questions)
+    result = {
+        'context': context,
+        'search_results': search_results,
+    }
+    return result
 
-    return context, avg_precision_score_result, search_eval_metrics
 
 
 def main():
+    config = Config()
     directory_path = './outputs'
     if os.path.exists(directory_path) and os.path.isdir(directory_path):
         shutil.rmtree(directory_path)
@@ -140,62 +116,61 @@ def main():
         for line in file:
             question_count += 1
 
-    for config_item in chunk_sizes:
-        for overlap in overlap_size:
-            for dimension in embedding_dimensions:
-                for efConstruction in efConstructions:
-                    for efsearch in efsearchs:
-                        index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
-                        print(f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
-                        search_client, index_client = create_client(service_endpoint, index_name, os.getenv("AZURE_SEARCH_ADMIN_KEY") )
+    for config_item in config.chunk_sizes:
+        for overlap in config.overlap_size:
+            for dimension in config.embedding_dimensions:
+                for efConstruction in config.efConstructions:
+                    for efsearch in config.efsearchs:
+                        index_name = f"{config.name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
+                        print(f"{config.name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
+                        search_client, index_client = create_client(service_endpoint, index_name, search_admin_key)
                         with open(jsonl_file_path, 'r') as file:
                             for line in file:
                                 data = json.loads(line)
                                 user_prompt = data.get("user_prompt")
                                 output_prompt = data.get("output_prompt")
-                                qna_context = data.get("context") # TODO: add default
-                                is_multi_question = do_we_need_multiple_questions(user_prompt,chat_model_name,temperature)
+                                qna_context = data.get("context", "")
+                                is_multi_question = do_we_need_multiple_questions(user_prompt, config.chat_model_name, config.temperature)
                                 if is_multi_question:
-                                    new_questions = json.loads(we_need_multiple_questions(user_prompt,chat_model_name, temperature))
+                                    new_questions = json.loads(we_need_multiple_questions(user_prompt, config.chat_model_name, config.temperature))
                                     new_questions['questions'].append(user_prompt)
 
-                                for s_v in search_variants:
+                                evaluation_content = user_prompt + qna_context
+                                for s_v in config.search_variants:
                                     search_eval_metrics = []
-                                    avg_precision_score = 0
-                                    is_multi_question = do_we_need_multiple_questions(user_prompt,chat_model_name,temperature)
                                     if is_multi_question:
-                                        search_response_content, avg_precision_score, search_eval_metrics = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v,retrieve_num_of_documents, qna_context, search_relevancy_threshold)
-                                    else:
-                                        search_response = query_acs(search_client, dimension, user_prompt, s_v,retrieve_num_of_documents)
-                                        evaluation_content = user_prompt + qna_context
-                                        search_eval_result = evaluate_search_results(search_response, evaluation_content, search_relevancy_threshold)
+                                        query_response = query_acs_multi(search_client, dimension, new_questions['questions'], user_prompt, output_prompt, s_v, config)
+                                        search_eval_content = query_response['search_results']
 
-                                        search_eval_metrics.append({"question": user_prompt, "recall_scores": search_eval_result['recall_scores'], "precision_scores": search_eval_result['precision_scores']})
-                                        search_response_content = search_eval_result['content']
-                                        avg_precision_score = search_eval_result['average_precision_score']
-                                    
-                                    if rerank == "TRUE":
-                                        prompt_instruction_context = rerank_documents(search_response_content, chat_model_name, user_prompt, temperature, llm_re_rank_threshold, user_prompt, output_prompt, rerank_type)
                                     else:
-                                        prompt_instruction_context = search_response_content
+                                        search_results = query_acs(search_client, dimension, user_prompt, s_v, config.retrieve_num_of_documents)
+                                        search_eval_content = [{'question': user_prompt, 'search_results': search_results}]
+                                    
+                                    search_eval_result = evaluate_search_results(search_eval_content, evaluation_content, config.search_relevancy_threshold)
+                                    search_eval_metrics.append(search_eval_result['search_metrics'])
+
+                                    if config.rerank:
+                                        prompt_instruction_context = rerank_documents(search_eval_result['content'], user_prompt, user_prompt, output_prompt, config)
+                                    else:
+                                        prompt_instruction_context = search_eval_result['content']
 
                                     full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-                                    openai_response = generate_response(full_prompt_instruction,user_prompt,chat_model_name, temperature)
+                                    openai_response = generate_response(full_prompt_instruction,user_prompt,config.chat_model_name, config.temperature)
                                     print(openai_response)
 
-                                    output = {}
-                                    output["rerank"] = rerank 
-                                    output["rerank_type"] = rerank_type
-                                    output["crossencoder_model"] = crossencoder_model
-                                    output["llm_re_rank_threshold"] = llm_re_rank_threshold
-                                    output["retrieve_num_of_documents"] = retrieve_num_of_documents
-                                    output["cross_encoder_at_k"] = cross_encoder_at_k
-                                    output["question_count"] = question_count
-                                    output['actual'] = openai_response
-                                    output['expected'] = output_prompt
-                                    output['search_type'] = s_v 
-                                    output['average_precision_score'] = avg_precision_score 
-                                    output['search_eval_metrics'] = search_eval_metrics
+                                    output = {
+                                        "rerank": config.rerank,
+                                        "rerank_type": config.rerank_type,
+                                        "crossencoder_model": config.crossencoder_model,
+                                        "llm_re_rank_threshold": config.llm_re_rank_threshold,
+                                        "retrieve_num_of_documents": config.retrieve_num_of_documents,
+                                        "cross_encoder_at_k": config.cross_encoder_at_k,
+                                        "question_count": question_count,
+                                        'actual': openai_response,
+                                        'expected': output_prompt,
+                                        'search_type': s_v,
+                                        'search_eval_metrics': search_eval_metrics
+                                    }
 
                                     write_path = f"./outputs/eval_output_{index_name}2.jsonl"
                                     with open(write_path, 'a') as out:

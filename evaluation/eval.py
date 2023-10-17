@@ -1,6 +1,7 @@
 
 from azure.ai.ml.entities import Data
 from azure.ai.ml import Input
+from dotenv import load_dotenv
 
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate import meteor
@@ -30,9 +31,8 @@ import os
 from spacy import cli
 
 from evaluation.spacy_evaluator import SpacyEvaluator
-from sklearn import metrics
 
-
+load_dotenv()
 warnings.filterwarnings("ignore") 
 cli.download("en_core_web_md")
 nlp = spacy.load("en_core_web_md")
@@ -361,54 +361,64 @@ def get_recall_score(is_relevant_results: list[bool], total_relevant_docs: int):
     
     return num_of_relevant_docs/total_relevant_docs
 
+def get_precision_score(is_relevant_results: list[bool]):
+    num_of_recommended_docs = len(is_relevant_results)
+    if num_of_recommended_docs == 0: 
+        return 0
+    num_of_relevant_docs = is_relevant_results.count(True)
 
-def evaluate_search_results(search_response, evaluation_content: str, search_relevancy_threshold: float):
+    return num_of_relevant_docs/num_of_recommended_docs
+
+
+def evaluate_search_results(search_eval_content, evaluation_content: str, search_relevancy_threshold: float):
     content = []
-    recall_scores = []
-    precision_scores = []
-    average_precision_results = []
-    is_relevant_results: list[bool] = []
-    is_relevant_predictions: list[bool] = []
+    search_metrics = []
 
     evaluator = SpacyEvaluator(similarity_threshold=search_relevancy_threshold)
 
-    total_relevent_docs = []
-    for response in search_response:
-        is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
-        total_relevent_docs.append(is_relevant)
     
-    avg_precision_score = 0
-    for i ,response in enumerate(search_response):  
-        k = i + 1
-        print("++++++++++++++++++++++++++++++++++")
-        print(f"Content: {response['content']}")
-        print(f"Search Score: {response['@search.score']}")
+    for eval in search_eval_content:
+        recall_scores = []
+        precision_scores = []
+        total_relevent_docs = []
+        is_relevant_results: list[bool] = []
 
-        is_relevant = evaluator.is_relevant(response["content"], evaluation_content)
-        is_relevant_results.append(is_relevant)
-        is_relevant_predictions.append(True)
+        # get total relevant docs to calulate recall
+        for sr in eval['search_results']:
+            is_relevant = evaluator.is_relevant(sr["content"], evaluation_content)
+            total_relevent_docs.append(is_relevant)
 
-        precision_score = metrics.precision_score(y_true=is_relevant_results, y_pred=is_relevant_predictions, average='binary')
-        print(f"Precision Score: {precision_score}@{k}")
-        precision_scores.append(f"{precision_score}@{k}")
+        k = 1
+        for sr in eval['search_results']:
+            print("++++++++++++++++++++++++++++++++++")
+            print(f"Content: {sr['content']}")
+            print(f"Search Score: {sr['@search.score']}")
 
-        # only use relevant items when calculating the average
-        if is_relevant:
-            average_precision_results.append(precision_score)
+            is_relevant = evaluator.is_relevant(sr["content"], evaluation_content)
+            is_relevant_results.append(is_relevant)
 
-        recall_score = get_recall_score(is_relevant_results, sum(total_relevent_docs))
-        print(f"Recall Score: {recall_score}@{k}")
-        recall_scores.append(f"{recall_score}@{k}")
+            precision_score = get_precision_score(is_relevant_results)
+            print(f"Precision Score: {precision_score}@{k}")
+            precision_scores.append(f"{precision_score}@{k}")
 
-        # TODO: should we only append content when it is relevant?
-        content.append(response['content']) 
+            recall_score = get_recall_score(is_relevant_results, sum(total_relevent_docs))
+            print(f"Recall Score: {recall_score}@{k}")
+            recall_scores.append(f"{recall_score}@{k}")
 
-    avg_precision_score = sum(average_precision_results)/len(average_precision_results) 
+            # TODO: should we only append content when it is relevant?
+            content.append(sr['content']) 
+            k += 1
+
+        metric = {
+            "question": eval['question'],
+            "recall_scores": recall_scores,
+            "precision_scores": precision_scores,
+        }
+        search_metrics.append(metric)
+
     result = {
         "content": content,
-        "average_precision_score": avg_precision_score,
-        "recall_scores": recall_scores,
-        "precision_scores": precision_scores
+        'search_metrics': search_metrics
     }  
 
     return result
