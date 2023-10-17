@@ -77,6 +77,4 @@ def we_need_multiple_questions(question, model_name, temperature):
 def do_we_need_multiple_questions(question, model_name, temperature):
     full_prompt_instruction = llm.prompts.do_need_multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
     response1= generate_response(full_prompt_instruction,"",model_name, temperature)
-    if re.search(r'\bHIGH\b', response1.upper()):
-        return True
-    return False
+    return re.search(r'\bHIGH\b', response1.upper())
