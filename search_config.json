@@ -16,5 +16,6 @@
     "retrieve_num_of_documents": 5,
     "metric_types" : ["fuzzy","bert_all_MiniLM_L6_v2","cosine","bert_distilbert_base_nli_stsb_mean_tokens"],
     "chat_model_name": "gpt-35-turbo",
-    "openai_temperature": 0
+    "openai_temperature": 0,
+    "search_relevancy_threshold": 0.8
 }

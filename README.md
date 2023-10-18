@@ -69,7 +69,7 @@ conda create -n rag-test python=3.10
 
 conda activate rag-test
 
-python -m pip install -f requirements.txt
+python -m pip install -r requirements.txt
 
 ```
 
@@ -105,7 +105,8 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
     "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
     "chat_model_name":  "determines the OpenAI model" ,
-    "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1."
+    "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
+    "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.1"
 }
 ```
 

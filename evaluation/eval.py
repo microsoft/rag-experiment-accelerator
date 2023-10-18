@@ -1,6 +1,7 @@
 
 from azure.ai.ml.entities import Data
 from azure.ai.ml import Input
+from dotenv import load_dotenv
 
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate import meteor
@@ -29,21 +30,15 @@ import plotly.subplots as sp
 import os
 from spacy import cli
 
+from evaluation.spacy_evaluator import SpacyEvaluator
+
+load_dotenv()
 warnings.filterwarnings("ignore") 
-cli.download("en_core_web_md")
-nlp = spacy.load("en_core_web_md")
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
 
 pd.set_option('display.max_columns', None)
-
-all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
-large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
-large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
-distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
-paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
 ml_client = MLClient(
     DefaultAzureCredential(), os.environ['SUBSCRIPTION_ID'],os.environ['RESOURCE_GROUP_NAME'], os.environ['WORKSPACE_NAME']
@@ -56,6 +51,8 @@ if not os.path.exists("./eval_score"):
     os.makedirs("./eval_score")
 
 def process_text(text):
+    cli.download("en_core_web_md")
+    nlp = spacy.load("en_core_web_md")
     doc = nlp(str(text))
     result = []
     for token in doc:
@@ -211,6 +208,13 @@ def draw_hist_df(df, run_id):
 
 
 def compute_metrics(actual, expected, metric_type):
+    all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
+    large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
+    large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
+    distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
+    paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    
     if metric_type == "lcsstr":
         score = lcsstr(actual, expected)
     elif metric_type == "lcsseq":
@@ -348,3 +352,59 @@ def draw_search_chart(temp_df, run_id):
     plot_name = "search_type_current_run.html"
     client.log_figure(run_id, fig, plot_name)
 
+
+def get_recall_score(is_relevant_results: list[bool], total_relevant_docs: int):
+    if total_relevant_docs == 0: 
+        return 0
+
+    num_of_relevant_docs = is_relevant_results.count(True)
+    
+    return num_of_relevant_docs/total_relevant_docs
+
+def get_precision_score(is_relevant_results: list[bool]):
+    num_of_recommended_docs = len(is_relevant_results)
+    if num_of_recommended_docs == 0: 
+        return 0
+    num_of_relevant_docs = is_relevant_results.count(True)
+
+    return num_of_relevant_docs/num_of_recommended_docs
+
+
+def evaluate_search_result(search_response: list, evaluation_content: str, evaluator: SpacyEvaluator):
+    content = []
+
+    # create list of all docs with their is_relevant result to calculate recall
+    total_relevent_docs = []
+    for doc in search_response:
+        is_relevant = evaluator.is_relevant(doc["content"], evaluation_content)
+        total_relevent_docs.append(is_relevant)
+
+    recall_scores = []
+    precision_scores = []
+    is_relevant_results: list[bool] = []
+    for i, doc in enumerate(search_response):
+        k = i + 1
+        print("++++++++++++++++++++++++++++++++++")
+        print(f"Content: {doc['content']}")
+        print(f"Search Score: {doc['@search.score']}")
+
+        is_relevant = total_relevent_docs[i]
+        is_relevant_results.append(is_relevant)
+
+        precision_score = get_precision_score(is_relevant_results)
+        precision_scores.append(f"{precision_score}@{k}")
+        print(f"Precision Score: {precision_score}@{k}")
+
+        recall_score = get_recall_score(is_relevant_results, sum(total_relevent_docs))
+        recall_scores.append(f"{recall_score}@{k}")
+        print(f"Recall Score: {recall_score}@{k}")
+
+        # TODO: should we only append content when it is relevant?
+        content.append(doc['content']) 
+
+    metrics = {
+        "recall_scores": recall_scores,
+        "precision_scores": precision_scores,
+    }
+
+    return content, metrics

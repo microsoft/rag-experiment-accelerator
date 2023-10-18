@@ -21,3 +21,4 @@ hnswlib
 pypdf
 langchain
 sentence-transformers
+pytest
