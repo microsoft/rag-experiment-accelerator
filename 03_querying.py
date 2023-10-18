@@ -34,25 +34,25 @@ search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
 def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
     if s_v == "search_for_match_semantic":
-        repsonse = search_for_match_semantic(search_client, dimension, user_prompt, retrieve_num_of_documents)
+        search_response = search_for_match_semantic(search_client, dimension, user_prompt, retrieve_num_of_documents)
     elif s_v == "search_for_match_Hybrid_multi":
-        repsonse = search_for_match_Hybrid_multi(search_client, dimension, user_prompt, retrieve_num_of_documents)
+        search_response = search_for_match_Hybrid_multi(search_client, dimension, user_prompt, retrieve_num_of_documents)
     elif s_v == "search_for_match_Hybrid_cross":
-        repsonse = search_for_match_Hybrid_cross(search_client, dimension, user_prompt, retrieve_num_of_documents)
+        search_response = search_for_match_Hybrid_cross(search_client, dimension, user_prompt, retrieve_num_of_documents)
     elif s_v == "search_for_match_text":
-        repsonse = search_for_match_text(search_client, dimension, user_prompt, retrieve_num_of_documents)
+        search_response = search_for_match_text(search_client, dimension, user_prompt, retrieve_num_of_documents)
     elif s_v == "search_for_match_pure_vector":
-        repsonse = search_for_match_pure_vector(search_client, dimension, user_prompt,retrieve_num_of_documents)
+        search_response = search_for_match_pure_vector(search_client, dimension, user_prompt,retrieve_num_of_documents)
     elif s_v == "search_for_match_pure_vector_multi":
-        repsonse = search_for_match_pure_vector_multi(search_client, dimension, user_prompt,retrieve_num_of_documents)
+        search_response = search_for_match_pure_vector_multi(search_client, dimension, user_prompt,retrieve_num_of_documents)
     elif s_v == "search_for_match_pure_vector_cross":
-        repsonse = search_for_match_pure_vector_cross(search_client, dimension, user_prompt,retrieve_num_of_documents)
+        search_response = search_for_match_pure_vector_cross(search_client, dimension, user_prompt,retrieve_num_of_documents)
     elif s_v == "search_for_manual_hybrid":
-        repsonse = search_for_manual_hybrid(search_client, dimension, user_prompt,retrieve_num_of_documents)
+        search_response = search_for_manual_hybrid(search_client, dimension, user_prompt,retrieve_num_of_documents)
     else:
         pass
 
-    return repsonse
+    return search_response
 
 
 def rerank_documents(
