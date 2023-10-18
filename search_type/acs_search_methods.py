@@ -160,15 +160,16 @@ def search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_docum
 
 
 def search_for_manual_hybrid(client, size, query,retrieve_num_of_documents):
-    response = []
-    text_response = search_for_match_text(client, size, query,retrieve_num_of_documents)
-    vector_response = search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_documents)
-    semantic_response = search_for_match_semantic(client, size, query,retrieve_num_of_documents)
-    response.extend(text_response)
-    response.extend(vector_response)
-    response.extend(semantic_response)
+    context = []
+    text_context = search_for_match_text(client, size, query,retrieve_num_of_documents)
+    vector_context = search_for_match_pure_vector_cross(client, size, query,retrieve_num_of_documents)
+    semantic_context = search_for_match_semantic(client, size, query,retrieve_num_of_documents)
 
-    return response
+    context.extend(text_context)
+    context.extend(vector_context)
+    context.extend(semantic_context)
+
+    return context
 
 
 def format_results(results):

@@ -34,11 +34,20 @@ from evaluation.spacy_evaluator import SpacyEvaluator
 
 load_dotenv()
 warnings.filterwarnings("ignore") 
+cli.download("en_core_web_md")
+nlp = spacy.load("en_core_web_md")
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
 
 pd.set_option('display.max_columns', None)
+
+all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
+large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
+large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
+distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
+paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
 ml_client = MLClient(
     DefaultAzureCredential(), os.environ['SUBSCRIPTION_ID'],os.environ['RESOURCE_GROUP_NAME'], os.environ['WORKSPACE_NAME']
@@ -51,8 +60,6 @@ if not os.path.exists("./eval_score"):
     os.makedirs("./eval_score")
 
 def process_text(text):
-    cli.download("en_core_web_md")
-    nlp = spacy.load("en_core_web_md")
     doc = nlp(str(text))
     result = []
     for token in doc:
@@ -208,13 +215,6 @@ def draw_hist_df(df, run_id):
 
 
 def compute_metrics(actual, expected, metric_type):
-    all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
-    large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
-    large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
-    distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
-    paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-    
     if metric_type == "lcsstr":
         score = lcsstr(actual, expected)
     elif metric_type == "lcsseq":
