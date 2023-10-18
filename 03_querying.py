@@ -144,7 +144,7 @@ def main(config: Config):
 
                                 is_multi_question = do_we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                 if is_multi_question:
-                                    new_questions = json.loads((user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE))['questions']
+                                    new_questions = json.loads(we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE))['questions']
                                     new_questions.append(user_prompt)
 
                                 evaluation_content = user_prompt + qna_context
@@ -178,7 +178,7 @@ def main(config: Config):
                                         'actual': openai_response,
                                         'expected': output_prompt,
                                         'search_type': s_v,
-                                        'search_eval_metrics': search_evaluations
+                                        'search_evals': search_evaluations
                                     }
 
                                     write_path = f"./outputs/eval_output_{index_name}.jsonl"
