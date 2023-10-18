@@ -94,9 +94,9 @@ def query_acs_multi(
     context = []
     evaluations = []
     for question in questions:
-        response = query_acs(search_client,dimension,question, search_type, config.RETRIEVE_NUM_OF_DOCUMENTS)
+        search_result = query_acs(search_client,dimension,question, search_type, config.RETRIEVE_NUM_OF_DOCUMENTS)
 
-        docs, eval_metrics = evaluate_search_result(response, evaluation_content, evaluator)
+        docs, eval_metrics = evaluate_search_result(search_result, evaluation_content, evaluator)
         eval_metrics['query'] = question
         evaluations.append(eval_metrics)
     
