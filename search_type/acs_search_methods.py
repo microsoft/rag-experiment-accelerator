@@ -13,6 +13,18 @@ def create_client(service_endpoint,index_name, key ):
     index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
     return (client, index_client)
 
+
+def format_results(results):
+    formatted_results = []
+    for result in results:
+        context_item = {}
+        context_item['@search.score'] = result['@search.score']
+        context_item['content'] =  result['content']
+        formatted_results.append(context_item)
+
+    return formatted_results
+
+
 def search_for_match_semantic(client, size, query,retrieve_num_of_documents):
     res = generate_embedding(size, str(pre_process.preprocess(query)))
 
@@ -170,14 +182,3 @@ def search_for_manual_hybrid(client, size, query,retrieve_num_of_documents):
     context.extend(semantic_context)
 
     return context
-
-
-def format_results(results):
-    formatted_results = []
-    for result in results:
-        context_item = {}
-        context_item['@search.score'] = result['@search.score']
-        context_item['content'] =  result['content']
-        formatted_results.append(context_item)
-
-    return formatted_results

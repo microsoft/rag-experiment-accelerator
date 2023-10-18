@@ -20,10 +20,5 @@ class Config:
         self.LLM_RERANK_THRESHOLD = data["llm_re_rank_threshold"]
         self.CROSSENCODER_AT_K = data["cross_encoder_at_k"]
         self.TEMPERATURE = data["openai_temperature"]
+        self.RERANK = data['rerank']
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
-
-        if data["rerank"] == 'TRUE':
-            rerank = True
-        else:
-            rerank = False
-        self.RERANK = rerank

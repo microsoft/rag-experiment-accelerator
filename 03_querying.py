@@ -5,7 +5,7 @@ import re
 from azure.search.documents import SearchClient
 from config.config import Config
 from dotenv import load_dotenv  
-from evaluation.eval import evaluate_search_result
+from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
 from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
 from search_type.acs_search_methods import  (
@@ -127,6 +127,7 @@ def main(config: Config):
             question_count += 1
 
     evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
+
     for config_item in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
@@ -134,6 +135,7 @@ def main(config: Config):
                     for efsearch in config.EF_SEARCH:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
                         print(f"Index: {index_name}")
+
                         search_client, index_client = create_client(service_endpoint, index_name, search_admin_key)
                         with open(jsonl_file_path, 'r') as file:
                             for line in file:
@@ -187,7 +189,7 @@ def main(config: Config):
                                         out.write(json_string + "\n")
                         search_client.close()
                         index_client.close()
-                        data_version = create_data_asset(write_path, index_name)
+                        create_data_asset(write_path, index_name)
 
 
 if __name__ == '__main__':
