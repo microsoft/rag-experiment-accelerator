@@ -258,6 +258,9 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     mlflow.start_run(run_name=run_name)
     
     run_id = mlflow.active_run().info.run_id
+
+    total_p_scores_by_search_type = {}
+    map_scores_by_search_type = {}
     with open(data_path, 'r') as file:
         for line in file: 
             data = json.loads(line)
@@ -271,7 +274,8 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
             retrieve_num_of_documents = data.get("retrieve_num_of_documents")
             cross_encoder_at_k = data.get("cross_encoder_at_k")
             question_count = data.get("question_count")
-
+            search_evals = data.get("search_evals")
+            
             actual = remove_spaces(lower(actual))
             expected = remove_spaces(lower(expected))
 
@@ -283,6 +287,26 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
             metric_dic["expected"] = expected
             metric_dic["search_type"] = search_type
             data_list.append(metric_dic)
+
+            for eval in search_evals:
+                scores = eval.get('precision_scores')
+                for i, score in enumerate(scores):
+                    if total_p_scores_by_search_type.get(search_type):
+                        if total_p_scores_by_search_type[search_type].get(i+1):
+                            total_p_scores_by_search_type[search_type][i+1].append(score)
+                        else:
+                            total_p_scores_by_search_type[search_type][i+1] = [score]
+                    else:
+                        
+                        total_p_scores_by_search_type[search_type] = {i+1: [score]}
+                        map_scores_by_search_type[search_type] = []
+
+
+    for search_type, scores_at_k in total_p_scores_by_search_type.items():
+        for _, scores in scores_at_k.items():
+            avg_at_k = sum(scores)/len(scores)
+            map_scores_by_search_type[search_type].append(round(avg_at_k, 2))
+
 
     run_id = mlflow.active_run().info.run_id
     columns_to_remove = ['actual', 'expected']
@@ -305,6 +329,10 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
         sum_dict[col_name] = float(sum_df[col_name].values)
 
     sum_df.to_csv(f"eval_score/sum_{formatted_datetime}.csv", index=False)
+
+    for s_t, map_scores in map_scores_by_search_type.items():
+        for i, score in enumerate(map_scores):
+            mlflow.log_metrics({f"{s_t}_at_{i+1}": score})
 
     mlflow.log_param("question_count",question_count )
     mlflow.log_param("rerank",rerank )
