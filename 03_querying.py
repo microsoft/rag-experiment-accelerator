@@ -1,12 +1,13 @@
 import os
 import json
 import shutil
-import re
 from azure.search.documents import SearchClient
 from config.config import Config
-from dotenv import load_dotenv  
 from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
+from dotenv import load_dotenv
+load_dotenv()
+
 from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
 from search_type.acs_search_methods import  (
     search_for_match_pure_vector_multi,
@@ -25,8 +26,6 @@ from llm.prompt_execution import generate_response
 from data_assets.data_asset import create_data_asset
 from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
 
-
-load_dotenv()  
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
 search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
