@@ -69,7 +69,7 @@ def rerank_documents(
 
     return result
 
-def query_and_eval_acs(
+def query_acs(
     search_client: SearchClient,
     dimension: int,
     query: str,
@@ -84,7 +84,7 @@ def query_and_eval_acs(
     return docs, evaluation
 
 
-def query_and_eval_acs_multi(
+def query_acs_multi(
     search_client: SearchClient,
     dimension: int,
     questions: list[str],
@@ -100,7 +100,7 @@ def query_and_eval_acs_multi(
     context = []
     evals = []
     for question in questions:
-        docs, evaluation = query_and_eval_acs(search_client, dimension, question, search_type, evaluation_content, retrieve_num_of_documents, evaluator)
+        docs, evaluation = query_acs(search_client, dimension, question, search_type, evaluation_content, retrieve_num_of_documents, evaluator)
         evals.append(evaluation)
     
         if config.RERANK:
@@ -156,7 +156,7 @@ def main(config: Config):
                                 for s_v in config.SEARCH_VARIANTS:
                                     search_evals = []
                                     if is_multi_question:
-                                        docs, search_evals = query_and_eval_acs_multi(
+                                        docs, search_evals = query_acs_multi(
                                             search_client, 
                                             dimension, 
                                             new_questions, 
@@ -169,7 +169,7 @@ def main(config: Config):
                                             evaluator
                                         )
                                     else:
-                                        docs, evaluation = query_and_eval_acs(
+                                        docs, evaluation = query_acs(
                                             search_client, 
                                             dimension, 
                                             user_prompt, 
