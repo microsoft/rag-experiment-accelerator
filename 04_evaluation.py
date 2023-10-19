@@ -1,10 +1,10 @@
 
 import os
 import json
-from evaluation import eval
-from dotenv import load_dotenv  
+from dotenv import load_dotenv
+load_dotenv()
 
-load_dotenv()  
+from evaluation import eval
 
 with open('search_config.json', 'r') as json_file:
     data = json.load(json_file)

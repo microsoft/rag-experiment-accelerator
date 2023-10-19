@@ -1,14 +1,13 @@
-
 import os
 import json
 from dotenv import load_dotenv  
 
+load_dotenv()
+
 from doc_loader.pdfLoader import load_pdf_files
 from ingest_data.acs_ingest import generate_qna
 
-load_dotenv()  
-
-service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
+service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
 index_name = os.getenv("AZURE_SEARCH_INDEX_NAME")  
 key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
