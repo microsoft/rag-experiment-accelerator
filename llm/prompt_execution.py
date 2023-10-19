@@ -1,5 +1,11 @@
 import openai  
 import os
+
+# Added as ENV variables not available for local execution #37
+from dotenv import load_dotenv
+# Added as ENV variables not available for local execution #37
+load_dotenv()
+
 openai.api_key = os.environ['OPENAI_API_KEY']
 openai.api_type = "azure"
 openai.api_base = os.environ['OPENAI_ENDPOINT']
