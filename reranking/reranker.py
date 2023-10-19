@@ -18,7 +18,7 @@ def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_
 
     return sub_context
 
-def llm_rerank_documents(documents, question, deployment_name, temperature):
+def llm_rerank_documents(documents, question, deployment_name, temperature, rerank_threshold):
     rerank_context = ""
     for index, docs in enumerate(documents):
         rerank_context += "\ndocument " + str(index) + ":\n"
@@ -31,13 +31,21 @@ def llm_rerank_documents(documents, question, deployment_name, temperature):
         Question: {question}
     """
 
-    response1= generate_response(llm.prompts.rerank_prompt_instruction,prompt,deployment_name, temperature)
-    print(response1)
+    response = generate_response(llm.prompts.rerank_prompt_instruction,prompt, deployment_name, temperature)
+    print(response)
     pattern = r'\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}'
     try:
-        matches = re.findall(pattern, response1)[0]
-        response_dict = json.loads( matches )
-        print(response_dict)
-        return response_dict
+        matches = re.findall(pattern, response)[0]
+        reranked = json.loads( matches )
+        print(reranked)
+        new_docs = []
+        for key, value in reranked['documents'].items():
+            key = key.replace('document_', '')
+            numeric_data = re.findall(r'\d+\.\d+|\d+', key)
+            if int(value) > rerank_threshold:
+                new_docs.append(int(numeric_data[0]))
+            result = [documents[i] for i in new_docs]
     except:
-        return None
+        print("ERROR: Unable to parse the rerank documents LLM response. Returning all documents.")
+        result = documents
+    return result

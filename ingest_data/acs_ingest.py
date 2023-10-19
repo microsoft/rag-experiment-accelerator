@@ -3,6 +3,7 @@
 import json
 import hashlib
 import json
+import re
 from azure.core.credentials import AzureKeyCredential  
 from azure.search.documents import SearchClient  
 import llm.prompts
@@ -76,4 +77,4 @@ def we_need_multiple_questions(question, model_name, temperature):
 def do_we_need_multiple_questions(question, model_name, temperature):
     full_prompt_instruction = llm.prompts.do_need_multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
     response1= generate_response(full_prompt_instruction,"",model_name, temperature)
-    return response1
+    return re.search(r'\bHIGH\b', response1.upper())

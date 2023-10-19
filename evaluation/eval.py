@@ -1,6 +1,7 @@
 
 from azure.ai.ml.entities import Data
 from azure.ai.ml import Input
+from dotenv import load_dotenv
 
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate import meteor
@@ -29,6 +30,7 @@ import plotly.subplots as sp
 import os
 from spacy import cli
 
+load_dotenv()
 warnings.filterwarnings("ignore") 
 cli.download("en_core_web_md")
 nlp = spacy.load("en_core_web_md")
@@ -347,4 +349,3 @@ def draw_search_chart(temp_df, run_id):
                         height=4000, width=800)
     plot_name = "search_type_current_run.html"
     client.log_figure(run_id, fig, plot_name)
-
