@@ -27,7 +27,7 @@ def test_evaluate_search_result_calulates_precision_score():
             search_response, evaluation_content, evaluator
         )
 
-        expected_precision = ["1.0@1", "0.5@2", "0.66@3"]
+        expected_precision = ["1.0@1", "0.5@2", "0.67@3"]
         for i, precision in enumerate(evaluation.get("precision_scores")):
             assert precision == expected_precision[i]
 
