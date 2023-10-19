@@ -22,12 +22,12 @@ def evaluate_search_result(search_response: list, evaluation_content: str, evalu
         print(f"Search Score: {doc['@search.score']}")
 
 
-        precision_score = metrics.precision_score(is_relevant_results[:k], precision_predictions[:k])
+        precision_score = round(metrics.precision_score(is_relevant_results[:k], precision_predictions[:k]), 2)
         precision_scores.append(f"{precision_score}@{k}")
         print(f"Precision Score: {precision_score}@{k}")
 
         recall_predictions[i] = is_relevant_results[i]
-        recall_score = metrics.recall_score(is_relevant_results, recall_predictions)
+        recall_score = round(metrics.recall_score(is_relevant_results, recall_predictions), 2)
         recall_scores.append(f"{recall_score}@{k}")
         print(f"Recall Score: {recall_score}@{k}")
 
