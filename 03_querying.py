@@ -92,15 +92,13 @@ def query_and_eval_acs_multi(
     output_prompt: str,
     search_type: str,
     evaluation_content: str,
-    retrieve_num_of_documents: int,
-    chat_model_name: str,
-    temperature: int,
+    config: Config,
     evaluator: SpacyEvaluator,
 ):
     context = []
     evals = []
     for question in questions:
-        docs, evaluation = query_and_eval_acs(search_client, dimension, question, search_type, evaluation_content, retrieve_num_of_documents, evaluator)
+        docs, evaluation = query_and_eval_acs(search_client, dimension, question, search_type, evaluation_content, config.RETRIEVE_NUM_OF_DOCUMENTS, evaluator)
         evals.append(evaluation)
     
         if config.RERANK:
@@ -109,7 +107,7 @@ def query_and_eval_acs_multi(
             prompt_instruction_context = docs
 
         full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        openai_response = generate_response(full_prompt_instruction, original_prompt, chat_model_name, temperature)
+        openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
         print(openai_response)
 
@@ -162,10 +160,9 @@ def main(config: Config):
                                             new_questions, 
                                             user_prompt, 
                                             output_prompt, 
-                                            s_v, evaluation_content, 
-                                            config.RETRIEVE_NUM_OF_DOCUMENTS, 
-                                            config.CHAT_MODEL_NAME, 
-                                            config.TEMPERATURE, 
+                                            s_v, 
+                                            evaluation_content, 
+                                            config,
                                             evaluator
                                         )
                                     else:
