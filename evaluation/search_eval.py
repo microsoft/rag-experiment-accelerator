@@ -5,7 +5,7 @@ from sklearn import metrics
 def evaluate_search_result(search_response: list, evaluation_content: str, evaluator: SpacyEvaluator):
     content = []
 
-    # create list of all docs with their is_relevant result to calculate recall
+    # create list of all docs with their is_relevant result to calculate recall and precision
     is_relevant_results = []
     for doc in search_response:
         is_relevant = evaluator.is_relevant(doc["content"], evaluation_content)
