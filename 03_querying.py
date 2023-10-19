@@ -63,24 +63,28 @@ def rerank_documents(
 ):
     result = []
     if config.RERANK_TYPE == "llm":
-        reranked = llm_rerank_documents(search_response_content, user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
-        try:
-            new_docs = []
-            for key, value in reranked['documents'].items():
-                key = key.replace('document_', '')
-                numeric_data = re.findall(r'\d+\.\d+|\d+', key)
-                if int(value) > config.LLM_RERANK_THRESHOLD:
-                    new_docs.append(int(numeric_data[0]))
-                result = [search_response_content[i] for i in new_docs]
-        except:
-            result = search_response_content
+        result = llm_rerank_documents(search_response_content, user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
     elif config.RERANK_TYPE == "crossencoder":
         result = cross_encoder_rerank_documents(search_response_content, user_prompt, output_prompt, config.CROSSENCODER_MODEL, config.CROSSENCODER_AT_K)
 
     return result
 
+def query_and_eval_acs(
+    search_client: SearchClient,
+    dimension: int,
+    query: str,
+    search_type: str,
+    evaluation_content: str,
+    retrieve_num_of_documents: int,
+    evaluator: SpacyEvaluator,
+):
+    search_result = query_acs(search_client, dimension, query, search_type, retrieve_num_of_documents)
+    docs, evaluation = evaluate_search_result(search_result, evaluation_content, evaluator)
+    evaluation['query'] = query
+    return docs, evaluation
 
-def query_acs_multi(
+
+def query_and_eval_acs_multi(
     search_client: SearchClient,
     dimension: int,
     questions: list[str],
@@ -88,17 +92,16 @@ def query_acs_multi(
     output_prompt: str,
     search_type: str,
     evaluation_content: str,
-    config: Config,
+    retrieve_num_of_documents: int,
+    chat_model_name: str,
+    temperature: int,
     evaluator: SpacyEvaluator,
 ):
     context = []
-    evaluations = []
+    evals = []
     for question in questions:
-        search_result = query_acs(search_client,dimension,question, search_type, config.RETRIEVE_NUM_OF_DOCUMENTS)
-
-        docs, eval_metrics = evaluate_search_result(search_result, evaluation_content, evaluator)
-        eval_metrics['query'] = question
-        evaluations.append(eval_metrics)
+        docs, evaluation = query_and_eval_acs(search_client, dimension, question, search_type, evaluation_content, retrieve_num_of_documents, evaluator)
+        evals.append(evaluation)
     
         if config.RERANK:
             prompt_instruction_context = rerank_documents(docs, question, output_prompt, config)
@@ -106,11 +109,11 @@ def query_acs_multi(
             prompt_instruction_context = docs
 
         full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
+        openai_response = generate_response(full_prompt_instruction, original_prompt, chat_model_name, temperature)
         context.append(openai_response)
         print(openai_response)
 
-    return context, evaluations
+    return context, evals
 
 
 
@@ -151,14 +154,31 @@ def main(config: Config):
 
                                 evaluation_content = user_prompt + qna_context
                                 for s_v in config.SEARCH_VARIANTS:
-                                    search_evaluations = []
+                                    search_evals = []
                                     if is_multi_question:
-                                        docs, search_evaluations = query_acs_multi(search_client, dimension, new_questions, user_prompt, output_prompt, s_v, evaluation_content, config, evaluator)
+                                        docs, search_evals = query_and_eval_acs_multi(
+                                            search_client, 
+                                            dimension, 
+                                            new_questions, 
+                                            user_prompt, 
+                                            output_prompt, 
+                                            s_v, evaluation_content, 
+                                            config.RETRIEVE_NUM_OF_DOCUMENTS, 
+                                            config.CHAT_MODEL_NAME, 
+                                            config.TEMPERATURE, 
+                                            evaluator
+                                        )
                                     else:
-                                        search_result = query_acs(search_client, dimension, user_prompt, s_v, config.RETRIEVE_NUM_OF_DOCUMENTS)
-                                        docs, evaluation = evaluate_search_result(search_result, evaluation_content, evaluator)
-                                        evaluation['query'] = user_prompt
-                                        search_evaluations.append(evaluation)
+                                        docs, evaluation = query_and_eval_acs(
+                                            search_client, 
+                                            dimension, 
+                                            user_prompt, 
+                                            s_v, 
+                                            evaluation_content, 
+                                            config.RETRIEVE_NUM_OF_DOCUMENTS, 
+                                            evaluator
+                                        )
+                                        search_evals.append(evaluation)
 
                                     if config.RERANK:
                                         prompt_instruction_context = rerank_documents(docs, user_prompt, output_prompt, config)
@@ -180,7 +200,7 @@ def main(config: Config):
                                         'actual': openai_response,
                                         'expected': output_prompt,
                                         'search_type': s_v,
-                                        'search_evals': search_evaluations
+                                        'search_evals': search_evals
                                     }
 
                                     write_path = f"./outputs/eval_output_{index_name}.jsonl"
