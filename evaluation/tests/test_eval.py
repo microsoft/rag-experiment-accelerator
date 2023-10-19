@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from evaluation.eval import evaluate_search_result
+from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
 
 evaluation_content = "my content to evaluate"
@@ -51,4 +51,4 @@ def test_evaluate_search_result_returns_all_search_content():
     content, _ = evaluate_search_result(search_response, evaluation_content, evaluator)
 
     for i, doc in enumerate(search_response):
-        assert content[i] == doc["content"]
+        assert doc["content"] == content[i]
