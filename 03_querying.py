@@ -56,16 +56,16 @@ def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_docume
 
 
 def rerank_documents(
-    search_response_content: list[str],
+    docs: list[str],
     user_prompt: str,
     output_prompt: str,
     config: Config,
 ):
     result = []
     if config.RERANK_TYPE == "llm":
-        result = llm_rerank_documents(search_response_content, user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
+        result = llm_rerank_documents(docs, user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE, config.LLM_RERANK_THRESHOLD)
     elif config.RERANK_TYPE == "crossencoder":
-        result = cross_encoder_rerank_documents(search_response_content, user_prompt, output_prompt, config.CROSSENCODER_MODEL, config.CROSSENCODER_AT_K)
+        result = cross_encoder_rerank_documents(docs, user_prompt, output_prompt, config.CROSSENCODER_MODEL, config.CROSSENCODER_AT_K)
 
     return result
 
