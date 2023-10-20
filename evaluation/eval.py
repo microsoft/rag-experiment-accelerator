@@ -286,8 +286,6 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
 
             metric_dic = {}
 
-            if search_type == 'search_for_manual_hybrid':
-                print("in the right search")
             for metric_type in metric_types:
                 score = compute_metrics(actual, expected, metric_type)
                 metric_dic[metric_type] = score
