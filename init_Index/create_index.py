@@ -107,7 +107,7 @@ def create_acs_index(service_endpoint,
     cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
     scoring_profiles = []
 
-    # Create the search index with the semantic settings
+    # Create the search index with the semantic, tokenizer, and filter settings
     index = SearchIndex(name=index_name, fields=fields,
                         vector_search=vector_search,
                         semantic_settings=semantic_settings,
