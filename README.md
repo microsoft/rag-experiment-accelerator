@@ -97,6 +97,11 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     "embedding_dimension" : "embedding Size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
     "efConstruction" : "efConstruction value determines the value of Azure Cognitive Search vector configuration." ,
     "efsearch":  "efsearch value determines the value of Azure Cognitive Search vector configuration.",
+    "language": {
+        "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
+        "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
+        "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
+    },
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder", 
     "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,

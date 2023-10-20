@@ -31,6 +31,8 @@ with open('search_config.json', 'r') as json_file:
 
 chunk_sizes = data["chunking"]["chunk_size"]
 overlap_size = data["chunking"]["overlap_size"]
+analyzers = data["language"]["analyzers"]
+
 
 embedding_dimensions = data["embedding_dimension"]
 efConstructions = data["efConstruction"]
@@ -49,7 +51,7 @@ for config_item in chunk_sizes:
                 for efsearch in efsearchs:
                     index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
                     print(f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
-                    create_acs_index(service_endpoint,index_name, key, dimension, efConstruction, efsearch)
+                    create_acs_index(service_endpoint,index_name, key, dimension, efConstruction, efsearch, analyzers)
                     index_dict["indexes"].append(index_name) 
                     
 with open(all_index_config, 'w') as index_name:
