@@ -19,8 +19,9 @@ from azure.search.documents.indexes.models import (
     SemanticField,  
     SearchField,
     LexicalTokenizer,
-    LexicalTokenFilter,  
+  #  LexicalTokenFilter,  
     SemanticSettings,  
+    TokenFilter,
     VectorSearch,  
     HnswVectorSearchAlgorithmConfiguration,  
 )
@@ -51,10 +52,10 @@ def create_acs_index(service_endpoint,
                         searchable=True, retrievable=True),
         SearchableField(name="filename", type=SearchFieldDataType.String,
                         filterable=True, searchable=False, retrievable=True),
-        SearchableField(name="description", type=SearchFieldDataType.String, 
-                        index_analyzer_name=index_analyzer),                        
-        SearchableField(name='text', type=SearchFieldDataType.String, 
-                        searchable=True, analyzer_name=search_analyzer),                
+    #    SearchableField(name="description", type=SearchFieldDataType.String, 
+    #                    index_analyzer_name=index_analyzer),                        
+    #    SearchableField(name='text', type=SearchFieldDataType.String, 
+    #                    searchable=True, analyzer_name=search_analyzer),                
         SearchField(name="contentVector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                     searchable=True, vector_search_dimensions=int(dimension), vector_search_configuration="my-vector-config"),
         SearchField(name="contentTitle", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
@@ -98,7 +99,8 @@ def create_acs_index(service_endpoint,
     if analyzers["tokenizers"]:
         tokenizers = [LexicalTokenizer(name=analyzers["tokenizers"]["name"], token_chars=["letter", "digit"])]
     if analyzers["token_filters"]:
-        token_filters = [LexicalTokenFilter(name=analyzers["token_filters"]["name"], odatatype="#Microsoft.Azure.Search.AsciiFoldingTokenFilter")]
+       # token_filters = [LexicalTokenFilter(name=analyzers["token_filters"]["name"], odatatype="#Microsoft.Azure.Search.AsciiFoldingTokenFilter")]
+        token_filters = [TokenFilter(name="lowercase"),TokenFilter(name="asciifolding")]
     if analyzers["char_filters"]:
         char_filters = [CharFilter(name=analyzers["char_filters"]["name"], odatatype="#Microsoft.Azure.Search.MappingCharFilter", mappings=[])]
 
