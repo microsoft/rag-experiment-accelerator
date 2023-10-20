@@ -296,11 +296,6 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
             metric_dic["search_type"] = search_type
             data_list.append(metric_dic)
 
-            map_df_data_2 = {
-                "search_type": [],
-                "k": [],
-                "score": []
-            }
             for eval in search_evals:
                 scores = eval.get('precision_scores')
                 for i, score in enumerate(scores):
@@ -312,25 +307,8 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
                     else:
                         total_p_scores_by_search_type[search_type] = {i+1: [score]}
                         map_scores_by_search_type[search_type] = []
-            for eval in search_evals:
-                scores = eval.get('precision_scores')
-                for i, score in enumerate(scores):
-                    map_df_data_2['search_type'].append(search_type)
-                    map_df_data_2['k'].append(i+1)
-                    map_df_data_2['score'].append(score)
 
-            # map_df_2 = pd.DataFrame(map_df_data_2)
-            # print(map_df_2.describe())
-                    # if total_p_scores_by_search_type.get(search_type):
-                    #     if total_p_scores_by_search_type[search_type].get(i+1):
-                    #         total_p_scores_by_search_type[search_type][i+1].append(score)
-                    #     else:
-                    #         total_p_scores_by_search_type[search_type][i+1] = [score]
-                    # else:
-                    #     total_p_scores_by_search_type[search_type] = {i+1: [score]}
-                    #     map_scores_by_search_type[search_type] = []
-
-    map_df_data = {
+    eval_scores_df = {
         "search_type": [],
         "k": [],
         "score": []
@@ -338,10 +316,9 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     for search_type, scores_at_k in total_p_scores_by_search_type.items():
         for k, scores in scores_at_k.items():
             avg_at_k = sum(scores)/len(scores)
-            map_df_data['search_type'].append(search_type)
-            map_df_data['k'].append(k)
-            map_df_data['score'].append(avg_at_k)
-            # map_scores_by_search_type[search_type].append(round(avg_at_k, 2))
+            eval_scores_df['search_type'].append(search_type)
+            eval_scores_df['k'].append(k)
+            eval_scores_df['score'].append(avg_at_k)
 
 
     run_id = mlflow.active_run().info.run_id
@@ -352,7 +329,6 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     print(df.head())
     
     temp_df = df.drop(columns=columns_to_remove)
-    print(temp_df.describe())
     draw_search_chart(temp_df, run_id)
     
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
@@ -366,7 +342,7 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
 
     sum_df.to_csv(f"eval_score/sum_{formatted_datetime}.csv", index=False)
 
-    map_scores_df = pd.DataFrame(map_df_data)
+    map_scores_df = pd.DataFrame(eval_scores_df)
     map_scores_df.to_csv(f"eval_score/{formatted_datetime}_map_scores_test.csv", index=False)
     plot_map_scores(map_scores_df, run_id, client)
 
@@ -399,17 +375,15 @@ def draw_search_chart(temp_df, run_id):
 
     grouped = temp_df.groupby('search_type')
     summed_column = grouped.sum().reset_index()  
-    num_columns = len(summed_column.columns)
     fig = sp.make_subplots(rows=len(summed_column.search_type), cols= 1)
-    # fig = sp.make_subplots(rows=num_columns + 1, cols= 1)
     for index, row_data in summed_column.iterrows():
         search_type = row_data[0]
         row_data = row_data[1:]
         df = row_data.reset_index(name='metric_value')
         df = df.rename(columns={'index': 'metric_type'})
         fig.add_trace(
-            go.Bar(x=df["metric_type"], y=df["metric_value"], name=search_type),
-            row=index + 1, col=1,
+            go.Bar(x=df["metric_type"], y=df["metric_value"], name=search_type, offsetgroup=index),
+            row=1, col=1,
         )
 
         fig.update_xaxes(title_text='Metric type', row=index + 1, col=1)
