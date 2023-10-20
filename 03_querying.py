@@ -104,8 +104,15 @@ def query_and_eval_acs_multi(
             prompt_instruction_context = rerank_documents(docs, question, output_prompt, config)
         else:
             prompt_instruction_context = docs
+        
+        if config.PROMPT_FIELD == "":
+            main_prompt_instruction = llm.prompts.main_prompt_instruction
+        else :
+            pf = ""
+            exec("import llm.prompts_" + config.PROMPT_FIELD + "as pf")
+            main_prompt_instruction = getattr(pf, "main_prompt_instruction")
 
-        full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+        full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
         print(openai_response)
@@ -125,6 +132,13 @@ def main(config: Config):
     with open(jsonl_file_path, 'r') as file:
         for line in file:
             question_count += 1
+
+    if config.PROMPT_FIELD == "":
+        main_prompt_instruction = llm.prompts.main_prompt_instruction
+    else :
+        pf = ""
+        exec("import llm.prompts_" + config.PROMPT_FIELD + "as pf")
+        main_prompt_instruction = getattr(pf, "main_prompt_instruction")
 
     evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
@@ -181,7 +195,7 @@ def main(config: Config):
                                     else:
                                         prompt_instruction_context = docs
 
-                                    full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+                                    full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                     openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                     print(openai_response)
 
