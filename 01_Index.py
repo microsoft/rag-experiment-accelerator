@@ -1,10 +1,8 @@
-
 import os
 import json
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 
-load_dotenv()  
-
+load_dotenv()
 
 from init_Index.create_index import create_acs_index
 from doc_loader.pdfLoader import load_pdf_files
@@ -22,8 +20,8 @@ cli.download("en_core_web_md")
 
 pre_process = Preprocess()
 
-service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
-index_name = os.getenv("AZURE_SEARCH_INDEX_NAME")  
+service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
+index_name = os.getenv("AZURE_SEARCH_INDEX_NAME")
 key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
 with open('search_config.json', 'r') as json_file:
@@ -36,11 +34,10 @@ embedding_dimensions = data["embedding_dimension"]
 efConstructions = data["efConstruction"]
 efsearchs = data["efsearch"]
 name_prefix = data["name_prefix"]
-chat_model_name=data["chat_model_name"]
-all_index_config = "generated_index_names"
+chat_model_name = data["chat_model_name"]
+all_index_config = "artifacts/generated_index_names"
 temperature = data["openai_temperature"]
-index_dict = {}
-index_dict["indexes"] = []
+index_dict = {"indexes": []}
 
 for config_item in chunk_sizes:
     for overlap in overlap_size:
@@ -49,12 +46,11 @@ for config_item in chunk_sizes:
                 for efsearch in efsearchs:
                     index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
                     print(f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
-                    create_acs_index(service_endpoint,index_name, key, dimension, efConstruction, efsearch)
-                    index_dict["indexes"].append(index_name) 
-                    
+                    create_acs_index(service_endpoint, index_name, key, dimension, efConstruction, efsearch)
+                    index_dict["indexes"].append(index_name)
+
 with open(all_index_config, 'w') as index_name:
     json.dump(index_dict, index_name, indent=4)
-
 
 for config_item in chunk_sizes:
     for overlap in overlap_size:
@@ -65,17 +61,9 @@ for config_item in chunk_sizes:
                     all_docs = load_pdf_files("./data/", config_item, overlap)
                     data_load = []
                     for docs in all_docs:
-                        chunk_dict = {}
-                        chunk_dict["content"] = docs.page_content
-                        chunk_dict["content_vector"] = generate_embedding(dimension, str(pre_process.preprocess( docs.page_content)))
+                        chunk_dict = {
+                            "content": docs.page_content,
+                            "content_vector": generate_embedding(dimension, str(pre_process.preprocess(docs.page_content)))
+                        }
                         data_load.append(chunk_dict)
-                    upload_data(data_load,service_endpoint,index_name,key, dimension, chat_model_name, temperature)
-
-
-    
-
-
-
-
-
-
+                    upload_data(data_load, service_endpoint, index_name, key, dimension, chat_model_name, temperature)
