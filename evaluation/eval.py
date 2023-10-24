@@ -27,12 +27,18 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
-from spacy import cli
 
 load_dotenv()
 warnings.filterwarnings("ignore")
-cli.download("en_core_web_md")
-nlp = spacy.load("en_core_web_md")
+
+try:
+    nlp = spacy.load('en_core_web_md')
+except OSError:
+    print('Downloading spacy language model: en_core_web_md')
+    from spacy.cli import download
+    download('en_core_web_md')
+    nlp = spacy.load('en_core_web_md')
+
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms

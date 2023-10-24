@@ -16,8 +16,6 @@ import nltk
 nltk.download('punkt', force=True)
 nltk.download('stopwords', force=True)
 
-cli.download("en_core_web_md")
-
 pre_process = Preprocess()
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")

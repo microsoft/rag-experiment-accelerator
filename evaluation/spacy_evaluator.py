@@ -1,11 +1,15 @@
 import spacy
-from spacy import cli
 
 class SpacyEvaluator():
 
     def __init__(self, similarity_threshold=0.8, model='en_core_web_md') -> None:
-        cli.download(model)
-        self.nlp = spacy.load(model)
+        try:
+            self.nlp = spacy.load(model)
+        except OSError:
+            print('Downloading spacy language model: en_core_web_md')
+            from spacy.cli import download
+            download('en_core_web_md')
+            self.nlp = spacy.load(model)
         self.similarity_threshold = similarity_threshold
     
     def similarity(self, doc1: str, doc2: str):
