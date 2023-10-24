@@ -9,7 +9,7 @@
     "efsearch": [400],
     "language":{
         "analyzers": {
-            "analyzer_name": "",
+            "analyzer_name": "en.microsoft",
             "index_analyzer_name": "",
             "search_analyzer_name": "",
             "char_filters": [],
