@@ -27,6 +27,10 @@ key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 with open('search_config.json', 'r') as json_file:
     data = json.load(json_file)
 
+directory_path = 'artifacts'
+if not os.path.exists(directory_path):
+    os.makedirs(directory_path)
+
 chunk_sizes = data["chunking"]["chunk_size"]
 overlap_size = data["chunking"]["overlap_size"]
 

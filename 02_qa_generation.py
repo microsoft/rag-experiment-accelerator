@@ -25,8 +25,4 @@ chat_model_name = data["chat_model_name"]
 
 all_docs = load_pdf_files("./data/", 2000, 0)
 
-directory_path = 'artifacts'
-if not os.path.exists(directory_path):
-    os.makedirs(directory_path)
-
 generate_qna(all_docs, chat_model_name, temperature)
