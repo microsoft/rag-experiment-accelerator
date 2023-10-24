@@ -6,9 +6,9 @@ class SpacyEvaluator():
         try:
             self.nlp = spacy.load(model)
         except OSError:
-            print('Downloading spacy language model: en_core_web_md')
+            print(f'Downloading spacy language model: {model}')
             from spacy.cli import download
-            download('en_core_web_md')
+            download(model)
             self.nlp = spacy.load(model)
         self.similarity_threshold = similarity_threshold
     
