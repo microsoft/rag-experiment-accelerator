@@ -64,7 +64,7 @@ WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
 
 ```
-3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - promted on the run) to install the dependencies.
+3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
 conda create -n rag-test python=3.10
