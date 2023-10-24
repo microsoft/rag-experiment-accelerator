@@ -31,27 +31,22 @@ service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
 search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
 
+search_mapping = {
+    "search_for_match_semantic": search_for_match_semantic,
+    "search_for_match_Hybrid_multi": search_for_match_Hybrid_multi,
+    "search_for_match_Hybrid_cross": search_for_match_Hybrid_cross,
+    "search_for_match_text": search_for_match_text,
+    "search_for_match_pure_vector": search_for_match_pure_vector,
+    "search_for_match_pure_vector_multi": search_for_match_pure_vector_multi,
+    "search_for_match_pure_vector_cross": search_for_match_pure_vector_cross,
+    "search_for_manual_hybrid": search_for_manual_hybrid
+}
+
 def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
-    if s_v == "search_for_match_semantic":
-        search_response = search_for_match_semantic(search_client, dimension, user_prompt, retrieve_num_of_documents)
-    elif s_v == "search_for_match_Hybrid_multi":
-        search_response = search_for_match_Hybrid_multi(search_client, dimension, user_prompt, retrieve_num_of_documents)
-    elif s_v == "search_for_match_Hybrid_cross":
-        search_response = search_for_match_Hybrid_cross(search_client, dimension, user_prompt, retrieve_num_of_documents)
-    elif s_v == "search_for_match_text":
-        search_response = search_for_match_text(search_client, dimension, user_prompt, retrieve_num_of_documents)
-    elif s_v == "search_for_match_pure_vector":
-        search_response = search_for_match_pure_vector(search_client, dimension, user_prompt,retrieve_num_of_documents)
-    elif s_v == "search_for_match_pure_vector_multi":
-        search_response = search_for_match_pure_vector_multi(search_client, dimension, user_prompt,retrieve_num_of_documents)
-    elif s_v == "search_for_match_pure_vector_cross":
-        search_response = search_for_match_pure_vector_cross(search_client, dimension, user_prompt,retrieve_num_of_documents)
-    elif s_v == "search_for_manual_hybrid":
-        search_response = search_for_manual_hybrid(search_client, dimension, user_prompt,retrieve_num_of_documents)
-    else:
+    if s_v not in search_mapping:
         pass
 
-    return search_response
+    return search_mapping[s_v](search_client, dimension, user_prompt, retrieve_num_of_documents)
 
 
 def rerank_documents(
