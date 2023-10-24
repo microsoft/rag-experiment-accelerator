@@ -113,18 +113,16 @@ def query_and_eval_acs_multi(
     return context, evals
 
 
-
 def main(config: Config):
-    directory_path = './outputs'
-    if os.path.exists(directory_path) and os.path.isdir(directory_path):
-        shutil.rmtree(directory_path)
-    os.makedirs(directory_path)
-
-    jsonl_file_path = "./eval_data.jsonl"
+    jsonl_file_path = "./artifacts/eval_data.jsonl"
     question_count = 0
     with open(jsonl_file_path, 'r') as file:
         for line in file:
             question_count += 1
+
+    directory_path = 'artifacts/outputs'
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
 
     evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
@@ -136,7 +134,12 @@ def main(config: Config):
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
                         print(f"Index: {index_name}")
 
+                        write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
+                        if os.path.exists(write_path):
+                            continue
+
                         search_client, index_client = create_client(service_endpoint, index_name, search_admin_key)
+
                         with open(jsonl_file_path, 'r') as file:
                             for line in file:
                                 data = json.loads(line)
@@ -151,27 +154,28 @@ def main(config: Config):
 
                                 evaluation_content = user_prompt + qna_context
                                 for s_v in config.SEARCH_VARIANTS:
+
                                     search_evals = []
                                     if is_multi_question:
                                         docs, search_evals = query_and_eval_acs_multi(
-                                            search_client, 
-                                            dimension, 
-                                            new_questions, 
-                                            user_prompt, 
-                                            output_prompt, 
-                                            s_v, 
-                                            evaluation_content, 
+                                            search_client,
+                                            dimension,
+                                            new_questions,
+                                            user_prompt,
+                                            output_prompt,
+                                            s_v,
+                                            evaluation_content,
                                             config,
                                             evaluator
                                         )
                                     else:
                                         docs, evaluation = query_and_eval_acs(
-                                            search_client, 
-                                            dimension, 
-                                            user_prompt, 
-                                            s_v, 
-                                            evaluation_content, 
-                                            config.RETRIEVE_NUM_OF_DOCUMENTS, 
+                                            search_client,
+                                            dimension,
+                                            user_prompt,
+                                            s_v,
+                                            evaluation_content,
+                                            config.RETRIEVE_NUM_OF_DOCUMENTS,
                                             evaluator
                                         )
                                         search_evals.append(evaluation)
@@ -199,10 +203,10 @@ def main(config: Config):
                                         'search_evals': search_evals
                                     }
 
-                                    write_path = f"./outputs/eval_output_{index_name}.jsonl"
                                     with open(write_path, 'a') as out:
                                         json_string = json.dumps(output)
                                         out.write(json_string + "\n")
+
                         search_client.close()
                         index_client.close()
                         create_data_asset(write_path, index_name)
