@@ -51,6 +51,8 @@ git clone https://github.com/microsoft/rag-experiment-accelerator.git
 
 ```bash
 
+
+
 AZURE_SEARCH_SERVICE_ENDPOINT=
 AZURE_SEARCH_ADMIN_KEY=
 OPENAI_ENDPOINT=
@@ -62,27 +64,32 @@ WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
 
 ```
-3. Execute the requirements.txt in a conda or virtual environment to install the dependencies.
+3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
 conda create -n rag-test python=3.10
-
 conda activate rag-test
-
 python -m pip install -r requirements.txt
-
 ```
-4. Copy your pdf files into the data folder and remove any other files from this folder.
+
+4. Install Azure CLI and authorize:
+```bash
+az login
+az account set  --subscription="<your_subscription_guid>"
+az account show
+```
+
+5. Copy your `.pdf` files into the `data` folder.
 
 ## How to use
 
 To harness the capabilities of the **RAG Experiment Accelerator**, follow these steps:
 
-1. Modify the search_config.json file with hyper-parameters relevant to the experiment.
-2. Execute 01_index.py (python 01_index.py) to generate Azure Cognitive Search indexes and ingest data into the indexes.
-3. Execute 02_qa_generation.py (python 02_qa_generation.py) to generate Question-Answer pairs using Azure OpenAI.
-4. Execute 03_querying.py (python 03_querying.py) to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context. 
-5. Execute 04_evaluation.py (python 04_evaluation.py)  to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
+1. Modify the `search_config.json` file with hyper-parameters relevant to the experiment.
+2. Execute `01_index.py` (python 01_index.py) to generate Azure Cognitive Search indexes and ingest data into the indexes.
+3. Execute `02_qa_generation.py` (python 02_qa_generation.py) to generate Question-Answer pairs using Azure OpenAI.
+4. Execute `03_querying.py` (python 03_querying.py) to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context. 
+5. Execute `04_evaluation.py` (python 04_evaluation.py)  to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
 
 
 # Description of configuration elements
