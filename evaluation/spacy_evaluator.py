@@ -1,6 +1,21 @@
 import spacy
 
 class SpacyEvaluator():
+    """
+    A class for evaluating the similarity between two documents using spaCy.
+
+    Args:
+        similarity_threshold (float): The minimum similarity score required for two documents to be considered relevant.
+        model (str): The name of the spaCy model to use for processing the documents.
+
+    Attributes:
+        nlp (spacy.Language): The spaCy language model used for processing the documents.
+        similarity_threshold (float): The minimum similarity score required for two documents to be considered relevant.
+
+    Methods:
+        similarity(doc1: str, doc2: str) -> float: Calculates the similarity score between two documents.
+        is_relevant(doc1: str, doc2: str) -> bool: Determines whether two documents are relevant based on their similarity score.
+    """
 
     def __init__(self, similarity_threshold=0.8, model='en_core_web_md') -> None:
         try:
