@@ -1,17 +1,16 @@
 import nltk
 import re
-from nltk.corpus import stopwords
+import spacy
+
 from nltk.stem import SnowballStemmer
-from nltk.stem import WordNetLemmatizer
 from string import punctuation
 
 
 snowball_stemmer = SnowballStemmer('english')
-wordnet_lemmatizer = WordNetLemmatizer()
 
 class Preprocess:
-    def __int__(self):
-        pass
+    def __init__(self):
+        self.nlp = spacy.load("en_core_web_md")
 
     def to_lower(self, text):
             """
@@ -38,83 +37,84 @@ class Preprocess:
         return ' '.join(c for c in text if c not in punctuation)
 
     def remove_Tags(self, text):
-            """
-            Removes HTML tags from the given text.
+        """
+        Removes HTML tags from the given text.
 
-            Args:
-                text (str): The text to remove HTML tags from.
+        Args:
+            text (str): The text to remove HTML tags from.
 
-            Returns:
-                str: The cleaned text with HTML tags removed.
-            """
-            cleaned_text = re.sub('<[^<]+?>', '', text)
-            return cleaned_text
+        Returns:
+            str: The cleaned text with HTML tags removed.
+        """
+        cleaned_text = re.sub('<[^<]+?>', '', text)
+        return cleaned_text
 
     def sentence_tokenize(self, text):
-            """
-            Tokenizes a given text into sentences using the nltk.sent_tokenize method.
+        """
+        Tokenizes a given text into sentences using spacy.
 
-            Args:
-                text (str): The text to be tokenized.
+        Args:
+            text (str): The text to be tokenized.
 
-            Returns:
-                list: A list of sentences extracted from the input text.
-            """
-            sent_list = []
-            for w in nltk.sent_tokenize(text):
-                sent_list.append(w)
-            return sent_list
+        Returns:
+            list: A list of sentences extracted from the input text.
+        """
+        doc = self.nlp(text)
+        return  [sent.text.strip() for sent in doc.sents]
 
     def word_tokenize(self, text):
-            """
-            Tokenizes the input text into individual words.
+        """
+        Tokenizes the input text into individual words.
 
-            Args:
-                text (str): The text to tokenize.
+        Args:
+            text (str): The text to tokenize.
 
-            Returns:
-                list: A list of individual words in the input text.
-            """
-            return [w for sent in nltk.sent_tokenize(text) for w in nltk.word_tokenize(sent)]
+        Returns:
+            list: A list of individual words in the input text.
+        """
+        return [w.text for w in self.nlp(text)]
 
-    def remove_stopwords(self,sentence):
-            """
-            Removes stopwords from a given sentence.
+    def remove_stopwords(self, sentence):
+        """
+        Removes stopwords from a given sentence.
 
-            Args:
-                sentence (str): The sentence to remove stopwords from.
+        Args:
+            sentence (str): The sentence to remove stopwords from.
 
-            Returns:
-                str: The sentence with stopwords removed.
-            """
-            stop_words = stopwords.words('english')
-            return ' '.join([w for w in nltk.word_tokenize(sentence) if not w in stop_words])
+        Returns:
+            str: The sentence with stopwords removed.
+        """
+        doc = self.nlp(sentence)
+        filtered_tokens = [token for token in doc if not token.is_stop] 
+  
+        return ' '.join([token.text for token in filtered_tokens])
+
 
     def stem(self, text):
-            """
-            Stem the input text using the Snowball Stemmer.
+        """
+        Stem the input text using the Snowball Stemmer.
 
-            Args:
-                text (str): The input text to be stemmed.
+        Args:
+            text (str): The input text to be stemmed.
 
-            Returns:
-                str: The stemmed text.
-            """
-            stemmed_word = [snowball_stemmer.stem(word) for sent in nltk.sent_tokenize(text)for word in nltk.word_tokenize(sent)]
-            return " ".join(stemmed_word)
+        Returns:
+            str: The stemmed text.
+        """
+        stemmed_word = [snowball_stemmer.stem(word) for sent in nltk.sent_tokenize(text)for word in nltk.word_tokenize(sent)]
+        return " ".join(stemmed_word)
 
     def lemmatize(self, text):
-            """
-            Lemmatizes the input text using the WordNet lemmatizer.
+        """
+        Lemmatizes the input text using the WordNet lemmatizer.
 
-            Args:
-                text (str): The text to lemmatize.
+        Args:
+            text (str): The text to lemmatize.
 
-            Returns:
-                str: The lemmatized text.
-            """
-            lemmatized_word = [wordnet_lemmatizer.lemmatize(word)for sent in nltk.sent_tokenize(text)for word in nltk.word_tokenize(sent)]
-            return " ".join(lemmatized_word)
+        Returns:
+            str: The lemmatized text.
+        """
+        doc = self.nlp(text)
+        return " ".join([token.lemma_ for token in doc])
 
 
     def preprocess(self, text):
