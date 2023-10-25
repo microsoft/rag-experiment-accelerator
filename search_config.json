@@ -1,20 +1,29 @@
 {
     "name_prefix": "moofin201",
     "chunking": {
-        "chunk_size": [1000,2000,4000],
+        "chunk_size": [1000, 2000, 4000],
         "overlap_size": [200]
     },
-    "embedding_dimension" : [768],
-    "efConstruction" : [400 ],
-    "efsearch": [400],
+    "embedding_dimension": [768],
+    "efConstruction": [400],
+    "efSearch": [400],
     "rerank": "TRUE",
     "rerank_type": "crossencoder",
     "llm_re_rank_threshold": 3,
     "cross_encoder_at_k": 4,
-    "crossencoder_model" :"cross-encoder/stsb-roberta-base",
-    "search_types" : ["search_for_manual_hybrid", "search_for_match_Hybrid_multi","search_for_match_semantic" ],
+    "crossencoder_model": "cross-encoder/stsb-roberta-base",
+    "search_types": [
+        "search_for_manual_hybrid",
+        "search_for_match_Hybrid_multi",
+        "search_for_match_semantic"
+    ],
     "retrieve_num_of_documents": 5,
-    "metric_types" : ["fuzzy","bert_all_MiniLM_L6_v2","cosine","bert_distilbert_base_nli_stsb_mean_tokens"],
+    "metric_types": [
+        "fuzzy",
+        "bert_all_MiniLM_L6_v2",
+        "cosine",
+        "bert_distilbert_base_nli_stsb_mean_tokens"
+    ],
     "chat_model_name": "gpt-35-turbo",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8

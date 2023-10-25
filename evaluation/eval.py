@@ -53,8 +53,9 @@ mlflow_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 client = MlflowClient(mlflow_tracking_uri)
 
-if not os.path.exists("./eval_score"):
-    os.makedirs("./eval_score")
+eval_score_folder = './artifacts/eval_score'
+if not os.path.exists(eval_score_folder):
+    os.makedirs(eval_score_folder)
 
 def process_text(text):
     """
@@ -363,21 +364,19 @@ def generate_metrics(experiment_name, run_id):
                     if models_metrics.get(metric_type, {}) == {}:
                         metrics_to_plot.append(metric_type)
                         models_metrics[metric_type] = {}
-                        models_metrics[metric_type][single_run_id] = metric_value
-                    else:
-                        models_metrics[metric_type][single_run_id]= metric_value
+
+                    models_metrics[metric_type][single_run_id] = metric_value
                 print(models_metrics)
     else:
         current_run = client.get_run(run_id)
-        if run.data.params.get("run_metrics", {}) != {}:
+        if run.data.params.get("run_metrics", {}) != {}:  # todo: fix the issue - shift block?
             metrics = ast.literal_eval(current_run.data.params['run_metrics'])
             for metric_type, metric_value in metrics.items():
                 if models_metrics.get(metric_type, {}) == {}:
                     metrics_to_plot.append(metric_type)
                     models_metrics[metric_type] = {}
-                    models_metrics[metric_type][run_id] = metric_value
-                else:
-                    models_metrics[metric_type][run_id]= metric_value
+
+                models_metrics[metric_type][run_id] = metric_value
                 
     x_axis = []
     y_axis = []
@@ -390,17 +389,17 @@ def generate_metrics(experiment_name, run_id):
             y_axis.append(value) 
 
         label = key
-        px.line(x_axis, y_axis, )
+        px.line(x_axis, y_axis)
         fig.add_trace(go.Scatter(x=x_axis,
-                                    y=y_axis,
-                                    mode='lines+markers',
-                                    name=label)
-                                )
-        
+                                 y=y_axis,
+                                 mode='lines+markers',
+                                 name=label)
+                      )
+
         fig.update_layout(xaxis_title='run name',
-                        yaxis_title=metric,
-                        font=dict(size=15)
-                        )
+                          yaxis_title=metric,
+                          font=dict(size=15)
+                          )
 
         plot_name = metric + ".html"
         client.log_figure(run_id, fig, plot_name)
@@ -485,7 +484,7 @@ def compute_metrics(actual, expected, metric_type):
 
     return score
 
-def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efsearch):
+def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efSearch):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
@@ -496,7 +495,7 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
         chunk_overlap (int): Amount of overlap between the chunks.
         embedding_dimension (int): Dimension of the embeddings to use.
         efConstruction (int): Number of trees to use during index construction.
-        efsearch (int): Number of trees to use during search.
+        efSearch (int): Number of trees to use during search.
 
     Returns:
         None
@@ -543,7 +542,7 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     columns_to_remove = ['actual', 'expected']
     additional_columns_to_remove = ['search_type']
     df = pd.DataFrame(data_list)
-    df.to_csv(f"eval_score/{formatted_datetime}.csv", index=False)
+    df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
     print(df.head())
     
     temp_df = df.drop(columns=columns_to_remove)
@@ -559,24 +558,24 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     for col_name in sum_df.columns:
         sum_dict[col_name] = float(sum_df[col_name].values)
 
-    sum_df.to_csv(f"eval_score/sum_{formatted_datetime}.csv", index=False)
+    sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
 
-    mlflow.log_param("question_count",question_count )
-    mlflow.log_param("rerank",rerank )
-    mlflow.log_param("rerank_type",rerank_type )
-    mlflow.log_param("crossencoder_model",crossencoder_model )
-    mlflow.log_param("llm_re_rank_threshold",llm_re_rank_threshold )
-    mlflow.log_param("retrieve_num_of_documents",retrieve_num_of_documents )
-    mlflow.log_param("cross_encoder_at_k",cross_encoder_at_k )
-    mlflow.log_param("chunk_overlap",chunk_overlap )
-    mlflow.log_param("embedding_dimension",embedding_dimension )
-    mlflow.log_param("efConstruction",efConstruction )
-    mlflow.log_param("efsearch",efsearch )
-    mlflow.log_param("run_metrics",sum_dict )
+    mlflow.log_param("question_count", question_count)
+    mlflow.log_param("rerank", rerank)
+    mlflow.log_param("rerank_type", rerank_type)
+    mlflow.log_param("crossencoder_model", crossencoder_model)
+    mlflow.log_param("llm_re_rank_threshold", llm_re_rank_threshold)
+    mlflow.log_param("retrieve_num_of_documents", retrieve_num_of_documents)
+    mlflow.log_param("cross_encoder_at_k", cross_encoder_at_k)
+    mlflow.log_param("chunk_overlap", chunk_overlap)
+    mlflow.log_param("embedding_dimension", embedding_dimension)
+    mlflow.log_param("efConstruction", efConstruction)
+    mlflow.log_param("efSearch", efSearch)
+    mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
-    mlflow.log_artifact(f"eval_score/{formatted_datetime}.csv")
-    mlflow.log_artifact(f"eval_score/sum_{formatted_datetime}.csv")
-    draw_hist_df(sum_df,run_id)
+    mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")
+    mlflow.log_artifact(f"{eval_score_folder}/sum_{formatted_datetime}.csv")
+    draw_hist_df(sum_df, run_id)
     generate_metrics(exp_name, run_id)
     mlflow.end_run()
     time.sleep(10)

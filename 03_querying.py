@@ -196,8 +196,8 @@ def main(config: Config):
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
                 for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efsearch in config.EF_SEARCH:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
+                    for efSearch in config.EF_SEARCH:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
                         print(f"Index: {index_name}")
 
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
