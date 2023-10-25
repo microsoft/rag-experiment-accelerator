@@ -1,6 +1,6 @@
 import os
 import json
-import shutil
+
 from azure.search.documents import SearchClient
 from config.config import Config
 from evaluation.search_eval import evaluate_search_result
@@ -17,8 +17,7 @@ from search_type.acs_search_methods import  (
     search_for_match_text,
     search_for_match_pure_vector,
     search_for_match_pure_vector_cross,
-    search_for_manual_hybrid,
-    create_client
+    search_for_manual_hybrid
     )
 from  search_type.acs_search_methods import create_client
 import llm.prompts
@@ -130,7 +129,7 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-) -> Tuple[List[str], List[Dict[str, Any]]]:
+) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
     using OpenAI's GPT-3 model.
