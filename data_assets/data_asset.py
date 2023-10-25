@@ -6,6 +6,16 @@ import os
 
 
 def create_data_asset(data_path, data_asset_name):
+    """
+    Creates a new data asset in Azure Machine Learning workspace.
+
+    Args:
+        data_path (str): The path to the data file.
+        data_asset_name (str): The name of the data asset.
+
+    Returns:
+        int: The version of the created data asset.
+    """
 
     ml_client = MLClient(
         DefaultAzureCredential(), os.environ['SUBSCRIPTION_ID'],os.environ['RESOURCE_GROUP_NAME'], os.environ['WORKSPACE_NAME']

@@ -43,6 +43,19 @@ search_mapping = {
 }
 
 def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
+    """
+    Queries the Azure Cognitive Search service using the specified search client and search parameters.
+
+    Args:
+        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        dimension (str): The dimension to search within.
+        user_prompt (str): The user's search query.
+        s_v (str): The version of the search service to use.
+        retrieve_num_of_documents (int): The number of documents to retrieve.
+
+    Returns:
+        list: A list of documents matching the search query.
+    """
     if s_v not in search_mapping:
         pass
 
@@ -54,7 +67,19 @@ def rerank_documents(
     user_prompt: str,
     output_prompt: str,
     config: Config,
-):
+) -> list[str]:
+    """
+    Reranks a list of documents based on a given user prompt and configuration.
+
+    Args:
+        docs (list[str]): A list of documents to be reranked.
+        user_prompt (str): The user prompt to be used for reranking.
+        output_prompt (str): The output prompt to be used for reranking.
+        config (Config): A configuration object containing reranking parameters.
+
+    Returns:
+        list[str]: A list of reranked documents.
+    """
     result = []
     if config.RERANK_TYPE == "llm":
         result = llm_rerank_documents(docs, user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE, config.LLM_RERANK_THRESHOLD)
@@ -72,6 +97,23 @@ def query_and_eval_acs(
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
 ):
+    """
+    Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
+    results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
+    the evaluation results.
+
+    Args:
+        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        dimension (int): The dimension of the search index to query.
+        query (str): The search query to execute.
+        search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
+        evaluation_content (str): The content to use for evaluating the search results.
+        retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
+        evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+
+    Returns:
+        Tuple[List[Dict[str, Any]], Dict[str, Any]]: A tuple containing the retrieved documents and the evaluation results.
+    """
     search_result = query_acs(search_client, dimension, query, search_type, retrieve_num_of_documents)
     docs, evaluation = evaluate_search_result(search_result, evaluation_content, evaluator)
     evaluation['query'] = query
@@ -88,7 +130,26 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-):
+) -> Tuple[List[str], List[Dict[str, Any]]]:
+    """
+    Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
+    using OpenAI's GPT-3 model.
+
+    Args:
+        search_client (SearchClient): The Azure Cognitive Search client.
+        dimension (int): The number of dimensions in the embedding space.
+        questions (list[str]): A list of questions to query the search service with.
+        original_prompt (str): The original prompt to generate the response from.
+        output_prompt (str): The output prompt to use for reranking the search results.
+        search_type (str): The type of search to perform (e.g. 'semantic', 'exact').
+        evaluation_content (str): The content to use for evaluation.
+        config (Config): The configuration object.
+        evaluator (SpacyEvaluator): The evaluator object.
+
+    Returns:
+        Tuple[List[str], List[Dict[str, Any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
+        results for each question.
+    """
     context = []
     evals = []
     for question in questions:
@@ -109,6 +170,16 @@ def query_and_eval_acs_multi(
 
 
 def main(config: Config):
+    """
+    Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
+
+    Args:
+        config (Config): A configuration object containing experiment parameters.
+
+    Returns:
+        None
+    """
+    # function code here
     jsonl_file_path = "./artifacts/eval_data.jsonl"
     question_count = 0
     with open(jsonl_file_path, 'r') as file:
