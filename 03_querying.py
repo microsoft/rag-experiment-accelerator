@@ -88,6 +88,7 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
+    main_prompt_instruction: str
 ):
     context = []
     evals = []
@@ -100,7 +101,7 @@ def query_and_eval_acs_multi(
         else:
             prompt_instruction_context = docs
 
-        full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+        full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
         print(openai_response)
@@ -109,11 +110,16 @@ def query_and_eval_acs_multi(
 
 
 def main(config: Config):
-    jsonl_file_path = "./artifacts/eval_data.jsonl"
+    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
     question_count = 0
     with open(jsonl_file_path, 'r') as file:
         for line in file:
             question_count += 1
+
+    if (config.MAIN_PROMPT_INSTRUCTIONS):
+        main_prompt_instruction = config.MAIN_PROMPT_INSTRUCTIONS
+    else:
+        main_prompt_instruction = llm.prompts.main_prompt_instruction
 
     directory_path = 'artifacts/outputs'
     if not os.path.exists(directory_path):
@@ -161,7 +167,8 @@ def main(config: Config):
                                             s_v,
                                             evaluation_content,
                                             config,
-                                            evaluator
+                                            evaluator,
+                                            main_prompt_instruction
                                         )
                                     else:
                                         docs, evaluation = query_and_eval_acs(
@@ -180,7 +187,7 @@ def main(config: Config):
                                     else:
                                         prompt_instruction_context = docs
 
-                                    full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+                                    full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                     openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                     print(openai_response)
 
