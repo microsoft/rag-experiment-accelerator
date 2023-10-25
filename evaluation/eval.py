@@ -2,10 +2,8 @@
 from azure.ai.ml.entities import Data
 from azure.ai.ml import Input
 from dotenv import load_dotenv
-
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate import meteor
-
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 import pandas as pd
@@ -29,6 +27,7 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
 from spacy import cli
+from numpy import mean
 
 load_dotenv()
 warnings.filterwarnings("ignore") 
@@ -211,11 +210,21 @@ def draw_hist_df(df, run_id):
     plot_name = "all_metrics_current_run.html"
     client.log_figure(run_id, fig, plot_name)
 
-def plot_map_scores(df, run_id, client):
-    fig = px.line(df, x="k", y="score",title="MAP@k scores", color="search_type")
-    plot_name = "map_scores_at_k.html"
+def plot_apk_scores(df, run_id, client):
+    fig = px.line(df, x="k", y="score",title="AP@k scores", color="search_type")
+    plot_name = "average_precision_at_k.html"
     client.log_figure(run_id, fig, plot_name)
 
+# maybe pull these 2 above and below functions into a single one
+def plot_mapk_scores(df, run_id, client):
+    fig = px.line(df, x="k", y="map_at_k",title="MAP@k scores", color="search_type")
+    plot_name = "mean_average_precision_at_k.html"
+    client.log_figure(run_id, fig, plot_name)
+
+def plot_map_scores(df, run_id, client):
+    fig = px.bar(df, x="search_type", y="mean",title="MAP scores", color="search_type")
+    plot_name = "mean_average_precision_scores.html"
+    client.log_figure(run_id, fig, plot_name)
 
 def compute_metrics(actual, expected, metric_type):
     if metric_type == "lcsstr":
@@ -264,8 +273,9 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     
     run_id = mlflow.active_run().info.run_id
 
-    total_p_scores_by_search_type = {}
+    total_precision_scores_by_search_type = {}
     map_scores_by_search_type = {}
+    average_precision_for_search_type = {}
     with open(data_path, 'r') as file:
         for line in file: 
             data = json.loads(line)
@@ -294,31 +304,46 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
             metric_dic["search_type"] = search_type
             data_list.append(metric_dic)
 
+            if not total_precision_scores_by_search_type.get(search_type):
+                total_precision_scores_by_search_type[search_type] = {}
+                map_scores_by_search_type[search_type] = []
+                average_precision_for_search_type[search_type] = []
             for eval in search_evals:
                 scores = eval.get('precision_scores')
+                if scores:
+                    average_precision_for_search_type[search_type].append(mean(scores))
                 for i, score in enumerate(scores):
-                    if total_p_scores_by_search_type.get(search_type):
-                        if total_p_scores_by_search_type[search_type].get(i+1):
-                            total_p_scores_by_search_type[search_type][i+1].append(score)
-                        else:
-                            total_p_scores_by_search_type[search_type][i+1] = [score]
+                    if total_precision_scores_by_search_type[search_type].get(i+1):
+                        total_precision_scores_by_search_type[search_type][i+1].append(score)
                     else:
-                        total_p_scores_by_search_type[search_type] = {i+1: [score]}
-                        map_scores_by_search_type[search_type] = []
+                        total_precision_scores_by_search_type[search_type][i+1] = [score]
 
     eval_scores_df = {
         "search_type": [],
         "k": [],
-        "score": []
+        "score": [],
+        "map_at_k": []
     }
-    for search_type, scores_at_k in total_p_scores_by_search_type.items():
+
+    for search_type, scores_at_k in total_precision_scores_by_search_type.items():
         for k, scores in scores_at_k.items():
-            avg_at_k = sum(scores)/len(scores)
+            avg_at_k = mean(scores)
+            # not sure if this would be problematic or not.
             eval_scores_df['search_type'].append(search_type)
             eval_scores_df['k'].append(k)
             eval_scores_df['score'].append(avg_at_k)
+            mean_at_k = mean(eval_scores_df['score'][:k])
+            eval_scores_df['map_at_k'].append(mean_at_k)
 
+    mean_scores = {
+        "search_type": [],
+        "mean": []
+    }
 
+    for search_type, scores in average_precision_for_search_type.items():
+        mean_scores['search_type'].append(search_type)
+        mean_scores['mean'].append(mean(scores))
+    
     run_id = mlflow.active_run().info.run_id
     columns_to_remove = ['actual', 'expected']
     additional_columns_to_remove = ['search_type']
@@ -340,13 +365,14 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
 
     sum_df.to_csv(f"eval_score/sum_{formatted_datetime}.csv", index=False)
 
-    map_scores_df = pd.DataFrame(eval_scores_df)
+    ap_scores_df = pd.DataFrame(eval_scores_df)
+    ap_scores_df.to_csv(f"eval_score/{formatted_datetime}_ap_scores_at_k_test.csv", index=False)
+    plot_apk_scores(ap_scores_df, run_id, client)
+    plot_mapk_scores(ap_scores_df, run_id, client)
+
+    map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(f"eval_score/{formatted_datetime}_map_scores_test.csv", index=False)
     plot_map_scores(map_scores_df, run_id, client)
-
-    # for s_t, map_scores in map_scores_by_search_type.items():
-    #     for i, score in enumerate(map_scores):
-    #         mlflow.log_metrics({f"{s_t}_map@{i+1}": score})
 
     mlflow.log_param("question_count",question_count )
     mlflow.log_param("rerank",rerank )
@@ -367,8 +393,6 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     generate_metrics(exp_name, run_id)
     mlflow.end_run()
     # time.sleep(10)
-
-
 def draw_search_chart(temp_df, run_id):
 
     grouped = temp_df.groupby('search_type')
