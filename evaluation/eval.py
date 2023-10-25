@@ -29,10 +29,10 @@ import os
 from spacy import cli
 from numpy import mean
 
-load_dotenv()
+
 warnings.filterwarnings("ignore") 
-cli.download("en_core_web_md")
-nlp = spacy.load("en_core_web_md")
+
+nlp = spacy.load("en_core_web_lg")
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
@@ -57,6 +57,15 @@ if not os.path.exists("./eval_score"):
     os.makedirs("./eval_score")
 
 def process_text(text):
+    """
+    Processes the given text by removing stop words, punctuation, and lemmatizing the remaining words.
+
+    Args:
+        text (str): The text to process.
+
+    Returns:
+        str: The processed text.
+    """
     doc = nlp(str(text))
     result = []
     for token in doc:
@@ -70,9 +79,27 @@ def process_text(text):
     return " ".join(result)
 
 def lower(text):
+    """
+    Converts the input text to lowercase.
+
+    Args:
+        text (str): The text to convert to lowercase.
+
+    Returns:
+        str: The input text in lowercase.
+    """
     return text.lower()
 
 def remove_spaces(text):
+    """
+    Removes leading and trailing spaces from a string.
+
+    Args:
+        text (str): The string to remove spaces from.
+
+    Returns:
+        str: The input string with leading and trailing spaces removed.
+    """
     return text.strip()
 
 
@@ -87,58 +114,236 @@ def bleu(value1, value2):
 
 
 def fuzzy(doc1, doc2):
+    """
+    Calculates the fuzzy score between two documents.
+
+    Parameters:
+    doc1 (str): The first document to compare.
+    doc2 (str): The second document to compare.
+
+    Returns:
+    int: The fuzzy score between the two documents.
+    """
     differences = []
     fuzzy_compare_values( doc1, doc2, differences)
     
     return int(sum(differences)/len(differences))
 
 def fuzzy_compare_values(value1, value2, differences):
+    """
+    Compares two values using fuzzy string matching and appends the similarity score to a list of differences.
+
+    Args:
+        value1 (str): The first value to compare.
+        value2 (str): The second value to compare.
+        differences (list): A list to which the similarity score will be appended.
+
+    Returns:
+        None
+    """
     similarity_score = fuzz.token_set_ratio(value1, value2)
     differences.append(similarity_score)
 
 def compare_semantic_document_values(doc1, doc2, model_type):
+    """
+    Compares the semantic values of two documents and returns the percentage of differences.
+
+    Args:
+        doc1 (str): The first document to compare.
+        doc2 (str): The second document to compare.
+        model_type (str): The type of model to use for comparison.
+
+    Returns:
+        int: The percentage of differences between the two documents.
+    """
     differences = []
-    semantic_compare_values( doc1, doc2, differences, model_type)
+    semantic_compare_values(doc1, doc2, differences, model_type)
     
     return int(sum(differences)/len(differences))
 
-def semantic_compare_values(value1, value2, differences, model_type):
+from typing import List
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def semantic_compare_values(value1: str, value2: str, differences: List[float], model_type: SentenceTransformer) -> None:
+    """
+    Computes the semantic similarity score between two values using a pre-trained SentenceTransformer model.
+
+    Args:
+        value1 (str): The first value to compare.
+        value2 (str): The second value to compare.
+        differences (List[float]): A list to store the similarity score between the two values.
+        model_type (SentenceTransformer): A pre-trained SentenceTransformer model to encode the values.
+
+    Returns:
+        None
+    """
     embedding1 = model_type.encode([str(value1)])
     embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1,embedding2)
+    similarity_score = cosine_similarity(embedding1, embedding2)
+
+    differences.append(similarity_score * 100)
+
+    
+from typing import List
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def semantic_compare_values(value1: str, value2: str, differences: List[float], model_type: SentenceTransformer) -> None:
+    """
+    Computes the semantic similarity score between two values using the provided SentenceTransformer model.
+
+    Args:
+        value1 (str): The first value to compare.
+        value2 (str): The second value to compare.
+        differences (List[float]): A list to append the similarity score to.
+        model_type (SentenceTransformer): The SentenceTransformer model to use for encoding the values.
+
+    Returns:
+        None
+    """
+    embedding1 = model_type.encode([str(value1)])
+    embedding2 = model_type.encode([str(value2)])
+    similarity_score = cosine_similarity(embedding1, embedding2)
+
+    differences.append(similarity_score * 100)
+    
+from typing import List
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def semantic_compare_values(value1: str, value2: str, differences: List[float], model_type: SentenceTransformer) -> None:
+    """
+    Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
+
+    Args:
+        value1 (str): The first value to compare.
+        value2 (str): The second value to compare.
+        differences (List[float]): A list to store the similarity scores.
+        model_type (SentenceTransformer): The pre-trained SentenceTransformer model to use for encoding the values.
+
+    Returns:
+        None
+    """
+    embedding1 = model_type.encode([str(value1)])
+    embedding2 = model_type.encode([str(value2)])
+    similarity_score = cosine_similarity(embedding1, embedding2)
 
     differences.append(similarity_score * 100)
 
 def levenshtein(value1, value2):
+    """
+    Calculates the Levenshtein distance between two strings and returns the normalized similarity score as a percentage.
+
+    Args:
+        value1 (str): The first string to compare.
+        value2 (str): The second string to compare.
+
+    Returns:
+        int: The normalized similarity score as a percentage.
+    """
     score = int(algs.levenshtein.normalized_similarity(value1, value2) * 100)
     return score
 
 def jaccard(value1, value2):
+    """
+    Calculates the Jaccard similarity score between two sets of values.
+
+    Args:
+        value1 (set): The first set of values.
+        value2 (set): The second set of values.
+
+    Returns:
+        int: The Jaccard similarity score between the two sets of values, as a percentage.
+    """
     score = int(algs.jaccard.normalized_similarity(value1, value2) * 100)
     return score
 
 def hamming(value1, value2):
+    """
+    Calculates the Hamming similarity score between two values.
+
+    Args:
+        value1 (str): The first value to compare.
+        value2 (str): The second value to compare.
+
+    Returns:
+        int: The Hamming similarity score between the two values, as a percentage.
+    """
     score = int(algs.hamming.normalized_similarity(value1, value2) * 100)
     return score
 
 def jaro_winkler(value1, value2):
+    """
+    Calculates the Jaro-Winkler similarity score between two strings.
+
+    Args:
+        value1 (str): The first string to compare.
+        value2 (str): The second string to compare.
+
+    Returns:
+        int: The Jaro-Winkler similarity score between the two strings, as an integer between 0 and 100.
+    """
     score = int(algs.jaro_winkler.normalized_similarity(value1, value2) * 100)
     return score
 
 def cosine(value1, value2):
+    """
+    Calculates the cosine similarity between two vectors.
+
+    Args:
+        value1 (list): The first vector.
+        value2 (list): The second vector.
+
+    Returns:
+        int: The cosine similarity score between the two vectors, as a percentage.
+    """
     score = int(algs.cosine.normalized_similarity(value1, value2) * 100)
     return score
 
 def lcsseq(value1, value2):
+    """
+    Computes the longest common subsequence (LCS) similarity score between two input strings.
+
+    Args:
+        value1 (str): The first input string.
+        value2 (str): The second input string.
+
+    Returns:
+        int: The LCS similarity score between the two input strings, as a percentage (0-100).
+    """
     score = int(algs.lcsseq.normalized_similarity(value1, value2) * 100)
     return score
 
 def lcsstr(value1, value2):
+    """
+    Calculates the longest common substring (LCS) similarity score between two strings.
+
+    Args:
+        value1 (str): The first string to compare.
+        value2 (str): The second string to compare.
+
+    Returns:
+        int: The LCS similarity score between the two strings, as a percentage (0-100).
+    """
     score = int(algs.lcsstr.normalized_similarity(value1, value2) * 100)
     return score
 
-def generate_metrics(experiment_name, run_id):
+import ast
+import plotly.express as px
+import plotly.graph_objs as go
 
+def generate_metrics(experiment_name, run_id):
+    """
+    Generates metrics for a given experiment and run ID.
+
+    Args:
+        experiment_name (str): The name of the experiment.
+        run_id (int): The ID of the run.
+
+    Returns:
+        None
+    """
     experiment = dict(client.get_experiment_by_name(experiment_name))
     runs_list = client.search_runs([experiment['experiment_id']])
  
@@ -206,6 +411,16 @@ def generate_metrics(experiment_name, run_id):
         y_axis = []
 
 def draw_hist_df(df, run_id):
+    """
+    Draw a histogram of the given dataframe and log it to the specified run ID.
+
+    Args:
+        df (pandas.DataFrame): The dataframe to draw the histogram from.
+        run_id (str): The ID of the run to log the histogram to.
+
+    Returns:
+        None
+    """
     fig = px.bar(x=df.columns, y = df.values.tolist(),title="metric comparison", color=df.columns,labels=dict(x="Metric Type", y="Score", color="Metric Type"))
     plot_name = "all_metrics_current_run.html"
     client.log_figure(run_id, fig, plot_name)
@@ -227,6 +442,31 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 def compute_metrics(actual, expected, metric_type):
+    """
+    Computes a score for the similarity between two strings using a specified metric.
+
+    Args:
+        actual (str): The first string to compare.
+        expected (str): The second string to compare.
+        metric_type (str): The type of metric to use for comparison. Valid options are:
+            - "lcsstr": Longest common substring
+            - "lcsseq": Longest common subsequence
+            - "cosine": Cosine similarity
+            - "jaro_winkler": Jaro-Winkler distance
+            - "hamming": Hamming distance
+            - "jaccard": Jaccard similarity
+            - "levenshtein": Levenshtein distance
+            - "fuzzy": FuzzyWuzzy similarity
+            - "bert_all_MiniLM_L6_v2": BERT-based semantic similarity (MiniLM L6 v2 model)
+            - "bert_base_nli_mean_tokens": BERT-based semantic similarity (base model, mean tokens)
+            - "bert_large_nli_mean_tokens": BERT-based semantic similarity (large model, mean tokens)
+            - "bert_large_nli_stsb_mean_tokens": BERT-based semantic similarity (large model, STS-B, mean tokens)
+            - "bert_distilbert_base_nli_stsb_mean_tokens": BERT-based semantic similarity (DistilBERT base model, STS-B, mean tokens)
+            - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
+
+    Returns:
+        float: The similarity score between the two strings, as determined by the specified metric.
+    """
     if metric_type == "lcsstr":
         score = lcsstr(actual, expected)
     elif metric_type == "lcsseq":
@@ -261,6 +501,22 @@ def compute_metrics(actual, expected, metric_type):
     return score
 
 def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efsearch):
+    """
+    Evaluates prompts using various metrics and logs the results to MLflow.
+
+    Args:
+        exp_name (str): Name of the experiment to log the results to.
+        data_path (str): Path to the file containing the prompts to evaluate.
+        chunk_size (int): Size of the chunks to split the prompts into.
+        chunk_overlap (int): Amount of overlap between the chunks.
+        embedding_dimension (int): Dimension of the embeddings to use.
+        efConstruction (int): Number of trees to use during index construction.
+        efsearch (int): Number of trees to use during search.
+
+    Returns:
+        None
+    """
+
     with open('search_config.json', 'r') as json_file:
         data = json.load(json_file)
 
@@ -394,7 +650,16 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     mlflow.end_run()
     # time.sleep(10)
 def draw_search_chart(temp_df, run_id):
+    """
+    Draws a comparison chart of search types across metric types.
 
+    Args:
+        temp_df (pandas.DataFrame): The dataframe containing the data to be plotted.
+        run_id (int): The ID of the current run.
+
+    Returns:
+        None
+    """
     grouped = temp_df.groupby('search_type')
     summed_column = grouped.sum().reset_index()  
     fig = sp.make_subplots(rows=len(summed_column.search_type), cols= 1)
@@ -414,3 +679,4 @@ def draw_search_chart(temp_df, run_id):
                         height=4000, width=800)
     plot_name = "search_type_current_run.html"
     client.log_figure(run_id, fig, plot_name)
+

@@ -2,6 +2,27 @@ import json
 
 
 class Config:
+    """
+    A class for storing configuration settings for the RAG Experiment Accelerator.
+
+    Attributes:
+        CHUNK_SIZES (list): A list of integers representing the chunk sizes for chunking documents.
+        OVERLAP_SIZES (list): A list of integers representing the overlap sizes for chunking documents.
+        EMBEDDING_DIMENSIONS (int): The number of dimensions to use for document embeddings.
+        EF_CONSTRUCTIONS (int): The number of efConstructions to use for HNSW index.
+        EF_SEARCH (int): The number of efSearch to use for HNSW index.
+        NAME_PREFIX (str): A prefix to use for the names of saved models.
+        SEARCH_VARIANTS (list): A list of search types to use.
+        CHAT_MODEL_NAME (str): The name of the chat model to use.
+        RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
+        CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
+        RERANK_TYPE (str): The type of reranking to use.
+        LLM_RERANK_THRESHOLD (float): The threshold for reranking using LLM.
+        CROSSENCODER_AT_K (int): The number of documents to rerank using the crossencoder.
+        TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
+        RERANK (bool): Whether or not to perform reranking.
+        SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
+    """
     def __init__(self) -> None:
         with open('search_config.json', 'r') as json_file:
             data = json.load(json_file)

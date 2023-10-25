@@ -25,6 +25,20 @@ def create_acs_index(service_endpoint,
                     dimension,
                     efconstruction,
                     efsearch    ):
+    """
+    Creates a search index in Azure Cognitive Search with the specified parameters.
+
+    Args:
+        service_endpoint (str): The endpoint URL for the Azure Cognitive Search service.
+        index_name (str): The name of the search index to create.
+        key (str): The API key for the Azure Cognitive Search service.
+        dimension (int): The number of dimensions to use for vector search.
+        efconstruction (int): The maximum number of nodes to be visited during index construction.
+        efsearch (int): The maximum number of nodes to be visited during a search query.
+
+    Returns:
+        None
+    """
 
     credential = AzureKeyCredential(key)
 
