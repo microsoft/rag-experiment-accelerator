@@ -4,12 +4,8 @@ from doc_loader.pdfLoader import load_pdf_files
 from doc_loader.htmlLoader import load_html_files
 from doc_loader.markdownLoader import load_markdown_files
 
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 _FORMAT_VERSIONS = {
     "pdf": ["pdf", "pdfa", "pdfa-1", "pdfl"],
@@ -23,6 +19,22 @@ _FORMAT_PROCESSORS = {
 }
 
 def load_documents(allowed_formats: Union[List[str], str], folder_path: str, chunk_size: int, overlap_size: int):
+    """
+        Load documents from a folder and process them into chunks.
+
+        Args:
+            allowed_formats (Union[List[str], str]): List of formats or 'all' to allow any supported format.
+            folder_path (str): Path to the folder containing the documents.
+            chunk_size (int): Size of each chunk.
+            overlap_size (int): Size of overlap between adjacent chunks.
+
+        Returns:
+            List: A list containing processed document chunks.
+
+        Raises:
+            FileNotFoundError: When the specified folder does not exist.
+    """
+
     if not os.path.exists(folder_path):
         logger.critical(f"Folder {folder_path} does not exist"  )
         raise FileNotFoundError(f"Folder {folder_path} does not exist")
@@ -47,7 +59,7 @@ def load_documents(allowed_formats: Union[List[str], str], folder_path: str, chu
     
     all_documents = sum(documents.values(), [])
 
-    logger.debug(f"Loaded {len(all_documents)} chunks from {folder_path}")
+    logger.info(f"Loaded {len(all_documents)} chunks from {folder_path}")
 
     return all_documents
     

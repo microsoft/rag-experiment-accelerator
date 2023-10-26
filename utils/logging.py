@@ -9,6 +9,8 @@ def set_logging_params():
 
 
 def get_logger(name: str) -> logging.Logger:
+    set_logging_params()
+    
     global _cached_logging_level
     if _cached_logging_level is None:
         _cached_logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()

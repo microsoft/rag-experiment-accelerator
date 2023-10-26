@@ -3,12 +3,8 @@ import glob
 from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.base import BaseLoader
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 def load_structured_files(
@@ -19,8 +15,22 @@ def load_structured_files(
         overlap_size: str,
         glob_patterns: List[str],
     ):
+    """
+        Load and process structured files from a given folder path.
+
+        Args:
+            language (str): The language of the documents to be loaded.
+            loader (BaseLoader): The document loader object that reads the files.
+            folder_path (str): The path of the folder where files are located.
+            chunk_size (str): The size of the chunks to split the documents into.
+            overlap_size (str): The size of the overlapping parts between chunks.
+            glob_patterns (List[str]): List of file extensions to consider (e.g., ["txt", "md"]).
+
+        Returns:
+            List[Document]: A list of processed and split document chunks.
+    """
     
-    logger.debug(f"Loading {language.upper()} files from {folder_path}")
+    logger.info(f"Loading {language.upper()} files from {folder_path}")
     matching_files = []
     for pattern in glob_patterns:
         glob_pattern = f"**/[!.]*.{pattern}"
@@ -48,6 +58,6 @@ def load_structured_files(
 
     docs = text_splitter.split_documents(documents)
 
-    logger.debug(f"Split {len(documents)} {language.upper()} files into {len(docs)} chunks")
+    logger.info(f"Split {len(documents)} {language.upper()} files into {len(docs)} chunks")
 
     return docs

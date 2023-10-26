@@ -1,13 +1,8 @@
-import os
 from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import PyPDFDirectoryLoader
-import logging
-
-logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 def load_pdf_files(
@@ -27,7 +22,8 @@ def load_pdf_files(
     Returns:
         List[Document]: A list of Document objects, each representing a chunk of text from a PDF file.
     """
-    logger.debug(f"Loading PDF files from {folder_path}")
+
+    logger.info(f"Loading PDF files from {folder_path}")
     documents = []
     for pattern in glob_patterns:
         loader = PyPDFDirectoryLoader(
@@ -49,6 +45,6 @@ def load_pdf_files(
     )
     docs = text_splitter.split_documents(documents)
 
-    logger.debug(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
+    logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 
     return docs

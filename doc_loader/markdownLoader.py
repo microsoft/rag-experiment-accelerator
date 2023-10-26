@@ -1,13 +1,8 @@
-import os
 from typing import List
 from doc_loader.structuredLoader import load_structured_files
 from langchain.document_loaders import UnstructuredMarkdownLoader
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 def load_markdown_files(
@@ -16,6 +11,20 @@ def load_markdown_files(
         overlap_size: str,
         glob_patterns: List[str] = ["html", "htm", "xhtml", "html5"],
     ):
+    """
+        Load and process Markdown files from a given folder path.
+
+        Args:
+            folder_path (str): The path of the folder where files are located.
+            chunk_size (str): The size of the chunks to split the documents into.
+            overlap_size (str): The size of the overlapping parts between chunks.
+            glob_patterns (List[str]): List of file extensions to consider (e.g., ["md", "markdown", ...]).
+
+        Returns:
+            List[Document]: A list of processed and split document chunks.
+    """
+
+    logger.debug("Loading markdown files")
     
     return load_structured_files(
         language="markdown",
