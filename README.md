@@ -62,8 +62,12 @@ OPENAI_EMBEDDING_DEPLOYED_MODEL=
 SUBSCRIPTION_ID=
 WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
+LOGGING_LEVEL=
 
 ```
+
+LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
+
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
@@ -103,7 +107,7 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     },
     "embedding_dimension" : "embedding Size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
     "efConstruction" : "efConstruction value determines the value of Azure Cognitive Search vector configuration." ,
-    "efsearch":  "efsearch value determines the value of Azure Cognitive Search vector configuration.",
+    "efSearch":  "efSearch value determines the value of Azure Cognitive Search vector configuration.",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder", 
     "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
