@@ -11,9 +11,6 @@ from ingest_data.acs_ingest import upload_data, generate_qna
 from nlp.preprocess import Preprocess
 from spacy import cli
 
-import nltk
-
-nltk.download('punkt', force=True)
 
 cli.download("en_core_web_md")
 

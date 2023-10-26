@@ -1,12 +1,8 @@
-import nltk
 import re
 import spacy
 
-from nltk.stem import SnowballStemmer
 from string import punctuation
 
-
-snowball_stemmer = SnowballStemmer('english')
 
 class Preprocess:
     def __init__(self):
@@ -89,20 +85,6 @@ class Preprocess:
   
         return ' '.join([token.text for token in filtered_tokens])
 
-
-    def stem(self, text):
-        """
-        Stem the input text using the Snowball Stemmer.
-
-        Args:
-            text (str): The input text to be stemmed.
-
-        Returns:
-            str: The stemmed text.
-        """
-        stemmed_word = [snowball_stemmer.stem(word) for sent in nltk.sent_tokenize(text)for word in nltk.word_tokenize(sent)]
-        return " ".join(stemmed_word)
-
     def lemmatize(self, text):
         """
         Lemmatizes the input text using the WordNet lemmatizer.
@@ -115,7 +97,6 @@ class Preprocess:
         """
         doc = self.nlp(text)
         return " ".join([token.lemma_ for token in doc])
-
 
     def preprocess(self, text):
         """

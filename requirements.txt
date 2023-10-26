@@ -23,3 +23,5 @@ pypdf
 langchain
 sentence-transformers
 pytest
+datasets
+evaluate

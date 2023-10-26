@@ -1,10 +1,9 @@
 
 from azure.ai.ml.entities import Data
 from azure.ai.ml import Input
-from dotenv import load_dotenv
+import evaluate
 
-from nltk.translate.bleu_score import sentence_bleu
-from nltk.translate import meteor
+from dotenv import load_dotenv
 
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
@@ -30,6 +29,7 @@ import plotly.subplots as sp
 import os
 
 
+load_dotenv()
 warnings.filterwarnings("ignore") 
 
 nlp = spacy.load("en_core_web_lg")
@@ -108,9 +108,15 @@ def remove_spaces(text):
 #    scores = scorer.score(value1, value2)
 #    return scores
 
-def bleu(value1, value2):
-    score = sentence_bleu(str.split(value1), value2)
-    return score * 100
+
+# https://huggingface.co/spaces/evaluate-metric/bleu
+def bleu(predictions, references):
+    bleu = evaluate.load("bleu")
+    
+    results = bleu.compute(predictions=predictions, references=references, max_order = 2)
+    # multiplying by 100 to maintain consistency with previous implementation
+    return results["bleu"] * 100
+
 
 
 def fuzzy(doc1, doc2):
