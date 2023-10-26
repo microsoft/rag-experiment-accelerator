@@ -160,7 +160,8 @@ cython_debug/
 .idea/
 
 artifacts/
-data/*.pdf
+data/*
 eval_score/*.pdf
 artifacts
-!data/sample-pdf.pdf
+!data/pdf/sample-pdf.pdf
+!data/html/sample-html.html
