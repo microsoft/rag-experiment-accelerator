@@ -1,7 +1,7 @@
 import os
 from typing import List
 from structuredLoader import load_structured_files
-from langchain.document_loaders import BSHTMLLoader
+from langchain.document_loaders import UnstructuredMarkdownLoader
 import logging
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging_level)  # Set level
 
 
-def load_html_files(
+def load_markdown_files(
         folder_path: str, 
         chunk_size: str,
         overlap_size: str,
@@ -18,8 +18,8 @@ def load_html_files(
     ):
     
     return load_structured_files(
-        language="html",
-        loader=BSHTMLLoader,
+        language="markdown",
+        loader=UnstructuredMarkdownLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,
         overlap_size=overlap_size,

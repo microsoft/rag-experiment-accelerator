@@ -1,8 +1,8 @@
 import os
-import glob
 from typing import List, Union
 from pdfLoader import load_pdf_files
 from htmlLoader import load_html_files
+from markdownLoader import load_markdown_files
 
 import logging
 
@@ -14,10 +14,12 @@ logger.setLevel(logging_level)  # Set level
 _FORMAT_VERSIONS = {
     "pdf": ["pdf", "pdfa", "pdfa-1", "pdfl"],
     "html": ["html", "htm", "xhtml", "html5"],
+    "markdown": ["md", "markdown"],
 }
 _FORMAT_PROCESSORS = {
     "pdf": load_pdf_files,
     "html": load_html_files,
+    "markdown": load_markdown_files,
 }
 
 def load_documents(allowed_formats: Union[List[str], str], folder_path: str, chunk_size: int, overlap_size: int):

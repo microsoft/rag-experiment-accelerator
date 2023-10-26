@@ -165,8 +165,11 @@ artifacts
 
 # Data files
 data/*
-# Don't ignore these directories (but ignore everything inside them)
+# Keep folders
 !data/pdf/
 !data/html/
+!data/markdown/
+# Keep sample files
 !data/pdf/sample-pdf.pdf
 !data/html/sample-html.html
+!data/markdown/sample-markdown.md
