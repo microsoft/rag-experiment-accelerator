@@ -128,7 +128,7 @@ def generate_qna(docs, model_name, temperature):
                     }
                 new_df = new_df._append(data, ignore_index=True)
             except:
-                print("json_string2 is not valid JSON")
+                print("could not generate a valid json so moving over to next question !")
 
     new_df.to_json("./artifacts/eval_data.jsonl", orient='records', lines=True)
 
