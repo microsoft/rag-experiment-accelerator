@@ -17,7 +17,7 @@ def load_pdf_files(folder_path, chunk_size, overlap_size):
     """
     loader = PyPDFDirectoryLoader(folder_path)
     
-    documents = loader.load()
+    documents = loader.load()  
 
 
     text_splitter = RecursiveCharacterTextSplitter(
