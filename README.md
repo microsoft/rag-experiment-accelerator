@@ -70,6 +70,7 @@ RESOURCE_GROUP_NAME=
 conda create -n rag-test python=3.10
 conda activate rag-test
 python -m pip install -r requirements.txt
+python -m spacy download en_core_web_lg
 ```
 
 4. Install Azure CLI and authorize:
