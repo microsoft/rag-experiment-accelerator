@@ -2,12 +2,12 @@ import os
 import json
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 from init_Index.create_index import create_acs_index
 from doc_loader.pdfLoader import load_pdf_files
 from embedding.gen_embeddings import generate_embedding
-from ingest_data.acs_ingest import upload_data, generate_qna
+from ingest_data.acs_ingest import upload_data
 from nlp.preprocess import Preprocess
 from spacy import cli
 

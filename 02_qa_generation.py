@@ -2,7 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 from doc_loader.pdfLoader import load_pdf_files
 from ingest_data.acs_ingest import generate_qna
