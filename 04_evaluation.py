@@ -16,5 +16,5 @@ for config_item in config.CHUNK_SIZES:
                     index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
                     print(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
                     write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
-                    eval.evaluate_prompts(config.NAME_PREFIX, write_path, config_item, overlap, dimension,
+                    eval.evaluate_prompts(config.NAME_PREFIX, write_path, config, config_item, overlap, dimension,
                                           efConstruction, efSearch)
