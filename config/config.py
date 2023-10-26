@@ -13,7 +13,7 @@ class Config:
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
         EMBEDDING_DIMENSIONS (list[int]): The number of dimensions to use for document embeddings.
         EF_CONSTRUCTIONS (list[int]): The number of efConstructions to use for HNSW index.
-        EF_SEARCH (list[int]): The number of efSearch to use for HNSW index.
+        EF_SEARCHES (list[int]): The number of efSearch to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         CHAT_MODEL_NAME (str): The name of the chat model to use.
@@ -35,7 +35,7 @@ class Config:
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
         self.EF_CONSTRUCTIONS = data["efConstruction"]
-        self.EF_SEARCH = data["efSearch"]
+        self.EF_SEARCHES = data["efSearch"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
         self.CHAT_MODEL_NAME = data["chat_model_name"]
