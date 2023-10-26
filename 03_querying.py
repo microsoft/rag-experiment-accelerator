@@ -4,6 +4,8 @@ from azure.search.documents import SearchClient
 from config.config import Config
 from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
+from typing import Tuple, List, Dict, Any
+
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -203,7 +205,7 @@ def main(config: Config):
                         if os.path.exists(write_path):
                             continue
 
-                        search_client, index_client = create_client(service_endpoint, index_name, search_admin_key)
+                        search_client = create_client(service_endpoint, index_name, search_admin_key)
 
                         with open(jsonl_file_path, 'r') as file:
                             for line in file:
@@ -273,7 +275,6 @@ def main(config: Config):
                                         out.write(json_string + "\n")
 
                         search_client.close()
-                        index_client.close()
                         create_data_asset(write_path, index_name)
 
 
