@@ -6,8 +6,6 @@ from nlp.preprocess import Preprocess
 
 pre_process = Preprocess()
 
-from azure.search.documents import SearchClient
-from azure.core.credentials import AzureKeyCredential
 
 def create_client(service_endpoint, index_name, key):
     """
