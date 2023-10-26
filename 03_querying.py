@@ -1,12 +1,11 @@
 import os
 import json
-
 from azure.search.documents import SearchClient
 from config.config import Config
 from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
 from search_type.acs_search_methods import  (

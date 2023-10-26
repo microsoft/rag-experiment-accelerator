@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 from config.config import Config
 from evaluation import eval

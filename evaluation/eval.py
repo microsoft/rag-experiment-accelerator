@@ -1,17 +1,9 @@
 
-from azure.ai.ml.entities import Data
-from azure.ai.ml import Input
-from dotenv import load_dotenv
-
 from nltk.translate.bleu_score import sentence_bleu
-from nltk.translate import meteor
-
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 import pandas as pd
-import azure.ai.ml._artifacts._artifact_utilities as artifact_utils
 import warnings
-from rouge_score import rouge_scorer
 import json
 import ast
 import time

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 from config.config import Config
 
-load_dotenv()
+load_dotenv(override=True)
 
 from init_Index.create_index import create_acs_index
 from init_openai import init_openai
