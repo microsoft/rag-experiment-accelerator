@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from nltk.translate.bleu_score import sentence_bleu
-from nltk.translate import meteor
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 from dotenv import load_dotenv
