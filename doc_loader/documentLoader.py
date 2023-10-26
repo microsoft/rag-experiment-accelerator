@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging_level)  # Set level
 
 _FORMAT_VERSIONS = {
-    "pdf": "**/[!.]*.{pdf,pdfa,pdfa-1,pdfl}",
-    "html": "**/[!.]*.{html,htm,xhtml,html5}",
+    "pdf": ["pdf", "pdfa", "pdfa-1", "pdfl"],
+    "html": ["html", "htm", "xhtml", "html5"],
 }
 _FORMAT_PROCESSORS = {
     "pdf": load_pdf_files,
@@ -44,7 +44,12 @@ def load_documents(allowed_formats: Union[List[str], str], folder_path: str, chu
             folder_path=folder_path,
             chunk_size=chunk_size,
             overlap_size=overlap_size,
-            glob_pattern=_FORMAT_VERSIONS[format],
+            glob_patterns=_FORMAT_VERSIONS[format],
         )
     
+    all_documents = sum(documents.values(), [])
+
+    logger.debug(f"Loaded {len(all_documents)} chunks from {folder_path}")
+
+    return all_documents
     
