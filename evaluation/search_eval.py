@@ -1,5 +1,13 @@
+import os
 from evaluation.spacy_evaluator import SpacyEvaluator
 from sklearn import metrics
+
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging_level)  # Set level
 
 
 def evaluate_search_result(search_response: list, evaluation_content: str, evaluator: SpacyEvaluator):
@@ -17,19 +25,19 @@ def evaluate_search_result(search_response: list, evaluation_content: str, evalu
     precision_predictions = [True for _ in range(len(search_response))]
     for i, doc in enumerate(search_response):
         k = i + 1
-        print("++++++++++++++++++++++++++++++++++")
-        print(f"Content: {doc['content']}")
-        print(f"Search Score: {doc['@search.score']}")
+        logger.info("++++++++++++++++++++++++++++++++++")
+        logger.info(f"Content: {doc['content']}")
+        logger.info(f"Search Score: {doc['@search.score']}")
 
 
         precision_score = round(metrics.precision_score(is_relevant_results[:k], precision_predictions[:k]), 2)
         precision_scores.append(f"{precision_score}@{k}")
-        print(f"Precision Score: {precision_score}@{k}")
+        logger.info(f"Precision Score: {precision_score}@{k}")
 
         recall_predictions[i] = is_relevant_results[i]
         recall_score = round(metrics.recall_score(is_relevant_results, recall_predictions), 2)
         recall_scores.append(f"{recall_score}@{k}")
-        print(f"Recall Score: {recall_score}@{k}")
+        logger.info(f"Recall Score: {recall_score}@{k}")
 
         # TODO: should we only append content when it is relevant?
         content.append(doc['content']) 

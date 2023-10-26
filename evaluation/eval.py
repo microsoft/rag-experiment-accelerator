@@ -20,6 +20,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging_level)  # Set level
 
 
 warnings.filterwarnings("ignore") 
@@ -358,7 +364,7 @@ def generate_metrics(experiment_name, run_id):
                         models_metrics[metric_type][single_run_id] = metric_value
                     else:
                         models_metrics[metric_type][single_run_id]= metric_value
-                print(models_metrics)
+                logger.debug(f"Model metrics: {models_metrics}")
     else:
         current_run = client.get_run(run_id)
         if run.data.params.get("run_metrics", {}) != {}:
@@ -536,7 +542,7 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
     additional_columns_to_remove = ['search_type']
     df = pd.DataFrame(data_list)
     df.to_csv(f"eval_score/{formatted_datetime}.csv", index=False)
-    print(df.head())
+    logger.debug(f"Eval scores: {df.head()}")
     
     temp_df = df.drop(columns=columns_to_remove)
     

@@ -2,6 +2,7 @@ import json
 import hashlib
 import json
 import re
+import os
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 import llm.prompts
@@ -14,6 +15,13 @@ pre_process = Preprocess()
 
 
 import hashlib
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging_level)  # Set level
+
 
 def my_hash(s):
     """
@@ -96,8 +104,8 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
         documents.append(input_data)
 
         search_client.upload_documents(documents)
-        print(f"Uploaded {len(documents)} documents")
-    print("all documents have been uploaded to the search index")
+        logger.info(f"Uploaded {len(documents)} documents")
+    logger.info("all documents have been uploaded to the search index")
 
 
 def generate_qna(docs, model_name, temperature):
@@ -128,7 +136,7 @@ def generate_qna(docs, model_name, temperature):
                     }
                 new_df = new_df._append(data, ignore_index=True)
             except:
-                print("could not generate a valid json so moving over to next question !")
+                logger.error("could not generate a valid json so moving over to next question !")
 
     new_df.to_json("./artifacts/eval_data.jsonl", orient='records', lines=True)
 

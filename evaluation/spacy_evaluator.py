@@ -1,5 +1,13 @@
+import os
 import spacy
 from spacy import cli
+
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging_level)  # Set level
 
 class SpacyEvaluator():
     """
@@ -30,6 +38,6 @@ class SpacyEvaluator():
 
     def is_relevant(self, doc1: str, doc2: str):
         similarity = self.similarity(doc1, doc2)
-        print(f"Similarity Score: {similarity}")
+        logger.info(f"Similarity Score: {similarity}")
 
         return similarity > self.similarity_threshold
