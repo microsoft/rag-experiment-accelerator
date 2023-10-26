@@ -2,6 +2,8 @@
 from nltk.translate.bleu_score import sentence_bleu
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
+from dotenv import load_dotenv
+
 import pandas as pd
 import warnings
 import json
@@ -23,10 +25,17 @@ import os
 from utils.logging import get_logger
 logger = get_logger(__name__)
 
+load_dotenv()
+warnings.filterwarnings("ignore")
 
-warnings.filterwarnings("ignore") 
+try:
+    nlp = spacy.load('en_core_web_lg')
+except OSError:
+    print('Downloading spacy language model: en_core_web_lg')
+    from spacy.cli import download
+    download('en_core_web_lg')
+    nlp = spacy.load('en_core_web_lg')
 
-nlp = spacy.load("en_core_web_lg")
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms

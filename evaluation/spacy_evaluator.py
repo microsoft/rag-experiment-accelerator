@@ -1,6 +1,5 @@
 import os
 import spacy
-from spacy import cli
 
 from utils.logging import get_logger
 logger = get_logger(__name__)
@@ -23,8 +22,13 @@ class SpacyEvaluator():
     """
 
     def __init__(self, similarity_threshold=0.8, model='en_core_web_lg') -> None:
-        cli.download(model)
-        self.nlp = spacy.load(model)
+        try:
+            self.nlp = spacy.load(model)
+        except OSError:
+            print(f'Downloading spacy language model: {model}')
+            from spacy.cli import download
+            download(model)
+            self.nlp = spacy.load(model)
         self.similarity_threshold = similarity_threshold
     
     def similarity(self, doc1: str, doc2: str):

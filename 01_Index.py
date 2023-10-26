@@ -22,8 +22,6 @@ logger = get_logger(__name__)
 nltk.download('punkt', force=True)
 nltk.download('stopwords', force=True)
 
-cli.download("en_core_web_lg")
-
 
 def main(config: Config):
     pre_process = Preprocess()
