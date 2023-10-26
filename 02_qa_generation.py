@@ -1,5 +1,6 @@
 from config import Config
 
+from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from doc_loader.pdfLoader import load_pdf_files
