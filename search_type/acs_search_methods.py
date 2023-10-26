@@ -3,9 +3,10 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient  
 from azure.search.documents.models import Vector  
 from nlp.preprocess import Preprocess
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 pre_process = Preprocess()
-
 
 def create_client(service_endpoint, index_name, key):
     """
@@ -75,7 +76,7 @@ def search_for_match_semantic(client, size, query, retrieve_num_of_documents):
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 # TODO: Figure out what is going on here. For some of these search functions, I cannot itterate over the results after it leaves this python file, so calling format_results on search_results which enables me to do so
@@ -113,7 +114,7 @@ def search_for_match_Hybrid_multi(client, size, query, retrieve_num_of_documents
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 
@@ -147,7 +148,7 @@ def search_for_match_Hybrid_cross(client, size, query, retrieve_num_of_documents
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 def search_for_match_text(client, size, query, retrieve_num_of_documents):
@@ -174,7 +175,7 @@ def search_for_match_text(client, size, query, retrieve_num_of_documents):
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 def search_for_match_pure_vector(client, size, query, retrieve_num_of_documents):
@@ -206,7 +207,7 @@ def search_for_match_pure_vector(client, size, query, retrieve_num_of_documents)
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 
@@ -240,7 +241,7 @@ def search_for_match_pure_vector_multi(client, size, query, retrieve_num_of_docu
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 
@@ -274,7 +275,7 @@ def search_for_match_pure_vector_cross(client, size, query, retrieve_num_of_docu
         formatted_search_results = format_results(results)
 
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
     return formatted_search_results
 
 

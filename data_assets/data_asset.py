@@ -4,6 +4,8 @@ from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
 import os
 
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 def create_data_asset(data_path, data_asset_name):
     """
@@ -32,7 +34,7 @@ def create_data_asset(data_path, data_asset_name):
 
     aml_dataset_unlabeled = ml_client.data.get(name=data_asset_name, label="latest")
 
-    print(aml_dataset_unlabeled.version)
-    print(aml_dataset_unlabeled.id)
+    logger.info(f"Dataset version: {aml_dataset_unlabeled.version}")
+    logger.info(f"Dataset ID: {aml_dataset_unlabeled.id}")
 
     return aml_dataset_unlabeled.version

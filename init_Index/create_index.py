@@ -1,3 +1,4 @@
+import os
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
@@ -15,6 +16,9 @@ from azure.search.documents.indexes.models import (
     VectorSearch,
     HnswVectorSearchAlgorithmConfiguration,
 )
+
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 def create_acs_index(service_endpoint,
@@ -93,4 +97,4 @@ def create_acs_index(service_endpoint,
     index = SearchIndex(name=index_name, fields=fields,
                         vector_search=vector_search, semantic_settings=semantic_settings)
     result = index_client.create_or_update_index(index)
-    print(f' {result.name} created')
+    logger.info(f' {result.name} created')

@@ -62,8 +62,12 @@ OPENAI_EMBEDDING_DEPLOYED_MODEL=
 SUBSCRIPTION_ID=
 WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
+LOGGING_LEVEL=
 
 ```
+
+LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
+
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash

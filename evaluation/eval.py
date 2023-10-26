@@ -20,6 +20,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 warnings.filterwarnings("ignore") 
@@ -358,7 +360,7 @@ def generate_metrics(experiment_name, run_id):
                         models_metrics[metric_type] = {}
 
                     models_metrics[metric_type][single_run_id] = metric_value
-                print(models_metrics)
+                logger.debug(models_metrics)
     else:
         current_run = client.get_run(run_id)
         if run.data.params.get("run_metrics", {}) != {}:  # todo: fix the issue - shift block?
@@ -533,7 +535,7 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     additional_columns_to_remove = ['search_type']
     df = pd.DataFrame(data_list)
     df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
-    print(df.head())
+    logger.debug(f"Eval scores: {df.head()}")
     
     temp_df = df.drop(columns=columns_to_remove)
     

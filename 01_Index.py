@@ -16,6 +16,9 @@ from spacy import cli
 
 import nltk
 
+from utils.logging import get_logger
+logger = get_logger(__name__)
+
 nltk.download('punkt', force=True)
 nltk.download('stopwords', force=True)
 
@@ -41,7 +44,7 @@ def main(config: Config):
                 for efConstruction in config.EF_CONSTRUCTIONS:
                     for efSearch in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        print(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
+                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
                         create_acs_index(service_endpoint, index_name, key, dimension, efConstruction, efSearch)
                         index_dict["indexes"].append(index_name)
 

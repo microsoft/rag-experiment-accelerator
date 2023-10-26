@@ -26,6 +26,9 @@ from llm.prompt_execution import generate_response
 from data_assets.data_asset import create_data_asset
 from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
 
+from utils.logging import get_logger
+logger = get_logger(__name__)
+
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
 search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
@@ -164,7 +167,7 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
-        print(openai_response)
+        logger.debug(openai_response)
 
     return context, evals
 
@@ -198,7 +201,7 @@ def main(config: Config):
                 for efConstruction in config.EF_CONSTRUCTIONS:
                     for efSearch in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        print(f"Index: {index_name}")
+                        logger.info(f"Index: {index_name}")
 
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
                         if os.path.exists(write_path):
@@ -253,7 +256,7 @@ def main(config: Config):
 
                                     full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                     openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
-                                    print(openai_response)
+                                    logger.debug(openai_response)
 
                                     output = {
                                         "rerank": config.RERANK,
