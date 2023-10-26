@@ -161,6 +161,9 @@ cython_debug/
 
 artifacts/
 data/*.pdf
-
 # OSX system folders
 **/.DS_Store
+eval_score/*
+artifacts
+!data/sample-pdf.pdf
+
