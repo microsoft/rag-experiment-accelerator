@@ -95,9 +95,9 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
 
         documents.append(input_data)
 
-    results = search_client.upload_documents(documents)
-    print(f"Uploaded {len(documents)} documents")
-    print("done")
+        search_client.upload_documents(documents)
+        print(f"Uploaded {len(documents)} documents")
+    print("all documents have been uploaded to the search index")
 
 
 def generate_qna(docs, model_name, temperature):
