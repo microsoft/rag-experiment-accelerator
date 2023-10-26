@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from init_Index.create_index import create_acs_index
-from doc_loader.pdfLoader import load_pdf_files
+from doc_loader import load_documents
 from embedding.gen_embeddings import generate_embedding
 from ingest_data.acs_ingest import upload_data
 from nlp.preprocess import Preprocess
@@ -42,6 +42,7 @@ chat_model_name = data["chat_model_name"]
 all_index_config = "artifacts/generated_index_names"
 temperature = data["openai_temperature"]
 index_dict = {"indexes": []}
+data_formats = data.get("data_formats", "all")
 
 for config_item in chunk_sizes:
     for overlap in overlap_size:
@@ -62,7 +63,7 @@ for config_item in chunk_sizes:
             for efConstruction in efConstructions:
                 for efsearch in efsearchs:
                     index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
-                    all_docs = load_pdf_files("./data/", config_item, overlap)
+                    all_docs = load_documents(data_formats, "./data/", config_item, overlap)
                     data_load = []
                     for docs in all_docs:
                         chunk_dict = {
