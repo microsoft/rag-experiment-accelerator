@@ -151,7 +151,14 @@ def main(config: Config):
 
                                     is_multi_question = do_we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                     if is_multi_question:
-                                        new_questions = json.loads(we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE))['questions']
+                                        responses = json.loads(we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE))
+                                        new_questions = []
+                                        if isinstance(responses, dict):
+                                            new_questions = responses['questions']                                   
+                                        else:                                        
+                                            for response in responses:
+                                                if 'question' in response:
+                                                    new_questions.append(response['question'])                                             
                                         new_questions.append(user_prompt)
 
                                     evaluation_content = user_prompt + qna_context
