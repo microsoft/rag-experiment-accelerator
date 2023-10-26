@@ -1,14 +1,12 @@
-
+from dotenv import load_dotenv
 from nltk.translate.bleu_score import sentence_bleu
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
-from dotenv import load_dotenv
 
 import pandas as pd
 import warnings
 import json
 import ast
-import time
 from fuzzywuzzy import fuzz
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,6 +20,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
+from numpy import mean
 from utils.logging import get_logger
 logger = get_logger(__name__)
 
@@ -427,6 +426,21 @@ def draw_hist_df(df, run_id):
     plot_name = "all_metrics_current_run.html"
     client.log_figure(run_id, fig, plot_name)
 
+def plot_apk_scores(df, run_id, client):
+    fig = px.line(df, x="k", y="score",title="AP@k scores", color="search_type")
+    plot_name = "average_precision_at_k.html"
+    client.log_figure(run_id, fig, plot_name)
+
+# maybe pull these 2 above and below functions into a single one
+def plot_mapk_scores(df, run_id, client):
+    fig = px.line(df, x="k", y="map_at_k",title="MAP@k scores", color="search_type")
+    plot_name = "mean_average_precision_at_k.html"
+    client.log_figure(run_id, fig, plot_name)
+
+def plot_map_scores(df, run_id, client):
+    fig = px.bar(df, x="search_type", y="mean",title="MAP scores", color="search_type")
+    plot_name = "mean_average_precision_scores.html"
+    client.log_figure(run_id, fig, plot_name)
 
 def compute_metrics(actual, expected, metric_type):
     """
@@ -508,11 +522,15 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     metric_types = config.METRIC_TYPES
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
-    time.sleep(30)
+    # time.sleep(30)
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
     
     run_id = mlflow.active_run().info.run_id
+
+    total_precision_scores_by_search_type = {}
+    map_scores_by_search_type = {}
+    average_precision_for_search_type = {}
     with open(data_path, 'r') as file:
         for line in file: 
             data = json.loads(line)
@@ -526,11 +544,13 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
             retrieve_num_of_documents = data.get("retrieve_num_of_documents")
             cross_encoder_at_k = data.get("cross_encoder_at_k")
             question_count = data.get("question_count")
-
+            search_evals = data.get("search_evals")
+            
             actual = remove_spaces(lower(actual))
             expected = remove_spaces(lower(expected))
 
             metric_dic = {}
+
             for metric_type in metric_types:
                 score = compute_metrics(actual, expected, metric_type)
                 metric_dic[metric_type] = score
@@ -539,6 +559,46 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
             metric_dic["search_type"] = search_type
             data_list.append(metric_dic)
 
+            if not total_precision_scores_by_search_type.get(search_type):
+                total_precision_scores_by_search_type[search_type] = {}
+                map_scores_by_search_type[search_type] = []
+                average_precision_for_search_type[search_type] = []
+            for eval in search_evals:
+                scores = eval.get('precision_scores')
+                if scores:
+                    average_precision_for_search_type[search_type].append(mean(scores))
+                for i, score in enumerate(scores):
+                    if total_precision_scores_by_search_type[search_type].get(i+1):
+                        total_precision_scores_by_search_type[search_type][i+1].append(score)
+                    else:
+                        total_precision_scores_by_search_type[search_type][i+1] = [score]
+
+    eval_scores_df = {
+        "search_type": [],
+        "k": [],
+        "score": [],
+        "map_at_k": []
+    }
+
+    for search_type, scores_at_k in total_precision_scores_by_search_type.items():
+        for k, scores in scores_at_k.items():
+            avg_at_k = mean(scores)
+            # not sure if this would be problematic or not.
+            eval_scores_df['search_type'].append(search_type)
+            eval_scores_df['k'].append(k)
+            eval_scores_df['score'].append(avg_at_k)
+            mean_at_k = mean(eval_scores_df['score'][:k])
+            eval_scores_df['map_at_k'].append(mean_at_k)
+
+    mean_scores = {
+        "search_type": [],
+        "mean": []
+    }
+
+    for search_type, scores in average_precision_for_search_type.items():
+        mean_scores['search_type'].append(search_type)
+        mean_scores['mean'].append(mean(scores))
+    
     run_id = mlflow.active_run().info.run_id
     columns_to_remove = ['actual', 'expected']
     additional_columns_to_remove = ['search_type']
@@ -547,7 +607,6 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     logger.debug(f"Eval scores: {df.head()}")
     
     temp_df = df.drop(columns=columns_to_remove)
-    
     draw_search_chart(temp_df, run_id)
     
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
@@ -560,6 +619,15 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
         sum_dict[col_name] = float(sum_df[col_name].values)
 
     sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
+
+    ap_scores_df = pd.DataFrame(eval_scores_df)
+    ap_scores_df.to_csv(f"eval_score/{formatted_datetime}_ap_scores_at_k_test.csv", index=False)
+    plot_apk_scores(ap_scores_df, run_id, client)
+    plot_mapk_scores(ap_scores_df, run_id, client)
+
+    map_scores_df = pd.DataFrame(mean_scores)
+    map_scores_df.to_csv(f"eval_score/{formatted_datetime}_map_scores_test.csv", index=False)
+    plot_map_scores(map_scores_df, run_id, client)
 
     mlflow.log_param("question_count", question_count)
     mlflow.log_param("rerank", rerank)
@@ -579,9 +647,7 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     draw_hist_df(sum_df, run_id)
     generate_metrics(exp_name, run_id)
     mlflow.end_run()
-    time.sleep(10)
-
-
+    # time.sleep(10)
 def draw_search_chart(temp_df, run_id):
     """
     Draws a comparison chart of search types across metric types.
@@ -595,16 +661,15 @@ def draw_search_chart(temp_df, run_id):
     """
     grouped = temp_df.groupby('search_type')
     summed_column = grouped.sum().reset_index()  
-    num_columns = len(summed_column.columns)
-    fig = sp.make_subplots(rows=num_columns + 1, cols= 1)
+    fig = sp.make_subplots(rows=len(summed_column.search_type), cols= 1)
     for index, row_data in summed_column.iterrows():
         search_type = row_data[0]
         row_data = row_data[1:]
         df = row_data.reset_index(name='metric_value')
         df = df.rename(columns={'index': 'metric_type'})
         fig.add_trace(
-            go.Bar(x=df["metric_type"], y=df["metric_value"], name=search_type, ),
-            row=index + 1, col=1,
+            go.Bar(x=df["metric_type"], y=df["metric_value"], name=search_type, offsetgroup=index),
+            row=1, col=1,
         )
 
         fig.update_xaxes(title_text='Metric type', row=index + 1, col=1)

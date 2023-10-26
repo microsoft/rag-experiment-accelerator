@@ -26,12 +26,12 @@ def evaluate_search_result(search_response: list, evaluation_content: str, evalu
 
 
         precision_score = round(metrics.precision_score(is_relevant_results[:k], precision_predictions[:k]), 2)
-        precision_scores.append(f"{precision_score}@{k}")
+        precision_scores.append(precision_score)
         logger.info(f"Precision Score: {precision_score}@{k}")
 
         recall_predictions[i] = is_relevant_results[i]
         recall_score = round(metrics.recall_score(is_relevant_results, recall_predictions), 2)
-        recall_scores.append(f"{recall_score}@{k}")
+        recall_scores.append(recall_score)
         logger.info(f"Recall Score: {recall_score}@{k}")
 
         # TODO: should we only append content when it is relevant?
