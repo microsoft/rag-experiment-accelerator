@@ -24,7 +24,7 @@ import os
 
 warnings.filterwarnings("ignore") 
 
-nlp = spacy.load("en_core_web_md")
+nlp = spacy.load("en_core_web_lg")
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
