@@ -2,6 +2,7 @@ from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import PyPDFDirectoryLoader
 from utils.logging import get_logger
+
 logger = get_logger(__name__)
 
 
@@ -9,7 +10,7 @@ def load_pdf_files(
     folder_path: str,
     chunk_size: int,
     overlap_size: int,
-    glob_patterns: List[str] = ["pdf", "pdfa", "pdfa-1", "pdfl"]
+    glob_patterns: List[str] = ["pdf", "pdfa", "pdfa-1", "pdfl"],
 ):
     """
     Load PDF files from a folder and split them into chunks of text.
