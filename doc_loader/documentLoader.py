@@ -20,11 +20,6 @@ _FORMAT_PROCESSORS = {
     "html": load_html_files,
 }
 
-def gather_files_by_extension(folder_path: str, extension: str):
-    search_pattern = os.path.join(folder_path, f"*.{extension}")
-    files_with_extension = glob.glob(search_pattern)
-    return files_with_extension
-
 def load_documents(allowed_formats: Union[List[str], str], folder_path: str, chunk_size: int, overlap_size: int):
     if not os.path.exists(folder_path):
         logger.critical(f"Folder {folder_path} does not exist"  )
