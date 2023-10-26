@@ -35,6 +35,7 @@ def load_documents(allowed_formats: Union[List[str], str], folder_path: str, chu
     for format in allowed_formats:
         if format not in _FORMAT_VERSIONS:
             logger.error(f"Format {format} is not supported")
+            continue
         documents[format] = _FORMAT_PROCESSORS[format](
             folder_path=folder_path,
             chunk_size=chunk_size,
