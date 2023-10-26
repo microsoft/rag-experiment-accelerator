@@ -22,3 +22,4 @@ class Config:
         self.TEMPERATURE = data["openai_temperature"]
         self.RERANK = data['rerank']
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
+        self.LANGUAGE_ANALYZERS = data["language"]["analyzers"]
