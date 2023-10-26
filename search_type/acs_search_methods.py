@@ -1,7 +1,6 @@
 from embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential  
 from azure.search.documents import SearchClient  
-from azure.search.documents.indexes import SearchIndexClient  
 from azure.search.documents.models import Vector  
 from nlp.preprocess import Preprocess
 
@@ -23,8 +22,7 @@ def create_client(service_endpoint, index_name, key):
     """
     credential = AzureKeyCredential(key)
     client = SearchClient(endpoint=service_endpoint, index_name=index_name, credential=credential)
-    index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
-    return (client, index_client)
+    return client
 
 def format_results(results):
     """

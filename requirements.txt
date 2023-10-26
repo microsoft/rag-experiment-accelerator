@@ -5,7 +5,6 @@ plotly
 tiktoken
 openai
 spacy
-https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.0/en_core_web_lg-3.7.0.tar.gz
 scikit-learn
 pytesseract
 azure-search-documents==11.4.0b8
@@ -24,3 +23,4 @@ pypdf
 langchain
 sentence-transformers
 pytest
+typing
