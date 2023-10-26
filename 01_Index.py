@@ -2,7 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 
-from config.config import Config
+from config import Config
 
 load_dotenv(override=True)
 

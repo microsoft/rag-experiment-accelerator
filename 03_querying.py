@@ -1,7 +1,7 @@
 import os
 import json
 from azure.search.documents import SearchClient
-from config.config import Config
+from config import Config
 from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
 from typing import Tuple, List, Dict, Any

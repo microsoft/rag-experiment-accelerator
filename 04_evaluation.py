@@ -2,12 +2,11 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-from config.config import Config
+from config import Config
 from evaluation import eval
 
 
 config = Config()
-all_index_config = "artifacts/generated_index_names"
 
 for config_item in config.CHUNK_SIZES:
     for overlap in config.OVERLAP_SIZES:
