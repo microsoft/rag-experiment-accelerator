@@ -1,7 +1,7 @@
 import os
 import json
 from azure.search.documents import SearchClient
-from config.config import Config
+from config import Config
 from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
 from typing import Tuple, List, Dict, Any
@@ -18,14 +18,16 @@ from search_type.acs_search_methods import  (
     search_for_match_text,
     search_for_match_pure_vector,
     search_for_match_pure_vector_cross,
-    search_for_manual_hybrid,
-    create_client
+    search_for_manual_hybrid
     )
 from  search_type.acs_search_methods import create_client
 import llm.prompts
 from llm.prompt_execution import generate_response
 from data_assets.data_asset import create_data_asset
 from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
+
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
@@ -131,7 +133,7 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-) -> Tuple[List[str], List[Dict[str, Any]]]:
+) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
     using OpenAI's GPT-3 model.
@@ -165,7 +167,7 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
-        print(openai_response)
+        logger.debug(openai_response)
 
     return context, evals
 
@@ -197,9 +199,9 @@ def main(config: Config):
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
                 for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efsearch in config.EF_SEARCH:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
-                        print(f"Index: {index_name}")
+                    for efSearch in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                        logger.info(f"Index: {index_name}")
 
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
                         if os.path.exists(write_path):
@@ -254,7 +256,7 @@ def main(config: Config):
 
                                     full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                     openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
-                                    print(openai_response)
+                                    logger.debug(openai_response)
 
                                     output = {
                                         "rerank": config.RERANK,

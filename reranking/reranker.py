@@ -5,6 +5,8 @@ import llm.prompts
 from llm.prompt_execution import generate_response
 import numpy as np
 from sentence_transformers import CrossEncoder
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_name, k):
     """
@@ -58,12 +60,12 @@ def llm_rerank_documents(documents, question, deployment_name, temperature, rera
     """
 
     response = generate_response(llm.prompts.rerank_prompt_instruction,prompt, deployment_name, temperature)
-    print(response)
+    logger.debug("Response", response)
     pattern = r'\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}'
     try:
         matches = re.findall(pattern, response)[0]
         reranked = json.loads( matches )
-        print(reranked)
+        logger.debug(reranked)
         new_docs = []
         for key, value in reranked['documents'].items():
             key = key.replace('document_', '')
@@ -72,6 +74,6 @@ def llm_rerank_documents(documents, question, deployment_name, temperature, rera
                 new_docs.append(int(numeric_data[0]))
             result = [documents[i] for i in new_docs]
     except:
-        print("ERROR: Unable to parse the rerank documents LLM response. Returning all documents.")
+        logger.error("Unable to parse the rerank documents LLM response. Returning all documents.")
         result = documents
     return result

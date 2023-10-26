@@ -160,7 +160,8 @@ cython_debug/
 .idea/
 
 artifacts/
-data/*.pdf
+# OSX system folders
+**/.DS_Store
 eval_score/*
 artifacts
 
