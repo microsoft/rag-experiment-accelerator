@@ -24,4 +24,4 @@ langchain
 sentence-transformers
 pytest
 nltk
-spacy
+typing

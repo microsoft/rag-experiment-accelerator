@@ -23,7 +23,7 @@ logger.setLevel(logging_level)  # Set level
 nltk.download('punkt', force=True)
 nltk.download('stopwords', force=True)
 
-cli.download("en_core_web_md")
+cli.download("en_core_web_lg")
 
 pre_process = Preprocess()
 
