@@ -56,7 +56,6 @@ for config_item in chunk_sizes:
 with open(all_index_config, 'w') as index_name:
     json.dump(index_dict, index_name, indent=4)
 
-
 for config_item in chunk_sizes:
     for overlap in overlap_size:
         for dimension in embedding_dimensions:
