@@ -1,7 +1,7 @@
 import json
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 from evaluation import eval
 
