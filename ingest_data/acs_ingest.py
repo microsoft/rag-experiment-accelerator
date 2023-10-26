@@ -14,6 +14,9 @@ pre_process = Preprocess()
 
 
 import hashlib
+from utils.logging import get_logger
+logger = get_logger(__name__)
+
 
 def my_hash(s):
     """
@@ -95,9 +98,9 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
 
         documents.append(input_data)
 
-    results = search_client.upload_documents(documents)
-    print(f"Uploaded {len(documents)} documents")
-    print("done")
+        search_client.upload_documents(documents)
+        logger.info(f"Uploaded {len(documents)} documents")
+    logger.info("all documents have been uploaded to the search index")
 
 
 def generate_qna(docs, model_name, temperature):
@@ -128,7 +131,7 @@ def generate_qna(docs, model_name, temperature):
                     }
                 new_df = new_df._append(data, ignore_index=True)
             except:
-                print("json_string2 is not valid JSON")
+                logger.error("could not generate a valid json so moving over to next question !")
 
     new_df.to_json("./artifacts/eval_data.jsonl", orient='records', lines=True)
 

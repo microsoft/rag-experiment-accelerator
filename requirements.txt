@@ -25,3 +25,4 @@ sentence-transformers
 pytest
 datasets
 evaluate
+typing
