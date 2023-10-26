@@ -161,6 +161,6 @@ cython_debug/
 
 artifacts/
 data/*.pdf
-eval_score/*.pdf
+eval_score/*
 artifacts
 !data/sample-pdf.pdf
