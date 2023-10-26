@@ -1,5 +1,8 @@
+import os
 import spacy
-from spacy import cli
+
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 class SpacyEvaluator():
     """
@@ -18,9 +21,14 @@ class SpacyEvaluator():
         is_relevant(doc1: str, doc2: str) -> bool: Determines whether two documents are relevant based on their similarity score.
     """
 
-    def __init__(self, similarity_threshold=0.8, model='en_core_web_md') -> None:
-        cli.download(model)
-        self.nlp = spacy.load(model)
+    def __init__(self, similarity_threshold=0.8, model='en_core_web_lg') -> None:
+        try:
+            self.nlp = spacy.load(model)
+        except OSError:
+            print(f'Downloading spacy language model: {model}')
+            from spacy.cli import download
+            download(model)
+            self.nlp = spacy.load(model)
         self.similarity_threshold = similarity_threshold
     
     def similarity(self, doc1: str, doc2: str):
@@ -30,6 +38,6 @@ class SpacyEvaluator():
 
     def is_relevant(self, doc1: str, doc2: str):
         similarity = self.similarity(doc1, doc2)
-        print(f"Similarity Score: {similarity}")
+        logger.info(f"Similarity Score: {similarity}")
 
         return similarity > self.similarity_threshold
