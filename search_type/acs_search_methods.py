@@ -4,11 +4,6 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient  
 from azure.search.documents.models import Vector  
 from nlp.preprocess import Preprocess
-
-pre_process = Preprocess()
-
-from azure.search.documents import SearchClient
-from azure.core.credentials import AzureKeyCredential
 import logging
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
@@ -16,6 +11,7 @@ logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging_level)  # Set level
 
+pre_process = Preprocess()
 
 def create_client(service_endpoint, index_name, key):
     """
