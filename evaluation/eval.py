@@ -1,8 +1,4 @@
 
-from azure.ai.ml.entities import Data
-from azure.ai.ml import Input
-import evaluate
-
 from dotenv import load_dotenv
 
 from azure.identity import DefaultAzureCredential
@@ -15,8 +11,8 @@ import ast
 from fuzzywuzzy import fuzz
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
 from datetime import datetime
+import evaluate
 import spacy
 import textdistance
 import mlflow

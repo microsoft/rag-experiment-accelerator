@@ -6,7 +6,13 @@ from string import punctuation
 
 class Preprocess:
     def __init__(self):
-        self.nlp = spacy.load("en_core_web_md")
+        try:
+            self.nlp = spacy.load("en_core_web_lg")
+        except OSError:
+            print(f'Downloading spacy language model: {"en_core_web_lg"}')
+            from spacy.cli import download
+            download("en_core_web_lg")
+            self.nlp = spacy.load("en_core_web_lg")
 
     def to_lower(self, text):
             """
