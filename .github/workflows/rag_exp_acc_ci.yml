@@ -3,11 +3,15 @@ name: rag_exp_acc_ci.yml
 on:
   workflow_call:
   workflow_dispatch:
+  pull_request:
+    types: [opened, ready_for_review]
+    branches:
+      - main
+      - development
   push:
     branches:
       - main
       - development
-      - ritesh/actions
 
 jobs:
   execute-code-and-check:
