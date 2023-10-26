@@ -1,8 +1,8 @@
 import os
 from typing import List, Union
-from pdfLoader import load_pdf_files
-from htmlLoader import load_html_files
-from markdownLoader import load_markdown_files
+from doc_loader.pdfLoader import load_pdf_files
+from doc_loader.htmlLoader import load_html_files
+from doc_loader.markdownLoader import load_markdown_files
 
 import logging
 

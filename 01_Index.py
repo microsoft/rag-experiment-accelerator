@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from init_Index.create_index import create_acs_index
-from doc_loader import load_documents
+from doc_loader.documentLoader import load_documents
 from embedding.gen_embeddings import generate_embedding
 from ingest_data.acs_ingest import upload_data
 from nlp.preprocess import Preprocess

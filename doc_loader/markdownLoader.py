@@ -1,6 +1,6 @@
 import os
 from typing import List
-from structuredLoader import load_structured_files
+from doc_loader.structuredLoader import load_structured_files
 from langchain.document_loaders import UnstructuredMarkdownLoader
 import logging
 
