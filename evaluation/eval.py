@@ -476,14 +476,15 @@ def compute_metrics(actual, expected, metric_type):
 
     return score
 
-def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efSearch):
+def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efSearch):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
     Args:
         exp_name (str): Name of the experiment to log the results to.
         data_path (str): Path to the file containing the prompts to evaluate.
-        chunk_size (int): Size of the chunks to split the prompts into.
+        config (Config): The configuration settings to use for evaluation.
+        chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
         chunk_overlap (int): Amount of overlap between the chunks.
         embedding_dimension (int): Dimension of the embeddings to use.
         efConstruction (int): Number of trees to use during index construction.
@@ -493,10 +494,7 @@ def evaluate_prompts(exp_name, data_path, chunk_size, chunk_overlap, embedding_d
         None
     """
 
-    with open('search_config.json', 'r') as json_file:
-        data = json.load(json_file)
-
-    metric_types = data["metric_types"]
+    metric_types = config.METRIC_TYPES
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
     time.sleep(30)
