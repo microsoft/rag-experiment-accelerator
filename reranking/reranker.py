@@ -1,17 +1,12 @@
 
 import json
 import re
-import os
 import llm.prompts
 from llm.prompt_execution import generate_response
 import numpy as np
 from sentence_transformers import CrossEncoder
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_name, k):
     """

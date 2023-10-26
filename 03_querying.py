@@ -26,12 +26,8 @@ from llm.prompt_execution import generate_response
 from data_assets.data_asset import create_data_asset
 from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
 
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  

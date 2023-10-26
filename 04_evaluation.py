@@ -1,16 +1,11 @@
-import os
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
 from config import Config
 from evaluation import eval
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 config = Config()

@@ -1,13 +1,8 @@
-import os
 from evaluation.spacy_evaluator import SpacyEvaluator
 from sklearn import metrics
 
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 def evaluate_search_result(search_response: list, evaluation_content: str, evaluator: SpacyEvaluator):

@@ -23,5 +23,4 @@ pypdf
 langchain
 sentence-transformers
 pytest
-nltk
 typing

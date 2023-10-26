@@ -4,13 +4,8 @@ from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
 import os
 
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
-
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 def create_data_asset(data_path, data_asset_name):
     """

@@ -2,7 +2,6 @@ import json
 import hashlib
 import json
 import re
-import os
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 import llm.prompts
@@ -15,12 +14,8 @@ pre_process = Preprocess()
 
 
 import hashlib
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging_level)  # Set level
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 def my_hash(s):
