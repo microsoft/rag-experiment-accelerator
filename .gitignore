@@ -160,8 +160,13 @@ cython_debug/
 .idea/
 
 artifacts/
-data/*
 eval_score/*.pdf
 artifacts
+
+# Data files
+data/*
+# Don't ignore these directories (but ignore everything inside them)
+!data/pdf/
+!data/html/
 !data/pdf/sample-pdf.pdf
 !data/html/sample-html.html
