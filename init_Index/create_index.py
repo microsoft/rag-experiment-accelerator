@@ -51,9 +51,10 @@ def create_acs_index(
     """
 
     credential = AzureKeyCredential(key)
-    analyzer = analyzers["analyzer_name"]
-    index_analyzer = analyzers["index_analyzer_name"]
-    search_analyzer = analyzers["search_analyzer_name"]
+    index_analyzer = analyzers["index_analyzer_name"] if analyzers["search_analyzer_name"] else ""
+    search_analyzer = analyzers["search_analyzer_name"] if analyzers["index_analyzer_name"] else ""
+    # Analyzer can only be used if neither search analyzer or index analyzer are set
+    analyzer = analyzers["analyzer_name"] if analyzers["index_analyzer_name"] else ""
     # Create a search index
     index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
     fields = [
