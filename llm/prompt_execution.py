@@ -20,6 +20,16 @@ def generate_response(sys_message, prompt, engine_model, temperature):
     }]
 
     prompt_structure.append({'role': 'user', 'content': prompt})
-    response = openai.ChatCompletion.create(engine=engine_model, messages=prompt_structure, temperature=temperature)
+
+    params = {
+        "messages": prompt_structure,
+        "temperature": temperature,
+    }
+    if openai.api_type == "azure":
+        params["engine"] = engine_model
+    else:
+        params["model"] = engine_model
+
+    response = openai.ChatCompletion.create(**params)
     answer = response.choices[0]['message']['content']
     return answer
