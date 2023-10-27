@@ -78,7 +78,7 @@ def create_acs_index(
                     vector_search_configuration="my-vector-config"),
         SearchField(name="contentSummary", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                     searchable=True, vector_search_dimensions=int(dimension), vector_search_configuration="my-vector-config"),
-        SearchField(name="contentDescription", type=SearchFieldDataType.String, key=True,
+        SearchField(name="contentDescription", type=SearchFieldDataType.String,
                     sortable=True, filterable=True, facetable=True, analyzer_name=analyzer),                    
 
     ]
