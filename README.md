@@ -57,6 +57,7 @@ AZURE_SEARCH_SERVICE_ENDPOINT=
 AZURE_SEARCH_ADMIN_KEY=
 OPENAI_ENDPOINT=
 OPENAI_API_KEY=
+OPENAI_API_TYPE=
 OPENAI_API_VERSION=
 SUBSCRIPTION_ID=
 WORKSPACE_NAME=
@@ -66,6 +67,7 @@ LOGGING_LEVEL=
 ```
 
 LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
+OPENAI_API_TYPE should be either azure if you planning to use Azure, openai if you want to use openai or excluded, if none of these required.
 
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
