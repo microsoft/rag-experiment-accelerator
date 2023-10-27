@@ -1,12 +1,13 @@
 import os
 import json
-import shutil
 from azure.search.documents import SearchClient
-from config.config import Config
+from config import Config
 from evaluation.search_eval import evaluate_search_result
 from evaluation.spacy_evaluator import SpacyEvaluator
+from typing import Tuple, List, Dict, Any
+
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
 from search_type.acs_search_methods import  (
@@ -17,14 +18,16 @@ from search_type.acs_search_methods import  (
     search_for_match_text,
     search_for_match_pure_vector,
     search_for_match_pure_vector_cross,
-    search_for_manual_hybrid,
-    create_client
+    search_for_manual_hybrid
     )
 from  search_type.acs_search_methods import create_client
 import llm.prompts
 from llm.prompt_execution import generate_response
 from data_assets.data_asset import create_data_asset
 from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
+
+from utils.logging import get_logger
+logger = get_logger(__name__)
 
 
 service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
@@ -43,6 +46,19 @@ search_mapping = {
 }
 
 def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
+    """
+    Queries the Azure Cognitive Search service using the specified search client and search parameters.
+
+    Args:
+        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        dimension (str): The dimension to search within.
+        user_prompt (str): The user's search query.
+        s_v (str): The version of the search service to use.
+        retrieve_num_of_documents (int): The number of documents to retrieve.
+
+    Returns:
+        list: A list of documents matching the search query.
+    """
     if s_v not in search_mapping:
         pass
 
@@ -54,7 +70,19 @@ def rerank_documents(
     user_prompt: str,
     output_prompt: str,
     config: Config,
-):
+) -> list[str]:
+    """
+    Reranks a list of documents based on a given user prompt and configuration.
+
+    Args:
+        docs (list[str]): A list of documents to be reranked.
+        user_prompt (str): The user prompt to be used for reranking.
+        output_prompt (str): The output prompt to be used for reranking.
+        config (Config): A configuration object containing reranking parameters.
+
+    Returns:
+        list[str]: A list of reranked documents.
+    """
     result = []
     if config.RERANK_TYPE == "llm":
         result = llm_rerank_documents(docs, user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE, config.LLM_RERANK_THRESHOLD)
@@ -72,6 +100,23 @@ def query_and_eval_acs(
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
 ):
+    """
+    Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
+    results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
+    the evaluation results.
+
+    Args:
+        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        dimension (int): The dimension of the search index to query.
+        query (str): The search query to execute.
+        search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
+        evaluation_content (str): The content to use for evaluating the search results.
+        retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
+        evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+
+    Returns:
+        Tuple[List[Dict[str, Any]], Dict[str, Any]]: A tuple containing the retrieved documents and the evaluation results.
+    """
     search_result = query_acs(search_client, dimension, query, search_type, retrieve_num_of_documents)
     docs, evaluation = evaluate_search_result(search_result, evaluation_content, evaluator)
     evaluation['query'] = query
@@ -88,8 +133,27 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-    main_prompt_instruction: str
-):
+    main_prompt_instruction: str,
+) -> tuple[list[str], list[dict[str, any]]]:
+    """
+    Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
+    using OpenAI's GPT-3 model.
+
+    Args:
+        search_client (SearchClient): The Azure Cognitive Search client.
+        dimension (int): The number of dimensions in the embedding space.
+        questions (list[str]): A list of questions to query the search service with.
+        original_prompt (str): The original prompt to generate the response from.
+        output_prompt (str): The output prompt to use for reranking the search results.
+        search_type (str): The type of search to perform (e.g. 'semantic', 'exact').
+        evaluation_content (str): The content to use for evaluation.
+        config (Config): The configuration object.
+        evaluator (SpacyEvaluator): The evaluator object.
+
+    Returns:
+        Tuple[List[str], List[Dict[str, Any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
+        results for each question.
+    """
     context = []
     evals = []
     for question in questions:
@@ -104,12 +168,22 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
-        print(openai_response)
+        logger.debug(openai_response)
 
     return context, evals
 
 
 def main(config: Config):
+    """
+    Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
+
+    Args:
+        config (Config): A configuration object containing experiment parameters.
+
+    Returns:
+        None
+    """
+    # function code here
     jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
     question_count = 0
     try:
@@ -132,15 +206,15 @@ def main(config: Config):
             for overlap in config.OVERLAP_SIZES:
                 for dimension in config.EMBEDDING_DIMENSIONS:
                     for efConstruction in config.EF_CONSTRUCTIONS:
-                        for efsearch in config.EF_SEARCH:
-                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
-                            print(f"Index: {index_name}")
+                        for efSearch in config.EF_SEARCHES:
+                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                            logger.info(f"Index: {index_name}")
 
                             write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
                             if os.path.exists(write_path):
                                 continue
 
-                            search_client, index_client = create_client(service_endpoint, index_name, search_admin_key)
+                            search_client = create_client(service_endpoint, index_name, search_admin_key)
 
                             with open(jsonl_file_path, 'r') as file:
                                 for line in file:
@@ -158,7 +232,7 @@ def main(config: Config):
                                         else:                                        
                                             for response in responses:
                                                 if 'question' in response:
-                                                    new_questions.append(response['question'])                                             
+                                                    new_questions.append(response['question'])
                                         new_questions.append(user_prompt)
 
                                     evaluation_content = user_prompt + qna_context
@@ -197,7 +271,7 @@ def main(config: Config):
 
                                         full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                         openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
-                                        print(openai_response)
+                                        logger.debug(openai_response)
 
                                         output = {
                                             "rerank": config.RERANK,
@@ -218,7 +292,6 @@ def main(config: Config):
                                             out.write(json_string + "\n")
 
                             search_client.close()
-                            index_client.close()
                             create_data_asset(write_path, index_name)
     except FileNotFoundError:
         print('The file does not exist: ' + jsonl_file_path)                           
