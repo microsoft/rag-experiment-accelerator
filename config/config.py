@@ -87,7 +87,8 @@ class OpenAICredentials:
                 openai.api_type = "azure"
                 openai.api_version = self.OPENAI_API_VERSION
                 openai.api_base = self.OPENAI_ENDPOINT
-            openai.api_key = self.OPENAI_API_KEY
+            if self.OPENAI_API_TYPE is not None:
+                openai.api_key = self.OPENAI_API_KEY
 
 
 
