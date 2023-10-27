@@ -1,5 +1,7 @@
 import json
 import os
+import openai
+from typing import List
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -92,9 +94,9 @@ class OpenAICredentials:
         openai_api_version: str,
         openai_endpoint: str,
     ) -> None:
-        if openai_api_type is not None and openai_api_type not in ["azure", "openai"]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'openai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'openai'.")
+        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
+            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
 
         self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
@@ -128,14 +130,14 @@ class OpenAICredentials:
 
     def _set_credentials(self) -> None:
         if self.OPENAI_API_TYPE is not None:
-            import openai
+
+            if self.OPENAI_API_TYPE is not None:
+                openai.api_type = self.OPENAI_API_TYPE
+                openai.api_key = self.OPENAI_API_KEY
 
             if self.OPENAI_API_TYPE == "azure":
-                openai.api_type = "azure"
                 openai.api_version = self.OPENAI_API_VERSION
                 openai.api_base = self.OPENAI_ENDPOINT
-            if self.OPENAI_API_TYPE is not None:
-                openai.api_key = self.OPENAI_API_KEY
 
 
 class Config:
@@ -193,3 +195,57 @@ class Config:
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
+        self._check_deployment()
+
+    def _try_retrieve_model(self, model_name: str, tags: List[str]) -> openai.Model:
+        """
+        Tries to retrieve a specified model from OpenAI.
+        
+        Args:
+            model_name (str): The name of the model to retrieve.
+            tags (List[str]): A list of capability tags to check for.
+            
+        Returns:
+            openai.Model: The retrieved model object if successful.
+            
+        Raises:
+            ValueError: If the model is not ready or does not have the required capabilities.
+            openai.error.InvalidRequestError: If the model does not exist.
+        """
+        try:
+            model = openai.Model.retrieve(model_name)
+
+            # For non-azure models we can't retrieve status and capabilities
+            if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
+                return
+            if model["status"] != "succeeded":
+                logger.critical(f"Model {model_name} is not ready.")
+                raise ValueError(f"Model {model_name} is not ready.")
+            for tag in tags:
+                if not model["capabilities"][tag]:
+                    logger.critical(f"Model {model_name} does not have the {tag} capability.")
+                    raise ValueError(f"Model {model_name} does not have the {tag} capability.")
+            return model
+        except openai.error.InvalidRequestError:
+            logger.critical(f"Model {model_name} does not exist.")
+            raise ValueError(f"Model {model_name} does not exist.")
+
+    def _check_deployment(self):
+        """
+        Checks the deployment environment.
+
+        This function checks if the OpenAI API type and chat model name are set,
+        and then tries to retrieve the model with specified tags.
+
+        """
+        if self.OpenAICredentials.OPENAI_API_TYPE is not None:
+            if self.CHAT_MODEL_NAME is not None:
+                self._try_retrieve_model(
+                    self.CHAT_MODEL_NAME,
+                    tags=["chat_completion", "inference"],
+                )
+
+                
+
+
+
