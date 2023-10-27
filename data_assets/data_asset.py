@@ -7,20 +7,24 @@ import os
 from utils.logging import get_logger
 logger = get_logger(__name__)
 
-def create_data_asset(data_path, data_asset_name):
+def create_data_asset(data_path, data_asset_name, azure_ml_credentials):
     """
     Creates a new data asset in Azure Machine Learning workspace.
 
     Args:
         data_path (str): The path to the data file.
         data_asset_name (str): The name of the data asset.
+        azure_ml_credentials (AzureMLCredentials): The credentials for the Azure Machine Learning workspace.
 
     Returns:
         int: The version of the created data asset.
     """
 
     ml_client = MLClient(
-        DefaultAzureCredential(), os.environ['SUBSCRIPTION_ID'],os.environ['RESOURCE_GROUP_NAME'], os.environ['WORKSPACE_NAME']
+        DefaultAzureCredential(),
+        azure_ml_credentials.SUBSCRIPTION_ID,
+        azure_ml_credentials.RESOURCE_GROUP_NAME,
+        azure_ml_credentials.WORKSPACE_NAME,
     )
             
     aml_dataset = Data(

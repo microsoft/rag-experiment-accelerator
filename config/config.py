@@ -1,4 +1,94 @@
 import json
+import os
+from utils.logging import get_logger
+logger = get_logger(__name__)
+
+
+def _get_env_var(var_name: str, critical: bool) -> str:
+    var = os.getenv(var_name, None)
+    if var is None:
+        logger.critical(f"{var_name} environment variable not set.")
+        if critical:
+            raise ValueError(f"{var_name} environment variable not set.")
+    else:
+        logger.info(f"{var_name}: {var}")
+    return var
+
+
+class AzureSearchCredentials:
+    def __init__(
+            self,
+            azure_search_service_endpoint: str,
+            azure_search_admin_key: str,
+        ) -> None:
+        self.AZURE_SEARCH_SERVICE_ENDPOINT = azure_search_service_endpoint
+        self.AZURE_SEARCH_ADMIN_KEY = azure_search_admin_key
+    
+    @classmethod
+    def from_env(cls) -> 'AzureSearchCredentials':
+        return cls(
+            azure_search_service_endpoint=_get_env_var("AZURE_SEARCH_SERVICE_ENDPOINT", False),
+            azure_search_admin_key=_get_env_var("AZURE_SEARCH_ADMIN_KEY", False),
+        )
+
+
+class AzureMLCredentials:
+    def __init__(
+            self,
+            subscription_id: str,
+            workspace_name: str,
+            resource_group_name: str,
+    ) -> None:
+        self.SUBSCRIPTION_ID = subscription_id
+        self.WORKSPACE_NAME = workspace_name
+        self.RESOURCE_GROUP_NAME = resource_group_name
+    
+    @classmethod
+    def from_env(cls) -> 'AzureMLCredentials':
+        return cls(
+            subscription_id=_get_env_var("SUBSCRIPTION_ID", False),
+            workspace_name=_get_env_var("WORKSPACE_NAME", False),
+            resource_group_name=_get_env_var("RESOURCE_GROUP_NAME", False),
+        )
+    
+
+class OpenAICredentials:
+    def __init__(
+            self,
+            openai_api_type: str,
+            openai_api_key: str,
+            openai_api_version: str,
+            openai_endpoint: str,
+    ) -> None:
+        if openai_api_type is not None and openai_api_type not in ["azure", "openai"]:
+            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'openai'.")
+            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'openai'.")
+
+        self.OPENAI_API_TYPE = openai_api_type
+        self.OPENAI_API_KEY = openai_api_key
+        self.OPENAI_API_VERSION = openai_api_version
+        self.OPENAI_ENDPOINT = openai_endpoint
+
+        self._set_credentials()
+
+    @classmethod
+    def from_env(cls) -> 'OpenAICredentials':
+        return cls(
+            openai_api_type=_get_env_var("OPENAI_API_TYPE", False),
+            openai_api_key=_get_env_var("OPENAI_API_KEY", False),
+            openai_api_version=_get_env_var("OPENAI_API_VERSION", False),
+            openai_endpoint=_get_env_var("OPENAI_ENDPOINT", False),
+        )
+    
+    def _set_credentials(self) -> None:
+        if self.OPENAI_API_TYPE is not None:
+            import openai
+            if self.OPENAI_API_TYPE == "azure":
+                openai.api_type = "azure"
+                openai.api_version = self.OPENAI_API_VERSION
+                openai.api_base = self.OPENAI_ENDPOINT
+            openai.api_key = self.OPENAI_API_KEY
+
 
 
 class Config:
@@ -52,3 +142,6 @@ class Config:
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
+        self.OpenAICredentials = OpenAICredentials.from_env()
+        self.AzureSearchCredentials = AzureSearchCredentials.from_env()
+        self.AzureMLCredentials = AzureMLCredentials.from_env()
