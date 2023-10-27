@@ -54,7 +54,13 @@ def main(config: Config):
                 for efConstruction in config.EF_CONSTRUCTIONS:
                     for efSearch in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        all_docs = load_documents(config.DATA_FORMATS, "./data/", config_item, overlap)
+                        all_docs = load_documents(
+                            config.DATA_FORMATS,
+                            "./data/",
+                            config_item,
+                            overlap,
+                            config.LANGUAGES["analyzers"],
+                        )
                         data_load = []
                         for docs in all_docs:
                             chunk_dict = {
