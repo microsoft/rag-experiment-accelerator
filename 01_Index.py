@@ -8,7 +8,7 @@ load_dotenv(override=True)
 
 from init_Index.create_index import create_acs_index
 from init_openai import init_openai
-from doc_loader.pdfLoader import load_pdf_files
+from doc_loader.documentLoader import load_documents
 from embedding.gen_embeddings import generate_embedding
 from ingest_data.acs_ingest import upload_data
 from nlp.preprocess import Preprocess
@@ -55,7 +55,7 @@ def main(config: Config):
                 for efConstruction in config.EF_CONSTRUCTIONS:
                     for efSearch in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        all_docs = load_pdf_files("./data/", config_item, overlap)
+                        all_docs = load_documents(config.DATA_FORMATS, "./data/", config_item, overlap)
                         data_load = []
                         for docs in all_docs:
                             chunk_dict = {
