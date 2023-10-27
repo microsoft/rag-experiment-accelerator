@@ -59,7 +59,7 @@ def main(config: Config):
                             "./data/",
                             config_item,
                             overlap,
-                            config.LANGUAGES["analyzers"],
+                            config.LANGUAGE["analyzers"],
                         )
                         data_load = []
                         for docs in all_docs:
