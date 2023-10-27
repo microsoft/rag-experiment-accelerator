@@ -63,7 +63,7 @@ def main(config: Config):
                                 "content_vector": generate_embedding(
                                     size=dimension,
                                     chunk=str(pre_process.preprocess(docs.page_content)),
-                                    model_name=config.AZURE_EMBEDDING_DEPLOYMENT_NAME
+                                    model_name=config.EMBEDDING_MODEL_NAME
                                 )
                             }
                             data_load.append(chunk_dict)
@@ -74,7 +74,7 @@ def main(config: Config):
                             search_key=key,
                             dimension=dimension,
                             chat_model_name=config.CHAT_MODEL_NAME,
-                            embedding_model_name=config.AZURE_EMBEDDING_DEPLOYMENT_NAME,
+                            embedding_model_name=config.EMBEDDING_MODEL_NAME,
                             temperature=config.TEMPERATURE
                         )
 

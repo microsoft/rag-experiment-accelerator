@@ -188,7 +188,7 @@ def query_and_eval_acs_multi(
             evaluation_content=evaluation_content, 
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS, 
             evaluator=evaluator,
-            model_name=config.AZURE_EMBEDDING_DEPLOYMENT_NAME
+            model_name=config.EMBEDDING_MODEL_NAME
         )
         evals.append(evaluation)
     
@@ -279,7 +279,7 @@ def main(config: Config):
                                             evaluation_content=evaluation_content,
                                             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                                             evaluator=evaluator,
-                                            model_name=config.AZURE_EMBEDDING_DEPLOYMENT_NAME
+                                            model_name=config.EMBEDDING_MODEL_NAME
                                         )
                                         search_evals.append(evaluation)
 
