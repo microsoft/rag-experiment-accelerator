@@ -273,7 +273,7 @@ class Config:
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
         self.EF_CONSTRUCTIONS = data["efConstruction"]
-        self.EF_SEARCHES = data["efSearch"]
+        self.EF_SEARCHES = data["efsearch"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
         self.CHAT_MODEL_NAME = data["chat_model_name"]
