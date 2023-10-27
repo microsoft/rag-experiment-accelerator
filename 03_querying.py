@@ -137,7 +137,7 @@ def query_and_eval_acs(
     search_result = query_acs(
         search_client=search_client,
         dimension=dimension,
-        query=query,
+        user_prompt=query,
         s_v=search_type,
         retrieve_num_of_documents=retrieve_num_of_documents,
         model_name=model_name
