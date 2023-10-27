@@ -2,6 +2,7 @@ import json
 import hashlib
 import json
 import re
+from typing import List
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 import llm.prompts
@@ -63,7 +64,16 @@ def generate_summary(chunk, model_name, temperature):
     return response
 
 
-def upload_data(chunks, service_endpoint, index_name, search_key, dimension, chat_model_name, temperature):
+def upload_data(
+        chunks: List,
+        service_endpoint: str,
+        index_name: str,
+        search_key: str,
+        dimension: int,
+        chat_model_name: str,
+        embedding_model_name: str,
+        temperature: float
+    ):
     """
     Uploads data to an Azure Cognitive Search index.
 
@@ -74,6 +84,7 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
         search_key (str): The search key for the Azure Cognitive Search service.
         dimension (int): The dimensionality of the embeddings to generate.
         chat_model_name (str): The name of the chat model to use for generating titles and summaries.
+        embedding_model_name (str): The name of the embedding model to use for generating embeddings.
         temperature (float): The temperature to use when generating titles and summaries.
 
     Returns:
@@ -92,8 +103,16 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
             'content': str(chunk["content"]),
             'filename': "test",
             'contentVector': chunk["content_vector"][0],
-            'contentSummary': generate_embedding(dimension, str(pre_process.preprocess(summary)))[0],
-            'contentTitle': generate_embedding(dimension, str(pre_process.preprocess(title)))[0]
+            'contentSummary': generate_embedding(
+                size=dimension,
+                chunk=str(pre_process.preprocess(summary)),
+                model_name=embedding_model_name
+            )[0],
+            'contentTitle': generate_embedding(
+                size=dimension,
+                chunk=str(pre_process.preprocess(title)),
+                model_name=embedding_model_name
+            )[0]
         }
 
         documents.append(input_data)
@@ -130,6 +149,7 @@ def generate_qna(docs, model_name, temperature):
                             'context': chunk.page_content
                     }
                 new_df = new_df._append(data, ignore_index=True)
+                logger.info(f"Generated {len(response_dict['prompts'])} QnA for document {i}")
             except:
                 logger.error("could not generate a valid json so moving over to next question !")
 

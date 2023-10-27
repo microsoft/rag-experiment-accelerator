@@ -60,12 +60,23 @@ def main(config: Config):
                         for docs in all_docs:
                             chunk_dict = {
                                 "content": docs.page_content,
-                                "content_vector": generate_embedding(dimension,
-                                                                     str(pre_process.preprocess(docs.page_content)))
+                                "content_vector": generate_embedding(
+                                    size=dimension,
+                                    chunk=str(pre_process.preprocess(docs.page_content)),
+                                    model_name=config.EMBEDDING_MODEL_NAME
+                                )
                             }
                             data_load.append(chunk_dict)
-                        upload_data(data_load, service_endpoint, index_name, key, dimension,
-                                    config.CHAT_MODEL_NAME, config.TEMPERATURE)
+                        upload_data(
+                            chunks=data_load,
+                            service_endpoint=service_endpoint,
+                            index_name=index_name,
+                            search_key=key,
+                            dimension=dimension,
+                            chat_model_name=config.CHAT_MODEL_NAME,
+                            embedding_model_name=config.EMBEDDING_MODEL_NAME,
+                            temperature=config.TEMPERATURE
+                        )
 
 
 if __name__ == '__main__':

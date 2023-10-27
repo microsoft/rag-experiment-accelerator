@@ -25,6 +25,7 @@
         "bert_distilbert_base_nli_stsb_mean_tokens"
     ],
     "chat_model_name": "gpt-35-turbo",
+    "embedding_model_name": "text-embedding-ada-002",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all"
