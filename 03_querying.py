@@ -30,8 +30,6 @@ from utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
-search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
 
 search_mapping = {
@@ -183,7 +181,8 @@ def main(config: Config):
     Returns:
         None
     """
-    # function code here
+    service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
+    search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
     question_count = 0
     try:
