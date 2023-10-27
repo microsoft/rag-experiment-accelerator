@@ -15,7 +15,7 @@ from azure.search.documents.indexes.models import (
     SemanticField,  
     SearchField,
     LexicalTokenizer,
-    LexicalTokenFilter,  
+    TokenFilter,
     SemanticSettings,  
     VectorSearch,  
     HnswVectorSearchAlgorithmConfiguration,  
@@ -91,7 +91,7 @@ def create_acs_index(
                 hnsw_parameters={
                     "m": 4,
                     "efConstruction": int(efconstruction),
-                    "efSearch": int(efSearch),
+                    "efSearch": int(efsearch),
                     "metric": "cosine"
                 }
             )
@@ -115,7 +115,7 @@ def create_acs_index(
     if analyzers["tokenizers"]:
         tokenizers = [LexicalTokenizer(name=analyzers["tokenizers"]["name"], token_chars=["letter", "digit"])]
     if analyzers["token_filters"]:
-        token_filters = [LexicalTokenFilter(name=analyzers["token_filters"]["name"], odatatype="#Microsoft.Azure.Search.AsciiFoldingTokenFilter")]
+        token_filters = [TokenFilter(name="lowercase"), TokenFilter(name="asciifolding")]
     if analyzers["char_filters"]:
         char_filters = [CharFilter(name=analyzers["char_filters"]["name"], odatatype="#Microsoft.Azure.Search.MappingCharFilter", mappings=[])]
 
