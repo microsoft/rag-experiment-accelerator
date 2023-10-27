@@ -520,6 +520,7 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     """
 
     metric_types = config.METRIC_TYPES
+    num_search_type = config.SEARCH_VARIANTS
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
     # time.sleep(30)
@@ -611,7 +612,9 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
     
-    sum_all_columns = temp_df.sum() / question_count
+    if isinstance(num_search_type, str):
+        num_search_type = [num_search_type]
+    sum_all_columns = temp_df.sum() / (question_count * len(num_search_type))
     sum_df = pd.DataFrame([sum_all_columns], columns=temp_df.columns)
     
     sum_dict = {}
@@ -621,12 +624,12 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
-    ap_scores_df.to_csv(f"eval_score/{formatted_datetime}_ap_scores_at_k_test.csv", index=False)
+    ap_scores_df.to_csv(f"artifacts/eval_score/{formatted_datetime}_ap_scores_at_k_test.csv", index=False)
     plot_apk_scores(ap_scores_df, run_id, client)
     plot_mapk_scores(ap_scores_df, run_id, client)
 
     map_scores_df = pd.DataFrame(mean_scores)
-    map_scores_df.to_csv(f"eval_score/{formatted_datetime}_map_scores_test.csv", index=False)
+    map_scores_df.to_csv(f"artifacts/eval_score/{formatted_datetime}_map_scores_test.csv", index=False)
     plot_map_scores(map_scores_df, run_id, client)
 
     mlflow.log_param("question_count", question_count)
