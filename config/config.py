@@ -244,6 +244,13 @@ class Config:
                     self.CHAT_MODEL_NAME,
                     tags=["chat_completion", "inference"],
                 )
+                logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
+            if self.EMBEDDING_MODEL_NAME is not None:
+                self._try_retrieve_model(
+                    self.EMBEDDING_MODEL_NAME,
+                    tags=["chat_completion", "inference"],
+                )
+                logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")
 
                 
 
