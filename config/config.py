@@ -1,64 +1,96 @@
 import json
 import os
 from utils.logging import get_logger
+
 logger = get_logger(__name__)
 
 
-def _get_env_var(var_name: str, critical: bool) -> str:
+def _mask_string(s: str, start: int = 2, end: int = 2, mask_char: str = "*") -> str:
+    if s == "":
+        return ""
+
+    if len(s) <= start + end:
+        return s[0] + "*" * (len(s) - 1)
+
+    return s[:start] + mask_char * (len(s) - start - end) + s[-end:]
+
+
+def _get_env_var(var_name: str, critical: bool, mask: bool) -> str:
     var = os.getenv(var_name, None)
     if var is None:
         logger.critical(f"{var_name} environment variable not set.")
         if critical:
             raise ValueError(f"{var_name} environment variable not set.")
     else:
-        logger.info(f"{var_name}: {var}")
+        text = var if not mask else _mask_string(var)
+        logger.info(f"{var_name} set to {text}")
     return var
 
 
 class AzureSearchCredentials:
     def __init__(
-            self,
-            azure_search_service_endpoint: str,
-            azure_search_admin_key: str,
-        ) -> None:
+        self,
+        azure_search_service_endpoint: str,
+        azure_search_admin_key: str,
+    ) -> None:
         self.AZURE_SEARCH_SERVICE_ENDPOINT = azure_search_service_endpoint
         self.AZURE_SEARCH_ADMIN_KEY = azure_search_admin_key
-    
+
     @classmethod
-    def from_env(cls) -> 'AzureSearchCredentials':
+    def from_env(cls) -> "AzureSearchCredentials":
         return cls(
-            azure_search_service_endpoint=_get_env_var("AZURE_SEARCH_SERVICE_ENDPOINT", False),
-            azure_search_admin_key=_get_env_var("AZURE_SEARCH_ADMIN_KEY", False),
+            azure_search_service_endpoint=_get_env_var(
+                var_name="AZURE_SEARCH_SERVICE_ENDPOINT",
+                critical=False,
+                mask=False,
+            ),
+            azure_search_admin_key=_get_env_var(
+                var_name="AZURE_SEARCH_ADMIN_KEY",
+                critical=False,
+                mask=True,
+            ),
         )
 
 
 class AzureMLCredentials:
     def __init__(
-            self,
-            subscription_id: str,
-            workspace_name: str,
-            resource_group_name: str,
+        self,
+        subscription_id: str,
+        workspace_name: str,
+        resource_group_name: str,
     ) -> None:
         self.SUBSCRIPTION_ID = subscription_id
         self.WORKSPACE_NAME = workspace_name
         self.RESOURCE_GROUP_NAME = resource_group_name
-    
+
     @classmethod
-    def from_env(cls) -> 'AzureMLCredentials':
+    def from_env(cls) -> "AzureMLCredentials":
         return cls(
-            subscription_id=_get_env_var("SUBSCRIPTION_ID", False),
-            workspace_name=_get_env_var("WORKSPACE_NAME", False),
-            resource_group_name=_get_env_var("RESOURCE_GROUP_NAME", False),
+            subscription_id=_get_env_var(
+                var_name="SUBSCRIPTION_ID",
+                critical=False,
+                mask=True,
+            ),
+            workspace_name=_get_env_var(
+                var_name="WORKSPACE_NAME",
+                critical=False,
+                mask=False,
+            ),
+            resource_group_name=_get_env_var(
+                var_name="RESOURCE_GROUP_NAME",
+                critical=False,
+                mask=False,
+            ),
         )
-    
+
 
 class OpenAICredentials:
     def __init__(
-            self,
-            openai_api_type: str,
-            openai_api_key: str,
-            openai_api_version: str,
-            openai_endpoint: str,
+        self,
+        openai_api_type: str,
+        openai_api_key: str,
+        openai_api_version: str,
+        openai_endpoint: str,
     ) -> None:
         if openai_api_type is not None and openai_api_type not in ["azure", "openai"]:
             logger.critical("OPENAI_API_TYPE must be either 'azure' or 'openai'.")
@@ -72,24 +104,38 @@ class OpenAICredentials:
         self._set_credentials()
 
     @classmethod
-    def from_env(cls) -> 'OpenAICredentials':
+    def from_env(cls) -> "OpenAICredentials":
         return cls(
-            openai_api_type=_get_env_var("OPENAI_API_TYPE", False),
-            openai_api_key=_get_env_var("OPENAI_API_KEY", False),
-            openai_api_version=_get_env_var("OPENAI_API_VERSION", False),
-            openai_endpoint=_get_env_var("OPENAI_ENDPOINT", False),
+            openai_api_type=_get_env_var(
+                var_name="OPENAI_API_TYPE",
+                critical=False,
+                mask=False,
+            ),
+            openai_api_key=_get_env_var(
+                var_name="OPENAI_API_KEY", critical=False, mask=True
+            ),
+            openai_api_version=_get_env_var(
+                var_name="OPENAI_API_VERSION",
+                critical=False,
+                mask=False,
+            ),
+            openai_endpoint=_get_env_var(
+                var_name="OPENAI_ENDPOINT",
+                critical=False,
+                mask=True,
+            ),
         )
-    
+
     def _set_credentials(self) -> None:
         if self.OPENAI_API_TYPE is not None:
             import openai
+
             if self.OPENAI_API_TYPE == "azure":
                 openai.api_type = "azure"
                 openai.api_version = self.OPENAI_API_VERSION
                 openai.api_base = self.OPENAI_ENDPOINT
             if self.OPENAI_API_TYPE is not None:
                 openai.api_key = self.OPENAI_API_KEY
-
 
 
 class Config:
@@ -120,8 +166,9 @@ class Config:
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
     """
-    def __init__(self, config_filename: str = 'search_config.json') -> None:
-        with open(config_filename, 'r') as json_file:
+
+    def __init__(self, config_filename: str = "search_config.json") -> None:
+        with open(config_filename, "r") as json_file:
             data = json.load(json_file)
 
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
@@ -139,7 +186,7 @@ class Config:
         self.LLM_RERANK_THRESHOLD = data["llm_re_rank_threshold"]
         self.CROSSENCODER_AT_K = data["cross_encoder_at_k"]
         self.TEMPERATURE = data["openai_temperature"]
-        self.RERANK = data['rerank']
+        self.RERANK = data["rerank"]
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
