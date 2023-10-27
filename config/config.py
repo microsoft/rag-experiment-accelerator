@@ -25,6 +25,7 @@ class Config:
         TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
         RERANK (bool): Whether or not to perform reranking.
         SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
+        DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
     """
     def __init__(self, config_filename: str = 'search_config.json') -> None:
@@ -47,6 +48,7 @@ class Config:
         self.TEMPERATURE = data["openai_temperature"]
         self.RERANK = data['rerank']
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
+        self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
 
 

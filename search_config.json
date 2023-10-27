@@ -37,5 +37,6 @@
     ],
     "chat_model_name": "gpt-35-turbo",
     "openai_temperature": 0,
-    "search_relevancy_threshold": 0.8
+    "search_relevancy_threshold": 0.8,
+    "data_formats": "all"
 }
