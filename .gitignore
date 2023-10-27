@@ -173,3 +173,4 @@ data/*
 !data/pdf/sample-pdf.pdf
 !data/html/sample-html.html
 !data/markdown/sample-markdown.md
+!data/markdown/sample-txt.txt
