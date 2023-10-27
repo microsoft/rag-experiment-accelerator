@@ -1,7 +1,5 @@
 import openai
-from init_openai import init_openai
 
-init_openai()
 
 def generate_response(sys_message, prompt, engine_model, temperature):
     """

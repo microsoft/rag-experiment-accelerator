@@ -31,10 +31,6 @@ from utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
-search_admin_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
-
-
 search_mapping = {
     "search_for_match_semantic": search_for_match_semantic,
     "search_for_match_Hybrid_multi": search_for_match_Hybrid_multi,
@@ -215,7 +211,10 @@ def main(config: Config):
     Returns:
         None
     """
-    # function code here
+    service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
+    search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
+
+
     jsonl_file_path = "./artifacts/eval_data.jsonl"
     question_count = 0
     with open(jsonl_file_path, 'r') as file:
@@ -311,7 +310,7 @@ def main(config: Config):
                                         out.write(json_string + "\n")
 
                         search_client.close()
-                        create_data_asset(write_path, index_name)
+                        create_data_asset(write_path, index_name, config.AzureMLCredentials)
 
 
 if __name__ == '__main__':

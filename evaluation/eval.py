@@ -21,6 +21,11 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
 from numpy import mean
+# TODO: Remove this after project is a package
+import sys
+sys.path.append(os.path.join(os.getcwd(), "config"))
+from config.config import AzureMLCredentials
+
 from utils.logging import get_logger
 logger = get_logger(__name__)
 
@@ -48,8 +53,13 @@ large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-lar
 distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
 paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
+azure_ml_credentials = AzureMLCredentials.from_env()
+
 ml_client = MLClient(
-    DefaultAzureCredential(), os.environ['SUBSCRIPTION_ID'],os.environ['RESOURCE_GROUP_NAME'], os.environ['WORKSPACE_NAME']
+    DefaultAzureCredential(),
+    azure_ml_credentials.SUBSCRIPTION_ID,
+    azure_ml_credentials.RESOURCE_GROUP_NAME,
+    azure_ml_credentials.WORKSPACE_NAME,
 )
 mlflow_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_tracking_uri
 mlflow.set_tracking_uri(mlflow_tracking_uri)

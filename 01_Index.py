@@ -7,7 +7,6 @@ from config import Config
 load_dotenv(override=True)
 
 from init_Index.create_index import create_acs_index
-from init_openai import init_openai
 from doc_loader.documentLoader import load_documents
 from embedding.gen_embeddings import generate_embedding
 from ingest_data.acs_ingest import upload_data
@@ -26,8 +25,8 @@ nltk.download('stopwords', force=True)
 def main(config: Config):
     pre_process = Preprocess()
 
-    service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")
-    key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
+    service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
+    key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
 
     directory_path = 'artifacts'
     if not os.path.exists(directory_path):
@@ -81,5 +80,4 @@ def main(config: Config):
 
 if __name__ == '__main__':
     config = Config()
-    init_openai()
     main(config)
