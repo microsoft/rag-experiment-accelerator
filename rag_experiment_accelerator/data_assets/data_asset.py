@@ -2,9 +2,8 @@ from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
-import os
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 def create_data_asset(data_path, data_asset_name, azure_ml_credentials):

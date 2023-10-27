@@ -2,16 +2,16 @@ import os
 import json
 import azure
 from azure.search.documents import SearchClient
-from config import Config
-from evaluation.search_eval import evaluate_search_result
-from evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
+from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from typing import Tuple, List, Dict, Any
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
-from search_type.acs_search_methods import  (
+from rag_experiment_accelerator.ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
+from rag_experiment_accelerator.search_type.acs_search_methods import  (
     search_for_match_pure_vector_multi,
     search_for_match_semantic,
     search_for_match_Hybrid_multi,
@@ -21,13 +21,13 @@ from search_type.acs_search_methods import  (
     search_for_match_pure_vector_cross,
     search_for_manual_hybrid
     )
-from  search_type.acs_search_methods import create_client
-import llm.prompts
-from llm.prompt_execution import generate_response
-from data_assets.data_asset import create_data_asset
-from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
+from rag_experiment_accelerator.search_type.acs_search_methods import create_client
+from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
+from rag_experiment_accelerator.reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
@@ -193,7 +193,7 @@ def query_and_eval_acs_multi(
         else:
             prompt_instruction_context = docs
 
-        full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+        full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
         logger.debug(openai_response)
@@ -287,7 +287,7 @@ def main(config: Config):
                                     else:
                                         prompt_instruction_context = docs
 
-                                    full_prompt_instruction = llm.prompts.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+                                    full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                     openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                     logger.debug(openai_response)
 

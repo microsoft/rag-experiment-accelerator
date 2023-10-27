@@ -1,10 +1,10 @@
-from config import Config
+from rag_experiment_accelerator.config import Config
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from doc_loader.documentLoader import load_documents
-from ingest_data.acs_ingest import generate_qna
+from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
+from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
 
 config = Config()
 

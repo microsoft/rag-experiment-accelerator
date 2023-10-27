@@ -1,7 +1,7 @@
 from typing import List
-from doc_loader.structuredLoader import load_structured_files
+from rag_experiment_accelerator.doc_loader.structuredLoader import load_structured_files
 from langchain.document_loaders import BSHTMLLoader
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
