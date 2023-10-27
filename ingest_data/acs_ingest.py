@@ -149,6 +149,7 @@ def generate_qna(docs, model_name, temperature):
                             'context': chunk.page_content
                     }
                 new_df = new_df._append(data, ignore_index=True)
+                logger.info(f"Generated {len(response_dict['prompts'])} QnA for document {i}")
             except:
                 logger.error("could not generate a valid json so moving over to next question !")
 
