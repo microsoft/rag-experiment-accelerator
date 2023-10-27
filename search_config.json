@@ -4,9 +4,20 @@
         "chunk_size": [1000],
         "overlap_size": [200]
     },
-    "embedding_dimension": [768],
-    "efConstruction": [400],
-    "efSearch": [400],
+    "embedding_dimension" : [768],
+    "efConstruction" : [400 ],
+    "efsearch": [400],
+    "language":{
+        "analyzers": {
+            "analyzer_name": "en.microsoft",
+            "index_analyzer_name": "",
+            "search_analyzer_name": "",
+            "char_filters": [],
+            "tokenizers": [],
+            "token_filters": []            
+        },
+        "query_language": "en-us"
+    },
     "rerank": "TRUE",
     "rerank_type": "crossencoder",
     "llm_re_rank_threshold": 3,
