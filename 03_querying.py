@@ -1,5 +1,6 @@
 import os
 import json
+import azure
 from azure.search.documents import SearchClient
 from config import Config
 from evaluation.search_eval import evaluate_search_result
@@ -45,16 +46,24 @@ search_mapping = {
     "search_for_manual_hybrid": search_for_manual_hybrid
 }
 
-def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
+def query_acs(
+        search_client: azure.search.documents.SearchClient,
+        dimension: int,
+        user_prompt: str,
+        s_v: str,
+        retrieve_num_of_documents: str,
+        model_name: str = None,
+    ):
     """
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (str): The dimension to search within.
+        search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
+        dimension (int): The dimension to search within.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        model_name (str): The name of the model to use for searching.
 
     Returns:
         list: A list of documents matching the search query.
@@ -62,7 +71,13 @@ def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_docume
     if s_v not in search_mapping:
         pass
 
-    return search_mapping[s_v](search_client, dimension, user_prompt, retrieve_num_of_documents)
+    return search_mapping[s_v](
+        client=search_client,
+        size=dimension,
+        query=user_prompt,
+        retrieve_num_of_documents=retrieve_num_of_documents,
+        model_name=model_name
+    )
 
 
 def rerank_documents(
@@ -99,6 +114,7 @@ def query_and_eval_acs(
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
+    model_name: str = None,
 ):
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
@@ -113,11 +129,19 @@ def query_and_eval_acs(
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+        model_name (str): The name of the model to use for searching.
 
     Returns:
         Tuple[List[Dict[str, Any]], Dict[str, Any]]: A tuple containing the retrieved documents and the evaluation results.
     """
-    search_result = query_acs(search_client, dimension, query, search_type, retrieve_num_of_documents)
+    search_result = query_acs(
+        search_client=search_client,
+        dimension=dimension,
+        query=query,
+        s_v=search_type,
+        retrieve_num_of_documents=retrieve_num_of_documents,
+        model_name=model_name
+    )
     docs, evaluation = evaluate_search_result(search_result, evaluation_content, evaluator)
     evaluation['query'] = query
     return docs, evaluation
@@ -156,7 +180,16 @@ def query_and_eval_acs_multi(
     context = []
     evals = []
     for question in questions:
-        docs, evaluation = query_and_eval_acs(search_client, dimension, question, search_type, evaluation_content, config.RETRIEVE_NUM_OF_DOCUMENTS, evaluator)
+        docs, evaluation = query_and_eval_acs(
+            search_client=search_client, 
+            dimension=dimension,
+            query=question,
+            search_type=search_type, 
+            evaluation_content=evaluation_content, 
+            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS, 
+            evaluator=evaluator,
+            model_name=config.AZURE_EMBEDDING_DEPLOYMENT_NAME
+        )
         evals.append(evaluation)
     
         if config.RERANK:
@@ -239,13 +272,14 @@ def main(config: Config):
                                         )
                                     else:
                                         docs, evaluation = query_and_eval_acs(
-                                            search_client,
-                                            dimension,
-                                            user_prompt,
-                                            s_v,
-                                            evaluation_content,
-                                            config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                            evaluator
+                                            search_client=search_client,
+                                            dimension=dimension,
+                                            query=user_prompt,
+                                            search_type=s_v,
+                                            evaluation_content=evaluation_content,
+                                            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                            evaluator=evaluator,
+                                            model_name=config.AZURE_EMBEDDING_DEPLOYMENT_NAME
                                         )
                                         search_evals.append(evaluation)
 

@@ -9,26 +9,29 @@ from sentence_transformers import SentenceTransformer
 
 
 size_model_mapping = {
-    384: 'all-MiniLM-L6-v2',
-    768: 'all-mpnet-base-v2',
-    1024: 'bert-large-nli-mean-tokens',
+    384: "all-MiniLM-L6-v2",
+    768: "all-mpnet-base-v2",
+    1024: "bert-large-nli-mean-tokens",
 }
 
-
-def generate_embedding(size: int, chunk: str) -> List[float]:
+# If we were about to choose model by the name, code would be cleaner.
+# We could give user an option to choose the model either by the name or by the size, whicheven is specified.
+def generate_embedding(size: int, chunk: str, model_name: str) -> List[float]:
     """
     Generates an embedding for a given text chunk using a pre-trained transformer model.
 
     Args:
         size (int): The size of the transformer model to use. Must be one of 384, 768, 1024 or 1536.
         chunk (str): The text chunk to generate an embedding for.
+        model_name (str): Name of the model used to generate the embedding.
 
     Returns:
         List[float]: A list of floats representing the embedding for the given text chunk.
     """
     if size == 1536:
-        embedding = openai.Embedding.create(input=[chunk],
-                                            engine=os.getenv('OPENAI_EMBEDDING_DEPLOYED_MODEL'))['data'][0]['embedding']
+        embedding = openai.Embedding.create(
+            input=[chunk], engine=model_name
+        )["data"][0]["embedding"]
         return [embedding]
 
     if size in size_model_mapping:
