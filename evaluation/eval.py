@@ -371,7 +371,7 @@ def generate_metrics(experiment_name, run_id):
                 logger.debug(models_metrics)
     else:
         current_run = client.get_run(run_id)
-        if run.data.params.get("run_metrics", {}) != {}:  # todo: fix the issue - shift block?
+        if current_run.data.params.get("run_metrics", {}) != {}:
             metrics = ast.literal_eval(current_run.data.params['run_metrics'])
             for metric_type, metric_value in metrics.items():
                 if models_metrics.get(metric_type, {}) == {}:
