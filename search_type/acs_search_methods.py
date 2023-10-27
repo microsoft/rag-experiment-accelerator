@@ -345,7 +345,13 @@ def search_for_match_pure_vector_cross(
     return formatted_search_results
 
 
-def search_for_manual_hybrid(client, size, query, retrieve_num_of_documents):
+def search_for_manual_hybrid(
+        client: azure.search.documents.SearchClient,
+        size: int,
+        query: str,
+        retrieve_num_of_documents: int,
+        model_name: str = None
+    ):
     """
     Searches for documents using a combination of text, vector, and semantic matching.
 
