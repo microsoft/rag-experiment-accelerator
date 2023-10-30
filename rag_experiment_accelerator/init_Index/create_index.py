@@ -17,7 +17,7 @@ from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,
 )
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 

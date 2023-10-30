@@ -1,10 +1,10 @@
 import azure
-from embedding.gen_embeddings import generate_embedding
+from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential  
 from azure.search.documents import SearchClient  
 from azure.search.documents.models import Vector  
-from nlp.preprocess import Preprocess
-from utils.logging import get_logger
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 pre_process = Preprocess()

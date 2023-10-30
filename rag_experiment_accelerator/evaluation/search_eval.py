@@ -1,7 +1,7 @@
-from evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from sklearn import metrics
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 

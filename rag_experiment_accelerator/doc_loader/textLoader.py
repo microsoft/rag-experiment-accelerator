@@ -1,15 +1,15 @@
-from doc_loader.structuredLoader import load_structured_files
-from langchain.document_loaders import BSHTMLLoader
-from utils.logging import get_logger
+from rag_experiment_accelerator.doc_loader.structuredLoader import load_structured_files
+from langchain.document_loaders import TextLoader
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-def load_html_files(
+def load_text_files(
     folder_path: str,
     chunk_size: str,
     overlap_size: str,
-    glob_patterns: list[str] = ["html", "htm", "xhtml", "html5"],
+    glob_patterns: list[str] = ["txt", "rtf"],
 ):
     """
     Load and process HTML files from a given folder path.
@@ -24,11 +24,11 @@ def load_html_files(
         list[Document]: A list of processed and split document chunks.
     """
 
-    logger.debug("Loading html files")
+    logger.debug("Loading text files")
 
     return load_structured_files(
-        language="html",
-        loader=BSHTMLLoader,
+        language="markdown",
+        loader=TextLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,
         overlap_size=overlap_size,

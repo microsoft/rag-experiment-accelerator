@@ -2,17 +2,23 @@ import json
 import re
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-import llm.prompts
-from llm.prompt_execution import generate_response
-from embedding.gen_embeddings import generate_embedding
-from nlp.preprocess import Preprocess
+from rag_experiment_accelerator.llm.prompts import (
+    prompt_instruction_title,
+    prompt_instruction_summary,
+    generate_qna_instruction,
+    multiple_prompt_instruction,
+    do_need_multiple_prompt_instruction,
+)
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
 import pandas as pd
 
 pre_process = Preprocess()
 
 
 import hashlib
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
@@ -41,7 +47,7 @@ def generate_title(chunk, model_name, temperature):
     Returns:
         str: The generated title.
     """
-    response = generate_response(llm.prompts.prompt_instruction_title, chunk, model_name, temperature)
+    response = generate_response(prompt_instruction_title, chunk, model_name, temperature)
     return response
 
 
@@ -57,7 +63,7 @@ def generate_summary(chunk, model_name, temperature):
     Returns:
         str: The generated summary.
     """
-    response = generate_response(llm.prompts.prompt_instruction_summary, chunk, model_name, temperature)
+    response = generate_response(prompt_instruction_summary, chunk, model_name, temperature)
     return response
 
 
@@ -136,7 +142,7 @@ def generate_qna(docs, model_name, temperature):
 
     for i, chunk in enumerate(docs):
         if len(chunk.page_content) > 50:
-            response = generate_response(llm.prompts.generate_qna_instruction, chunk.page_content, model_name, temperature)
+            response = generate_response(generate_qna_instruction, chunk.page_content, model_name, temperature)
             try:
                 response_dict = json.loads( response )
                 for each_pair in response_dict["prompts"]:
@@ -165,7 +171,7 @@ def we_need_multiple_questions(question, model_name, temperature):
     Returns:
         str: The generated response.
     """
-    full_prompt_instruction = llm.prompts.multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
+    full_prompt_instruction = multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
     response1= generate_response(full_prompt_instruction,"",model_name, temperature)
     return response1
 
@@ -181,6 +187,6 @@ def do_we_need_multiple_questions(question, model_name, temperature):
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    full_prompt_instruction = llm.prompts.do_need_multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
+    full_prompt_instruction = do_need_multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
     response1= generate_response(full_prompt_instruction,"",model_name, temperature)
     return re.search(r'\bHIGH\b', response1.upper())

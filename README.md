@@ -74,7 +74,7 @@ OPENAI_API_TYPE should be either azure if you planning to use Azure, open_ai if 
 ```bash
 conda create -n rag-test python=3.10
 conda activate rag-test
-python -m pip install -r requirements.txt
+pip install .
 ```
 
 4. Install Azure CLI and authorize:
