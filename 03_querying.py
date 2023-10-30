@@ -224,9 +224,9 @@ def main(config: Config):
                 question_count += 1             
 
         if (config.MAIN_PROMPT_INSTRUCTIONS):
-            main_prompt_instruction = config.MAIN_PROMPT_INSTRUCTIONS
+            prompt_instruction = config.MAIN_PROMPT_INSTRUCTIONS
         else:
-            main_prompt_instruction = llm.prompts.main_prompt_instruction
+            prompt_instruction = main_prompt_instruction
 
         directory_path = 'artifacts/outputs'
         if not os.path.exists(directory_path):
@@ -282,7 +282,7 @@ def main(config: Config):
                                                 evaluation_content,
                                                 config,
                                                 evaluator,
-                                                main_prompt_instruction
+                                                prompt_instruction
                                             )
                                         else:
                                             docs, evaluation = query_and_eval_acs(
@@ -301,7 +301,7 @@ def main(config: Config):
                                         else:
                                             prompt_instruction_context = docs
 
-                                        full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+                                        full_prompt_instruction = prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
                                         openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                         logger.debug(openai_response)
 
