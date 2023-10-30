@@ -36,6 +36,8 @@ The **RAG Experiment Accelerator** is config driven and offers a robust array of
 
 9. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visually compelling visualizations that facilitate effortless analysis and effortless sharing of experiment findings.
 
+10. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
+
 
 ## Installation
 
@@ -57,8 +59,8 @@ AZURE_SEARCH_SERVICE_ENDPOINT=
 AZURE_SEARCH_ADMIN_KEY=
 OPENAI_ENDPOINT=
 OPENAI_API_KEY=
+OPENAI_API_TYPE=
 OPENAI_API_VERSION=
-OPENAI_EMBEDDING_DEPLOYED_MODEL=
 SUBSCRIPTION_ID=
 WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
@@ -67,13 +69,14 @@ LOGGING_LEVEL=
 ```
 
 LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
+OPENAI_API_TYPE should be either azure if you planning to use Azure, open_ai if you want to use openai or excluded, if none of these required.
 
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
 conda create -n rag-test python=3.10
 conda activate rag-test
-python -m pip install -r requirements.txt
+pip install .
 ```
 
 4. Install Azure CLI and authorize:
@@ -107,7 +110,12 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     },
     "embedding_dimension" : "embedding Size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
     "efConstruction" : "efConstruction value determines the value of Azure Cognitive Search vector configuration." ,
-    "efSearch":  "efSearch value determines the value of Azure Cognitive Search vector configuration.",
+    "efsearch":  "efsearch value determines the value of Azure Cognitive Search vector configuration.",
+    "language": {
+        "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
+        "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
+        "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
+    },
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder", 
     "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
@@ -116,7 +124,8 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
     "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
     "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
-    "chat_model_name":  "determines the OpenAI model" ,
+    "chat_model_name":  "determines the OpenAI model",
+    "embedding_model_name": "embedding model name",
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0"
 }

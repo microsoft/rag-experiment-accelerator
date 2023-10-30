@@ -2,9 +2,9 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-from config import Config
-from evaluation import eval
-from utils.logging import get_logger
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.evaluation import eval
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 

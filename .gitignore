@@ -160,10 +160,17 @@ cython_debug/
 .idea/
 
 artifacts/
-data/*.pdf
 # OSX system folders
 **/.DS_Store
-eval_score/*
-artifacts
-!data/sample-pdf.pdf
 
+# Data files
+data/*
+# Keep folders
+!data/pdf/
+!data/html/
+!data/markdown/
+# Keep sample files
+!data/pdf/sample-pdf.pdf
+!data/html/sample-html.html
+!data/markdown/sample-markdown.md
+!data/markdown/sample-txt.txt
