@@ -1,11 +1,11 @@
 import os
 from typing import List, Union
-from doc_loader.pdfLoader import load_pdf_files
-from doc_loader.htmlLoader import load_html_files
-from doc_loader.markdownLoader import load_markdown_files
-from doc_loader.textLoader import load_text_files
+from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
+from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
+from rag_experiment_accelerator.doc_loader.markdownLoader import load_markdown_files
+from rag_experiment_accelerator.doc_loader.textLoader import load_text_files
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

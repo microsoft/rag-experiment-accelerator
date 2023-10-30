@@ -3,7 +3,7 @@ import glob
 from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.base import BaseLoader
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

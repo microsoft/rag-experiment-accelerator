@@ -21,12 +21,9 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
 from numpy import mean
-# TODO: Remove this after project is a package
-import sys
-sys.path.append(os.path.join(os.getcwd(), "config"))
-from config.config import AzureMLCredentials
+from rag_experiment_accelerator.config.config import AzureMLCredentials
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 load_dotenv()

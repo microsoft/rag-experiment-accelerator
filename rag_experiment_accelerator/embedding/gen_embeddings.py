@@ -1,5 +1,3 @@
-import os
-
 import openai
 from sentence_transformers import SentenceTransformer
 

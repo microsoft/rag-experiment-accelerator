@@ -2,20 +2,20 @@ import os
 import json
 from dotenv import load_dotenv
 
-from config import Config
+from rag_experiment_accelerator.config import Config
 
 load_dotenv(override=True)
 
-from init_Index.create_index import create_acs_index
-from doc_loader.documentLoader import load_documents
-from embedding.gen_embeddings import generate_embedding
-from ingest_data.acs_ingest import upload_data
-from nlp.preprocess import Preprocess
+from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
+from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
+from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from spacy import cli
 
 import nltk
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 nltk.download('punkt', force=True)
