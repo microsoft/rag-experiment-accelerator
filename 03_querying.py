@@ -324,7 +324,7 @@ def main(config: Config):
                                             out.write(json_string + "\n")
 
                             search_client.close()
-                            create_data_asset(write_path, index_name)
+                            create_data_asset(write_path, index_name, config.AzureMLCredentials)
     except FileNotFoundError:
         print('The file does not exist: ' + jsonl_file_path)                           
 
