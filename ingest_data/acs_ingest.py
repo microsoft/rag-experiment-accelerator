@@ -1,8 +1,5 @@
 import json
-import hashlib
-import json
 import re
-from typing import List
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 import llm.prompts
@@ -65,7 +62,7 @@ def generate_summary(chunk, model_name, temperature):
 
 
 def upload_data(
-        chunks: List,
+        chunks: list,
         service_endpoint: str,
         index_name: str,
         search_key: str,
