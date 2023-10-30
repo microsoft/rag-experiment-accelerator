@@ -1,6 +1,4 @@
-
 from dotenv import load_dotenv
-
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 
@@ -113,12 +111,10 @@ def remove_spaces(text):
     """
     return text.strip()
 
-
 #def compare_rouge(value1, value2):
 #    scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
 #    scores = scorer.score(value1, value2)
 #    return scores
-
 
 # https://huggingface.co/spaces/evaluate-metric/bleu
 def bleu(predictions, references):
@@ -127,8 +123,6 @@ def bleu(predictions, references):
     results = bleu.compute(predictions=predictions, references=references, max_order = 2)
     # multiplying by 100 to maintain consistency with previous implementation
     return results["bleu"] * 100
-
-
 
 def fuzzy(doc1, doc2):
     """
