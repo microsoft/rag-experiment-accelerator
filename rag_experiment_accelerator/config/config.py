@@ -1,7 +1,6 @@
 import json
 import os
 import openai
-from typing import List
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -294,13 +293,13 @@ class Config:
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self._check_deployment()
 
-    def _try_retrieve_model(self, model_name: str, tags: List[str]) -> openai.Model:
+    def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """
         Tries to retrieve a specified model from OpenAI.
         
         Args:
             model_name (str): The name of the model to retrieve.
-            tags (List[str]): A list of capability tags to check for.
+            tags (list[str]): A list of capability tags to check for.
             
         Returns:
             openai.Model: The retrieved model object if successful.
