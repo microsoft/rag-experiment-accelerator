@@ -51,38 +51,50 @@ git clone https://github.com/microsoft/rag-experiment-accelerator.git
 
 ```bash
 
+
+
 AZURE_SEARCH_SERVICE_ENDPOINT=
 AZURE_SEARCH_ADMIN_KEY=
 OPENAI_ENDPOINT=
 OPENAI_API_KEY=
+OPENAI_API_TYPE=
 OPENAI_API_VERSION=
-OPENAI_EMBEDDING_DEPLOYED_MODEL=
 SUBSCRIPTION_ID=
 WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
+LOGGING_LEVEL=
 
 ```
-3. Execute the requirements.txt in a conda or virtual environment to install the dependencies.
+
+LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
+OPENAI_API_TYPE should be either azure if you planning to use Azure, open_ai if you want to use openai or excluded, if none of these required.
+
+3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
 conda create -n rag-test python=3.10
-
 conda activate rag-test
-
-python -m pip install -r requirements.txt
-
+pip install .
 ```
-4. Copy your pdf files into the data folder and remove any other files from this folder.
+
+4. Install Azure CLI and authorize:
+```bash
+az login
+az account set  --subscription="<your_subscription_guid>"
+az account show
+```
+
+5. Copy your `.pdf` files into the `data` folder.
 
 ## How to use
 
 To harness the capabilities of the **RAG Experiment Accelerator**, follow these steps:
 
-1. Modify the search_config.json file with hyper-parameters relevant to the experiment.
-2. Execute 01_index.py (python 01_index.py) to generate Azure Cognitive Search indexes and ingest data into the indexes.
-3. Execute 02_qa_generation.py (python 02_qa_generation.py) to generate Question-Answer pairs using Azure OpenAI.
-4. Execute 03_querying.py (python 03_querying.py) to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context. 
-5. Execute 04_evaluation.py (python 04_evaluation.py)  to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
+1. Modify the `search_config.json` file with hyper-parameters relevant to the experiment.
+2. Execute `01_index.py` (python 01_index.py) to generate Azure Cognitive Search indexes and ingest data into the indexes.
+3. Execute `02_qa_generation.py` (python 02_qa_generation.py) to generate Question-Answer pairs using Azure OpenAI.
+4. Execute `03_querying.py` (python 03_querying.py) to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context. 
+5. Execute `04_evaluation.py` (python 04_evaluation.py)  to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
 
 
 # Description of configuration elements
@@ -110,7 +122,8 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
     "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
     "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
-    "chat_model_name":  "determines the OpenAI model" ,
+    "chat_model_name":  "determines the OpenAI model",
+    "embedding_model_name": "embedding model name",
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0"
 }

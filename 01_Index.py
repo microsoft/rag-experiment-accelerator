@@ -1,89 +1,83 @@
-
 import os
 import json
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 
-load_dotenv()  
+from rag_experiment_accelerator.config import Config
 
+load_dotenv(override=True)
 
-from config.config import Config
-from doc_loader.pdfLoader import load_pdf_files
-from embedding.gen_embeddings import generate_embedding
-from ingest_data.acs_ingest import upload_data, generate_qna
-from init_Index.create_index import create_acs_index
-from nlp.preprocess import Preprocess
+from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
+from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
+from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from spacy import cli
 
 import nltk
 
+from rag_experiment_accelerator.utils.logging import get_logger
+logger = get_logger(__name__)
+
+nltk.download('punkt', force=True)
+nltk.download('stopwords', force=True)
+
+
 def main(config: Config):
-
-    nltk.download('punkt', force=True)
-    nltk.download('stopwords', force=True)
-
-    cli.download("en_core_web_md")
-
     pre_process = Preprocess()
 
-    service_endpoint = os.getenv("AZURE_SEARCH_SERVICE_ENDPOINT")  
-    index_name = os.getenv("AZURE_SEARCH_INDEX_NAME")  
-    key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
+    service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
+    key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
 
-    with open('search_config.json', 'r') as json_file:
-        data = json.load(json_file)
+    directory_path = 'artifacts'
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
 
-    chunk_sizes = config.CHUNK_SIZES
-    overlap_size = config.OVERLAP_SIZES
-    analyzers = config.LANGUAGE_ANALYZERS
+    all_index_config = "artifacts/generated_index_names"
+    index_dict = {"indexes": []}
 
+    for config_item in config.CHUNK_SIZES:
+        for overlap in config.OVERLAP_SIZES:
+            for dimension in config.EMBEDDING_DIMENSIONS:
+                for efConstruction in config.EF_CONSTRUCTIONS:
+                    for efSearch in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
+                        create_acs_index(service_endpoint, index_name, key, dimension, efConstruction, efSearch, config.LANGUAGE["analyzers"])
+                        index_dict["indexes"].append(index_name)
 
-    embedding_dimensions = config.EMBEDDING_DIMENSIONS
-    efConstructions = config.EF_CONSTRUCTIONS
-    efsearchs = config.EF_SEARCH
-    name_prefix = config.NAME_PREFIX
-    chat_model_name = config.CHAT_MODEL_NAME
-    temperature = config.TEMPERATURE
-    all_index_config = "generated_index_names"
-
-    index_dict = {}
-    index_dict["indexes"] = []
-
-    for config_item in chunk_sizes:
-        for overlap in overlap_size:
-            for dimension in embedding_dimensions:
-                for efConstruction in efConstructions:
-                    for efsearch in efsearchs:
-                        index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
-                        print(f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}")
-                        create_acs_index(service_endpoint,index_name, key, dimension, efConstruction, efsearch, analyzers)
-                        index_dict["indexes"].append(index_name) 
-                        
     with open(all_index_config, 'w') as index_name:
         json.dump(index_dict, index_name, indent=4)
 
-
-    for config_item in chunk_sizes:
-        for overlap in overlap_size:
-            for dimension in embedding_dimensions:
-                for efConstruction in efConstructions:
-                    for efsearch in efsearchs:
-                        index_name = f"{name_prefix}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efsearch}"
-                        all_docs = load_pdf_files("./data/", config_item, overlap)
+    for config_item in config.CHUNK_SIZES:
+        for overlap in config.OVERLAP_SIZES:
+            for dimension in config.EMBEDDING_DIMENSIONS:
+                for efConstruction in config.EF_CONSTRUCTIONS:
+                    for efSearch in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                        all_docs = load_documents(config.DATA_FORMATS, "./data/", config_item, overlap)
                         data_load = []
                         for docs in all_docs:
-                            chunk_dict = {}
-                            chunk_dict["content"] = docs.page_content
-                            chunk_dict["content_vector"] = generate_embedding(dimension, str(pre_process.preprocess( docs.page_content)))
+                            chunk_dict = {
+                                "content": docs.page_content,
+                                "content_vector": generate_embedding(
+                                    size=dimension,
+                                    chunk=str(pre_process.preprocess(docs.page_content)),
+                                    model_name=config.EMBEDDING_MODEL_NAME
+                                )
+                            }
                             data_load.append(chunk_dict)
-                        upload_data(data_load,service_endpoint,index_name,key, dimension, chat_model_name, temperature)
+                        upload_data(
+                            chunks=data_load,
+                            service_endpoint=service_endpoint,
+                            index_name=index_name,
+                            search_key=key,
+                            dimension=dimension,
+                            chat_model_name=config.CHAT_MODEL_NAME,
+                            embedding_model_name=config.EMBEDDING_MODEL_NAME,
+                            temperature=config.TEMPERATURE
+                        )
 
 
-    
 if __name__ == '__main__':
     config = Config()
     main(config)
-
-
-
-
-
