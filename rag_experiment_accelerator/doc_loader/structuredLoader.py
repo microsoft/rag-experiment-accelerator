@@ -1,9 +1,8 @@
 import os
 import glob
-from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.base import BaseLoader
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -14,7 +13,7 @@ def load_structured_files(
     folder_path: str,
     chunk_size: str,
     overlap_size: str,
-    glob_patterns: List[str],
+    glob_patterns: list[str],
 ):
     """
     Load and process structured files from a given folder path.
@@ -25,10 +24,10 @@ def load_structured_files(
         folder_path (str): The path of the folder where files are located.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
-        glob_patterns (List[str]): List of file extensions to consider (e.g., ["txt", "md"]).
+        glob_patterns (list[str]): List of file extensions to consider (e.g., ["txt", "md"]).
 
     Returns:
-        List[Document]: A list of processed and split document chunks.
+        list[Document]: A list of processed and split document chunks.
     """
 
     logger.info(f"Loading {language.upper()} files from {folder_path}")

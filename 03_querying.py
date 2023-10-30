@@ -1,16 +1,16 @@
 import os
 import json
+import azure
 from azure.search.documents import SearchClient
-from config import Config
-from evaluation.search_eval import evaluate_search_result
-from evaluation.spacy_evaluator import SpacyEvaluator
-from typing import Tuple, List, Dict, Any
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
+from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
-from search_type.acs_search_methods import  (
+from rag_experiment_accelerator.ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
+from rag_experiment_accelerator.search_type.acs_search_methods import  (
     search_for_match_pure_vector_multi,
     search_for_match_semantic,
     search_for_match_Hybrid_multi,
@@ -20,13 +20,13 @@ from search_type.acs_search_methods import  (
     search_for_match_pure_vector_cross,
     search_for_manual_hybrid
     )
-from  search_type.acs_search_methods import create_client
-import llm.prompts
-from llm.prompt_execution import generate_response
-from data_assets.data_asset import create_data_asset
-from reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
+from rag_experiment_accelerator.search_type.acs_search_methods import create_client
+from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
+from rag_experiment_accelerator.reranking.reranker import llm_rerank_documents, cross_encoder_rerank_documents
 
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
@@ -43,16 +43,24 @@ search_mapping = {
     "search_for_manual_hybrid": search_for_manual_hybrid
 }
 
-def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_documents):
+def query_acs(
+        search_client: azure.search.documents.SearchClient,
+        dimension: int,
+        user_prompt: str,
+        s_v: str,
+        retrieve_num_of_documents: str,
+        model_name: str = None,
+    ):
     """
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (str): The dimension to search within.
+        search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
+        dimension (int): The dimension to search within.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        model_name (str): The name of the model to use for searching.
 
     Returns:
         list: A list of documents matching the search query.
@@ -60,7 +68,13 @@ def query_acs(search_client, dimension, user_prompt, s_v, retrieve_num_of_docume
     if s_v not in search_mapping:
         pass
 
-    return search_mapping[s_v](search_client, dimension, user_prompt, retrieve_num_of_documents)
+    return search_mapping[s_v](
+        client=search_client,
+        size=dimension,
+        query=user_prompt,
+        retrieve_num_of_documents=retrieve_num_of_documents,
+        model_name=model_name
+    )
 
 
 def rerank_documents(
@@ -97,7 +111,8 @@ def query_and_eval_acs(
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
-):
+    model_name: str = None,
+) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
     results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
@@ -111,11 +126,19 @@ def query_and_eval_acs(
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+        model_name (str): The name of the model to use for searching.
 
     Returns:
-        Tuple[List[Dict[str, Any]], Dict[str, Any]]: A tuple containing the retrieved documents and the evaluation results.
+        tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
-    search_result = query_acs(search_client, dimension, query, search_type, retrieve_num_of_documents)
+    search_result = query_acs(
+        search_client=search_client,
+        dimension=dimension,
+        user_prompt=query,
+        s_v=search_type,
+        retrieve_num_of_documents=retrieve_num_of_documents,
+        model_name=model_name
+    )
     docs, evaluation = evaluate_search_result(search_result, evaluation_content, evaluator)
     evaluation['query'] = query
     return docs, evaluation
@@ -149,13 +172,22 @@ def query_and_eval_acs_multi(
         evaluator (SpacyEvaluator): The evaluator object.
 
     Returns:
-        Tuple[List[str], List[Dict[str, Any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
+        tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
         results for each question.
     """
     context = []
     evals = []
     for question in questions:
-        docs, evaluation = query_and_eval_acs(search_client, dimension, question, search_type, evaluation_content, config.RETRIEVE_NUM_OF_DOCUMENTS, evaluator)
+        docs, evaluation = query_and_eval_acs(
+            search_client=search_client, 
+            dimension=dimension,
+            query=question,
+            search_type=search_type, 
+            evaluation_content=evaluation_content, 
+            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS, 
+            evaluator=evaluator,
+            model_name=config.EMBEDDING_MODEL_NAME
+        )
         evals.append(evaluation)
     
         if config.RERANK:
@@ -163,6 +195,7 @@ def query_and_eval_acs_multi(
         else:
             prompt_instruction_context = docs
 
+        full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)

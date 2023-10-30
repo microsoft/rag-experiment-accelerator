@@ -1,8 +1,7 @@
 import json
 import os
 import openai
-from typing import List
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -253,7 +252,7 @@ class Config:
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         CHAT_MODEL_NAME (str): The name of the chat model to use.
-        EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.        
+        EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
@@ -265,6 +264,7 @@ class Config:
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
     """
+
     def __init__(self, config_filename: str = "search_config.json") -> None:
         with open(config_filename, "r") as json_file:
             data = json.load(json_file)
@@ -273,11 +273,11 @@ class Config:
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
         self.EF_CONSTRUCTIONS = data["efConstruction"]
-        self.EF_SEARCHES = data["efsearch"]
+        self.EF_SEARCHES = data["efSearch"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
-        self.CHAT_MODEL_NAME = data["chat_model_name"]
-        self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)        
+        self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
+        self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]
@@ -293,20 +293,13 @@ class Config:
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self._check_deployment()
 
-
-        with open("querying_config.json", "r") as json_file:
-            data = json.load(json_file)
-
-        self.EVAL_DATA_JSON_FILE_PATH = data["eval_data_json_file_path"]
-        self.MAIN_PROMPT_INSTRUCTIONS = data["main_prompt_instruction"]
-
-    def _try_retrieve_model(self, model_name: str, tags: List[str]) -> openai.Model:
+    def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """
         Tries to retrieve a specified model from OpenAI.
         
         Args:
             model_name (str): The name of the model to retrieve.
-            tags (List[str]): A list of capability tags to check for.
+            tags (list[str]): A list of capability tags to check for.
             
         Returns:
             openai.Model: The retrieved model object if successful.
@@ -354,3 +347,8 @@ class Config:
                     tags=["embeddings", "inference"],
                 )
                 logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")
+
+                
+
+
+

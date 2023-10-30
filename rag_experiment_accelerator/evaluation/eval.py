@@ -21,7 +21,9 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
 from numpy import mean
-from utils.logging import get_logger
+from rag_experiment_accelerator.config.config import AzureMLCredentials
+
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 load_dotenv()
@@ -48,8 +50,13 @@ large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-lar
 distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
 paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
+azure_ml_credentials = AzureMLCredentials.from_env()
+
 ml_client = MLClient(
-    DefaultAzureCredential(), os.environ['SUBSCRIPTION_ID'],os.environ['RESOURCE_GROUP_NAME'], os.environ['WORKSPACE_NAME']
+    DefaultAzureCredential(),
+    azure_ml_credentials.SUBSCRIPTION_ID,
+    azure_ml_credentials.RESOURCE_GROUP_NAME,
+    azure_ml_credentials.WORKSPACE_NAME,
 )
 mlflow_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_tracking_uri
 mlflow.set_tracking_uri(mlflow_tracking_uri)
@@ -164,18 +171,16 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     
     return int(sum(differences)/len(differences))
 
-from typing import List
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 
-def semantic_compare_values(value1: str, value2: str, differences: List[float], model_type: SentenceTransformer) -> None:
+def semantic_compare_values(value1: str, value2: str, differences: list[float], model_type: SentenceTransformer) -> None:
     """
     Computes the semantic similarity score between two values using a pre-trained SentenceTransformer model.
 
     Args:
         value1 (str): The first value to compare.
         value2 (str): The second value to compare.
-        differences (List[float]): A list to store the similarity score between the two values.
+        differences (list[float]): A list to store the similarity score between the two values.
         model_type (SentenceTransformer): A pre-trained SentenceTransformer model to encode the values.
 
     Returns:
@@ -187,19 +192,18 @@ def semantic_compare_values(value1: str, value2: str, differences: List[float], 
 
     differences.append(similarity_score * 100)
 
-    
-from typing import List
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 
-def semantic_compare_values(value1: str, value2: str, differences: List[float], model_type: SentenceTransformer) -> None:
+from sentence_transformers import SentenceTransformer
+
+
+def semantic_compare_values(value1: str, value2: str, differences: list[float], model_type: SentenceTransformer) -> None:
     """
     Computes the semantic similarity score between two values using the provided SentenceTransformer model.
 
     Args:
         value1 (str): The first value to compare.
         value2 (str): The second value to compare.
-        differences (List[float]): A list to append the similarity score to.
+        differences (list[float]): A list to append the similarity score to.
         model_type (SentenceTransformer): The SentenceTransformer model to use for encoding the values.
 
     Returns:
@@ -210,19 +214,19 @@ def semantic_compare_values(value1: str, value2: str, differences: List[float], 
     similarity_score = cosine_similarity(embedding1, embedding2)
 
     differences.append(similarity_score * 100)
-    
-from typing import List
+
+
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def semantic_compare_values(value1: str, value2: str, differences: List[float], model_type: SentenceTransformer) -> None:
+def semantic_compare_values(value1: str, value2: str, differences: list[float], model_type: SentenceTransformer) -> None:
     """
     Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
 
     Args:
         value1 (str): The first value to compare.
         value2 (str): The second value to compare.
-        differences (List[float]): A list to store the similarity scores.
+        differences (list[float]): A list to store the similarity scores.
         model_type (SentenceTransformer): The pre-trained SentenceTransformer model to use for encoding the values.
 
     Returns:

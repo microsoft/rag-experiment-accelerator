@@ -1,11 +1,11 @@
 
 import json
 import re
-import llm.prompts
-from llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
 import numpy as np
 from sentence_transformers import CrossEncoder
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_name, k):
@@ -59,7 +59,7 @@ def llm_rerank_documents(documents, question, deployment_name, temperature, rera
         Question: {question}
     """
 
-    response = generate_response(llm.prompts.rerank_prompt_instruction,prompt, deployment_name, temperature)
+    response = generate_response(rerank_prompt_instruction,prompt, deployment_name, temperature)
     logger.debug("Response", response)
     pattern = r'\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}'
     try:

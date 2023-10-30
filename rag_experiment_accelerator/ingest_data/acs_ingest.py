@@ -1,20 +1,24 @@
 import json
-import hashlib
-import json
 import re
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-import llm.prompts
-from llm.prompt_execution import generate_response
-from embedding.gen_embeddings import generate_embedding
-from nlp.preprocess import Preprocess
+from rag_experiment_accelerator.llm.prompts import (
+    prompt_instruction_title,
+    prompt_instruction_summary,
+    generate_qna_instruction,
+    multiple_prompt_instruction,
+    do_need_multiple_prompt_instruction,
+)
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
 import pandas as pd
 
 pre_process = Preprocess()
 
 
 import hashlib
-from utils.logging import get_logger
+from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
@@ -43,7 +47,7 @@ def generate_title(chunk, model_name, temperature):
     Returns:
         str: The generated title.
     """
-    response = generate_response(llm.prompts.prompt_instruction_title, chunk, model_name, temperature)
+    response = generate_response(prompt_instruction_title, chunk, model_name, temperature)
     return response
 
 
@@ -59,11 +63,20 @@ def generate_summary(chunk, model_name, temperature):
     Returns:
         str: The generated summary.
     """
-    response = generate_response(llm.prompts.prompt_instruction_summary, chunk, model_name, temperature)
+    response = generate_response(prompt_instruction_summary, chunk, model_name, temperature)
     return response
 
 
-def upload_data(chunks, service_endpoint, index_name, search_key, dimension, chat_model_name, temperature):
+def upload_data(
+        chunks: list,
+        service_endpoint: str,
+        index_name: str,
+        search_key: str,
+        dimension: int,
+        chat_model_name: str,
+        embedding_model_name: str,
+        temperature: float
+    ):
     """
     Uploads data to an Azure Cognitive Search index.
 
@@ -74,6 +87,7 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
         search_key (str): The search key for the Azure Cognitive Search service.
         dimension (int): The dimensionality of the embeddings to generate.
         chat_model_name (str): The name of the chat model to use for generating titles and summaries.
+        embedding_model_name (str): The name of the embedding model to use for generating embeddings.
         temperature (float): The temperature to use when generating titles and summaries.
 
     Returns:
@@ -92,8 +106,16 @@ def upload_data(chunks, service_endpoint, index_name, search_key, dimension, cha
             'content': str(chunk["content"]),
             'filename': "test",
             'contentVector': chunk["content_vector"][0],
-            'contentSummary': generate_embedding(dimension, str(pre_process.preprocess(summary)))[0],
-            'contentTitle': generate_embedding(dimension, str(pre_process.preprocess(title)))[0]
+            'contentSummary': generate_embedding(
+                size=dimension,
+                chunk=str(pre_process.preprocess(summary)),
+                model_name=embedding_model_name
+            )[0],
+            'contentTitle': generate_embedding(
+                size=dimension,
+                chunk=str(pre_process.preprocess(title)),
+                model_name=embedding_model_name
+            )[0]
         }
 
         documents.append(input_data)
@@ -120,7 +142,7 @@ def generate_qna(docs, model_name, temperature):
 
     for i, chunk in enumerate(docs):
         if len(chunk.page_content) > 50:
-            response = generate_response(llm.prompts.generate_qna_instruction, chunk.page_content, model_name, temperature)
+            response = generate_response(generate_qna_instruction, chunk.page_content, model_name, temperature)
             try:
                 response_dict = json.loads( response )
                 for each_pair in response_dict["prompts"]:
@@ -130,6 +152,7 @@ def generate_qna(docs, model_name, temperature):
                             'context': chunk.page_content
                     }
                 new_df = new_df._append(data, ignore_index=True)
+                logger.info(f"Generated {len(response_dict['prompts'])} QnA for document {i}")
             except:
                 logger.error("could not generate a valid json so moving over to next question !")
 
@@ -148,7 +171,7 @@ def we_need_multiple_questions(question, model_name, temperature):
     Returns:
         str: The generated response.
     """
-    full_prompt_instruction = llm.prompts.multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
+    full_prompt_instruction = multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
     response1= generate_response(full_prompt_instruction,"",model_name, temperature)
     return response1
 
@@ -164,6 +187,6 @@ def do_we_need_multiple_questions(question, model_name, temperature):
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    full_prompt_instruction = llm.prompts.do_need_multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
+    full_prompt_instruction = do_need_multiple_prompt_instruction + "\n"+  "question: "  + question + "\n"
     response1= generate_response(full_prompt_instruction,"",model_name, temperature)
     return re.search(r'\bHIGH\b', response1.upper())
