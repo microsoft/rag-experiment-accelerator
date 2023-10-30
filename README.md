@@ -36,6 +36,8 @@ The **RAG Experiment Accelerator** is config driven and offers a robust array of
 
 9. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visually compelling visualizations that facilitate effortless analysis and effortless sharing of experiment findings.
 
+10. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers) 
+
 
 ## Installation
 
