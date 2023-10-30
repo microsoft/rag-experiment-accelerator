@@ -323,7 +323,7 @@ class Config:
                     logger.critical(f"Model {model_name} does not have the {tag} capability.")
                     raise ValueError(f"Model {model_name} does not have the {tag} capability.")
             return model
-        except openai.error.InvalidRequestError:
+        except openai.error.InvalidRequestError as e:
             logger.critical(f"Model {model_name} does not exist.")
             raise ValueError(f"Model {model_name} does not exist.")
 
