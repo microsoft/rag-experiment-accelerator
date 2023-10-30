@@ -25,10 +25,7 @@ from azure.search.documents.indexes.models import (
     VectorSearch,  
     HnswVectorSearchAlgorithmConfiguration,  
 )
-
-from rag_experiment_accelerator.utils.logging import get_logger
-logger = get_logger(__name__)
-
+ 
 
 def create_acs_index(service_endpoint,
                     index_name,
@@ -46,7 +43,8 @@ def create_acs_index(service_endpoint,
     # Analyzer can only be used if neither search analyzer or index analyzer are set
     analyzer = analyzers["analyzer_name"] if analyzers["index_analyzer_name"] else ""
     # Create a search index
-    index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
+    index_client = SearchIndexClient(
+        endpoint=service_endpoint, credential=credential)
     fields = [
         SimpleField(name="id", type=SearchFieldDataType.String, key=True),
         SearchableField(name="content", type=SearchFieldDataType.String,
@@ -62,11 +60,9 @@ def create_acs_index(service_endpoint,
         SearchableField(name='text', type=SearchFieldDataType.String, 
                         searchable=True, analyzer_name=search_analyzer),                
         SearchField(name="contentVector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                    searchable=True, vector_search_dimensions=int(dimension),
-                    vector_search_configuration="my-vector-config"),
+                    searchable=True, vector_search_dimensions=int(dimension), vector_search_configuration="my-vector-config"),
         SearchField(name="contentTitle", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                    searchable=True, vector_search_dimensions=int(dimension),
-                    vector_search_configuration="my-vector-config"),
+                    searchable=True, vector_search_dimensions=int(dimension), vector_search_configuration="my-vector-config"),
         SearchField(name="contentSummary", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                     searchable=True, vector_search_dimensions=int(dimension), vector_search_configuration="my-vector-config"),
         SearchField(name="contentDescription", type=SearchFieldDataType.String,
@@ -124,4 +120,4 @@ def create_acs_index(service_endpoint,
                         token_filters=token_filters,
                         char_filters=char_filters)
     result = index_client.create_or_update_index(index)
-    logger.info(f' {result.name} created')
+    print(f' {result.name} created')
