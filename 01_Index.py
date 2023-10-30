@@ -42,7 +42,7 @@ def main(config: Config):
                     for efSearch in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
                         logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
-                        create_acs_index(service_endpoint, index_name, key, dimension, efConstruction, efSearch)
+                        create_acs_index(service_endpoint, index_name, key, dimension, efConstruction, efSearch, config.LANGUAGE["analyzers"])
                         index_dict["indexes"].append(index_name)
 
     with open(all_index_config, 'w') as index_name:
