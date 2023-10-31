@@ -5,7 +5,6 @@ from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
-from typing import Tuple, List, Dict, Any
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -111,7 +110,7 @@ def query_and_eval_acs(
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
     model_name: str = None,
-):
+) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
     results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
@@ -128,7 +127,7 @@ def query_and_eval_acs(
         model_name (str): The name of the model to use for searching.
 
     Returns:
-        Tuple[List[Dict[str, Any]], Dict[str, Any]]: A tuple containing the retrieved documents and the evaluation results.
+        tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
     search_result = query_acs(
         search_client=search_client,
@@ -170,7 +169,7 @@ def query_and_eval_acs_multi(
         evaluator (SpacyEvaluator): The evaluator object.
 
     Returns:
-        Tuple[List[str], List[Dict[str, Any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
+        tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
         results for each question.
     """
     context = []
