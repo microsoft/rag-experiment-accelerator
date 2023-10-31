@@ -13,14 +13,8 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from spacy import cli
 
-import nltk
-
 from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
-
-nltk.download('punkt', force=True)
-nltk.download('stopwords', force=True)
-
 
 def main(config: Config):
     pre_process = Preprocess()

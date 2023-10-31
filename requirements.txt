@@ -27,3 +27,6 @@ beautifulsoup4==4.12.2
 lxml==4.9.3
 unstructured==0.10.26
 pytest==7.4.3
+datasets=2.14.6
+evaluate=0.4.1
+typing=0.9.0

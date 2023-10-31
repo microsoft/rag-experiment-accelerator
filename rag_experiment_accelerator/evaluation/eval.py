@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-from nltk.translate.bleu_score import sentence_bleu
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 
@@ -10,8 +9,8 @@ import ast
 from fuzzywuzzy import fuzz
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
 from datetime import datetime
+import evaluate
 import spacy
 import textdistance
 import mlflow
@@ -112,16 +111,18 @@ def remove_spaces(text):
     """
     return text.strip()
 
-
 #def compare_rouge(value1, value2):
 #    scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
 #    scores = scorer.score(value1, value2)
 #    return scores
 
-def bleu(value1, value2):
-    score = sentence_bleu(str.split(value1), value2)
-    return score * 100
-
+# https://huggingface.co/spaces/evaluate-metric/bleu
+def bleu(predictions, references):
+    bleu = evaluate.load("bleu")
+    
+    results = bleu.compute(predictions=predictions, references=references, max_order = 2)
+    # multiplying by 100 to maintain consistency with previous implementation
+    return results["bleu"] * 100
 
 def fuzzy(doc1, doc2):
     """
