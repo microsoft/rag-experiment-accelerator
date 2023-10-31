@@ -5,8 +5,11 @@ from rag_experiment_accelerator.config.config import (
     AzureMLCredentials,
     OpenAICredentials,
     Config,
+    _mask_string,
+    _get_env_var,
 )
-from unittest.mock import patch, MagicMock, PropertyMock
+import openai
+from unittest.mock import patch, call
 
 
 def test_init_search_credentials():
@@ -97,9 +100,7 @@ def test_from_env_openai_credentials(mock_get_env_var):
         (None, None, None),
     ],
 )
-@patch(
-    "rag_experiment_accelerator.config.config.openai"
-)  # replace 'your_module' with the actual module name
+@patch("rag_experiment_accelerator.config.config.openai")
 def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_base):
     creds = OpenAICredentials(
         openai_api_type=api_type,
@@ -117,11 +118,6 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
     if api_type == "azure":
         assert str(mock_openai.api_version) == expect_api_version
         assert str(mock_openai.api_base) == expect_api_base
-
-
-# Load mock config data from a YAML file
-with open("tests/config/data/test_config.json", "r") as file:
-    mock_config_data = json.load(file)
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
@@ -150,15 +146,21 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
 def test_config_init(
     mock_openai_model_retrieve,
 ):
+    # Load mock config data from a YAML file
+    with open(
+        "rag_experiment_accelerator/config/tests/data/test_config.json", "r"
+    ) as file:
+        mock_config_data = json.load(file)
+
     mock_openai_model_retrieve.return_value = {
         "status": "succeeded",
         "capabilities": {
             "embeddings": True,
             "inference": True,
             "chat_completion": True,
-        }
+        },
     }
-    config = Config("tests/config/data/test_config.json")
+    config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
@@ -175,7 +177,173 @@ def test_config_init(
     assert config.CHAT_MODEL_NAME == mock_config_data["chat_model_name"]
     assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
-    assert config.SEARCH_RELEVANCY_THRESHOLD == mock_config_data["search_relevancy_threshold"]
+    assert (
+        config.SEARCH_RELEVANCY_THRESHOLD
+        == mock_config_data["search_relevancy_threshold"]
+    )
     assert config.DATA_FORMATS == mock_config_data["data_formats"]
-    assert mock_openai_model_retrieve.called  # Ensure that the OpenAI model is retrieved
+    assert (
+        mock_openai_model_retrieve.called
+    )  # Ensure that the OpenAI model is retrieved
 
+
+@pytest.mark.parametrize(
+    "model_status, capabilities, tags, raises_exception",
+    [
+        (
+            "succeeded",
+            {"chat_completion": True, "inference": True},
+            ["chat_completion", "inference"],
+            False,
+        ),
+        (
+            "failed",
+            {"chat_completion": True, "inference": True},
+            ["chat_completion", "inference"],
+            True,
+        ),
+        (
+            "succeeded",
+            {"chat_completion": False, "inference": True},
+            ["chat_completion", "inference"],
+            True,
+        ),
+        (
+            None,
+            None,
+            ["chat_completion", "inference"],
+            True,
+        ),
+    ],
+)
+def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
+    if model_status is not None:
+        with patch(
+            "rag_experiment_accelerator.config.config.openai.Model.retrieve"
+        ) as mock_retrieve:
+            mock_model = {
+                "status": model_status,
+                "capabilities": {
+                    "chat_completion": capabilities["chat_completion"],
+                    "inference": capabilities["inference"],
+                    "embeddings": True,
+                },
+            }
+            mock_retrieve.return_value = mock_model
+
+            config = Config()
+            config.OpenAICredentials.OPENAI_API_TYPE = "azure"
+
+            if raises_exception:
+                with pytest.raises(ValueError):
+                    config._try_retrieve_model("model_name", tags)
+            else:
+                result = config._try_retrieve_model("model_name", tags)
+                assert result == mock_model
+    else:
+        with patch(
+            "rag_experiment_accelerator.config.config.openai.Model.retrieve",
+            side_effect=openai.error.InvalidRequestError("Test error", "404"),
+        ):
+            config = Config()
+
+            with pytest.raises(ValueError):
+                config._try_retrieve_model("model_name", tags)
+
+
+@pytest.mark.parametrize(
+    "api_type, chat_model_name, embedding_model_name, chat_tags, embedding_tags",
+    [
+        ("openai", "gpt-3", None, ["chat_completion", "inference"], None),
+        ("azure", None, "bert", None, ["embeddings", "inference"]),
+        (
+            "openai",
+            "gpt-3",
+            "bert",
+            ["chat_completion", "inference"],
+            ["embeddings", "inference"],
+        ),
+    ],
+)
+def test_check_deployment(
+    api_type,
+    chat_model_name,
+    embedding_model_name,
+    chat_tags,
+    embedding_tags,
+):
+    with patch(
+        "rag_experiment_accelerator.config.config.Config._try_retrieve_model"
+    ) as mock_try_retrieve_model:
+        mock_try_retrieve_model.return_value = None  # Adjust as needed
+
+        config = Config()
+        config.OpenAICredentials.OPENAI_API_TYPE = api_type
+        config.CHAT_MODEL_NAME = chat_model_name
+        config.EMBEDDING_MODEL_NAME = embedding_model_name
+
+        config._check_deployment()
+        calls = []
+        if chat_model_name:
+            calls.append(call(chat_model_name, tags=chat_tags))
+        if embedding_model_name:
+            calls.append(call(embedding_model_name, tags=embedding_tags))
+
+        mock_try_retrieve_model.assert_has_calls(calls)
+
+
+@pytest.mark.parametrize(
+    "input_string, start, end, mask_char, expected",
+    [
+        ("1234567890", 2, 2, "*", "12******90"),
+        ("", 2, 2, "*", ""),
+        ("123", 1, 1, "*", "1*3"),
+        ("1234", 2, 2, "*", "1***"),
+        ("12", 1, 1, "*", "1*"),
+        ("1234", 0, 0, "*", "****"),
+        ("abcd", 2, 2, "#", "a###"),
+    ],
+)
+def test_mask_string(input_string, start, end, mask_char, expected):
+    result = _mask_string(input_string, start, end, mask_char)
+    assert result == expected
+
+
+@patch(
+    "rag_experiment_accelerator.config.config.logger"
+)  # Replace with the actual import path to logger
+@patch("os.getenv")
+@pytest.mark.parametrize(
+    "var_name, critical, mask, env_value, expected_value, expected_exception, expected_log",
+    [
+        ("TEST_VAR", True, False, "value", "value", None, "TEST_VAR set to value"),
+        (
+            "TEST_VAR",
+            True,
+            False,
+            None,
+            None,
+            ValueError,
+            "TEST_VAR environment variable not set.",
+        ),
+        ("TEST_VAR", True, True, "value", "value", None, "TEST_VAR set to va*ue"),
+    ],
+)
+def test_get_env_var(
+    mock_getenv,
+    mock_logger,
+    var_name,
+    critical,
+    mask,
+    env_value,
+    expected_value,
+    expected_exception,
+    expected_log,
+):
+    mock_getenv.return_value = env_value
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            _get_env_var(var_name, critical, mask)
+    else:
+        assert _get_env_var(var_name, critical, mask) == expected_value
+        mock_logger.info.assert_called_with(expected_log)
