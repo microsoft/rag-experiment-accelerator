@@ -26,9 +26,13 @@ def _mask_string(s: str, start: int = 2, end: int = 2, mask_char: str = "*") -> 
         return ""
 
     if len(s) <= start + end:
-        return s[0] + "*" * (len(s) - 1)
+        return s[0] + mask_char * (len(s) - 1)
 
-    return s[:start] + mask_char * (len(s) - start - end) + s[-end:]
+    return (
+        s[:start] + mask_char * (len(s) - start - end) + s[-end:]
+        if end > 0
+        else s[:start] + mask_char * (len(s) - start)
+    )
 
 
 def _get_env_var(var_name: str, critical: bool, mask: bool) -> str:
@@ -226,10 +230,9 @@ class OpenAICredentials:
         Sets the OpenAI credentials.
         """
         if self.OPENAI_API_TYPE is not None:
-
-            if self.OPENAI_API_TYPE is not None:
-                openai.api_type = self.OPENAI_API_TYPE
-                openai.api_key = self.OPENAI_API_KEY
+            openai.api_type = self.OPENAI_API_TYPE
+            openai.api_key = self.OPENAI_API_KEY
+            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
 
             if self.OPENAI_API_TYPE == "azure":
                 openai.api_version = self.OPENAI_API_VERSION
@@ -303,14 +306,13 @@ class Config:
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """
         Tries to retrieve a specified model from OpenAI.
-        
+
         Args:
             model_name (str): The name of the model to retrieve.
             tags (list[str]): A list of capability tags to check for.
-            
         Returns:
             openai.Model: The retrieved model object if successful.
-            
+
         Raises:
             ValueError: If the model is not ready or does not have the required capabilities.
             openai.error.InvalidRequestError: If the model does not exist.
@@ -320,16 +322,20 @@ class Config:
 
             # For non-azure models we can't retrieve status and capabilities
             if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
-                return
+                return model
             if model["status"] != "succeeded":
                 logger.critical(f"Model {model_name} is not ready.")
                 raise ValueError(f"Model {model_name} is not ready.")
             for tag in tags:
                 if not model["capabilities"][tag]:
-                    logger.critical(f"Model {model_name} does not have the {tag} capability.")
-                    raise ValueError(f"Model {model_name} does not have the {tag} capability.")
+                    logger.critical(
+                        f"Model {model_name} does not have the {tag} capability."
+                    )
+                    raise ValueError(
+                        f"Model {model_name} does not have the {tag} capability."
+                    )
             return model
-        except openai.error.InvalidRequestError:
+        except openai.error.InvalidRequestError as e:
             logger.critical(f"Model {model_name} does not exist.")
             raise ValueError(f"Model {model_name} does not exist.")
 
@@ -354,8 +360,3 @@ class Config:
                     tags=["embeddings", "inference"],
                 )
                 logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")
-
-                
-
-
-

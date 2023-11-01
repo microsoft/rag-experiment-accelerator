@@ -5,7 +5,7 @@
         "overlap_size": [200]
     },
     "embedding_dimension": [768],
-    "efConstruction": [400 ],
+    "efConstruction": [400],
     "efSearch": [400],
     "language":{
         "analyzers": {
