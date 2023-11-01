@@ -166,7 +166,7 @@ def test_config_init(
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
     assert config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
     assert config.EF_CONSTRUCTIONS == mock_config_data["efConstruction"]
-    assert config.EF_SEARCHES == mock_config_data["efsearch"]
+    assert config.EF_SEARCHES == mock_config_data["efSearch"]
     assert config.RERANK == mock_config_data["rerank"]
     assert config.RERANK_TYPE == mock_config_data["rerank_type"]
     assert config.LLM_RERANK_THRESHOLD == mock_config_data["llm_re_rank_threshold"]
