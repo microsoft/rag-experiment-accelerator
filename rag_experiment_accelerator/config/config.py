@@ -230,9 +230,9 @@ class OpenAICredentials:
         Sets the OpenAI credentials.
         """
         if self.OPENAI_API_TYPE is not None:
-            if self.OPENAI_API_TYPE is not None:
-                openai.api_type = self.OPENAI_API_TYPE
-                openai.api_key = self.OPENAI_API_KEY
+            openai.api_type = self.OPENAI_API_TYPE
+            openai.api_key = self.OPENAI_API_KEY
+            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
 
             if self.OPENAI_API_TYPE == "azure":
                 openai.api_version = self.OPENAI_API_VERSION

@@ -14,6 +14,7 @@ def load_structured_files(
     chunk_size: str,
     overlap_size: str,
     glob_patterns: list[str],
+    loader_kwargs: dict[any] = None,
 ):
     """
     Load and process structured files from a given folder path.
@@ -25,6 +26,7 @@ def load_structured_files(
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
         glob_patterns (list[str]): List of file extensions to consider (e.g., ["txt", "md"]).
+        loader_kwargs (dict[any]): Extra arguments to loader.
 
     Returns:
         list[Document]: A list of processed and split document chunks.
@@ -40,8 +42,11 @@ def load_structured_files(
     logger.debug(f"Found {len(matching_files)} {language.upper()} files")
 
     documents = []
+    if loader_kwargs is None:
+        loader_kwargs = {}
+
     for file in matching_files:
-        document = loader(file).load()
+        document = loader(file, **loader_kwargs).load()
         documents += document
 
     logger.debug(f"Loaded {len(documents)} {language.upper()} files")
