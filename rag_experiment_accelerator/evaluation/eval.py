@@ -1,6 +1,4 @@
 from dotenv import load_dotenv
-from azure.identity import DefaultAzureCredential
-from azure.ai.ml import MLClient
 
 import pandas as pd
 import warnings
@@ -14,13 +12,11 @@ import evaluate
 import spacy
 import textdistance
 import mlflow
-from mlflow import MlflowClient
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import os
 from numpy import mean
-from rag_experiment_accelerator.config.config import AzureMLCredentials
 
 from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
@@ -41,25 +37,6 @@ formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
 
 pd.set_option('display.max_columns', None)
-
-all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
-large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
-large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
-distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
-paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-
-azure_ml_credentials = AzureMLCredentials.from_env()
-
-ml_client = MLClient(
-    DefaultAzureCredential(),
-    azure_ml_credentials.SUBSCRIPTION_ID,
-    azure_ml_credentials.RESOURCE_GROUP_NAME,
-    azure_ml_credentials.WORKSPACE_NAME,
-)
-mlflow_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_tracking_uri
-mlflow.set_tracking_uri(mlflow_tracking_uri)
-client = MlflowClient(mlflow_tracking_uri)
 
 eval_score_folder = './artifacts/eval_score'
 if not os.path.exists(eval_score_folder):
@@ -341,13 +318,18 @@ import ast
 import plotly.express as px
 import plotly.graph_objs as go
 
-def generate_metrics(experiment_name, run_id):
+def generate_metrics(
+        experiment_name,
+        run_id,
+        client
+    ):
     """
     Generates metrics for a given experiment and run ID.
 
     Args:
         experiment_name (str): The name of the experiment.
         run_id (int): The ID of the run.
+        client (mlflow.MlflowClient): The MLflow client to use for logging the metrics.
 
     Returns:
         None
@@ -416,13 +398,18 @@ def generate_metrics(experiment_name, run_id):
         x_axis = []
         y_axis = []
 
-def draw_hist_df(df, run_id):
+def draw_hist_df(
+        df,
+        run_id,
+        client
+    ):
     """
     Draw a histogram of the given dataframe and log it to the specified run ID.
 
     Args:
         df (pandas.DataFrame): The dataframe to draw the histogram from.
         run_id (str): The ID of the run to log the histogram to.
+        client (mlflow.MlflowClient): The MLflow client to use for logging the histogram.
 
     Returns:
         None
@@ -490,23 +477,39 @@ def compute_metrics(actual, expected, metric_type):
     elif metric_type == "fuzzy":
         score = fuzzy(actual, expected)
     elif metric_type == "bert_all_MiniLM_L6_v2":
-        score = compare_semantic_document_values(actual, expected,all_MiniLM_L6_v2 )
+        all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+        score = compare_semantic_document_values(actual, expected, all_MiniLM_L6_v2)
     elif metric_type == "bert_base_nli_mean_tokens":
-        score = compare_semantic_document_values(actual, expected,base_nli_mean_tokens )
+        base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
+        score = compare_semantic_document_values(actual, expected, base_nli_mean_tokens)
     elif metric_type == "bert_large_nli_mean_tokens":
-        score = compare_semantic_document_values(actual, expected,large_nli_mean_tokens )
+        large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
+        score = compare_semantic_document_values(actual, expected, large_nli_mean_tokens)
     elif metric_type == "bert_large_nli_stsb_mean_tokens":
-        score = compare_semantic_document_values(actual, expected,large_nli_stsb_mean_tokens )
+        large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
+        score = compare_semantic_document_values(actual, expected, large_nli_stsb_mean_tokens)
     elif metric_type == "bert_distilbert_base_nli_stsb_mean_tokens":
-        score = compare_semantic_document_values(actual, expected,distilbert_base_nli_stsb_mean_tokens )
+        distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
+        score = compare_semantic_document_values(actual, expected, distilbert_base_nli_stsb_mean_tokens)
     elif metric_type == "bert_paraphrase_multilingual_MiniLM_L12_v2":
-        score = compare_semantic_document_values(actual, expected,paraphrase_multilingual_MiniLM_L12_v2 )
+        paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+        score = compare_semantic_document_values(actual, expected, paraphrase_multilingual_MiniLM_L12_v2)
     else:
         pass
 
     return score
 
-def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, embedding_dimension, efConstruction, efSearch):
+def evaluate_prompts(
+        exp_name,
+        data_path,
+        config,
+        client,
+        chunk_size,
+        chunk_overlap,
+        embedding_dimension,
+        efConstruction,
+        efSearch
+    ):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
@@ -514,6 +517,7 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
         exp_name (str): Name of the experiment to log the results to.
         data_path (str): Path to the file containing the prompts to evaluate.
         config (Config): The configuration settings to use for evaluation.
+        client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
         chunk_overlap (int): Amount of overlap between the chunks.
         embedding_dimension (int): Dimension of the embeddings to use.
@@ -613,7 +617,7 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     logger.debug(f"Eval scores: {df.head()}")
     
     temp_df = df.drop(columns=columns_to_remove)
-    draw_search_chart(temp_df, run_id)
+    draw_search_chart(temp_df, run_id, client)
     
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
     
@@ -653,16 +657,22 @@ def evaluate_prompts(exp_name, data_path, config, chunk_size, chunk_overlap, emb
     mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")
     mlflow.log_artifact(f"{eval_score_folder}/sum_{formatted_datetime}.csv")
     draw_hist_df(sum_df, run_id)
-    generate_metrics(exp_name, run_id)
+    generate_metrics(exp_name, run_id, client)
     mlflow.end_run()
     # time.sleep(10)
-def draw_search_chart(temp_df, run_id):
+
+def draw_search_chart(
+        temp_df,
+        run_id,
+        client
+    ):
     """
     Draws a comparison chart of search types across metric types.
 
     Args:
         temp_df (pandas.DataFrame): The dataframe containing the data to be plotted.
         run_id (int): The ID of the current run.
+        client (mlflow.MlflowClient): The MLflow client to use for logging the chart.
 
     Returns:
         None
