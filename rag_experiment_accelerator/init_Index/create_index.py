@@ -26,6 +26,8 @@ from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,  
 )
  
+from rag_experiment_accelerator.utils.logging import get_logger
+logger = get_logger(__name__)
 
 def create_acs_index(service_endpoint,
                     index_name,
@@ -120,4 +122,4 @@ def create_acs_index(service_endpoint,
                         token_filters=token_filters,
                         char_filters=char_filters)
     result = index_client.create_or_update_index(index)
-    print(f' {result.name} created')
+    logger.info(f' {result.name} created')

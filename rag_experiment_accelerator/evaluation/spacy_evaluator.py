@@ -24,7 +24,7 @@ class SpacyEvaluator():
         try:
             self.nlp = spacy.load(model)
         except OSError:
-            print(f'Downloading spacy language model: {model}')
+            logger.info(f'Downloading spacy language model: {model}')
             from spacy.cli import download
             download(model)
             self.nlp = spacy.load(model)

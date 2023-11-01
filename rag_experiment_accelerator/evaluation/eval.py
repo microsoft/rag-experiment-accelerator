@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 try:
     nlp = spacy.load('en_core_web_lg')
 except OSError:
-    print('Downloading spacy language model: en_core_web_lg')
+    logger.info('Downloading spacy language model: en_core_web_lg')
     from spacy.cli import download
     download('en_core_web_lg')
     nlp = spacy.load('en_core_web_lg')
