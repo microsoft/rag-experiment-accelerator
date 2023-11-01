@@ -1,4 +1,4 @@
-from preprocess import Preprocess
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
 
 # Bug with vscode and pytest
 import sys
@@ -26,5 +26,5 @@ def test_remove_stopwords():
 def test_lemmatize():
     preprocessor = Preprocess()
     text = "kites babies dogs flying smiling driving died tried feet"
-    expected = "kite baby dog fly smile driving die try foot"
+    expected = "kite baby dog fly smile drive die try foot"
     assert preprocessor.lemmatize(text) == expected

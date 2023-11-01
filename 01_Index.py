@@ -74,4 +74,6 @@ def main(config: Config):
 
 if __name__ == '__main__':
     config = Config()
+    config.check_openai_deployment(config.EMBEDDING_MODEL_NAME)
+    config.check_openai_deployment(config.CHAT_MODEL_NAME)
     main(config)

@@ -166,7 +166,7 @@ def test_config_init(
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
     assert config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
     assert config.EF_CONSTRUCTIONS == mock_config_data["efConstruction"]
-    assert config.EF_SEARCHES == mock_config_data["efSearch"]
+    assert config.EF_SEARCHES == mock_config_data["efsearch"]
     assert config.RERANK == mock_config_data["rerank"]
     assert config.RERANK_TYPE == mock_config_data["rerank_type"]
     assert config.LLM_RERANK_THRESHOLD == mock_config_data["llm_re_rank_threshold"]
@@ -227,17 +227,19 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
                     "chat_completion": capabilities["chat_completion"],
                     "inference": capabilities["inference"],
                     "embeddings": True,
+                    "test": True,
                 },
             }
             mock_retrieve.return_value = mock_model
 
-            config = Config()
-            config.OpenAICredentials.OPENAI_API_TYPE = "azure"
-
             if raises_exception:
                 with pytest.raises(ValueError):
+                    config = Config()
+                    config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                     config._try_retrieve_model("model_name", tags)
             else:
+                config = Config()
+                config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                 result = config._try_retrieve_model("model_name", tags)
                 assert result == mock_model
     else:
@@ -245,9 +247,8 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
             "rag_experiment_accelerator.config.config.openai.Model.retrieve",
             side_effect=openai.error.InvalidRequestError("Test error", "404"),
         ):
-            config = Config()
-
             with pytest.raises(ValueError):
+                config = Config()
                 config._try_retrieve_model("model_name", tags)
 
 

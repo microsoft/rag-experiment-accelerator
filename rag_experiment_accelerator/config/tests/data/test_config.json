@@ -6,7 +6,7 @@
     },
     "embedding_dimension": [3],
     "efConstruction": [4],
-    "efSearch": [5],
+    "efsearch": [5],
     "rerank": "test_rerank",
     "rerank_type": "test_rerank_type",
     "llm_re_rank_threshold": 6,
