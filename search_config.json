@@ -6,7 +6,7 @@
     },
     "embedding_dimension" : [768],
     "efConstruction" : [400 ],
-    "efsearch": [400],
+    "efSearch": [400],
     "language":{
         "analyzers": {
             "analyzer_name": "en.microsoft",
