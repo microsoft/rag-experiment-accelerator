@@ -4,8 +4,8 @@
         "chunk_size": [1000],
         "overlap_size": [200]
     },
-    "embedding_dimension" : [768],
-    "ef_construction" : [400 ],
+    "embedding_dimension": [768],
+    "ef_construction": [400],
     "ef_search": [400],
     "language":{
         "analyzers": {
@@ -14,7 +14,7 @@
             "search_analyzer_name": "",
             "char_filters": [],
             "tokenizers": [],
-            "token_filters": []            
+            "token_filters": []
         },
         "query_language": "en-us"
     },
