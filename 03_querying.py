@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import we_need_multiple_questions, do_we_need_multiple_questions
-from rag_experiment_accelerator.search_type.acs_search_methods import  (
+from rag_experiment_accelerator.search_type.acs_search_methods import (
     search_for_match_pure_vector_multi,
     search_for_match_semantic,
     search_for_match_Hybrid_multi,
@@ -19,7 +19,7 @@ from rag_experiment_accelerator.search_type.acs_search_methods import  (
     search_for_match_pure_vector,
     search_for_match_pure_vector_cross,
     search_for_manual_hybrid
-    )
+)
 from rag_experiment_accelerator.search_type.acs_search_methods import create_client
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.llm.prompt_execution import generate_response
