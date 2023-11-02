@@ -656,7 +656,7 @@ def evaluate_prompts(
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")
     mlflow.log_artifact(f"{eval_score_folder}/sum_{formatted_datetime}.csv")
-    draw_hist_df(sum_df, run_id, client)
+    draw_hist_df(sum_df, run_id)
     generate_metrics(exp_name, run_id, client)
     mlflow.end_run()
     # time.sleep(10)
