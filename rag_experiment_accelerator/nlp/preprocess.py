@@ -3,13 +3,16 @@ import spacy
 
 from string import punctuation
 
+from rag_experiment_accelerator.utils.logging import get_logger
+logger = get_logger(__name__)
+
 
 class Preprocess:
     def __init__(self):
         try:
             self.nlp = spacy.load("en_core_web_lg")
         except OSError:
-            print(f'Downloading spacy language model: {"en_core_web_lg"}')
+            logger.info(f'Downloading spacy language model: {"en_core_web_lg"}')
             from spacy.cli import download
             download("en_core_web_lg")
             self.nlp = spacy.load("en_core_web_lg")
