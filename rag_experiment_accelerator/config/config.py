@@ -296,6 +296,12 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self._check_deployment()
+        
+        with open("querying_config.json", "r") as json_file:
+            data = json.load(json_file)
+
+        self.EVAL_DATA_JSON_FILE_PATH = data["eval_data_json_file_path"]
+        self.MAIN_PROMPT_INSTRUCTIONS = data["main_prompt_instruction"]        
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """

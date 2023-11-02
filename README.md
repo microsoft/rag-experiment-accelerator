@@ -110,7 +110,7 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
     },
     "embedding_dimension" : "embedding Size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
     "efConstruction" : "efConstruction value determines the value of Azure Cognitive Search vector configuration." ,
-    "efsearch":  "efsearch value determines the value of Azure Cognitive Search vector configuration.",
+    "efSearch":  "efSearch value determines the value of Azure Cognitive Search vector configuration.",
     "language": {
         "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",

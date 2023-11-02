@@ -30,6 +30,8 @@ from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
+
+
 search_mapping = {
     "search_for_match_semantic": search_for_match_semantic,
     "search_for_match_Hybrid_multi": search_for_match_Hybrid_multi,
@@ -152,6 +154,7 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
+    main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
@@ -193,6 +196,7 @@ def query_and_eval_acs_multi(
             prompt_instruction_context = docs
 
         full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+        full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         openai_response = generate_response(full_prompt_instruction, original_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
         context.append(openai_response)
         logger.debug(openai_response)
@@ -212,104 +216,116 @@ def main(config: Config):
     """
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
-
-
-    jsonl_file_path = "./artifacts/eval_data.jsonl"
+    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
     question_count = 0
-    with open(jsonl_file_path, 'r') as file:
-        for line in file:
-            question_count += 1
+    try:
+        with open(jsonl_file_path, 'r') as file:
+            for line in file:
+                question_count += 1             
 
-    directory_path = 'artifacts/outputs'
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+        if (config.MAIN_PROMPT_INSTRUCTIONS):
+            prompt_instruction = config.MAIN_PROMPT_INSTRUCTIONS
+        else:
+            prompt_instruction = main_prompt_instruction
 
-    evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
+        directory_path = 'artifacts/outputs'
+        os.makedirs(directory_path, exist_ok=True)
 
-    for config_item in config.CHUNK_SIZES:
-        for overlap in config.OVERLAP_SIZES:
-            for dimension in config.EMBEDDING_DIMENSIONS:
-                for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efSearch in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        logger.info(f"Index: {index_name}")
+        evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
-                        write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
-                        if os.path.exists(write_path):
-                            continue
+        for config_item in config.CHUNK_SIZES:
+            for overlap in config.OVERLAP_SIZES:
+                for dimension in config.EMBEDDING_DIMENSIONS:
+                    for efConstruction in config.EF_CONSTRUCTIONS:
+                        for efSearch in config.EF_SEARCHES:
+                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                            logger.info(f"Index: {index_name}")
 
-                        search_client = create_client(service_endpoint, index_name, search_admin_key)
+                            write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
+                            if os.path.exists(write_path):
+                                continue
 
-                        with open(jsonl_file_path, 'r') as file:
-                            for line in file:
-                                data = json.loads(line)
-                                user_prompt = data.get("user_prompt")
-                                output_prompt = data.get("output_prompt")
-                                qna_context = data.get("context", "")
+                            search_client = create_client(service_endpoint, index_name, search_admin_key)
 
-                                is_multi_question = do_we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
-                                if is_multi_question:
-                                    new_questions = json.loads(we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE))['questions']
-                                    new_questions.append(user_prompt)
+                            with open(jsonl_file_path, 'r') as file:
+                                for line in file:
+                                    data = json.loads(line)
+                                    user_prompt = data.get("user_prompt")
+                                    output_prompt = data.get("output_prompt")
+                                    qna_context = data.get("context", "")
 
-                                evaluation_content = user_prompt + qna_context
-                                for s_v in config.SEARCH_VARIANTS:
-
-                                    search_evals = []
+                                    is_multi_question = do_we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE)
                                     if is_multi_question:
-                                        docs, search_evals = query_and_eval_acs_multi(
-                                            search_client,
-                                            dimension,
-                                            new_questions,
-                                            user_prompt,
-                                            output_prompt,
-                                            s_v,
-                                            evaluation_content,
-                                            config,
-                                            evaluator
-                                        )
-                                    else:
-                                        docs, evaluation = query_and_eval_acs(
-                                            search_client=search_client,
-                                            dimension=dimension,
-                                            query=user_prompt,
-                                            search_type=s_v,
-                                            evaluation_content=evaluation_content,
-                                            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                            evaluator=evaluator,
-                                            model_name=config.EMBEDDING_MODEL_NAME
-                                        )
-                                        search_evals.append(evaluation)
+                                        responses = json.loads(we_need_multiple_questions(user_prompt, config.CHAT_MODEL_NAME, config.TEMPERATURE))
+                                        new_questions = []
+                                        if isinstance(responses, dict):
+                                            new_questions = responses['questions']                                   
+                                        else:                                        
+                                            for response in responses:
+                                                if 'question' in response:
+                                                    new_questions.append(response['question'])
+                                        new_questions.append(user_prompt)
 
-                                    if config.RERANK:
-                                        prompt_instruction_context = rerank_documents(docs, user_prompt, output_prompt, config)
-                                    else:
-                                        prompt_instruction_context = docs
+                                    evaluation_content = user_prompt + qna_context
+                                    for s_v in config.SEARCH_VARIANTS:
 
-                                    full_prompt_instruction = main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-                                    openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
-                                    logger.debug(openai_response)
+                                        search_evals = []
+                                        if is_multi_question:
+                                            docs, search_evals = query_and_eval_acs_multi(
+                                                search_client,
+                                                dimension,
+                                                new_questions,
+                                                user_prompt,
+                                                output_prompt,
+                                                s_v,
+                                                evaluation_content,
+                                                config,
+                                                evaluator,
+                                                prompt_instruction
+                                            )
+                                        else:
+                                            docs, evaluation = query_and_eval_acs(
+                                                search_client,
+                                                dimension,
+                                                user_prompt,
+                                                s_v,
+                                                evaluation_content,
+                                                config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                evaluator
+                                            )
+                                            search_evals.append(evaluation)
 
-                                    output = {
-                                        "rerank": config.RERANK,
-                                        "rerank_type": config.RERANK_TYPE,
-                                        "crossencoder_model": config.CROSSENCODER_MODEL,
-                                        "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
-                                        "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                        "cross_encoder_at_k": config.CROSSENCODER_AT_K,
-                                        "question_count": question_count,
-                                        'actual': openai_response,
-                                        'expected': output_prompt,
-                                        'search_type': s_v,
-                                        'search_evals': search_evals
-                                    }
+                                        if config.RERANK:
+                                            prompt_instruction_context = rerank_documents(docs, user_prompt, output_prompt, config)
+                                        else:
+                                            prompt_instruction_context = docs
 
-                                    with open(write_path, 'a') as out:
-                                        json_string = json.dumps(output)
-                                        out.write(json_string + "\n")
+                                        full_prompt_instruction = prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+                                        openai_response = generate_response(full_prompt_instruction,user_prompt,config.CHAT_MODEL_NAME, config.TEMPERATURE)
+                                        logger.debug(openai_response)
 
-                        search_client.close()
-                        create_data_asset(write_path, index_name, config.AzureMLCredentials)
+                                        output = {
+                                            "rerank": config.RERANK,
+                                            "rerank_type": config.RERANK_TYPE,
+                                            "crossencoder_model": config.CROSSENCODER_MODEL,
+                                            "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
+                                            "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                            "cross_encoder_at_k": config.CROSSENCODER_AT_K,
+                                            "question_count": question_count,
+                                            'actual': openai_response,
+                                            'expected': output_prompt,
+                                            'search_type': s_v,
+                                            'search_evals': search_evals
+                                        }
+
+                                        with open(write_path, 'a') as out:
+                                            json_string = json.dumps(output)
+                                            out.write(json_string + "\n")
+
+                            search_client.close()
+                            create_data_asset(write_path, index_name, config.AzureMLCredentials)
+    except FileNotFoundError:
+        print('The file does not exist: ' + jsonl_file_path)                           
 
 
 if __name__ == '__main__':
