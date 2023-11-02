@@ -229,8 +229,7 @@ def main(config: Config):
             prompt_instruction = main_prompt_instruction
 
         directory_path = 'artifacts/outputs'
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
+        os.makedirs(directory_path, exist_ok=True)
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
