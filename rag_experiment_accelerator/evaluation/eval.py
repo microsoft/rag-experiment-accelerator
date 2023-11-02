@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 try:
     nlp = spacy.load('en_core_web_lg')
 except OSError:
-    print('Downloading spacy language model: en_core_web_lg')
+    logger.info('Downloading spacy language model: en_core_web_lg')
     from spacy.cli import download
     download('en_core_web_lg')
     nlp = spacy.load('en_core_web_lg')
@@ -656,7 +656,7 @@ def evaluate_prompts(
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")
     mlflow.log_artifact(f"{eval_score_folder}/sum_{formatted_datetime}.csv")
-    draw_hist_df(sum_df, run_id)
+    draw_hist_df(sum_df, run_id, client)
     generate_metrics(exp_name, run_id, client)
     mlflow.end_run()
     # time.sleep(10)
