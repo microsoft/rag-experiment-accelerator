@@ -32,11 +32,11 @@ def main(config: Config):
     for config_item in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
-                for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efSearch in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
-                        create_acs_index(service_endpoint, index_name, key, dimension, efConstruction, efSearch, config.LANGUAGE["analyzers"])
+                for ef_construction in config.EF_CONSTRUCTIONS:
+                    for ef_search in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}")
+                        create_acs_index(service_endpoint, index_name, key, dimension, ef_construction, ef_search, config.LANGUAGE["analyzers"])
                         index_dict["indexes"].append(index_name)
 
     with open(all_index_config, 'w') as index_name:
@@ -45,9 +45,9 @@ def main(config: Config):
     for config_item in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
-                for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efSearch in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                for ef_construction in config.EF_CONSTRUCTIONS:
+                    for ef_search in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
                         all_docs = load_documents(config.DATA_FORMATS, "./data/", config_item, overlap)
                         data_load = []
                         for docs in all_docs:

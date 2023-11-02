@@ -229,9 +229,9 @@ def main(config: Config):
     for config_item in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
-                for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efSearch in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
+                for ef_construction in config.EF_CONSTRUCTIONS:
+                    for ef_search in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
                         logger.info(f"Index: {index_name}")
 
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"

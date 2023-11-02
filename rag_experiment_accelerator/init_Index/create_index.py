@@ -32,8 +32,8 @@ def create_acs_index(service_endpoint,
                      index_name,
                      key,
                      dimension,
-                     efconstruction,
-                     efsearch,
+                     ef_construction,
+                     ef_search,
                      analyzers):
     credential = AzureKeyCredential(key)
 
@@ -78,8 +78,8 @@ def create_acs_index(service_endpoint,
                 name="my-vector-config",
                 parameters=HnswParameters(
                     m=4,
-                    ef_construction=int(efconstruction),
-                    ef_search=int(efsearch),
+                    ef_construction=int(ef_construction),
+                    ef_search=int(ef_search),
                     metric="cosine"
                 ),
             )
