@@ -245,7 +245,7 @@ def main(config: Config):
                             index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
                             logger.info(f"Index: {index_name}")
 
-                            write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
+                            write_path = f"{directory_path}/eval_output_{index_name}.jsonl"
                             if os.path.exists(write_path):
                                 continue
 

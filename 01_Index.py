@@ -22,11 +22,9 @@ def main(config: Config):
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
 
-    directory_path = 'artifacts'
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+    os.makedirs("artifacts", exist_ok=True)
 
-    all_index_config = "artifacts/generated_index_names"
+    all_index_config = "artifacts/generated_index_names.jsonl"
     index_dict = {"indexes": []}
 
     for config_item in config.CHUNK_SIZES:
