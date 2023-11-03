@@ -29,3 +29,4 @@ unstructured==0.10.26
 datasets==2.14.6
 evaluate==0.4.1
 black==23.10.1
+pre-commit==3.5.0
