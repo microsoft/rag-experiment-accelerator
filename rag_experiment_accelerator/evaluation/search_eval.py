@@ -2,10 +2,13 @@ from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from sklearn import metrics
 
 from rag_experiment_accelerator.utils.logging import get_logger
+
 logger = get_logger(__name__)
 
 
-def evaluate_search_result(search_response: list, evaluation_content: str, evaluator: SpacyEvaluator):
+def evaluate_search_result(
+    search_response: list, evaluation_content: str, evaluator: SpacyEvaluator
+):
     content = []
 
     # create list of all docs with their is_relevant result to calculate recall and precision
@@ -24,18 +27,22 @@ def evaluate_search_result(search_response: list, evaluation_content: str, evalu
         logger.info(f"Content: {doc['content']}")
         logger.info(f"Search Score: {doc['@search.score']}")
 
-
-        precision_score = round(metrics.precision_score(is_relevant_results[:k], precision_predictions[:k]), 2)
+        precision_score = round(
+            metrics.precision_score(is_relevant_results[:k], precision_predictions[:k]),
+            2,
+        )
         precision_scores.append(precision_score)
         logger.info(f"Precision Score: {precision_score}@{k}")
 
         recall_predictions[i] = is_relevant_results[i]
-        recall_score = round(metrics.recall_score(is_relevant_results, recall_predictions), 2)
+        recall_score = round(
+            metrics.recall_score(is_relevant_results, recall_predictions), 2
+        )
         recall_scores.append(recall_score)
         logger.info(f"Recall Score: {recall_score}@{k}")
 
         # TODO: should we only append content when it is relevant?
-        content.append(doc['content']) 
+        content.append(doc["content"])
 
     eval_metrics = {
         "recall_scores": recall_scores,

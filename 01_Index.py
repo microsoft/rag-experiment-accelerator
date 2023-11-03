@@ -14,7 +14,9 @@ from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from spacy import cli
 
 from rag_experiment_accelerator.utils.logging import get_logger
+
 logger = get_logger(__name__)
+
 
 def main(config: Config):
     pre_process = Preprocess()
@@ -33,11 +35,21 @@ def main(config: Config):
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
-                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}")
-                        create_acs_index(service_endpoint, index_name, key, dimension, ef_construction, ef_search, config.LANGUAGE["analyzers"])
+                        logger.info(
+                            f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                        )
+                        create_acs_index(
+                            service_endpoint,
+                            index_name,
+                            key,
+                            dimension,
+                            ef_construction,
+                            ef_search,
+                            config.LANGUAGE["analyzers"],
+                        )
                         index_dict["indexes"].append(index_name)
 
-    with open(all_index_config, 'w') as index_name:
+    with open(all_index_config, "w") as index_name:
         json.dump(index_dict, index_name, indent=4)
 
     for config_item in config.CHUNK_SIZES:
@@ -46,16 +58,20 @@ def main(config: Config):
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
-                        all_docs = load_documents(config.DATA_FORMATS, "./data/", config_item, overlap)
+                        all_docs = load_documents(
+                            config.DATA_FORMATS, "./data/", config_item, overlap
+                        )
                         data_load = []
                         for docs in all_docs:
                             chunk_dict = {
                                 "content": docs.page_content,
                                 "content_vector": generate_embedding(
                                     size=dimension,
-                                    chunk=str(pre_process.preprocess(docs.page_content)),
-                                    model_name=config.EMBEDDING_MODEL_NAME
-                                )
+                                    chunk=str(
+                                        pre_process.preprocess(docs.page_content)
+                                    ),
+                                    model_name=config.EMBEDDING_MODEL_NAME,
+                                ),
                             }
                             data_load.append(chunk_dict)
                         upload_data(
@@ -66,10 +82,10 @@ def main(config: Config):
                             dimension=dimension,
                             chat_model_name=config.CHAT_MODEL_NAME,
                             embedding_model_name=config.EMBEDDING_MODEL_NAME,
-                            temperature=config.TEMPERATURE
+                            temperature=config.TEMPERATURE,
                         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     config = Config()
     main(config)

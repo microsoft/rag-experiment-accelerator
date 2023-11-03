@@ -14,12 +14,14 @@ def generate_response(sys_message, prompt, engine_model, temperature):
     Returns:
         str: The generated response to the user's prompt.
     """
-    prompt_structure = [{
-        'role': 'system',
-        'content': sys_message,
-    }]
+    prompt_structure = [
+        {
+            "role": "system",
+            "content": sys_message,
+        }
+    ]
 
-    prompt_structure.append({'role': 'user', 'content': prompt})
+    prompt_structure.append({"role": "user", "content": prompt})
 
     params = {
         "messages": prompt_structure,
@@ -31,5 +33,5 @@ def generate_response(sys_message, prompt, engine_model, temperature):
         params["model"] = engine_model
 
     response = openai.ChatCompletion.create(**params)
-    answer = response.choices[0]['message']['content']
+    answer = response.choices[0]["message"]["content"]
     return answer

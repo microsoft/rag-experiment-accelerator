@@ -1,6 +1,7 @@
 from rag_experiment_accelerator.config import Config
 
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents

@@ -8,6 +8,7 @@ from rag_experiment_accelerator.utils.logging import get_logger
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 import mlflow
+
 logger = get_logger(__name__)
 
 if __name__ == "__main__":
@@ -21,7 +22,9 @@ if __name__ == "__main__":
         config.AzureMLCredentials.RESOURCE_GROUP_NAME,
         config.AzureMLCredentials.WORKSPACE_NAME,
     )
-    mlflow_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_tracking_uri
+    mlflow_tracking_uri = ml_client.workspaces.get(
+        ml_client.workspace_name
+    ).mlflow_tracking_uri
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     client = mlflow.MlflowClient(mlflow_tracking_uri)
 
@@ -31,7 +34,9 @@ if __name__ == "__main__":
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
-                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}")
+                        logger.info(
+                            f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                        )
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
                         eval.evaluate_prompts(
                             exp_name=config.NAME_PREFIX,
@@ -42,5 +47,5 @@ if __name__ == "__main__":
                             chunk_overlap=overlap,
                             embedding_dimension=dimension,
                             ef_construction=ef_construction,
-                            ef_search=ef_search
+                            ef_search=ef_search,
                         )

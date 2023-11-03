@@ -1,5 +1,6 @@
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 
+
 # TODO: Test model download as well
 def test_evaluator_init():
     similarity_threshold = 0.4
