@@ -7,6 +7,7 @@ size_model_mapping = {
     1024: "bert-large-nli-mean-tokens",
 }
 
+
 # If we were about to choose model by the name, code would be cleaner.
 # We could give user an option to choose the model either by the name or by the size, whichever is specified.
 def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:

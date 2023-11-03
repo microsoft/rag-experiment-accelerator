@@ -5,8 +5,8 @@
         "overlap_size": [2]
     },
     "embedding_dimension": [3],
-    "efConstruction": [4],
-    "efSearch": [5],
+    "ef_construction": [4],
+    "ef_search": [5],
     "rerank": "test_rerank",
     "rerank_type": "test_rerank_type",
     "llm_re_rank_threshold": 6,

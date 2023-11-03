@@ -1,4 +1,3 @@
-
 import json
 import re
 from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
@@ -6,9 +5,13 @@ from rag_experiment_accelerator.llm.prompt_execution import generate_response
 import numpy as np
 from sentence_transformers import CrossEncoder
 from rag_experiment_accelerator.utils.logging import get_logger
+
 logger = get_logger(__name__)
 
-def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_name, k):
+
+def cross_encoder_rerank_documents(
+    documents, user_prompt, output_prompt, model_name, k
+):
     """
     Reranks a list of documents based on their relevance to a user prompt using a cross-encoder model.
 
@@ -23,8 +26,12 @@ def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_
         list: A list of the top k documents, sorted by their relevance to the user prompt.
     """
     model = CrossEncoder(model_name)
-    cross_scores_ques = model.predict([[user_prompt, item] for item in documents],apply_softmax = True, convert_to_numpy = True )
-                                    
+    cross_scores_ques = model.predict(
+        [[user_prompt, item] for item in documents],
+        apply_softmax=True,
+        convert_to_numpy=True,
+    )
+
     top_indices_ques = cross_scores_ques.argsort()[-k:][::-1]
     top_values_ques = cross_scores_ques[top_indices_ques]
     sub_context = []
@@ -33,7 +40,10 @@ def cross_encoder_rerank_documents(documents, user_prompt, output_prompt, model_
 
     return sub_context
 
-def llm_rerank_documents(documents, question, deployment_name, temperature, rerank_threshold):
+
+def llm_rerank_documents(
+    documents, question, deployment_name, temperature, rerank_threshold
+):
     """
     Reranks a list of documents based on a given question using the LLM model.
 
@@ -52,28 +62,31 @@ def llm_rerank_documents(documents, question, deployment_name, temperature, rera
         rerank_context += "\ndocument " + str(index) + ":\n"
         rerank_context += docs + "\n"
 
-
     prompt = f"""
         Let's try this now:
         {rerank_context}
         Question: {question}
     """
 
-    response = generate_response(rerank_prompt_instruction,prompt, deployment_name, temperature)
+    response = generate_response(
+        rerank_prompt_instruction, prompt, deployment_name, temperature
+    )
     logger.debug("Response", response)
-    pattern = r'\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}'
+    pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
     try:
         matches = re.findall(pattern, response)[0]
-        reranked = json.loads( matches )
+        reranked = json.loads(matches)
         logger.debug(reranked)
         new_docs = []
-        for key, value in reranked['documents'].items():
-            key = key.replace('document_', '')
-            numeric_data = re.findall(r'\d+\.\d+|\d+', key)
+        for key, value in reranked["documents"].items():
+            key = key.replace("document_", "")
+            numeric_data = re.findall(r"\d+\.\d+|\d+", key)
             if int(value) > rerank_threshold:
                 new_docs.append(int(numeric_data[0]))
             result = [documents[i] for i in new_docs]
     except:
-        logger.error("Unable to parse the rerank documents LLM response. Returning all documents.")
+        logger.error(
+            "Unable to parse the rerank documents LLM response. Returning all documents."
+        )
         result = documents
     return result

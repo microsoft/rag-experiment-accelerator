@@ -108,9 +108,9 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
     },
-    "embedding_dimension" : "embedding Size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
-    "efConstruction" : "efConstruction value determines the value of Azure Cognitive Search vector configuration." ,
-    "efSearch":  "efSearch value determines the value of Azure Cognitive Search vector configuration.",
+    "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
+    "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,
+    "ef_search":  "ef_search value determines the value of Azure Cognitive Search vector configuration.",
     "language": {
         "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
@@ -165,6 +165,12 @@ the rights to use your contribution. For details, visit https://cla.opensource.m
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
 provided by the bot. You will only need to do this once across all repos using our CLA.
+
+Please, make sure to run
+```
+pip install -e .
+pre-commit install
+```
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or

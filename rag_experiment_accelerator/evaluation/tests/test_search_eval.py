@@ -20,7 +20,9 @@ search_response = [
 
 
 def test_evaluate_search_result_calulates_precision_score():
-    with patch("rag_experiment_accelerator.evaluation.spacy_evaluator.SpacyEvaluator") as evaluator:
+    with patch(
+        "rag_experiment_accelerator.evaluation.spacy_evaluator.SpacyEvaluator"
+    ) as evaluator:
         evaluator.is_relevant.side_effect = [True, False, True]
 
         _, evaluation = evaluate_search_result(
@@ -33,7 +35,9 @@ def test_evaluate_search_result_calulates_precision_score():
 
 
 def test_evaluate_search_result_calulates_recall_score():
-    with patch("rag_experiment_accelerator.evaluation.spacy_evaluator.SpacyEvaluator") as evaluator:
+    with patch(
+        "rag_experiment_accelerator.evaluation.spacy_evaluator.SpacyEvaluator"
+    ) as evaluator:
         evaluator.is_relevant.side_effect = [True, False, True]
 
         _, evaluation = evaluate_search_result(

@@ -1,5 +1,3 @@
-
-
 main_prompt_instruction = """you are a financial expert and knows everything about financial reports, 
 company finance and general finance along with their numbers and statistics. You answer exactly and pointed to the question asked. 
 You do not answer more than what is needed. You are always exact to the point. You Answer the question using the provided context.
@@ -12,7 +10,9 @@ context:
 
 prompt_instruction_title = "Identify and provide an appropriate title for the given user text in a single sentence with not more than 10-15 words. Do not provide output in list format and do not output any additional text and metadata."
 
-prompt_instruction_keywords = "provide unique keywords for the given user text. Format as comma separated values."
+prompt_instruction_keywords = (
+    "provide unique keywords for the given user text. Format as comma separated values."
+)
 
 prompt_instruction_summary = "Summarize the given user text in a single sentence using few words. Do not provide output using multiple sentences or as a list."
 
