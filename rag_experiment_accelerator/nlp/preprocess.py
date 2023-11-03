@@ -4,6 +4,7 @@ import spacy
 from string import punctuation
 
 from rag_experiment_accelerator.utils.logging import get_logger
+
 logger = get_logger(__name__)
 
 
@@ -14,20 +15,21 @@ class Preprocess:
         except OSError:
             logger.info(f'Downloading spacy language model: {"en_core_web_lg"}')
             from spacy.cli import download
+
             download("en_core_web_lg")
             self.nlp = spacy.load("en_core_web_lg")
 
     def to_lower(self, text):
-            """
-            Convert all characters in the given text to lowercase.
+        """
+        Convert all characters in the given text to lowercase.
 
-            Args:
-                text (str): The text to convert to lowercase.
+        Args:
+            text (str): The text to convert to lowercase.
 
-            Returns:
-                str: The converted text in lowercase.
-            """
-            return text.lower()
+        Returns:
+            str: The converted text in lowercase.
+        """
+        return text.lower()
 
     def remove_punct(self, text):
         """
@@ -39,7 +41,7 @@ class Preprocess:
         Returns:
             str: The text with all punctuation removed.
         """
-        return ' '.join(c for c in text if c not in punctuation)
+        return " ".join(c for c in text if c not in punctuation)
 
     def remove_Tags(self, text):
         """
@@ -51,7 +53,7 @@ class Preprocess:
         Returns:
             str: The cleaned text with HTML tags removed.
         """
-        cleaned_text = re.sub('<[^<]+?>', '', text)
+        cleaned_text = re.sub("<[^<]+?>", "", text)
         return cleaned_text
 
     def sentence_tokenize(self, text):
@@ -65,7 +67,7 @@ class Preprocess:
             list: A list of sentences extracted from the input text.
         """
         doc = self.nlp(text)
-        return  [sent.text.strip() for sent in doc.sents]
+        return [sent.text.strip() for sent in doc.sents]
 
     def word_tokenize(self, text):
         """
@@ -90,9 +92,9 @@ class Preprocess:
             str: The sentence with stopwords removed.
         """
         doc = self.nlp(sentence)
-        filtered_tokens = [token for token in doc if not token.is_stop] 
-  
-        return ' '.join([token.text for token in filtered_tokens])
+        filtered_tokens = [token for token in doc if not token.is_stop]
+
+        return " ".join([token.text for token in filtered_tokens])
 
     def lemmatize(self, text):
         """

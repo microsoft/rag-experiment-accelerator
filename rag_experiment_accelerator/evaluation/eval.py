@@ -22,21 +22,23 @@ load_dotenv()
 warnings.filterwarnings("ignore")
 
 try:
-    nlp = spacy.load('en_core_web_lg')
+    nlp = spacy.load("en_core_web_lg")
 except OSError:
-    logger.info('Downloading spacy language model: en_core_web_lg')
+    logger.info("Downloading spacy language model: en_core_web_lg")
     from spacy.cli import download
-    download('en_core_web_lg')
-    nlp = spacy.load('en_core_web_lg')
+
+    download("en_core_web_lg")
+    nlp = spacy.load("en_core_web_lg")
 
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
 
-pd.set_option('display.max_columns', None)
+pd.set_option("display.max_columns", None)
 
-eval_score_folder = './artifacts/eval_score'
+eval_score_folder = "./artifacts/eval_score"
 os.makedirs(eval_score_folder, exist_ok=True)
+
 
 def process_text(text):
     """
@@ -55,10 +57,11 @@ def process_text(text):
             continue
         if token.is_punct:
             continue
-        if token.lemma_ == '-PRON-':
+        if token.lemma_ == "-PRON-":
             continue
         result.append(token.lemma_)
     return " ".join(result)
+
 
 def lower(text):
     """
@@ -72,6 +75,7 @@ def lower(text):
     """
     return text.lower()
 
+
 def remove_spaces(text):
     """
     Removes leading and trailing spaces from a string.
@@ -84,18 +88,21 @@ def remove_spaces(text):
     """
     return text.strip()
 
-#def compare_rouge(value1, value2):
+
+# def compare_rouge(value1, value2):
 #    scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
 #    scores = scorer.score(value1, value2)
 #    return scores
 
+
 # https://huggingface.co/spaces/evaluate-metric/bleu
 def bleu(predictions, references):
     bleu = evaluate.load("bleu")
-    
-    results = bleu.compute(predictions=predictions, references=references, max_order = 2)
+
+    results = bleu.compute(predictions=predictions, references=references, max_order=2)
     # multiplying by 100 to maintain consistency with previous implementation
     return results["bleu"] * 100
+
 
 def fuzzy(doc1, doc2):
     """
@@ -109,9 +116,10 @@ def fuzzy(doc1, doc2):
     int: The fuzzy score between the two documents.
     """
     differences = []
-    fuzzy_compare_values( doc1, doc2, differences)
-    
-    return int(sum(differences)/len(differences))
+    fuzzy_compare_values(doc1, doc2, differences)
+
+    return int(sum(differences) / len(differences))
+
 
 def fuzzy_compare_values(value1, value2, differences):
     """
@@ -128,6 +136,7 @@ def fuzzy_compare_values(value1, value2, differences):
     similarity_score = fuzz.token_set_ratio(value1, value2)
     differences.append(similarity_score)
 
+
 def compare_semantic_document_values(doc1, doc2, model_type):
     """
     Compares the semantic values of two documents and returns the percentage of differences.
@@ -142,12 +151,16 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     """
     differences = []
     semantic_compare_values(doc1, doc2, differences, model_type)
-    
-    return int(sum(differences)/len(differences))
+
+    return int(sum(differences) / len(differences))
+
 
 from sentence_transformers import SentenceTransformer
 
-def semantic_compare_values(value1: str, value2: str, differences: list[float], model_type: SentenceTransformer) -> None:
+
+def semantic_compare_values(
+    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
+) -> None:
     """
     Computes the semantic similarity score between two values using a pre-trained SentenceTransformer model.
 
@@ -170,7 +183,9 @@ def semantic_compare_values(value1: str, value2: str, differences: list[float], 
 from sentence_transformers import SentenceTransformer
 
 
-def semantic_compare_values(value1: str, value2: str, differences: list[float], model_type: SentenceTransformer) -> None:
+def semantic_compare_values(
+    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
+) -> None:
     """
     Computes the semantic similarity score between two values using the provided SentenceTransformer model.
 
@@ -193,7 +208,10 @@ def semantic_compare_values(value1: str, value2: str, differences: list[float], 
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def semantic_compare_values(value1: str, value2: str, differences: list[float], model_type: SentenceTransformer) -> None:
+
+def semantic_compare_values(
+    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
+) -> None:
     """
     Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
 
@@ -212,6 +230,7 @@ def semantic_compare_values(value1: str, value2: str, differences: list[float], 
 
     differences.append(similarity_score * 100)
 
+
 def levenshtein(value1, value2):
     """
     Calculates the Levenshtein distance between two strings and returns the normalized similarity score as a percentage.
@@ -225,6 +244,7 @@ def levenshtein(value1, value2):
     """
     score = int(algs.levenshtein.normalized_similarity(value1, value2) * 100)
     return score
+
 
 def jaccard(value1, value2):
     """
@@ -240,6 +260,7 @@ def jaccard(value1, value2):
     score = int(algs.jaccard.normalized_similarity(value1, value2) * 100)
     return score
 
+
 def hamming(value1, value2):
     """
     Calculates the Hamming similarity score between two values.
@@ -253,6 +274,7 @@ def hamming(value1, value2):
     """
     score = int(algs.hamming.normalized_similarity(value1, value2) * 100)
     return score
+
 
 def jaro_winkler(value1, value2):
     """
@@ -268,6 +290,7 @@ def jaro_winkler(value1, value2):
     score = int(algs.jaro_winkler.normalized_similarity(value1, value2) * 100)
     return score
 
+
 def cosine(value1, value2):
     """
     Calculates the cosine similarity between two vectors.
@@ -281,6 +304,7 @@ def cosine(value1, value2):
     """
     score = int(algs.cosine.normalized_similarity(value1, value2) * 100)
     return score
+
 
 def lcsseq(value1, value2):
     """
@@ -296,6 +320,7 @@ def lcsseq(value1, value2):
     score = int(algs.lcsseq.normalized_similarity(value1, value2) * 100)
     return score
 
+
 def lcsstr(value1, value2):
     """
     Calculates the longest common substring (LCS) similarity score between two strings.
@@ -310,15 +335,13 @@ def lcsstr(value1, value2):
     score = int(algs.lcsstr.normalized_similarity(value1, value2) * 100)
     return score
 
+
 import ast
 import plotly.express as px
 import plotly.graph_objs as go
 
-def generate_metrics(
-        experiment_name,
-        run_id,
-        client
-    ):
+
+def generate_metrics(experiment_name, run_id, client):
     """
     Generates metrics for a given experiment and run ID.
 
@@ -331,8 +354,8 @@ def generate_metrics(
         None
     """
     experiment = dict(client.get_experiment_by_name(experiment_name))
-    runs_list = client.search_runs([experiment['experiment_id']])
- 
+    runs_list = client.search_runs([experiment["experiment_id"]])
+
     models_metrics = {}
     metrics_to_plot = []
     runs_id_to_plot = []
@@ -340,10 +363,10 @@ def generate_metrics(
     if len(runs_list) > 0:
         for run in runs_list:
             run_dict = run.to_dictionary()
-            single_run_id = run_dict['info']['run_id']
+            single_run_id = run_dict["info"]["run_id"]
             runs_id_to_plot.append(single_run_id)
             if run.data.params.get("run_metrics", {}) != {}:
-                metrics = ast.literal_eval(run.data.params['run_metrics'])
+                metrics = ast.literal_eval(run.data.params["run_metrics"])
 
                 for metric_type, metric_value in metrics.items():
                     if models_metrics.get(metric_type, {}) == {}:
@@ -355,14 +378,14 @@ def generate_metrics(
     else:
         current_run = client.get_run(run_id)
         if current_run.data.params.get("run_metrics", {}) != {}:
-            metrics = ast.literal_eval(current_run.data.params['run_metrics'])
+            metrics = ast.literal_eval(current_run.data.params["run_metrics"])
             for metric_type, metric_value in metrics.items():
                 if models_metrics.get(metric_type, {}) == {}:
                     metrics_to_plot.append(metric_type)
                     models_metrics[metric_type] = {}
 
                 models_metrics[metric_type][run_id] = metric_value
-                
+
     x_axis = []
     y_axis = []
 
@@ -370,21 +393,16 @@ def generate_metrics(
 
     for metric in metrics_to_plot:
         for key, value in models_metrics[metric].items():
-            x_axis.append(key) 
-            y_axis.append(value) 
+            x_axis.append(key)
+            y_axis.append(value)
 
         label = key
         px.line(x_axis, y_axis)
-        fig.add_trace(go.Scatter(x=x_axis,
-                                 y=y_axis,
-                                 mode='lines+markers',
-                                 name=label)
-                      )
+        fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode="lines+markers", name=label))
 
-        fig.update_layout(xaxis_title='run name',
-                          yaxis_title=metric,
-                          font=dict(size=15)
-                          )
+        fig.update_layout(
+            xaxis_title="run name", yaxis_title=metric, font=dict(size=15)
+        )
 
         plot_name = metric + ".html"
         client.log_figure(run_id, fig, plot_name)
@@ -394,11 +412,8 @@ def generate_metrics(
         x_axis = []
         y_axis = []
 
-def draw_hist_df(
-        df,
-        run_id,
-        client
-    ):
+
+def draw_hist_df(df, run_id, client):
     """
     Draw a histogram of the given dataframe and log it to the specified run ID.
 
@@ -410,25 +425,35 @@ def draw_hist_df(
     Returns:
         None
     """
-    fig = px.bar(x=df.columns, y = df.values.tolist(),title="metric comparison", color=df.columns,labels=dict(x="Metric Type", y="Score", color="Metric Type"))
+    fig = px.bar(
+        x=df.columns,
+        y=df.values.tolist(),
+        title="metric comparison",
+        color=df.columns,
+        labels=dict(x="Metric Type", y="Score", color="Metric Type"),
+    )
     plot_name = "all_metrics_current_run.html"
     client.log_figure(run_id, fig, plot_name)
 
+
 def plot_apk_scores(df, run_id, client):
-    fig = px.line(df, x="k", y="score",title="AP@k scores", color="search_type")
+    fig = px.line(df, x="k", y="score", title="AP@k scores", color="search_type")
     plot_name = "average_precision_at_k.html"
     client.log_figure(run_id, fig, plot_name)
 
+
 # maybe pull these 2 above and below functions into a single one
 def plot_mapk_scores(df, run_id, client):
-    fig = px.line(df, x="k", y="map_at_k",title="MAP@k scores", color="search_type")
+    fig = px.line(df, x="k", y="map_at_k", title="MAP@k scores", color="search_type")
     plot_name = "mean_average_precision_at_k.html"
     client.log_figure(run_id, fig, plot_name)
 
+
 def plot_map_scores(df, run_id, client):
-    fig = px.bar(df, x="search_type", y="mean",title="MAP scores", color="search_type")
+    fig = px.bar(df, x="search_type", y="mean", title="MAP scores", color="search_type")
     plot_name = "mean_average_precision_scores.html"
     client.log_figure(run_id, fig, plot_name)
+
 
 def compute_metrics(actual, expected, metric_type):
     """
@@ -473,39 +498,58 @@ def compute_metrics(actual, expected, metric_type):
     elif metric_type == "fuzzy":
         score = fuzzy(actual, expected)
     elif metric_type == "bert_all_MiniLM_L6_v2":
-        all_MiniLM_L6_v2 = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+        all_MiniLM_L6_v2 = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
         score = compare_semantic_document_values(actual, expected, all_MiniLM_L6_v2)
     elif metric_type == "bert_base_nli_mean_tokens":
-        base_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-base-nli-mean-tokens')
+        base_nli_mean_tokens = SentenceTransformer(
+            "sentence-transformers/bert-base-nli-mean-tokens"
+        )
         score = compare_semantic_document_values(actual, expected, base_nli_mean_tokens)
     elif metric_type == "bert_large_nli_mean_tokens":
-        large_nli_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-mean-tokens')
-        score = compare_semantic_document_values(actual, expected, large_nli_mean_tokens)
+        large_nli_mean_tokens = SentenceTransformer(
+            "sentence-transformers/bert-large-nli-mean-tokens"
+        )
+        score = compare_semantic_document_values(
+            actual, expected, large_nli_mean_tokens
+        )
     elif metric_type == "bert_large_nli_stsb_mean_tokens":
-        large_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/bert-large-nli-stsb-mean-tokens')
-        score = compare_semantic_document_values(actual, expected, large_nli_stsb_mean_tokens)
+        large_nli_stsb_mean_tokens = SentenceTransformer(
+            "sentence-transformers/bert-large-nli-stsb-mean-tokens"
+        )
+        score = compare_semantic_document_values(
+            actual, expected, large_nli_stsb_mean_tokens
+        )
     elif metric_type == "bert_distilbert_base_nli_stsb_mean_tokens":
-        distilbert_base_nli_stsb_mean_tokens = SentenceTransformer('sentence-transformers/distilbert-base-nli-stsb-mean-tokens')
-        score = compare_semantic_document_values(actual, expected, distilbert_base_nli_stsb_mean_tokens)
+        distilbert_base_nli_stsb_mean_tokens = SentenceTransformer(
+            "sentence-transformers/distilbert-base-nli-stsb-mean-tokens"
+        )
+        score = compare_semantic_document_values(
+            actual, expected, distilbert_base_nli_stsb_mean_tokens
+        )
     elif metric_type == "bert_paraphrase_multilingual_MiniLM_L12_v2":
-        paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-        score = compare_semantic_document_values(actual, expected, paraphrase_multilingual_MiniLM_L12_v2)
+        paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer(
+            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        )
+        score = compare_semantic_document_values(
+            actual, expected, paraphrase_multilingual_MiniLM_L12_v2
+        )
     else:
         pass
 
     return score
 
+
 def evaluate_prompts(
-        exp_name,
-        data_path,
-        config,
-        client,
-        chunk_size,
-        chunk_overlap,
-        embedding_dimension,
-        ef_construction,
-        ef_search
-    ):
+    exp_name,
+    data_path,
+    config,
+    client,
+    chunk_size,
+    chunk_overlap,
+    embedding_dimension,
+    ef_construction,
+    ef_search,
+):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
@@ -531,14 +575,14 @@ def evaluate_prompts(
     # time.sleep(30)
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
-    
+
     run_id = mlflow.active_run().info.run_id
 
     total_precision_scores_by_search_type = {}
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
-    with open(data_path, 'r') as file:
-        for line in file: 
+    with open(data_path, "r") as file:
+        for line in file:
             data = json.loads(line)
             actual = data.get("actual")
             expected = data.get("expected")
@@ -551,7 +595,7 @@ def evaluate_prompts(
             cross_encoder_at_k = data.get("cross_encoder_at_k")
             question_count = data.get("question_count")
             search_evals = data.get("search_evals")
-            
+
             actual = remove_spaces(lower(actual))
             expected = remove_spaces(lower(expected))
 
@@ -570,58 +614,54 @@ def evaluate_prompts(
                 map_scores_by_search_type[search_type] = []
                 average_precision_for_search_type[search_type] = []
             for eval in search_evals:
-                scores = eval.get('precision_scores')
+                scores = eval.get("precision_scores")
                 if scores:
                     average_precision_for_search_type[search_type].append(mean(scores))
                 for i, score in enumerate(scores):
-                    if total_precision_scores_by_search_type[search_type].get(i+1):
-                        total_precision_scores_by_search_type[search_type][i+1].append(score)
+                    if total_precision_scores_by_search_type[search_type].get(i + 1):
+                        total_precision_scores_by_search_type[search_type][
+                            i + 1
+                        ].append(score)
                     else:
-                        total_precision_scores_by_search_type[search_type][i+1] = [score]
+                        total_precision_scores_by_search_type[search_type][i + 1] = [
+                            score
+                        ]
 
-    eval_scores_df = {
-        "search_type": [],
-        "k": [],
-        "score": [],
-        "map_at_k": []
-    }
+    eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
     for search_type, scores_at_k in total_precision_scores_by_search_type.items():
         for k, scores in scores_at_k.items():
             avg_at_k = mean(scores)
             # not sure if this would be problematic or not.
-            eval_scores_df['search_type'].append(search_type)
-            eval_scores_df['k'].append(k)
-            eval_scores_df['score'].append(avg_at_k)
-            mean_at_k = mean(eval_scores_df['score'][:k])
-            eval_scores_df['map_at_k'].append(mean_at_k)
+            eval_scores_df["search_type"].append(search_type)
+            eval_scores_df["k"].append(k)
+            eval_scores_df["score"].append(avg_at_k)
+            mean_at_k = mean(eval_scores_df["score"][:k])
+            eval_scores_df["map_at_k"].append(mean_at_k)
 
-    mean_scores = {
-        "search_type": [],
-        "mean": []
-    }
+    mean_scores = {"search_type": [], "mean": []}
 
     for search_type, scores in average_precision_for_search_type.items():
-        mean_scores['search_type'].append(search_type)
-        mean_scores['mean'].append(mean(scores))
-    
+        mean_scores["search_type"].append(search_type)
+        mean_scores["mean"].append(mean(scores))
+
     run_id = mlflow.active_run().info.run_id
-    columns_to_remove = ['actual', 'expected']
-    additional_columns_to_remove = ['search_type']
+    columns_to_remove = ["actual", "expected"]
+    additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
     logger.debug(f"Eval scores: {df.head()}")
-    
+
     temp_df = df.drop(columns=columns_to_remove)
     draw_search_chart(temp_df, run_id, client)
-    
+
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
-    
+
     if isinstance(num_search_type, str):
         num_search_type = [num_search_type]
     sum_all_columns = temp_df.sum() / (question_count * len(num_search_type))
     sum_df = pd.DataFrame([sum_all_columns], columns=temp_df.columns)
-    
+
     sum_dict = {}
     for col_name in sum_df.columns:
         sum_dict[col_name] = float(sum_df[col_name].values)
@@ -629,12 +669,17 @@ def evaluate_prompts(
     sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
-    ap_scores_df.to_csv(f"artifacts/eval_score/{formatted_datetime}_ap_scores_at_k_test.csv", index=False)
+    ap_scores_df.to_csv(
+        f"artifacts/eval_score/{formatted_datetime}_ap_scores_at_k_test.csv",
+        index=False,
+    )
     plot_apk_scores(ap_scores_df, run_id, client)
     plot_mapk_scores(ap_scores_df, run_id, client)
 
     map_scores_df = pd.DataFrame(mean_scores)
-    map_scores_df.to_csv(f"artifacts/eval_score/{formatted_datetime}_map_scores_test.csv", index=False)
+    map_scores_df.to_csv(
+        f"artifacts/eval_score/{formatted_datetime}_map_scores_test.csv", index=False
+    )
     plot_map_scores(map_scores_df, run_id, client)
 
     mlflow.log_param("question_count", question_count)
@@ -657,11 +702,8 @@ def evaluate_prompts(
     mlflow.end_run()
     # time.sleep(10)
 
-def draw_search_chart(
-        temp_df,
-        run_id,
-        client
-    ):
+
+def draw_search_chart(temp_df, run_id, client):
     """
     Draws a comparison chart of search types across metric types.
 
@@ -673,23 +715,32 @@ def draw_search_chart(
     Returns:
         None
     """
-    grouped = temp_df.groupby('search_type')
-    summed_column = grouped.sum().reset_index()  
-    fig = sp.make_subplots(rows=len(summed_column.search_type), cols= 1)
+    grouped = temp_df.groupby("search_type")
+    summed_column = grouped.sum().reset_index()
+    fig = sp.make_subplots(rows=len(summed_column.search_type), cols=1)
     for index, row_data in summed_column.iterrows():
         search_type = row_data[0]
         row_data = row_data[1:]
-        df = row_data.reset_index(name='metric_value')
-        df = df.rename(columns={'index': 'metric_type'})
+        df = row_data.reset_index(name="metric_value")
+        df = df.rename(columns={"index": "metric_type"})
         fig.add_trace(
-            go.Bar(x=df["metric_type"], y=df["metric_value"], name=search_type, offsetgroup=index),
-            row=1, col=1,
+            go.Bar(
+                x=df["metric_type"],
+                y=df["metric_value"],
+                name=search_type,
+                offsetgroup=index,
+            ),
+            row=1,
+            col=1,
         )
 
-        fig.update_xaxes(title_text='Metric type', row=index + 1, col=1)
-        fig.update_yaxes(title_text='score', row=index + 1, col=1)
-    fig.update_layout(font=dict(size=15), title_text="Search type comparison across metric types",
-                        height=4000, width=800)
+        fig.update_xaxes(title_text="Metric type", row=index + 1, col=1)
+        fig.update_yaxes(title_text="score", row=index + 1, col=1)
+    fig.update_layout(
+        font=dict(size=15),
+        title_text="Search type comparison across metric types",
+        height=4000,
+        width=800,
+    )
     plot_name = "search_type_current_run.html"
     client.log_figure(run_id, fig, plot_name)
-

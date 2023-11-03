@@ -33,5 +33,5 @@ def load_html_files(
         chunk_size=chunk_size,
         overlap_size=overlap_size,
         glob_patterns=glob_patterns,
-        loader_kwargs={"open_encoding": "utf-8"}
+        loader_kwargs={"open_encoding": "utf-8"},
     )

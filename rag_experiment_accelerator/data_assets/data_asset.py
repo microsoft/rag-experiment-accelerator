@@ -4,7 +4,9 @@ from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
 
 from rag_experiment_accelerator.utils.logging import get_logger
+
 logger = get_logger(__name__)
+
 
 def create_data_asset(data_path, data_asset_name, azure_ml_credentials):
     """
@@ -25,7 +27,7 @@ def create_data_asset(data_path, data_asset_name, azure_ml_credentials):
         azure_ml_credentials.RESOURCE_GROUP_NAME,
         azure_ml_credentials.WORKSPACE_NAME,
     )
-            
+
     aml_dataset = Data(
         path=data_path,
         type=AssetTypes.URI_FILE,

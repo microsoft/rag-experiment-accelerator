@@ -19,7 +19,7 @@ _FORMAT_PROCESSORS = {
     "pdf": load_pdf_files,
     "html": load_html_files,
     "markdown": load_markdown_files,
-    "text": load_text_files
+    "text": load_text_files,
 }
 
 
