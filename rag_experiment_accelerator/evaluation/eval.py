@@ -1,24 +1,21 @@
-from dotenv import load_dotenv
-
-import pandas as pd
-import warnings
 import json
-import ast
-from fuzzywuzzy import fuzz
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
+import os
+import warnings
 from datetime import datetime
+
 import evaluate
-import spacy
-import textdistance
 import mlflow
-import plotly.express as px
+import pandas as pd
 import plotly.graph_objects as go
 import plotly.subplots as sp
-import os
+import spacy
+import textdistance
+from dotenv import load_dotenv
+from fuzzywuzzy import fuzz
 from numpy import mean
 
 from rag_experiment_accelerator.utils.logging import get_logger
+
 logger = get_logger(__name__)
 
 load_dotenv()
@@ -39,8 +36,7 @@ algs = textdistance.algorithms
 pd.set_option('display.max_columns', None)
 
 eval_score_folder = './artifacts/eval_score'
-if not os.path.exists(eval_score_folder):
-    os.makedirs(eval_score_folder)
+os.makedirs(eval_score_folder, exist_ok=True)
 
 def process_text(text):
     """
@@ -507,8 +503,8 @@ def evaluate_prompts(
         chunk_size,
         chunk_overlap,
         embedding_dimension,
-        efConstruction,
-        efSearch
+        ef_construction,
+        ef_search
     ):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
@@ -521,8 +517,8 @@ def evaluate_prompts(
         chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
         chunk_overlap (int): Amount of overlap between the chunks.
         embedding_dimension (int): Dimension of the embeddings to use.
-        efConstruction (int): Number of trees to use during index construction.
-        efSearch (int): Number of trees to use during search.
+        ef_construction (int): Number of trees to use during index construction.
+        ef_search (int): Number of trees to use during search.
 
     Returns:
         None
@@ -650,8 +646,8 @@ def evaluate_prompts(
     mlflow.log_param("cross_encoder_at_k", cross_encoder_at_k)
     mlflow.log_param("chunk_overlap", chunk_overlap)
     mlflow.log_param("embedding_dimension", embedding_dimension)
-    mlflow.log_param("efConstruction", efConstruction)
-    mlflow.log_param("efSearch", efSearch)
+    mlflow.log_param("ef_construction", ef_construction)
+    mlflow.log_param("ef_search", ef_search)
     mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")

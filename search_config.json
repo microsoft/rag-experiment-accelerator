@@ -5,8 +5,8 @@
         "overlap_size": [200]
     },
     "embedding_dimension": [768],
-    "efConstruction": [400],
-    "efSearch": [400],
+    "ef_construction": [400],
+    "ef_search": [400],
     "language":{
         "analyzers": {
             "analyzer_name": "en.microsoft",
@@ -14,7 +14,7 @@
             "search_analyzer_name": "",
             "char_filters": [],
             "tokenizers": [],
-            "token_filters": []            
+            "token_filters": []
         },
         "query_language": "en-us"
     },

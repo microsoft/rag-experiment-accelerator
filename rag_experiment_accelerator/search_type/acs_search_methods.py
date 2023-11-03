@@ -1,8 +1,9 @@
 import azure
+
 from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential  
 from azure.search.documents import SearchClient  
-from azure.search.documents.models import Vector  
+from azure.search.documents.models import VectorQuery
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
@@ -71,8 +72,8 @@ def search_for_match_semantic(
         model_name=model_name
     )
 
-    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
-    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
+    vector1 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentVector")
+    vector2 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")  
 
     formatted_search_results = []
     try:
@@ -120,9 +121,9 @@ def search_for_match_Hybrid_multi(
         model_name=model_name
     )
 
-    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")
-    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")
-    vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary")
+    vector1 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentVector")
+    vector2 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentTitle")
+    vector3 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentSummary")
 
     formatted_search_results = []
     try:
@@ -166,8 +167,8 @@ def search_for_match_Hybrid_cross(
         model_name=model_name
     )
 
-    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")
-    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")
+    vector1 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentVector")
+    vector2 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentTitle, contentSummary")
 
     formatted_search_results = []
     try:
@@ -239,7 +240,7 @@ def search_for_match_pure_vector(
         model_name=model_name
     )
 
-    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
+    vector1 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentVector")  
     formatted_search_results = []
     try:
         results = client.search(  
@@ -281,9 +282,9 @@ def search_for_match_pure_vector_multi(
         model_name=model_name
     )
 
-    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector")
-    vector2 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentTitle")
-    vector3 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentSummary")
+    vector1 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentVector")
+    vector2 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentTitle")
+    vector3 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentSummary")
 
     formatted_search_results = []
     try:
@@ -327,7 +328,7 @@ def search_for_match_pure_vector_cross(
         model_name=model_name
     )
 
-    vector1 = Vector(value=res[0], k=retrieve_num_of_documents, fields="contentVector, contentTitle, contentSummary")  
+    vector1 = VectorQuery(kind="vector", value=res[0], k=retrieve_num_of_documents, fields="contentVector, contentTitle, contentSummary")  
 
     formatted_search_results = []
     try:

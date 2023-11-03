@@ -250,8 +250,8 @@ class Config:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
         EMBEDDING_DIMENSIONS (list[int]): The number of dimensions to use for document embeddings.
-        EF_CONSTRUCTIONS (list[int]): The number of efConstructions to use for HNSW index.
-        EF_SEARCHES (list[int]): The number of efSearch to use for HNSW index.
+        EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
+        EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         CHAT_MODEL_NAME (str): The name of the chat model to use.
@@ -275,8 +275,8 @@ class Config:
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
-        self.EF_CONSTRUCTIONS = data["efConstruction"]
-        self.EF_SEARCHES = data["efSearch"]
+        self.EF_CONSTRUCTIONS = data["ef_construction"]
+        self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
         self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
@@ -296,12 +296,12 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self._check_deployment()
-        
+
         with open("querying_config.json", "r") as json_file:
             data = json.load(json_file)
 
         self.EVAL_DATA_JSON_FILE_PATH = data["eval_data_json_file_path"]
-        self.MAIN_PROMPT_INSTRUCTIONS = data["main_prompt_instruction"]        
+        self.MAIN_PROMPT_INSTRUCTIONS = data["main_prompt_instruction"]
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """

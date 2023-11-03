@@ -28,10 +28,10 @@ if __name__ == "__main__":
     for config_item in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             for dimension in config.EMBEDDING_DIMENSIONS:
-                for efConstruction in config.EF_CONSTRUCTIONS:
-                    for efSearch in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}"
-                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{efConstruction}-{efSearch}")
+                for ef_construction in config.EF_CONSTRUCTIONS:
+                    for ef_search in config.EF_SEARCHES:
+                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                        logger.info(f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}")
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
                         eval.evaluate_prompts(
                             exp_name=config.NAME_PREFIX,
@@ -41,6 +41,6 @@ if __name__ == "__main__":
                             chunk_size=config_item,
                             chunk_overlap=overlap,
                             embedding_dimension=dimension,
-                            efConstruction=efConstruction,
-                            efSearch=efSearch
+                            ef_construction=ef_construction,
+                            ef_search=ef_search
                         )
