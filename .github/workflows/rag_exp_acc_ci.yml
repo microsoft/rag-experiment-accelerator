@@ -39,7 +39,7 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_Index.py  
+          python 01_index.py  
       - name: execute qna step
         shell: bash
         run: |
