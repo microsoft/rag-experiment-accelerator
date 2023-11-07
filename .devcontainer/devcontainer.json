@@ -1,0 +1,14 @@
+{
+	"name": "RAG Experiment Accelerator",
+	"build": { 
+		"context": "..",
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/azure-cli:1": {
+			"version": "latest"
+		}
+	},
+
+	"postCreateCommand": "pip install -e ."
+}
