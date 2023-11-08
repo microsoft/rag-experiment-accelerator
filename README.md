@@ -38,7 +38,6 @@ The **RAG Experiment Accelerator** is config driven and offers a robust array of
 
 10. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
-
 ## Installation
 
 To harness the capabilities of the **RAG Experiment Accelerator**, follow these installation steps:
@@ -49,12 +48,9 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 git clone https://github.com/microsoft/rag-experiment-accelerator.git
 ```
 
-2. **setup env file**: create .env file at top folder level and provide data for items mentioned:
+1. **setup env file**: create .env file at top folder level and provide data for items mentioned:
 
 ```bash
-
-
-
 AZURE_SEARCH_SERVICE_ENDPOINT=
 AZURE_SEARCH_ADMIN_KEY=
 OPENAI_ENDPOINT=
@@ -65,13 +61,12 @@ SUBSCRIPTION_ID=
 WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
 LOGGING_LEVEL=
-
 ```
 
 LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
 OPENAI_API_TYPE should be either azure if you planning to use Azure, open_ai if you want to use openai or excluded, if none of these required.
 
-3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
+1. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
 conda create -n rag-test python=3.10
@@ -79,27 +74,27 @@ conda activate rag-test
 pip install .
 ```
 
-4. Install Azure CLI and authorize:
+1. Install Azure CLI and authorize:
+
 ```bash
 az login
 az account set  --subscription="<your_subscription_guid>"
 az account show
 ```
 
-5. Copy your `.pdf` files into the `data` folder.
+1. Copy your `.pdf` files into the `data` folder.
 
 ## How to use
 
 To harness the capabilities of the **RAG Experiment Accelerator**, follow these steps:
 
 1. Modify the `search_config.json` file with hyper-parameters relevant to the experiment.
-2. Execute `01_index.py` (python 01_index.py) to generate Azure Cognitive Search indexes and ingest data into the indexes.
-3. Execute `02_qa_generation.py` (python 02_qa_generation.py) to generate Question-Answer pairs using Azure OpenAI.
-4. Execute `03_querying.py` (python 03_querying.py) to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context. 
-5. Execute `04_evaluation.py` (python 04_evaluation.py)  to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
+1. Execute `01_index.py` (python 01_index.py) to generate Azure Cognitive Search indexes and ingest data into the indexes.
+1. Execute `02_qa_generation.py` (python 02_qa_generation.py) to generate Question-Answer pairs using Azure OpenAI.
+1. Execute `03_querying.py` (python 03_querying.py) to query Azure Cognitive Search to generate context, re-ranking items in context and get response from Azure OpenAI using the new context.
+1. Execute `04_evaluation.py` (python 04_evaluation.py)  to calculate metrics using multiple metrics and generate incremental charts and reports in AzureML using MLFLOW integration.
 
-
-# Description of configuration elements
+## Description of configuration elements
 
 ```json
 {
@@ -156,19 +151,19 @@ The solution is integrated with AzureML and uses MLFlow to manage experiments, j
 
 ![Search evaluation](./images/search_chart.png)
 
-
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit [Contributor License Agreements](https://cla.opensource.microsoft.com).
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
 provided by the bot. You will only need to do this once across all repos using our CLA.
 
 Please, make sure to run
-```
+
+```bash
 pip install -e .
 pre-commit install
 ```
@@ -179,8 +174,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Trademarks
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
