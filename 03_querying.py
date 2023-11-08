@@ -248,7 +248,7 @@ def main(config: Config):
     """
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
-    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
+    jsonl_file_path = config.EVAL_DATA_JSONL_FILE_PATH
     question_count = 0
     try:
         with open(jsonl_file_path, "r") as file:

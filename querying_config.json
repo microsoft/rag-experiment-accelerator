@@ -1,4 +1,0 @@
-{
-    "eval_data_json_file_path": "./artifacts/eval_data.jsonl",
-    "main_prompt_instruction": ""
-}
