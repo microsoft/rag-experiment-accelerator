@@ -17,7 +17,6 @@ Familiarity with [ReadMe configuration of elements](/README.md#Description-of-co
         - 384: [all-MiniLM-L6-v2][all-MiniLM-L6-v2]
         - 768: [all-mpnet-base-v2][all-mpnet-base-v2]
         - 1024:[bert-large-nli-mean-tokens][bert-large-nli-mean-tokens]
-- Tokenizing
 - LLM Metrics calculated using scikit-learn in combination with `Math.mean`
     - [Precision][precision score]
     - [Recall][recall score]
