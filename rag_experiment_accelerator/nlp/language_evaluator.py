@@ -26,14 +26,18 @@ class LanguageEvaluator:
         confidence_threshold (float): The minimum confidence score required for language detected to be considered reliable.
 
     Attributes:
-        country_hint (spacy.Language): The spaCy language country_hint used for processing the documents.
+        query_language: The language of the query
+        default_language: The ISO 6391 language code for the language identified. For example, "en".
+        country_hint (str): An ISO 3166-1 alpha-2 two letter country code to use as a hint to the language detection model if it cannot disambiguate the language.
         confidence_threshold (float): The minimum confidence score required for two documents to be considered relevant.
+        max_content_length (int): The maximum size of a content allowed measured by length (e.g. 50,000 characters)
 
     Methods:
         detect_languages(list[str}) -> DetectLanguageResult: Detect language for a batch of documents.
         detect_language(text: str) -> DetectLanguageResult: Detect language for a text sample.
         is_confident(text: str) -> bool: Determines whether language detected is reliable based on confidence score.
         is_language_match(text: str, language: str) -> bool: Determines whether language matches language detected.
+        check_string(text: str) -> Check the length of an input string.
     """    
     def __init__(self, query_language="en-us", default_language="en", country_hint="", confidence_threshold=0.8) -> None:
         try:
