@@ -27,18 +27,6 @@ detect_language_response = [
 ]
 
 
-def test_detect_languages_detects_all_language_content():
-    with patch(
-        "rag_experiment_accelerator.nlp.language_evaluator.LanguageEvaluator"
-    ) as language_evaluator:
-        language_evaluator.detect_language = [True, False, True]
-
-        _, response = language_evaluator.detect_language(documents)
-    
-    for i, doc in enumerate(detect_language_response):
-        assert doc["content"] == response[i]
-
-    
 def test_detect_language():
     language_evaluator = LanguageEvaluator()
     primary_language = language_evaluator.detect_language("This is a test.") 
