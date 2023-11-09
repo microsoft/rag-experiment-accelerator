@@ -8,6 +8,8 @@ To use the rag-experiment-accelerator, create the following resources:
 - [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)
     - Create new deployments using models `gpt-35-turbo` and `text-embedding-ada-002`
 - [Azure ML Workspace](https://learn.microsoft.com/en-us/azure/machine-learning/concept-workspace?view=azureml-api-2)
+- [Azure AI Service for Language](https://learn.microsoft.com/en-us/azure/search/cognitive-search-skill-language-detection) is optional
+
 
 
 ## Environment Variables
@@ -25,3 +27,9 @@ Below are the required environment variables, to be added to a local .env file a
 | WORKSPACE_NAME                |                                            | Name of deployed Azure ML Workspace                                      |
 | RESOURCE_GROUP_NAME           |                                            | Azure resource group name                                                |
 | LOGGING_LEVEL                 | NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL | LOGGING_LEVEL is INFO by default                                         |
+
+Below are optional environment variables, to be added to a local .env file at the root of the repo.
+| Variable                        | Value                                      | Note                                                                     |
+|---------------------------------|--------------------------------------------|--------------------------------------------------------------------------|
+| AZURE_LANGUAGE_SERVICE_ENDPOINT |                                            | Azure AI Service for Language API Endpoint                               |
+| AZURE_LANGUAGE_SERVICE_KEY      |                                            | Azure AI Service for Language Key                                        |
