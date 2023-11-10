@@ -71,6 +71,14 @@ az account show
 
 5. Copy your `.pdf` files into the `data` folder.
 
+
+## Pre-requisites
+
+- [Azure Cognitive Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal)
+- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai)
+- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
+
+
 ## How to use
 
 To use the **RAG Experiment Accelerator**, follow these steps:
