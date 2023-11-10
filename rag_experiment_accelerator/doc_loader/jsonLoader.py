@@ -33,5 +33,5 @@ def load_json_files(
         chunk_size=chunk_size,
         overlap_size=overlap_size,
         glob_patterns=glob_patterns,
-        loader_kwargs={'jq_schema':'.[].content'}
+        loader_kwargs={'jq_schema':'[.[] | {content: .content, title: .title}]', 'text_content': False}
     )
