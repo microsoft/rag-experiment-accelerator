@@ -169,8 +169,10 @@ data/*
 !data/pdf/
 !data/html/
 !data/markdown/
+!data/json/
 # Keep sample files
 !data/pdf/sample-pdf.pdf
 !data/html/sample-html.html
 !data/markdown/sample-markdown.md
 !data/markdown/sample-txt.txt
+!data/json/sample-json.json
