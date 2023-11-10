@@ -102,3 +102,23 @@ multiple_prompt_instruction = """Generate two questions in json format based on 
         questions:[ "question1", "question2", "questionN" ]
     }
 """
+
+answer_relevance_instruction =   """Generate question for the given answer.
+Answer:\nThe PSLV-C56 mission is scheduled to be launched on Sunday, 30 July 2023 at 06:30 IST / 01:00 UTC. It will be launched from the Satish Dhawan Space Centre, Sriharikota, Andhra Pradesh, India 
+Question: When is the scheduled launch date and time for the PSLV-C56 mission, and where will it be launched from?
+
+Answer:{answer}
+Question:
+""" 
+
+context_relevance_instruction = """Please extract relevant sentences from the provided context that is absolutely required answer the following question. If no relevant sentences are found, or if you believe the question cannot be answered from the given context, return the phrase "Insufficient Information".  While extracting candidate sentences you're not allowed to make any changes to sentences from given context.
+question:{question}
+context:\n{context}
+candidate sentences:\n
+"""
+
+context_precision_instruction = """Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer.
+question:{question}
+context:\n{context}
+answer:
+""" 
