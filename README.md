@@ -48,6 +48,7 @@ To harness the capabilities of the **RAG Experiment Accelerator**, follow these 
 git clone https://github.com/microsoft/rag-experiment-accelerator.git
 ```
 
+<<<<<<< HEAD
 1. **setup env file**: create .env file at top folder level and provide data for items mentioned:
 
 ```bash
@@ -62,9 +63,12 @@ WORKSPACE_NAME=
 RESOURCE_GROUP_NAME=
 LOGGING_LEVEL=
 ```
+=======
+2. **setup env file**: Copy `.env.template` and save as `.env` file. Provide values for all the keys
+>>>>>>> development
 
 LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
-OPENAI_API_TYPE should be either azure if you planning to use Azure, open_ai if you want to use openai or excluded, if none of these required.
+OPENAI_API_TYPE should be either `azure`` if you planning to use Azure, `open_ai` if you want to use openai or excluded, if none of these required.
 
 1. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
