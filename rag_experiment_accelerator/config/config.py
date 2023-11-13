@@ -23,7 +23,7 @@ def _mask_string(s: str, start: int = 2, end: int = 2, mask_char: str = "*") -> 
     Raises:
         None
     """
-    if s == "":
+    if s is None or s == "":
         return ""
 
     if len(s) <= start + end:
