@@ -117,7 +117,7 @@ def test_from_env_openai_credentials(mock_get_env_var):
     [
         ("azure", "expected_version", "expected_endpoint"),
         ("open_ai", None, None),
-        (None, None, None)
+        (None, None, None),
     ],
 )
 @patch("rag_experiment_accelerator.config.config.openai")
