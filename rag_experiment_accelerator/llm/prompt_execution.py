@@ -35,7 +35,6 @@ def generate_response(sys_message, prompt, engine_model, temperature):
     else:
         params["model"] = engine_model
 
-
     response = openai.ChatCompletion.create(**params)
     answer = response.choices[0]["message"]["content"]
     return answer
