@@ -2,7 +2,6 @@ import json
 import os
 import openai
 from rag_experiment_accelerator.utils.logging import get_logger
-from dotenv import load_dotenv
 
 logger = get_logger(__name__)
 
