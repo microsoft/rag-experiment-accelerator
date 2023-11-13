@@ -21,7 +21,7 @@ Below are the required environment variables, to be added to a local .env file a
 | OPENAI_API_KEY                |                                            | Azure OpenAI API Key                                                     |
 | OPENAI_API_TYPE               | Azure, open_ai                             | Azure, open_ai, or excluded depending on OpenAI Service being used       |
 | OPENAI_API_VERSION            | 2023-03-15-preview                         | See https://learn.microsoft.com/en-us/azure/ai-services/openai/reference |
-| SUBSCRIPTION_ID               |                                            | Azure subscription ID                                                    |
-| WORKSPACE_NAME                |                                            | Name of deployed Azure ML Workspace                                      |
-| RESOURCE_GROUP_NAME           |                                            | Azure resource group name                                                |
+| AML_SUBSCRIPTION_ID           |                                            | Azure Machine Learning subscription ID                                   |
+| AML_WORKSPACE_NAME            |                                            | Name of deployed Azure Machine Learning Workspace                        |
+| AML_RESOURCE_GROUP_NAME       |                                            | Azure Machine Learning resource group name                               |
 | LOGGING_LEVEL                 | NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL | LOGGING_LEVEL is INFO by default                                         |

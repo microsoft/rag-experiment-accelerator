@@ -22,9 +22,9 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
       OPENAI_ENDPOINT: ${{ secrets.OPENAI_ENDPOINT }}
-      RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
-      SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
-      WORKSPACE_NAME: ${{ secrets.WORKSPACE_NAME }}
+      AML_RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+      AML_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+      AML_WORKSPACE_NAME: ${{ secrets.WORKSPACE_NAME }}
     name: code validation through execution
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +39,7 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_Index.py  
+          python 01_index.py  
       - name: execute qna step
         shell: bash
         run: |
