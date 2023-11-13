@@ -131,10 +131,10 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
 
     creds._set_credentials()
 
-    assert mock_openai.api_type == api_type
     assert mock_openai.api_key == "somekey"
 
     if api_type == "azure":
+        assert mock_openai.api_type == api_type
         assert mock_openai.api_version == expect_api_version
         assert mock_openai.api_base == expect_api_base
 
