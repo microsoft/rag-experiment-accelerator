@@ -130,17 +130,17 @@ class AzureMLCredentials:
         """
         return cls(
             subscription_id=_get_env_var(
-                var_name="SUBSCRIPTION_ID",
+                var_name="AML_SUBSCRIPTION_ID",
                 critical=False,
                 mask=True,
             ),
             workspace_name=_get_env_var(
-                var_name="WORKSPACE_NAME",
+                var_name="AML_WORKSPACE_NAME",
                 critical=False,
                 mask=False,
             ),
             resource_group_name=_get_env_var(
-                var_name="RESOURCE_GROUP_NAME",
+                var_name="AML_RESOURCE_GROUP_NAME",
                 critical=False,
                 mask=False,
             ),
