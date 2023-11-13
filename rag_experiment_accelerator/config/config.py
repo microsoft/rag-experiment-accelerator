@@ -2,6 +2,7 @@ import json
 import os
 import openai
 from rag_experiment_accelerator.utils.logging import get_logger
+from dotenv import load_dotenv
 
 logger = get_logger(__name__)
 
@@ -185,7 +186,7 @@ class OpenAICredentials:
         Raises:
             ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
+        if openai_api_type not in ["azure", "open_ai"]:
             logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
             raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
 
@@ -229,14 +230,17 @@ class OpenAICredentials:
         """
         Sets the OpenAI credentials.
         """
-        if self.OPENAI_API_TYPE is not None:
-            openai.api_type = self.OPENAI_API_TYPE
-            openai.api_key = self.OPENAI_API_KEY
-            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
+        openai.api_type = self.OPENAI_API_TYPE
+        openai.api_key = self.OPENAI_API_KEY
+        logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
 
-            if self.OPENAI_API_TYPE == "azure":
-                openai.api_version = self.OPENAI_API_VERSION
-                openai.api_base = self.OPENAI_ENDPOINT
+        if self.OPENAI_API_TYPE == "azure":
+            if self.OPENAI_API_VERSION is None:
+                raise ValueError("OPENAI_API_TYPE of 'azure' requires an OPENAI_API_VERSION. Please set this in the .env file")
+            if self.OPENAI_ENDPOINT is None:
+                raise ValueError("OPENAI_API_TYPE of 'azure' requires an OPENAI_ENDPOINT. Please set this in the .env file")
+            openai.api_version = self.OPENAI_API_VERSION
+            openai.api_base = self.OPENAI_ENDPOINT
 
 
 class Config:
@@ -292,6 +296,7 @@ class Config:
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
         self.LANGUAGE = data.get("language", {})
+
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
