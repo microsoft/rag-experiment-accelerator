@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 class LanguageEvaluator:
     """
-    A class for detect language on text using the built-in Language Detection skill in Azure Cognitive Services.
+    A class for detecting language on text using the built-in Language Detection skill in Azure Cognitive Services.
 
     Args:
         query_language: The language of the query. Possible values include: "none", "en-us",
