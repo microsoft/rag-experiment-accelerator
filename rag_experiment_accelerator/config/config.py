@@ -229,7 +229,6 @@ class OpenAICredentials:
         """
         Sets the OpenAI credentials.
         """
-        openai.api_type = self.OPENAI_API_TYPE
         openai.api_key = self.OPENAI_API_KEY
         logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
 
@@ -240,6 +239,7 @@ class OpenAICredentials:
                 raise ValueError("OPENAI_API_TYPE of 'azure' requires an OPENAI_ENDPOINT. Please set this in the .env file")
             openai.api_version = self.OPENAI_API_VERSION
             openai.api_base = self.OPENAI_ENDPOINT
+            openai.api_type = self.OPENAI_API_TYPE
 
 
 class Config:
