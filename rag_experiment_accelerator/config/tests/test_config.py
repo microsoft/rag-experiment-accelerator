@@ -80,15 +80,6 @@ def test_init_invalid_api_type_openai_credentials():
         )
 
 
-def test_init_raises_when_openai_api_type_is_none():
-    with pytest.raises(ValueError):
-        OpenAICredentials(
-            openai_api_type=None,
-            openai_api_key="somekey",
-            openai_api_version="v1",
-            openai_endpoint="http://example.com",
-        )
-
 def test_raises_when_openai_endpoint_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
@@ -97,6 +88,7 @@ def test_raises_when_openai_endpoint_is_none_for_azure_openai():
             openai_api_version="v1",
             openai_endpoint=None,
         )
+
 
 def test_raises_when_openai_api_version_is_none_for_azure_openai():
     with pytest.raises(ValueError):
@@ -125,6 +117,7 @@ def test_from_env_openai_credentials(mock_get_env_var):
     [
         ("azure", "expected_version", "expected_endpoint"),
         ("open_ai", None, None),
+        (None, None, None)
     ],
 )
 @patch("rag_experiment_accelerator.config.config.openai")
@@ -138,12 +131,12 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
 
     creds._set_credentials()
 
-    assert str(mock_openai.api_type) == api_type
-    assert str(mock_openai.api_key) == "somekey"
+    assert mock_openai.api_type == api_type
+    assert mock_openai.api_key == "somekey"
 
     if api_type == "azure":
-        assert str(mock_openai.api_version) == expect_api_version
-        assert str(mock_openai.api_base) == expect_api_base
+        assert mock_openai.api_version == expect_api_version
+        assert mock_openai.api_base == expect_api_base
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:

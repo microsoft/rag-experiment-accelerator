@@ -19,7 +19,7 @@ Below are the required environment variables, to be added to a local .env file a
 | AZURE_SEARCH_ADMIN_KEY        |                                            | Azure Cognitive Search Key                                               |
 | OPENAI_ENDPOINT               |                                            | Azure OpenAI API endpoint                                                |
 | OPENAI_API_KEY                |                                            | Azure OpenAI API Key                                                     |
-| OPENAI_API_TYPE               | azure, open_ai                             | Azure, open_ai, or excluded depending on OpenAI Service being used       |
+| OPENAI_API_TYPE               | azure, open_ai                             | `azure` for Azure OpenAI or `open_ai` for OpenAI. This is required when running `01_index.py`, `02_qa_generation.py`, and `03_querying.py`. |
 | OPENAI_API_VERSION            | 2023-03-15-preview                         | See https://learn.microsoft.com/en-us/azure/ai-services/openai/reference |
 | AML_SUBSCRIPTION_ID           |                                            | Azure Machine Learning subscription ID                                   |
 | AML_WORKSPACE_NAME            |                                            | Name of deployed Azure Machine Learning Workspace                        |

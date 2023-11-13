@@ -186,7 +186,7 @@ class OpenAICredentials:
         Raises:
             ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        if openai_api_type not in ["azure", "open_ai"]:
+        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
             logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
             raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
 
