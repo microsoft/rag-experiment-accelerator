@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
-
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
-
 load_dotenv(override=True)
 
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation import eval
 from rag_experiment_accelerator.utils.logging import get_logger
