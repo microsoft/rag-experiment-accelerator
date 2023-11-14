@@ -185,7 +185,7 @@ class OpenAICredentials:
         Raises:
             ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        if openai_api_type is not None and openai_api_type is not "azure":
+        if openai_api_type is not None and openai_api_type != 'azure':
             logger.warning(f"OPENAI_API_TYPE env is set to {openai_api_type}. To use Azure OpenAI, please set OPENAI_API_TYPE to 'azure'.")
 
         self.OPENAI_API_TYPE = openai_api_type
