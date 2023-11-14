@@ -10,7 +10,7 @@ def get_default_az_cred():
     """
     try:
         credential = DefaultAzureCredential()
-        # Check if given credential can get token successfully.
+        # Check if credential can get token successfully.
         credential.get_token("https://management.azure.com/.default")
     except Exception as ex:
         logger.error("Unable to get a token from DefaultAzureCredential. Please run 'az login' in your terminal and try again.")
