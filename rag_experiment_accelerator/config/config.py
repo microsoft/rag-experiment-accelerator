@@ -182,8 +182,6 @@ class OpenAICredentials:
             openai_api_version (str): The version of the OpenAI API to use.
             openai_endpoint (str): The endpoint for the OpenAI API.
 
-        Raises:
-            ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
         if openai_api_type is not None and openai_api_type != 'azure':
             logger.warning(f"OPENAI_API_TYPE env is set to {openai_api_type}. To use Azure OpenAI, please set OPENAI_API_TYPE to 'azure'.")
