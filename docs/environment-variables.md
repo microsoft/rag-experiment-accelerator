@@ -17,7 +17,7 @@ Below are the required environment variables, to be added to a local .env file a
 |-------------------------------|--------------------------------------------|--------------------------------------------------------------------------|
 | AZURE_SEARCH_SERVICE_ENDPOINT |                                            | Azure Cognitive Search API Endpoint                                      |
 | AZURE_SEARCH_ADMIN_KEY        |                                            | Azure Cognitive Search Key                                               |
-| OPENAI_API_KEY                |                                            | OpenAI key                                                               |
+| OPENAI_API_KEY                |                                            | OpenAI API key                                                           |
 | OPENAI_ENDPOINT               |                                            | Azure OpenAI API endpoint.                                               |
 | OPENAI_API_TYPE               | 'azure' or unset                           | Must be `azure` for Azure OpenAI.                                        |
 | OPENAI_API_VERSION            | 2023-03-15-preview                         | Azure OpenAI API version. See https://learn.microsoft.com/en-us/azure/ai-services/openai/reference. |
