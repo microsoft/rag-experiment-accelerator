@@ -1,7 +1,7 @@
 from azure.ai.ml import MLClient
-from azure.identity import DefaultAzureCredential
 from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -22,7 +22,7 @@ def create_data_asset(data_path, data_asset_name, azure_ml_credentials):
     """
 
     ml_client = MLClient(
-        DefaultAzureCredential(),
+        get_default_az_cred(),
         azure_ml_credentials.SUBSCRIPTION_ID,
         azure_ml_credentials.RESOURCE_GROUP_NAME,
         azure_ml_credentials.WORKSPACE_NAME,
