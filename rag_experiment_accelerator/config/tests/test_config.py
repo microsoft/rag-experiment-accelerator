@@ -70,16 +70,6 @@ def test_init_openai_credentials():
     assert creds.OPENAI_ENDPOINT == "http://example.com"
 
 
-def test_init_invalid_api_type_openai_credentials():
-    with pytest.raises(ValueError):
-        OpenAICredentials(
-            openai_api_type="invalid",
-            openai_api_key="somekey",
-            openai_api_version="v1",
-            openai_endpoint="http://example.com",
-        )
-
-
 def test_raises_when_openai_endpoint_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
@@ -117,7 +107,6 @@ def test_from_env_openai_credentials(mock_get_env_var):
     [
         ("azure", "expected_version", "expected_endpoint"),
         ("open_ai", None, None),
-        (None, None, None),
     ],
 )
 @patch("rag_experiment_accelerator.config.config.openai")

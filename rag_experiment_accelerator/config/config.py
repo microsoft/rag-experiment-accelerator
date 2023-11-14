@@ -185,9 +185,8 @@ class OpenAICredentials:
         Raises:
             ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+        if openai_api_type is not None and openai_api_type is not "azure":
+            logger.warning(f"OPENAI_API_TYPE env is set to {openai_api_type}. To use Azure OpenAI, please set OPENAI_API_TYPE to 'azure'.")
 
         self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
@@ -211,7 +210,7 @@ class OpenAICredentials:
                 mask=False,
             ),
             openai_api_key=_get_env_var(
-                var_name="OPENAI_API_KEY", critical=False, mask=True
+                var_name="OPENAI_API_KEY", critical=True, mask=True
             ),
             openai_api_version=_get_env_var(
                 var_name="OPENAI_API_VERSION",
