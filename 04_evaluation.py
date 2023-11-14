@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
