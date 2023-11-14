@@ -14,9 +14,6 @@ def generate_response(sys_message, prompt, engine_model, temperature):
     Returns:
         str: The generated response to the user's prompt.
     """
-    if openai.api_key is None:
-        raise ValueError("OPENAI_API_KEY is not set. Please set this in the .env file")
-
     prompt_structure = [
         {
             "role": "system",
