@@ -70,6 +70,16 @@ def test_init_openai_credentials():
     assert creds.OPENAI_ENDPOINT == "http://example.com"
 
 
+def test_init_invalid_api_type_openai_credentials():
+    with pytest.raises(ValueError):
+        OpenAICredentials(
+            openai_api_type="invalid",
+            openai_api_key="somekey",
+            openai_api_version="v1",
+            openai_endpoint=None,
+        )
+
+
 def test_raises_when_openai_endpoint_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
@@ -120,12 +130,12 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
 
     creds._set_credentials()
 
-    assert mock_openai.api_key == "somekey"
+    assert str(mock_openai.api_key) == "somekey"
 
     if api_type == "azure":
-        assert mock_openai.api_type == api_type
-        assert mock_openai.api_version == expect_api_version
-        assert mock_openai.api_base == expect_api_base
+        assert str(mock_openai.api_type) == api_type
+        assert str(mock_openai.api_version) == expect_api_version
+        assert str(mock_openai.api_base) == expect_api_base
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
