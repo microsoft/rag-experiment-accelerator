@@ -10,9 +10,11 @@ import mlflow
 
 logger = get_logger(__name__)
 
-def main():
+if __name__ == "__main__":
     config = Config()
 
+    # This should not be global, because it complicates writing tests
+    # Also usage of global variables is not recommended
     ml_client = MLClient(
         get_default_az_cred(),
         config.AzureMLCredentials.SUBSCRIPTION_ID,
@@ -46,7 +48,3 @@ def main():
                             ef_construction=ef_construction,
                             ef_search=ef_search,
                         )
-
-
-if __name__ == "__main__":
-    main()
