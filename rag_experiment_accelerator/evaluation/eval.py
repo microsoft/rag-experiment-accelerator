@@ -661,10 +661,6 @@ def compute_metrics(actual, expected, metric_type):
         score = compare_semantic_document_values(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
-    elif metric_type == "ragas_answer_relevance":
-        score = ragas_answer_relevance(actual, expected)
-    elif metric_type == "ragas_context_precision":
-        score = ragas_context_precision(actual, expected)
     else:
         pass
 
