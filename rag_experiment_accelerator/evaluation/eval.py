@@ -362,10 +362,7 @@ def ragas_calculate_similarity(question, generated_questions, embeddings):
         / norm
     )
 
-# TODO: Look into reading from eval_data.jsonl
-# From what I understand, it only goes through this once, so we can do all the reading/processing
-# at one time
-def ragas_answer_relevance(question, answer, context):
+def ragas_answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -406,7 +403,6 @@ def ragas_answer_relevance(question, answer, context):
         openai_api_type=openai.api_type,
     )
 
-    # TODO: Update this to iterate over all prompts from lines in eval_data.jsonl
     prompts = []
     human_prompt = answer_relevance_instruction.format(answer=answer)
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
@@ -421,6 +417,7 @@ def ragas_answer_relevance(question, answer, context):
     results = [[i.text for i in r] for r in results.generations]
 
     scores = []
+    # TODO: Simplify this
     for question, gen_questions in zip(question, results):
         print(f"Question: {question}")
         print(f"GQ: {gen_questions}")
@@ -429,22 +426,9 @@ def ragas_answer_relevance(question, answer, context):
 
     return scores
 
-# Intentionally left unfinished because it's being deprecated for context_precision, do we care about this at all?
-def ragas_context_relevance(value1, value2):
-    """
-    Extracts sentences from the context that are relevant to the question with
-    self-consistancy checks. The number of relevant sentences and is used as the score.
-
-    Attributes
-    ----------
-    name : str
-    batch_size : int
-        Batch size for openai completion.
-    """
-
 
 # Same comments/questions as above but I need to learn more about some of the calculations being done later
-def ragas_context_precision(questions, contexts):
+def ragas_context_precision(question, context):
     """
     Average Precision is a metric that evaluates whether all of the
     relevant items selected by the model are ranked higher or not.
@@ -479,12 +463,10 @@ def ragas_context_precision(questions, contexts):
     ps = [p.format_messages() for p in prompts]
     results = chat_model.generate(ps)
     
+    # TODO: Should be able to simplify this
     responses = [[i.text for i in r] for r in results.generations]
     
-    # TODO: Figure out what's going on in this calculation
-
-    # Temp while we figure out what's going on
-    # context_lens = [len(ctx) for ctx in contexts]
+    # TODO: Figure out what's going on in this calculation and then simplify
     context_lens = [1]
     
     context_lens.insert(0, 0)
@@ -507,12 +489,6 @@ def ragas_context_precision(questions, contexts):
         scores.append(numerator / denominator)
 
     return scores
-
-
-# TODO: This is where we would pull in the eval_data.jsonl file
-def pull_context():
-    config = Config()
-    
 
 import ast
 import plotly.express as px
@@ -711,9 +687,34 @@ def compute_metrics(actual, expected, metric_type):
         score = compare_semantic_document_values(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
-    # TODO: Update this and context_precision
-    # elif metric_type == "ragas_answer_relevance":
-    #    score = ragas_answer_relevance(actual, expected)
+    elif metric_type == "ragas_answer_relevance":
+        score = ragas_answer_relevance(actual, expected)
+    elif metric_type == "ragas_context_precision":
+        score = ragas_context_precision(actual, expected)
+    else:
+        pass
+
+    return score
+
+
+def compute_llm_metrics(question, answer, context, llm_metric_type):
+    """
+    Computes a score for the specific llm metric using a combination of question, answer, or context.
+
+    Args:
+        question (str): The question the LLM generates.
+        answer (str): The answer the LLM generates.
+        context (str): The context the LLM uses to generate the question/answer pair.
+        llm_metric_type (str): The type of metric to use for comparison. Valid options are:
+            - "ragas_answer_relevance": Scores the relevancy of the answer according to the given question.
+            - "ragas_context_precision": Scores the precision of a question given its context.
+    Returns:
+        float: The similarity score between the two strings, as determined by the specified metric.
+    """
+    if llm_metric_type == "ragas_answer_relevance":
+        score = ragas_answer_relevance(question, answer)
+    elif llm_metric_type == "ragas_context_precision":
+        score = ragas_context_precision(question, context)
     else:
         pass
 
@@ -750,6 +751,7 @@ def evaluate_prompts(
     """
 
     metric_types = config.METRIC_TYPES
+    llm_metric_types = config.LLM_METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
@@ -807,6 +809,20 @@ def evaluate_prompts(
                         total_precision_scores_by_search_type[search_type][i + 1] = [
                             score
                         ]
+
+    # Should add something here specifically for the LLM based metric types that use eval_data.jsonl
+    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
+    with open(jsonl_file_path, "r") as file:
+        for line in file:
+            data = json.loads(line)
+            user_prompt = data.get("user_prompt")
+            output_prompt = data.get("output_prompt")
+            qna_context = data.get("context", "")
+
+            for llm_metric_type in llm_metric_types:
+                score = compute_metrics(user_prompt, output_prompt, qna_context, llm_metric_type)
+                # TODO: figure out how to carry the score over downstream
+                # metric_dic[llm_metric_type] = score
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 

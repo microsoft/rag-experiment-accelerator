@@ -266,6 +266,7 @@ class Config:
         SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
+        LLM_METRIC_TYPES (list[str]): A list of llm metric types to use.
     """
 
     def __init__(self, config_filename: str = "search_config.json") -> None:
@@ -291,6 +292,7 @@ class Config:
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
+        self.LLM_METRIC_TYPES = data["llm_metric_types"]
         self.LANGUAGE = data.get("language", {})
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()

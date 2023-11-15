@@ -1,5 +1,5 @@
 {
-    "name_prefix": "surface",
+    "name_prefix": "testing",
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200]
@@ -34,6 +34,10 @@
         "bert_all_MiniLM_L6_v2",
         "cosine",
         "bert_distilbert_base_nli_stsb_mean_tokens"
+    ],
+    "llm_metric_types": [
+        "ragas_answer_relevance",
+        "ragas_context_precision"
     ],
     "chat_model_name": "gpt-35-turbo",
     "embedding_model_name": "text-embedding-ada-002",
