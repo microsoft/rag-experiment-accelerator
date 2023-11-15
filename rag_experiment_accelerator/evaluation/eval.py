@@ -3,6 +3,7 @@ import os
 import warnings
 from datetime import datetime
 
+import openai
 import evaluate
 import mlflow
 import pandas as pd
@@ -13,6 +14,14 @@ import textdistance
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
 from numpy import mean
+import numpy as np
+
+from langchain.prompts import ChatPromptTemplate
+from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+
+from rag_experiment_accelerator.llm.prompts import context_precision_instruction, answer_relevance_instruction
+from rag_experiment_accelerator.config import Config
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -336,6 +345,187 @@ def lcsstr(value1, value2):
     return score
 
 
+# This is used to calculate similarity for relevance, but only used there
+# can throw it into that function if we want
+def ragas_calculate_similarity(question, generated_questions, embeddings):
+    question_vec = np.asarray(embeddings.embed_query(question)).reshape(1, -1)
+    gen_question_vec = np.asarray(
+        embeddings.embed_documents(generated_questions)
+    )
+    norm = np.linalg.norm(gen_question_vec, axis=1) * np.linalg.norm(
+        question_vec, axis=1
+    )
+    return (
+        np.dot(gen_question_vec, question_vec.T).reshape(
+            -1,
+        )
+        / norm
+    )
+
+# TODO: Look into reading from eval_data.jsonl
+# From what I understand, it only goes through this once, so we can do all the reading/processing
+# at one time
+def ragas_answer_relevance(question, answer, context):
+    """
+    Scores the relevancy of the answer according to the given question.
+    Answers with incomplete, redundant or unnecessary information is penalized.
+    Score can range from 0 to 1 with 1 being the best.
+
+    Attributes
+    ----------
+    name: string
+        The name of the metrics
+    batch_size: int
+        batch size for evaluation
+    strictness: int
+        Here indicates the number questions generated per answer.
+        Ideal range between 3 to 5.
+    embeddings: Embedding
+        The langchain wrapper of Embedding object.
+        E.g. HuggingFaceEmbeddings('BAAI/bge-base-en')
+    """
+    config = Config()
+    chat_model = None
+    
+    if openai.api_type == "azure":
+        chat_model = AzureChatOpenAI(
+            deployment_name=config.CHAT_MODEL_NAME,
+            openai_api_base=openai.api_base,
+        )
+    else:
+        chat_model = ChatOpenAI(
+            model=config.CHAT_MODEL_NAME,
+            openai_api_base=openai.api_base,
+        )
+
+    # TODO: Is this required to just be OpenAIEmbeddings/are there Azure alternatives
+    embeddings = OpenAIEmbeddings(
+        deployment=config.EMBEDDING_MODEL_NAME,
+        model=config.EMBEDDING_MODEL_NAME,
+        openai_api_base=openai.api_base,
+        openai_api_type=openai.api_type,
+    )
+
+    # TODO: Update this to get all prompts from lines in eval_data.jsonl
+    prompts = []
+    human_prompt = answer_relevance_instruction.format(answer=answer)
+    prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
+
+    print(f"Generating results")
+    # TODO: Update to take in configurable strictness (# of chat generations to create)
+    chat_model.n = 3
+    
+    ps = [p.format_messages() for p in prompts]
+    results = chat_model.generate(ps)
+    print(f"Finished generating results")
+    results = [[i.text for i in r] for r in results.generations]
+
+    scores = []
+    for question, gen_questions in zip(question, results):
+        print(f"Question: {question}")
+        print(f"GQ: {gen_questions}")
+        cosine_sim = ragas_calculate_similarity(question, gen_questions, embeddings)
+        scores.append(cosine_sim.mean())
+
+    return scores
+
+# Intentionally left unfinished because it's being deprecated for context_precision, do we care about this at all?
+def ragas_context_relevance(value1, value2):
+    """
+    Extracts sentences from the context that are relevant to the question with
+    self-consistancy checks. The number of relevant sentences and is used as the score.
+
+    Attributes
+    ----------
+    name : str
+    batch_size : int
+        Batch size for openai completion.
+    """
+
+
+# Same comments/questions as above but I need to learn more about some of the calculations being done later
+def ragas_context_precision(questions, contexts):
+    """
+    Average Precision is a metric that evaluates whether all of the
+    relevant items selected by the model are ranked higher or not.
+
+    Attributes
+    ----------
+    name : str
+    batch_size : int
+        Batch size for openai completion.
+    """
+    config = Config()
+    chat_model = None
+    
+    if openai.api_type == "azure":
+        chat_model = AzureChatOpenAI(
+            deployment_name=config.CHAT_MODEL_NAME,
+            openai_api_base=openai.api_base,
+        )
+    else:
+        chat_model = ChatOpenAI(
+            model=config.CHAT_MODEL_NAME,
+            openai_api_base=openai.api_base,
+        )
+
+    # TODO: Is this required to just be OpenAIEmbeddings/are there Azure alternatives
+    embeddings = OpenAIEmbeddings(
+        deployment=config.EMBEDDING_MODEL_NAME,
+        model=config.EMBEDDING_MODEL_NAME,
+        openai_api_base=openai.api_base,
+        openai_api_type=openai.api_type,
+    )
+
+    prompts = []
+    human_prompt = context_precision_instruction.format(question=questions, context=contexts)
+    prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
+    responses: list[list[str]] = []
+    
+    # TODO: Update to take in configurable strictness (# of chat generations to create)
+    chat_model.n = 3
+
+    # TODO: See if this formatting is necessary
+    ps = [p.format_messages() for p in prompts]
+
+    results = chat_model.generate(ps)
+    
+    responses = [[i.text for i in r] for r in results.generations]
+    
+    # What is going on here?
+    # context_lens = [len(ctx) for ctx in contexts]
+    # Temp while we figure out what's going on
+    context_lens = [1]
+    
+    context_lens.insert(0, 0)
+    context_lens = np.cumsum(context_lens)
+    grouped_responses = [
+        responses[start:end]
+        for start, end in zip(context_lens[:-1], context_lens[1:])
+    ]
+    scores = []
+
+    for response in grouped_responses:
+        response = [int("Yes" in resp) for resp in response]
+        denominator = sum(response) + 1e-10
+        numerator = sum(
+            [
+                (sum(response[: i + 1]) / (i + 1)) * response[i]
+                for i in range(len(response))
+            ]
+        )
+        scores.append(numerator / denominator)
+
+    return scores
+
+
+# TODO: Pull in eval_data.jsonl and process it
+def pull_context():
+    config = Config()
+    
+
+
+
 import ast
 import plotly.express as px
 import plotly.graph_objs as go
@@ -533,6 +723,9 @@ def compute_metrics(actual, expected, metric_type):
         score = compare_semantic_document_values(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
+    # TODO: Update this and context_precision
+    # elif metric_type == "ragas_answer_relevance":
+    #    score = ragas_answer_relevance(actual, expected)
     else:
         pass
 
