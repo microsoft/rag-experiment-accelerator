@@ -406,7 +406,7 @@ def ragas_answer_relevance(question, answer, context):
         openai_api_type=openai.api_type,
     )
 
-    # TODO: Update this to get all prompts from lines in eval_data.jsonl
+    # TODO: Update this to iterate over all prompts from lines in eval_data.jsonl
     prompts = []
     human_prompt = answer_relevance_instruction.format(answer=answer)
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
@@ -469,14 +469,6 @@ def ragas_context_precision(questions, contexts):
             openai_api_base=openai.api_base,
         )
 
-    # TODO: Is this required to just be OpenAIEmbeddings/are there Azure alternatives
-    embeddings = OpenAIEmbeddings(
-        deployment=config.EMBEDDING_MODEL_NAME,
-        model=config.EMBEDDING_MODEL_NAME,
-        openai_api_base=openai.api_base,
-        openai_api_type=openai.api_type,
-    )
-
     prompts = []
     human_prompt = context_precision_instruction.format(question=questions, context=contexts)
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
@@ -484,17 +476,15 @@ def ragas_context_precision(questions, contexts):
     
     # TODO: Update to take in configurable strictness (# of chat generations to create)
     chat_model.n = 3
-
-    # TODO: See if this formatting is necessary
     ps = [p.format_messages() for p in prompts]
-
     results = chat_model.generate(ps)
     
     responses = [[i.text for i in r] for r in results.generations]
     
-    # What is going on here?
-    # context_lens = [len(ctx) for ctx in contexts]
+    # TODO: Figure out what's going on in this calculation
+
     # Temp while we figure out what's going on
+    # context_lens = [len(ctx) for ctx in contexts]
     context_lens = [1]
     
     context_lens.insert(0, 0)
@@ -519,12 +509,10 @@ def ragas_context_precision(questions, contexts):
     return scores
 
 
-# TODO: Pull in eval_data.jsonl and process it
+# TODO: This is where we would pull in the eval_data.jsonl file
 def pull_context():
     config = Config()
     
-
-
 
 import ast
 import plotly.express as px
