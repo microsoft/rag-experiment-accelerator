@@ -410,24 +410,16 @@ def ragas_answer_relevance(question, answer):
     print(f"Generating results")
     # TODO: Update to take in configurable strictness (# of chat generations to create)
     chat_model.n = 3
-    
+
     ps = [p.format_messages() for p in prompts]
     results = chat_model.generate(ps)
-    print(f"Finished generating results")
+    # Aggregating the n chat generations into a single list
+    # TODO: There must be a simpler way to do this
     results = [[i.text for i in r] for r in results.generations]
+    results = [item for sublist in results for item in sublist]
 
-    scores = []
-    # TODO: Simplify this
-    for question, gen_questions in zip(question, results):
-        print(f"Question: {question}")
-        print(f"GQ: {gen_questions}")
-        cosine_sim = ragas_calculate_similarity(question, gen_questions, embeddings)
-        scores.append(cosine_sim.mean())
-
-    return scores
-
-
-# Same comments/questions as above but I need to learn more about some of the calculations being done later
+    score = ragas_calculate_similarity(question, results, embeddings)
+    return score.mean()
 def ragas_context_precision(question, context):
     """
     Average Precision is a metric that evaluates whether all of the
@@ -454,7 +446,7 @@ def ragas_context_precision(question, context):
         )
 
     prompts = []
-    human_prompt = context_precision_instruction.format(question=questions, context=contexts)
+    human_prompt = context_precision_instruction.format(question=question, context=context)
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
     responses: list[list[str]] = []
     
@@ -465,30 +457,12 @@ def ragas_context_precision(question, context):
     
     # TODO: Should be able to simplify this
     responses = [[i.text for i in r] for r in results.generations]
-    
-    # TODO: Figure out what's going on in this calculation and then simplify
-    context_lens = [1]
-    
-    context_lens.insert(0, 0)
-    context_lens = np.cumsum(context_lens)
-    grouped_responses = [
-        responses[start:end]
-        for start, end in zip(context_lens[:-1], context_lens[1:])
-    ]
-    scores = []
+    responses = [item for sublist in responses for item in sublist]
 
-    for response in grouped_responses:
-        response = [int("Yes" in resp) for resp in response]
-        denominator = sum(response) + 1e-10
-        numerator = sum(
-            [
-                (sum(response[: i + 1]) / (i + 1)) * response[i]
-                for i in range(len(response))
-            ]
-        )
-        scores.append(numerator / denominator)
-
-    return scores
+    numerator = sum([int("Yes" in resp) for resp in responses])
+    demoninator = len(responses)        
+    
+    return numerator / demoninator
 
 import ast
 import plotly.express as px
