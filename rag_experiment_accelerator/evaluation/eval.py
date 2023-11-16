@@ -780,7 +780,10 @@ def evaluate_prompts(
                             score
                         ]
 
-    # Should add something here specifically for the LLM based metric types that use eval_data.jsonl
+    # I don't see how I can add these to the existing dataset since they're operating on different pieces of data
+    # Consider moving this to the bottom separate from the data_list stuff
+    llm_data_list = []
+    
     jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
     with open(jsonl_file_path, "r") as file:
         for line in file:
@@ -789,10 +792,21 @@ def evaluate_prompts(
             output_prompt = data.get("output_prompt")
             qna_context = data.get("context", "")
 
+            llm_metric_dic = {}
             for llm_metric_type in llm_metric_types:
-                score = compute_metrics(user_prompt, output_prompt, qna_context, llm_metric_type)
+                score = compute_llm_metrics(user_prompt, output_prompt, qna_context, llm_metric_type)
                 # TODO: figure out how to carry the score over downstream
-                # metric_dic[llm_metric_type] = score
+                llm_metric_dic[llm_metric_type] = score
+            llm_metric_dic["user_prompt"] = user_prompt
+            llm_metric_dic["output_prompt"] = output_prompt
+            # Ignoring context because it's huge and not useful for the metrics imo
+            # llm_metric_dic["context"] = qna_context
+
+            llm_data_list.append(llm_metric_dic)
+
+    llm_df = pd.DataFrame(llm_data_list)
+    llm_df.to_csv(f"{eval_score_folder}/{formatted_datetime}-llm.csv", index=False)
+
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
