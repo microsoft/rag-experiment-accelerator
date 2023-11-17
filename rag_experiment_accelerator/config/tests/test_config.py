@@ -164,7 +164,7 @@ def test_config_init(
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
-    assert config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
+    # assert config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
     assert config.EF_CONSTRUCTIONS == mock_config_data["ef_construction"]
     assert config.EF_SEARCHES == mock_config_data["ef_search"]
     assert config.RERANK == mock_config_data["rerank"]
@@ -175,7 +175,7 @@ def test_config_init(
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
     assert config.CHAT_MODEL_NAME == mock_config_data["chat_model_name"]
-    assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
+    # assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (
         config.SEARCH_RELEVANCY_THRESHOLD
@@ -278,17 +278,17 @@ def test_check_deployment(
     ) as mock_try_retrieve_model:
         mock_try_retrieve_model.return_value = None  # Adjust as needed
 
-        config = Config()
+        config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
         config.OpenAICredentials.OPENAI_API_TYPE = api_type
         config.CHAT_MODEL_NAME = chat_model_name
-        config.EMBEDDING_MODEL_NAME = embedding_model_name
+        # config.EMBEDDING_MODEL_NAME = embedding_model_name
 
         config._check_deployment()
         calls = []
         if chat_model_name:
             calls.append(call(chat_model_name, tags=chat_tags))
-        if embedding_model_name:
-            calls.append(call(embedding_model_name, tags=embedding_tags))
+        # if embedding_model_name:
+        #     calls.append(call(embedding_model_name, tags=embedding_tags))
 
         mock_try_retrieve_model.assert_has_calls(calls)
 

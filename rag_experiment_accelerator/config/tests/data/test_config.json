@@ -5,6 +5,16 @@
         "overlap_size": [2]
     },
     "embedding_dimension": [3],
+    "embedding_models": [
+        {
+            "type": "openai",
+            "model_name": "text-embedding-ada-002"
+        },
+        {
+            "type": "huggingface",
+            "model_name": "all-mpnet-base-v2"
+        }
+    ],
     "ef_construction": [4],
     "ef_search": [5],
     "rerank": "test_rerank",

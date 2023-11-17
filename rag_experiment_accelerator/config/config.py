@@ -1,6 +1,8 @@
 import json
 import os
 import openai
+from rag_experiment_accelerator.llm.factory import EmbeddingModelFactory
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -255,7 +257,6 @@ class Config:
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         CHAT_MODEL_NAME (str): The name of the chat model to use.
-        EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
@@ -274,13 +275,11 @@ class Config:
 
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
-        self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
         self.EF_CONSTRUCTIONS = data["ef_construction"]
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
         self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
-        self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]
@@ -295,6 +294,13 @@ class Config:
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
+
+        self.embedding_models: list[EmbeddingModel] = []
+        embedding_model_config = data.get("embedding_models", [])
+        for model in embedding_model_config:
+            self.embedding_models.append(EmbeddingModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials.OPENAI_API_TYPE))
+
+
         self._check_deployment()
 
         with open("querying_config.json", "r") as json_file:
@@ -302,6 +308,7 @@ class Config:
 
         self.EVAL_DATA_JSON_FILE_PATH = data["eval_data_json_file_path"]
         self.MAIN_PROMPT_INSTRUCTIONS = data["main_prompt_instruction"]
+
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """
@@ -331,6 +338,7 @@ class Config:
                     logger.critical(
                         f"Model {model_name} does not have the {tag} capability."
                     )
+                    # TODO: why do we raise here?
                     raise ValueError(
                         f"Model {model_name} does not have the {tag} capability."
                     )
@@ -347,6 +355,8 @@ class Config:
         and then tries to retrieve the model with specified tags.
 
         """
+        for embedding_model in self.embedding_models:
+            embedding_model.try_retrieve_model()
         if self.OpenAICredentials.OPENAI_API_TYPE is not None:
             if self.CHAT_MODEL_NAME is not None:
                 self._try_retrieve_model(
@@ -354,9 +364,15 @@ class Config:
                     tags=["chat_completion", "inference"],
                 )
                 logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
-            if self.EMBEDDING_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.EMBEDDING_MODEL_NAME,
-                    tags=["embeddings", "inference"],
-                )
-                logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")
+            # for embedding_model in self.embedding_models:
+            #     self.try_retrieve_model(
+            #         embedding_model.model_name,
+            #         tags=["embeddings", "inference"],
+            #     )
+            #     logger.info(f"Model {embedding_model.model_name} is ready for use.")
+            # if self.EMBEDDING_MODEL_NAME is not None:
+            #     self._try_retrieve_model(
+            #         self.EMBEDDING_MODEL_NAME,
+            #         tags=["embeddings", "inference"],
+            #     )
+            #     logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")

@@ -3,6 +3,7 @@ import json
 import azure
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 
@@ -51,11 +52,10 @@ search_mapping = {
 
 def query_acs(
     search_client: azure.search.documents.SearchClient,
-    dimension: int,
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
-    model_name: str = None,
+    embedding_model: EmbeddingModel,
 ):
     """
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
@@ -76,10 +76,9 @@ def query_acs(
 
     return search_mapping[s_v](
         client=search_client,
-        size=dimension,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        model_name=model_name,
+        embedding_model=embedding_model
     )
 
 
@@ -124,13 +123,12 @@ def rerank_documents(
 
 def query_and_eval_acs(
     search_client: SearchClient,
-    dimension: int,
     query: str,
     search_type: str,
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
-    model_name: str = None,
+    embedding_model: EmbeddingModel,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
@@ -152,11 +150,10 @@ def query_and_eval_acs(
     """
     search_result = query_acs(
         search_client=search_client,
-        dimension=dimension,
         user_prompt=query,
         s_v=search_type,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        model_name=model_name,
+        embedding_model=embedding_model,
     )
     docs, evaluation = evaluate_search_result(
         search_result, evaluation_content, evaluator
@@ -167,15 +164,16 @@ def query_and_eval_acs(
 
 def query_and_eval_acs_multi(
     search_client: SearchClient,
-    dimension: int,
     questions: list[str],
     original_prompt: str,
     output_prompt: str,
     search_type: str,
     evaluation_content: str,
-    config: Config,
+    chat_model_name: str,
+    temperature: float,
     evaluator: SpacyEvaluator,
     main_prompt_instruction: str,
+    embedding_model: EmbeddingModel,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
@@ -201,13 +199,12 @@ def query_and_eval_acs_multi(
     for question in questions:
         docs, evaluation = query_and_eval_acs(
             search_client=search_client,
-            dimension=dimension,
             query=question,
             search_type=search_type,
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
-            model_name=config.EMBEDDING_MODEL_NAME,
+            embedding_model=embedding_model,
         )
         evals.append(evaluation)
 
@@ -227,8 +224,8 @@ def query_and_eval_acs_multi(
         openai_response = generate_response(
             full_prompt_instruction,
             original_prompt,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
+            chat_model_name,
+            temperature,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -267,10 +264,10 @@ def main(config: Config):
 
         for config_item in config.CHUNK_SIZES:
             for overlap in config.OVERLAP_SIZES:
-                for dimension in config.EMBEDDING_DIMENSIONS:
+                for embedding_model in config.embedding_models:
                     for ef_construction in config.EF_CONSTRUCTIONS:
                         for ef_search in config.EF_SEARCHES:
-                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{embedding_model.model_name.lower()}-{ef_construction}-{ef_search}"
                             logger.info(f"Index: {index_name}")
 
                             write_path = (
@@ -322,26 +319,27 @@ def main(config: Config):
                                                 docs,
                                                 search_evals,
                                             ) = query_and_eval_acs_multi(
-                                                search_client,
-                                                dimension,
-                                                new_questions,
-                                                user_prompt,
-                                                output_prompt,
-                                                s_v,
-                                                evaluation_content,
-                                                config,
-                                                evaluator,
-                                                prompt_instruction,
+                                                search_client=search_client,
+                                                questions=new_questions,
+                                                original_prompt=user_prompt,
+                                                output_prompt=output_prompt,
+                                                search_type=s_v,
+                                                evaluation_content=evaluation_content,
+                                                chat_model_name=config.CHAT_MODEL_NAME,
+                                                temperature=config.TEMPERATURE,
+                                                evaluator=evaluator,
+                                                main_prompt_instruction=prompt_instruction,
+                                                embedding_model=embedding_model
                                             )
                                         else:
                                             docs, evaluation = query_and_eval_acs(
-                                                search_client,
-                                                dimension,
-                                                user_prompt,
-                                                s_v,
-                                                evaluation_content,
-                                                config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                evaluator,
+                                                search_client=search_client,
+                                                query=user_prompt,
+                                                search_type=s_v,
+                                                evaluation_content=evaluation_content,
+                                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                evaluator=evaluator,
+                                                embedding_model=embedding_model
                                             )
                                             search_evals.append(evaluation)
 

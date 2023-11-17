@@ -4,7 +4,16 @@
         "chunk_size": [1000],
         "overlap_size": [200]
     },
-    "embedding_dimension": [768],
+    "embedding_models": [
+        {
+            "type": "openai",
+            "model_name": "text-embedding-ada-002"
+        },
+        {
+            "type": "huggingface",
+            "model_name": "all-mpnet-base-v2"
+        }
+    ],
     "ef_construction": [400],
     "ef_search": [400],
     "language":{
@@ -33,11 +42,22 @@
         "fuzzy",
         "bert_all_MiniLM_L6_v2",
         "cosine",
-        "bert_distilbert_base_nli_stsb_mean_tokens"
+        "bert_distilbert_base_nli_stsb_mean_tokens",
+        "lcsstr",
+        "lcsseq",
+        "cosine",
+        "jaro_winkler",
+        "hamming",
+        "jaccard",
+        "levenshtein",
+        "fuzzy"
     ],
     "chat_model_name": "gpt-35-turbo",
-    "embedding_model_name": "text-embedding-ada-002",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
-    "data_formats": "all"
+    "data_formats": "all",
+    "azure_openai": {
+        "api_version": "",
+        "api_base": ""
+    }
 }
