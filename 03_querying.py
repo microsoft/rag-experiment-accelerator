@@ -175,7 +175,7 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-    prompt_instructions: list[str],
+    main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
@@ -191,7 +191,7 @@ def query_and_eval_acs_multi(
         evaluation_content (str): The content to use for evaluation.
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
-        prompt_instructions (list[str]): List of main prompts to use with question
+        main_prompt_instruction (str): The main prompt instruction for the query
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
@@ -219,18 +219,17 @@ def query_and_eval_acs_multi(
         else:
             prompt_instruction_context = docs
 
-        for main_prompt_instruction in prompt_instructions:
-            full_prompt_instruction = (
-                main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-            )
-            openai_response = generate_response(
-                full_prompt_instruction,
-                original_prompt,
-                config.CHAT_MODEL_NAME,
-                config.TEMPERATURE,
-            )
-            context.append(openai_response)
-            logger.debug(openai_response)
+        full_prompt_instruction = (
+            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+        )
+        openai_response = generate_response(
+            full_prompt_instruction,
+            original_prompt,
+            config.CHAT_MODEL_NAME,
+            config.TEMPERATURE,
+        )
+        context.append(openai_response)
+        logger.debug(openai_response)
 
     return context, evals
 
@@ -254,10 +253,10 @@ def main(config: Config):
             for line in file:
                 question_count += 1
 
-        if config.MAIN_PROMPT_INSTRUCTIONS:
-            prompt_instructions = config.MAIN_PROMPT_INSTRUCTIONS
+        if config.MAIN_PROMPT_INSTRUCTION:
+            prompt_instruction = config.MAIN_PROMPT_INSTRUCTION
         else:
-            prompt_instructions = main_prompt_instruction
+            prompt_instruction = main_prompt_instruction
 
         directory_path = "artifacts/outputs"
         os.makedirs(directory_path, exist_ok=True)
@@ -330,7 +329,7 @@ def main(config: Config):
                                                 evaluation_content,
                                                 config,
                                                 evaluator,
-                                                prompt_instructions,
+                                                prompt_instruction,
                                             )
                                         else:
                                             docs, evaluation = query_and_eval_acs(
@@ -356,37 +355,36 @@ def main(config: Config):
                                         else:
                                             prompt_instruction_context = docs
 
-                                        for main_prompt_instruction in prompt_instructions:
-                                            full_prompt_instruction = (
-                                                main_prompt_instruction
-                                                + "\n"
-                                                + "\n".join(prompt_instruction_context)
-                                            )
-                                            openai_response = generate_response(
-                                                full_prompt_instruction,
-                                                user_prompt,
-                                                config.CHAT_MODEL_NAME,
-                                                config.TEMPERATURE,
-                                            )
-                                            logger.debug(openai_response)
+                                        full_prompt_instruction = (
+                                            prompt_instruction
+                                            + "\n"
+                                            + "\n".join(prompt_instruction_context)
+                                        )
+                                        openai_response = generate_response(
+                                            full_prompt_instruction,
+                                            user_prompt,
+                                            config.CHAT_MODEL_NAME,
+                                            config.TEMPERATURE,
+                                        )
+                                        logger.debug(openai_response)
 
-                                            output = {
-                                                "rerank": config.RERANK,
-                                                "rerank_type": config.RERANK_TYPE,
-                                                "crossencoder_model": config.CROSSENCODER_MODEL,
-                                                "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
-                                                "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                "cross_encoder_at_k": config.CROSSENCODER_AT_K,
-                                                "question_count": question_count,
-                                                "actual": openai_response,
-                                                "expected": output_prompt,
-                                                "search_type": s_v,
-                                                "search_evals": search_evals,
-                                            }
+                                        output = {
+                                            "rerank": config.RERANK,
+                                            "rerank_type": config.RERANK_TYPE,
+                                            "crossencoder_model": config.CROSSENCODER_MODEL,
+                                            "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
+                                            "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                            "cross_encoder_at_k": config.CROSSENCODER_AT_K,
+                                            "question_count": question_count,
+                                            "actual": openai_response,
+                                            "expected": output_prompt,
+                                            "search_type": s_v,
+                                            "search_evals": search_evals
+                                        }
 
-                                            with open(write_path, "a") as out:
-                                                json_string = json.dumps(output)
-                                                out.write(json_string + "\n")
+                                        with open(write_path, "a") as out:
+                                            json_string = json.dumps(output)
+                                            out.write(json_string + "\n")
 
                             search_client.close()
                             create_data_asset(

@@ -302,7 +302,7 @@ class Config:
         with open("prompt_config.json", "r") as json_file:
             data = json.load(json_file)
 
-        self.MAIN_PROMPT_INSTRUCTIONS = data["main_prompt_instructions"]
+        self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """
