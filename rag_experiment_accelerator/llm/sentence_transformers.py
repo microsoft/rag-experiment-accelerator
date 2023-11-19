@@ -1,8 +1,6 @@
-from abc import ABC, abstractmethod
-import openai
 from requests import HTTPError
 from sentence_transformers import SentenceTransformer
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
+from rag_experiment_accelerator.llm.base import EmbeddingModel
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -15,21 +13,21 @@ class SentenceTransformersEmbeddingModel(EmbeddingModel):
         "bert-large-nli-mean-tokens": 1024
     }
 
-    def __init__(self, model_name: str, dimension: int) -> None:
+    def __init__(self, model_name: str, dimension: int = None) -> None:
+        if dimension is None:
+            dimension = self._size_model_mapping.get(model_name)
+            if dimension is None:
+                raise ValueError(f"Dimension not provided and model name {model_name} not found in mapping")
         super().__init__(model_name=model_name, dimension=dimension)
         self._model = self.try_retrieve_model(model_name)
 
     def generate_embedding(self, chunk: str) -> list[float]:
         return self._model.encode([str(chunk)]).tolist()
-
-    def get_dimension(self) -> int:
-        if self._dimension is not None:
-            return self._dimension
-        return self._size_model_mapping[self.model_name]
     
     def try_retrieve_model(self, tags: list[str] = None):
         try:
-            logger.info(f"Trying to retrieve model {self.model_name}")
-            return SentenceTransformer(self.model_name)
+            model = SentenceTransformer(self.model_name)
+            logger.info(f"Retrieved model {self.model_name}")
+            return model
         except HTTPError as e:
             raise e

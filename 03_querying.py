@@ -3,11 +3,13 @@ import json
 import azure
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
+from rag_experiment_accelerator.llm.base import EmbeddingModel
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.utils.utils import get_index_name
 
 from dotenv import load_dotenv
+
 
 load_dotenv(override=True)
 
@@ -262,12 +264,19 @@ def main(config: Config):
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
-        for config_item in config.CHUNK_SIZES:
+        for chunk_size in config.CHUNK_SIZES:
             for overlap in config.OVERLAP_SIZES:
                 for embedding_model in config.embedding_models:
                     for ef_construction in config.EF_CONSTRUCTIONS:
                         for ef_search in config.EF_SEARCHES:
-                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{embedding_model.model_name.lower()}-{ef_construction}-{ef_search}"
+                            index_name = get_index_name(
+                                prefix=config.NAME_PREFIX,
+                                chunk_size=chunk_size,
+                                overlap=overlap,
+                                embedding_model_name=embedding_model.model_name,
+                                ef_construction=ef_construction,
+                                ef_search=ef_search,
+                            )
                             logger.info(f"Index: {index_name}")
 
                             write_path = (

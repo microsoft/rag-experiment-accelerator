@@ -34,7 +34,7 @@ def main(config: Config):
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
-                        get_index_name(
+                        index_name = get_index_name(
                             prefix=config.NAME_PREFIX,
                             chunk_size=chunk_size,
                             overlap=overlap,
@@ -42,14 +42,12 @@ def main(config: Config):
                             ef_construction=ef_construction,
                             ef_search=ef_search,
                         )
-                        index_name = f"{config.NAME_PREFIX}-{chunk_size}-{overlap}-{embedding_model.model_name}-{ef_construction}-{ef_search}"
-                        index_name = index_name.lower()
                         logger.info(f"Creating Index: {index_name}")
                         create_acs_index(
                             service_endpoint,
                             index_name,
                             key,
-                            embedding_model.get_dimension(),
+                            embedding_model.dimension,
                             ef_construction,
                             ef_search,
                             config.LANGUAGE["analyzers"],
@@ -67,8 +65,14 @@ def main(config: Config):
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{chunk_size}-{overlap}-{embedding_model.model_name}-{ef_construction}-{ef_search}"
-                        index_name = index_name.lower()
+                        index_name = get_index_name(
+                            prefix=config.NAME_PREFIX,
+                            chunk_size=chunk_size,
+                            overlap=overlap,
+                            embedding_model_name=embedding_model.model_name,
+                            ef_construction=ef_construction,
+                            ef_search=ef_search,
+                        )
                         data_load = []
                         for docs in all_docs:
                             chunk_dict = {

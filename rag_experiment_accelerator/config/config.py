@@ -1,66 +1,14 @@
 import json
-import os
 import openai
 from rag_experiment_accelerator.llm.factory import EmbeddingModelFactory
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
+from rag_experiment_accelerator.llm.base import EmbeddingModel
+from rag_experiment_accelerator.utils.auth import OpenAICredentials
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.utils import get_env_var
 
 logger = get_logger(__name__)
 
 
-def _mask_string(s: str, start: int = 2, end: int = 2, mask_char: str = "*") -> str:
-    """
-    Masks a string by replacing some of its characters with a mask character.
-
-    Args:
-        s (str): The string to be masked.
-        start (int): The number of characters to keep at the beginning of the string.
-        end (int): The number of characters to keep at the end of the string.
-        mask_char (str): The character to use for masking.
-
-    Returns:
-        str: The masked string.
-
-    Raises:
-        None
-    """
-    if s == "":
-        return ""
-
-    if len(s) <= start + end:
-        return s[0] + mask_char * (len(s) - 1)
-
-    return (
-        s[:start] + mask_char * (len(s) - start - end) + s[-end:]
-        if end > 0
-        else s[:start] + mask_char * (len(s) - start)
-    )
-
-
-def _get_env_var(var_name: str, critical: bool, mask: bool) -> str:
-    """
-    Get the value of an environment variable.
-
-    Args:
-        var_name (str): The name of the environment variable to retrieve.
-        critical (bool): Whether or not the function should raise an error if the variable is not set.
-        mask (bool): Whether or not to mask the value of the variable in the logs.
-
-    Returns:
-        str: The value of the environment variable.
-
-    Raises:
-        ValueError: If the `critical` parameter is True and the environment variable is not set.
-    """
-    var = os.getenv(var_name, None)
-    if var is None:
-        logger.critical(f"{var_name} environment variable not set.")
-        if critical:
-            raise ValueError(f"{var_name} environment variable not set.")
-    else:
-        text = var if not mask else _mask_string(var)
-        logger.info(f"{var_name} set to {text}")
-    return var
 
 
 class AzureSearchCredentials:
@@ -89,12 +37,12 @@ class AzureSearchCredentials:
             AzureSearchCredentials: An instance of AzureSearchCredentials.
         """
         return cls(
-            azure_search_service_endpoint=_get_env_var(
+            azure_search_service_endpoint=get_env_var(
                 var_name="AZURE_SEARCH_SERVICE_ENDPOINT",
                 critical=False,
                 mask=False,
             ),
-            azure_search_admin_key=_get_env_var(
+            azure_search_admin_key=get_env_var(
                 var_name="AZURE_SEARCH_ADMIN_KEY",
                 critical=False,
                 mask=True,
@@ -131,17 +79,17 @@ class AzureMLCredentials:
             AzureMLCredentials: An instance of AzureMLCredentials.
         """
         return cls(
-            subscription_id=_get_env_var(
+            subscription_id=get_env_var(
                 var_name="AML_SUBSCRIPTION_ID",
                 critical=False,
                 mask=True,
             ),
-            workspace_name=_get_env_var(
+            workspace_name=get_env_var(
                 var_name="AML_WORKSPACE_NAME",
                 critical=False,
                 mask=False,
             ),
-            resource_group_name=_get_env_var(
+            resource_group_name=get_env_var(
                 var_name="AML_RESOURCE_GROUP_NAME",
                 critical=False,
                 mask=False,
@@ -149,96 +97,6 @@ class AzureMLCredentials:
         )
 
 
-class OpenAICredentials:
-    """
-    A class to store OpenAI credentials.
-
-    Attributes:
-        OPENAI_API_TYPE (str): The type of OpenAI API to use.
-        OPENAI_API_KEY (str): The API key for the OpenAI API.
-        OPENAI_API_VERSION (str): The version of the OpenAI API to use.
-        OPENAI_ENDPOINT (str): The endpoint for the OpenAI API.
-
-    Methods:
-        __init__(self, openai_api_type: str, openai_api_key: str, openai_api_version: str, openai_endpoint: str) -> None:
-            Initializes the OpenAICredentials object.
-        from_env(cls) -> "OpenAICredentials":
-            Creates an OpenAICredentials object from environment variables.
-        _set_credentials(self) -> None:
-            Sets the OpenAI credentials.
-    """
-
-    def __init__(
-        self,
-        openai_api_type: str,
-        openai_api_key: str,
-        openai_api_version: str,
-        openai_endpoint: str,
-    ) -> None:
-        """
-        Initializes the OpenAICredentials object.
-
-        Args:
-            openai_api_type (str): The type of OpenAI API to use.
-            openai_api_key (str): The API key for the OpenAI API.
-            openai_api_version (str): The version of the OpenAI API to use.
-            openai_endpoint (str): The endpoint for the OpenAI API.
-
-        Raises:
-            ValueError: If openai_api_type is not 'azure' or 'open_ai'.
-        """
-        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-
-        self.OPENAI_API_TYPE = openai_api_type
-        self.OPENAI_API_KEY = openai_api_key
-        self.OPENAI_API_VERSION = openai_api_version
-        self.OPENAI_ENDPOINT = openai_endpoint
-
-        self._set_credentials()
-
-    @classmethod
-    def from_env(cls) -> "OpenAICredentials":
-        """
-        Creates an OpenAICredentials object from environment variables.
-
-        Returns:
-            OpenAICredentials: The OpenAICredentials object.
-        """
-        return cls(
-            openai_api_type=_get_env_var(
-                var_name="OPENAI_API_TYPE",
-                critical=False,
-                mask=False,
-            ),
-            openai_api_key=_get_env_var(
-                var_name="OPENAI_API_KEY", critical=False, mask=True
-            ),
-            openai_api_version=_get_env_var(
-                var_name="OPENAI_API_VERSION",
-                critical=False,
-                mask=False,
-            ),
-            openai_endpoint=_get_env_var(
-                var_name="OPENAI_ENDPOINT",
-                critical=False,
-                mask=True,
-            ),
-        )
-
-    def _set_credentials(self) -> None:
-        """
-        Sets the OpenAI credentials.
-        """
-        if self.OPENAI_API_TYPE is not None:
-            openai.api_type = self.OPENAI_API_TYPE
-            openai.api_key = self.OPENAI_API_KEY
-            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
-
-            if self.OPENAI_API_TYPE == "azure":
-                openai.api_version = self.OPENAI_API_VERSION
-                openai.api_base = self.OPENAI_ENDPOINT
 
 
 class Config:
@@ -298,8 +156,7 @@ class Config:
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model in embedding_model_config:
-            self.embedding_models.append(EmbeddingModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials.OPENAI_API_TYPE))
-
+            self.embedding_models.append(EmbeddingModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials))
 
         self._check_deployment()
 
@@ -338,7 +195,6 @@ class Config:
                     logger.critical(
                         f"Model {model_name} does not have the {tag} capability."
                     )
-                    # TODO: why do we raise here?
                     raise ValueError(
                         f"Model {model_name} does not have the {tag} capability."
                     )
@@ -355,8 +211,12 @@ class Config:
         and then tries to retrieve the model with specified tags.
 
         """
-        for embedding_model in self.embedding_models:
-            embedding_model.try_retrieve_model()
+        # for embedding_model in self.embedding_models:
+        #     embedding_model.try_retrieve_model()
+        #     logger.info(f"Model {embedding_model.model_name} is ready for use.")
+
+        # self.chat_model.try_retrieve_model()
+        # logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
         if self.OpenAICredentials.OPENAI_API_TYPE is not None:
             if self.CHAT_MODEL_NAME is not None:
                 self._try_retrieve_model(
