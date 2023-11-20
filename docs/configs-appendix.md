@@ -12,11 +12,11 @@ Familiarity with [ReadMe configuration of elements](/README.md#Description-of-co
     - [Size][Chunk Size]
     - [Overlap][Overlap]
 - [Embedding][Embeddings]
-    - Models: The accelerator uses [Sentence Transformer][Sentence Transformer] to generate the embeddings which utilizes [Pre-Trained Models][Transformer Models] based on embedding dimensions.
-    - Dimensions: Each valid value maps to different models for embedding.
-        - 384: [all-MiniLM-L6-v2][all-MiniLM-L6-v2]
-        - 768: [all-mpnet-base-v2][all-mpnet-base-v2]
-        - 1024:[bert-large-nli-mean-tokens][bert-large-nli-mean-tokens]
+    - Models: The accelerator can use [Sentence Transformer][Sentence Transformer] emebdding models or OpenAI embedding models to generate the embeddings.
+    - Dimensions: When `type` is set to 'hugggingface', each model name value maps to the embedding dimension.
+        - [all-MiniLM-L6-v2][all-MiniLM-L6-v2]: 384
+        - [all-mpnet-base-v2][all-mpnet-base-v2]: 768
+        - [bert-large-nli-mean-tokens][bert-large-nli-mean-tokens: 1024
 - LLM Metrics calculated using scikit-learn in combination with `Math.mean`
     - [Precision][precision score]
     - [Recall][recall score]
