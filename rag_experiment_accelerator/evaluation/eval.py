@@ -682,6 +682,7 @@ def evaluate_prompts(
     )
     plot_map_scores(map_scores_df, run_id, client)
 
+    mlflow.log_param("chunk_size", chunk_size)
     mlflow.log_param("question_count", question_count)
     mlflow.log_param("rerank", rerank)
     mlflow.log_param("rerank_type", rerank_type)
