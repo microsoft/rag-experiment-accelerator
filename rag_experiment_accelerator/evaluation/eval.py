@@ -543,6 +543,7 @@ def evaluate_prompts(
     exp_name,
     data_path,
     client,
+    chunk_size,
     metric_types,
     search_variants,
     chunk_overlap,
@@ -557,6 +558,7 @@ def evaluate_prompts(
         exp_name (str): Name of the experiment to log the results to.
         data_path (str): Path to the file containing the prompts to evaluate.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
+        chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
         chunk_overlap (int): Amount of overlap between the chunks.
         embedding_dimension (int): Dimension of the embeddings to use.
         ef_construction (int): Number of trees to use during index construction.
@@ -566,8 +568,6 @@ def evaluate_prompts(
         None
     """
 
-    # metric_types = config.METRIC_TYPES
-    # search_variants = config.SEARCH_VARIANTS
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
     # time.sleep(30)

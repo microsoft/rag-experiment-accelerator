@@ -48,6 +48,7 @@ if __name__ == "__main__":
                             exp_name=config.NAME_PREFIX,
                             data_path=write_path,
                             client=client,
+                            chunk_size=chunk_size,
                             metric_types=config.METRIC_TYPES,
                             search_variants=config.SEARCH_VARIANTS,
                             chunk_overlap=overlap,
