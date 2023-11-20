@@ -1,144 +1,25 @@
 import pytest
 import json
-from rag_experiment_accelerator.config.config import (
-    AzureSearchCredentials,
-    AzureMLCredentials,
-    OpenAICredentials,
-    Config,
-)
+from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config.auth import OpenAICredentials
 import openai
 from unittest.mock import patch, call
 
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModelBase
 
-def test_init_search_credentials():
-    creds = AzureSearchCredentials(
-        azure_search_service_endpoint="http://example.com",
-        azure_search_admin_key="somekey",
-    )
-    assert creds.AZURE_SEARCH_SERVICE_ENDPOINT == "http://example.com"
-    assert creds.AZURE_SEARCH_ADMIN_KEY == "somekey"
+class TestEmbeddingsModel:
+    def __init__(self, model_name, dimension):
+        self.model_name = model_name
+        self.dimension = dimension
 
+    def try_retrieve_model(self):
+        pass
 
-@patch("rag_experiment_accelerator.config.config.get_env_var")
-def test_from_env_search_credentials(mock_get_env_var):
-    mock_get_env_var.side_effect = ["http://fromenv.com", "envkey"]
-
-    creds = AzureSearchCredentials.from_env()
-
-    assert creds.AZURE_SEARCH_SERVICE_ENDPOINT == "http://fromenv.com"
-    assert creds.AZURE_SEARCH_ADMIN_KEY == "envkey"
+    def get_embeddings(self, text):
+        return [1, 2, 3]
 
 
-def test_init_ml_credentials():
-    creds = AzureMLCredentials(
-        subscription_id="some-sub-id",
-        workspace_name="some-workspace",
-        resource_group_name="some-resource-group",
-    )
-    assert creds.SUBSCRIPTION_ID == "some-sub-id"
-    assert creds.WORKSPACE_NAME == "some-workspace"
-    assert creds.RESOURCE_GROUP_NAME == "some-resource-group"
-
-
-@patch("rag_experiment_accelerator.config.config.get_env_var")
-def test_from_env_ml_credentials(mock_get_env_var):
-    mock_get_env_var.side_effect = [
-        "some-sub-id-env",
-        "some-workspace-env",
-        "some-resource-group-env",
-    ]
-
-    creds = AzureMLCredentials.from_env()
-
-    assert creds.SUBSCRIPTION_ID == "some-sub-id-env"
-    assert creds.WORKSPACE_NAME == "some-workspace-env"
-    assert creds.RESOURCE_GROUP_NAME == "some-resource-group-env"
-
-
-def test_init_openai_credentials():
-    creds = OpenAICredentials(
-        openai_api_type="azure",
-        openai_api_key="somekey",
-        openai_api_version="v1",
-        openai_endpoint="http://example.com",
-    )
-    assert creds.OPENAI_API_TYPE == "azure"
-    assert creds.OPENAI_API_KEY == "somekey"
-    assert creds.OPENAI_API_VERSION == "v1"
-    assert creds.OPENAI_ENDPOINT == "http://example.com"
-
-
-def test_init_invalid_api_type_openai_credentials():
-    with pytest.raises(ValueError):
-        OpenAICredentials(
-            openai_api_type="invalid",
-            openai_api_key="somekey",
-            openai_api_version="v1",
-            openai_endpoint="http://example.com",
-        )
-
-
-# @patch("rag_experiment_accelerator.config.config.get_env_var")
-# def test_from_env_openai_credentials(mock_get_env_var):
-#     mock_get_env_var.side_effect = ["azure", "envkey", "v1", "http://envexample.com"]
-
-#     creds = OpenAICredentials.from_env()
-
-#     assert creds.OPENAI_API_TYPE == "azure"
-#     assert creds.OPENAI_API_KEY == "envkey"
-#     assert creds.OPENAI_API_VERSION == "v1"
-#     assert creds.OPENAI_ENDPOINT == "http://envexample.com"
-
-
-@pytest.mark.parametrize(
-    "api_type, expect_api_version, expect_api_base",
-    [
-        ("azure", "expected_version", "expected_endpoint"),
-        ("open_ai", None, None),
-        (None, None, None),
-    ],
-)
-@patch("rag_experiment_accelerator.utils.auth.openai")
-def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_base):
-    creds = OpenAICredentials(
-        openai_api_type=api_type,
-        openai_api_key="somekey",
-        openai_api_version="expected_version",
-        openai_endpoint="expected_endpoint",
-    )
-
-    creds.set_credentials()
-
-    if api_type is not None:
-        assert str(mock_openai.api_type) == api_type
-        assert str(mock_openai.api_key) == "somekey"
-
-    if api_type == "azure":
-        assert str(mock_openai.api_version) == expect_api_version
-        assert str(mock_openai.api_base) == expect_api_base
-
-
-def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
-    if var_name == "AZURE_SEARCH_SERVICE_ENDPOINT":
-        return "test_search_endpoint"
-    elif var_name == "AZURE_SEARCH_ADMIN_KEY":
-        return "test_admin_key"
-    elif var_name == "AZURE_SUBSCRIPTION_ID":
-        return "test_subscription_id"
-    elif var_name == "AZURE_WORKSPACE_NAME":
-        return "test_workspace_name"
-    elif var_name == "AZURE_RESOURCE_GROUP_NAME":
-        return "test_resource_group_name"
-    elif var_name == "OPENAI_API_KEY":
-        return "test_api_key"
-    elif var_name == "OPENAI_API_VERSION":
-        return "test_api_version"
-    elif var_name == "OPENAI_API_ENDPOINT":
-        return "test_api_endpoint"
-    elif var_name == "OPENAI_API_TYPE":
-        return "azure"
-    
-def mock_openai_credentials():
+def test_openai_creds():
     return OpenAICredentials(
         openai_api_type="azure",
         openai_api_key="somekey",
@@ -146,20 +27,20 @@ def mock_openai_credentials():
         openai_endpoint="http://example.com",
     )
 
-
-
 @patch("rag_experiment_accelerator.config.config.Config._try_retrieve_model")
-@patch("rag_experiment_accelerator.utils.auth.OpenAICredentials.from_env", new=mock_openai_credentials)
+@patch("rag_experiment_accelerator.config.config.OpenAICredentials.from_env", new=test_openai_creds)
+@patch("rag_experiment_accelerator.config.config.EmbeddingsModelFactory.create")
 def test_config_init(
+    mock_embeddings_model_factory,
     mock_openai_model_retrieve,
 ):
-    print("***************************")
-    print(mock_openai_model_retrieve)
     # Load mock config data from a json file
     with open(
         "rag_experiment_accelerator/config/tests/data/test_config.json", "r"
     ) as file:
         mock_config_data = json.load(file)
+
+    mock_embeddings_model_factory.side_effect = [TestEmbeddingsModel("", 123), TestEmbeddingsModel("", 123) ]
 
     mock_openai_model_retrieve.return_value = {
         "status": "succeeded",
@@ -280,19 +161,20 @@ def test_check_deployment(
     chat_tags,
     embedding_tags,
 ):
-    with patch(
-        "rag_experiment_accelerator.config.config.Config._try_retrieve_model"
-    ) as mock_try_retrieve_model:
+    with (
+        patch("rag_experiment_accelerator.config.config.Config._try_retrieve_model") as mock_try_retrieve_model,
+        patch("rag_experiment_accelerator.config.config.EmbeddingsModelFactory.create") as mock_embeddings_model_factory,
+    ):
         mock_try_retrieve_model.return_value = None  # Adjust as needed
+        embedding_models = [TestEmbeddingsModel("", 123), TestEmbeddingsModel("", 123) ]
+        mock_embeddings_model_factory.side_effect = embedding_models
 
         config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
         config.OpenAICredentials.OPENAI_API_TYPE = api_type
         config.CHAT_MODEL_NAME = chat_model_name
 
         config._check_deployment()
-        calls = []
         if chat_model_name:
-            calls.append(call(chat_model_name, tags=chat_tags))
-        # TODO: make sure embedding models get called
+            mock_try_retrieve_model.assert_called_with(chat_model_name, tags=chat_tags)
 
-        mock_try_retrieve_model.assert_has_calls(calls)
+        # TODO: make sure embedding models get called 

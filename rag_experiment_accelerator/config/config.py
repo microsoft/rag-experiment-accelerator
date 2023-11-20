@@ -1,102 +1,12 @@
 import json
 import openai
-from rag_experiment_accelerator.llm.factory import EmbeddingModelFactory
-from rag_experiment_accelerator.llm.base import EmbeddingModel
-from rag_experiment_accelerator.utils.auth import OpenAICredentials
+from rag_experiment_accelerator.llm.embeddings.factory import EmbeddingsModelFactory
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
+from rag_experiment_accelerator.config.auth import OpenAICredentials, AzureSearchCredentials, AzureMLCredentials
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.utils.utils import get_env_var
+
 
 logger = get_logger(__name__)
-
-
-
-
-class AzureSearchCredentials:
-    """
-    A class representing the credentials required to access an Azure Search service.
-
-    Attributes:
-        AZURE_SEARCH_SERVICE_ENDPOINT (str): The endpoint URL of the Azure Search service.
-        AZURE_SEARCH_ADMIN_KEY (str): The admin key required to access the Azure Search service.
-    """
-
-    def __init__(
-        self,
-        azure_search_service_endpoint: str,
-        azure_search_admin_key: str,
-    ) -> None:
-        self.AZURE_SEARCH_SERVICE_ENDPOINT = azure_search_service_endpoint
-        self.AZURE_SEARCH_ADMIN_KEY = azure_search_admin_key
-
-    @classmethod
-    def from_env(cls) -> "AzureSearchCredentials":
-        """
-        Creates an instance of AzureSearchCredentials using environment variables.
-
-        Returns:
-            AzureSearchCredentials: An instance of AzureSearchCredentials.
-        """
-        return cls(
-            azure_search_service_endpoint=get_env_var(
-                var_name="AZURE_SEARCH_SERVICE_ENDPOINT",
-                critical=False,
-                mask=False,
-            ),
-            azure_search_admin_key=get_env_var(
-                var_name="AZURE_SEARCH_ADMIN_KEY",
-                critical=False,
-                mask=True,
-            ),
-        )
-
-
-class AzureMLCredentials:
-    """
-    A class representing the credentials required to access an Azure Machine Learning workspace.
-
-    Attributes:
-        SUBSCRIPTION_ID (str): The subscription ID of the Azure account.
-        WORKSPACE_NAME (str): The name of the Azure Machine Learning workspace.
-        RESOURCE_GROUP_NAME (str): The name of the resource group containing the Azure Machine Learning workspace.
-    """
-
-    def __init__(
-        self,
-        subscription_id: str,
-        workspace_name: str,
-        resource_group_name: str,
-    ) -> None:
-        self.SUBSCRIPTION_ID = subscription_id
-        self.WORKSPACE_NAME = workspace_name
-        self.RESOURCE_GROUP_NAME = resource_group_name
-
-    @classmethod
-    def from_env(cls) -> "AzureMLCredentials":
-        """
-        Creates an instance of AzureMLCredentials using environment variables.
-
-        Returns:
-            AzureMLCredentials: An instance of AzureMLCredentials.
-        """
-        return cls(
-            subscription_id=get_env_var(
-                var_name="AML_SUBSCRIPTION_ID",
-                critical=False,
-                mask=True,
-            ),
-            workspace_name=get_env_var(
-                var_name="AML_WORKSPACE_NAME",
-                critical=False,
-                mask=False,
-            ),
-            resource_group_name=get_env_var(
-                var_name="AML_RESOURCE_GROUP_NAME",
-                critical=False,
-                mask=False,
-            ),
-        )
-
-
 
 
 class Config:
@@ -153,10 +63,10 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
 
-        self.embedding_models: list[EmbeddingModel] = []
+        self.embedding_models: list[EmbeddingsModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model in embedding_model_config:
-            self.embedding_models.append(EmbeddingModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials))
+            self.embedding_models.append(EmbeddingsModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials))
 
         self._check_deployment()
 
@@ -211,12 +121,10 @@ class Config:
         and then tries to retrieve the model with specified tags.
 
         """
-        # for embedding_model in self.embedding_models:
-        #     embedding_model.try_retrieve_model()
-        #     logger.info(f"Model {embedding_model.model_name} is ready for use.")
+        for embedding_model in self.embedding_models:
+            embedding_model.try_retrieve_model()
+            logger.info(f"Model {embedding_model.model_name} is ready for use.")
 
-        # self.chat_model.try_retrieve_model()
-        # logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
         if self.OpenAICredentials.OPENAI_API_TYPE is not None:
             if self.CHAT_MODEL_NAME is not None:
                 self._try_retrieve_model(
@@ -224,15 +132,3 @@ class Config:
                     tags=["chat_completion", "inference"],
                 )
                 logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
-            # for embedding_model in self.embedding_models:
-            #     self.try_retrieve_model(
-            #         embedding_model.model_name,
-            #         tags=["embeddings", "inference"],
-            #     )
-            #     logger.info(f"Model {embedding_model.model_name} is ready for use.")
-            # if self.EMBEDDING_MODEL_NAME is not None:
-            #     self._try_retrieve_model(
-            #         self.EMBEDDING_MODEL_NAME,
-            #         tags=["embeddings", "inference"],
-            #     )
-            #     logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")

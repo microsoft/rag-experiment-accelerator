@@ -1,8 +1,6 @@
-
-
 import pytest
-from rag_experiment_accelerator.llm.factory import EmbeddingModelFactory
-from rag_experiment_accelerator.utils.auth import OpenAICredentials
+from rag_experiment_accelerator.llm.embeddings.factory import EmbeddingsModelFactory
+from rag_experiment_accelerator.config.auth import OpenAICredentials
 
 
 def test_create_openai_embedding_model():
@@ -10,7 +8,7 @@ def test_create_openai_embedding_model():
     model_name = "test_model"
     dimension = 768
     openai_creds = OpenAICredentials("open_ai", "", "", "")
-    model = EmbeddingModelFactory.create(embedding_type=embedding_type, model_name=model_name, dimension=dimension, openai_creds=openai_creds)
+    model = EmbeddingsModelFactory.create(embedding_type=embedding_type, model_name=model_name, dimension=dimension, openai_creds=openai_creds)
     model.__class__ == 'OpenAIEmbeddingModel'
 
 
@@ -19,7 +17,7 @@ def test_create_huggingface_embedding_model():
     model_name = "all-mpnet-base-v2"
     dimension = 768
     openai_creds = OpenAICredentials("open_ai", "", "", "")
-    model = EmbeddingModelFactory.create(embedding_type=embedding_type, model_name=model_name, dimension=dimension, openai_creds=openai_creds)
+    model = EmbeddingsModelFactory.create(embedding_type=embedding_type, model_name=model_name, dimension=dimension, openai_creds=openai_creds)
     model.__class__ == 'SentenceTransformersEmbeddingModel'
 
 
@@ -29,4 +27,4 @@ def test_create_raise_invalid_embedding_type():
     dimension = 768
     openai_creds = OpenAICredentials("open_ai", "", "", "")
     with pytest.raises(ValueError):
-        EmbeddingModelFactory.create(embedding_type=embedding_type, model_name=model_name, dimension=dimension, openai_creds=openai_creds)
+        EmbeddingsModelFactory.create(embedding_type=embedding_type, model_name=model_name, dimension=dimension, openai_creds=openai_creds)

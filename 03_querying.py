@@ -3,7 +3,7 @@ import json
 import azure
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.llm.base import EmbeddingModel
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from rag_experiment_accelerator.utils.utils import get_index_name
@@ -57,7 +57,7 @@ def query_acs(
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
-    embedding_model: EmbeddingModel,
+    embedding_model: EmbeddingsModel,
 ):
     """
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
@@ -130,7 +130,7 @@ def query_and_eval_acs(
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
-    embedding_model: EmbeddingModel,
+    embedding_model: EmbeddingsModel,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
@@ -175,7 +175,7 @@ def query_and_eval_acs_multi(
     temperature: float,
     evaluator: SpacyEvaluator,
     main_prompt_instruction: str,
-    embedding_model: EmbeddingModel,
+    embedding_model: EmbeddingsModel,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response

@@ -10,7 +10,7 @@ from rag_experiment_accelerator.llm.prompts import (
     do_need_multiple_prompt_instruction,
 )
 from rag_experiment_accelerator.llm.prompt_execution import generate_response
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 import pandas as pd
 
@@ -79,7 +79,7 @@ def upload_data(
     search_key: str,
     chat_model_name: str,
     temperature: float,
-    embedding_model: EmbeddingModel,
+    embedding_model: EmbeddingsModel,
 ):
     """
     Uploads data to an Azure Cognitive Search index.
