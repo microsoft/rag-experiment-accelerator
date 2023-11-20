@@ -1,16 +1,17 @@
+from unittest.mock import patch
 import pytest
-from rag_experiment_accelerator.llm.embeddings.sentence_transformer_emebedding import SentenceTransformerEmbeddingModel
+import numpy as np
+from rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding import SentenceTransformerEmbeddingModel
 
-
-def test_generate_embedding():    
-    # only testing that the first two values are correct, because there are a lot of values
-    expected_embeddings = [0.026249676942825317, 0.013395567424595356]
+@patch("rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding.SentenceTransformer.encode")
+def test_generate_embedding(mock_encode):
+    expected_embeddings = np.array([0.026249676942825317, 0.013395567424595356])
+    mock_encode.return_value = expected_embeddings
 
     model = SentenceTransformerEmbeddingModel("all-mpnet-base-v2")
     embeddings = model.generate_embedding("Hello world")
-    print(embeddings)
-    assert embeddings[0][0] == expected_embeddings[0]
-    assert embeddings[0][1] == expected_embeddings[1]
+
+    assert embeddings == expected_embeddings.tolist()
 
 
 def test_try_retrieve_model_raises_non_existing_model():

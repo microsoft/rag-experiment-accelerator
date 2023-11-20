@@ -1,5 +1,5 @@
 from rag_experiment_accelerator.llm.embeddings.openai_embedding import OpenAIEmbeddingModel
-from rag_experiment_accelerator.llm.embeddings.sentence_transformer_emebedding import SentenceTransformerEmbeddingModel
+from rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding import SentenceTransformerEmbeddingModel
 from rag_experiment_accelerator.config.auth import OpenAICredentials
 
 
