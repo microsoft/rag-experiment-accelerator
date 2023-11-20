@@ -1,5 +1,5 @@
 {
-    "name_prefix": "testing",
+    "name_prefix": "surface",
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200]

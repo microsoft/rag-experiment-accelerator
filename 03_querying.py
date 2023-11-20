@@ -382,6 +382,7 @@ def main(config: Config):
                                             "expected": output_prompt,
                                             "search_type": s_v,
                                             "search_evals": search_evals,
+                                            "context": qna_context,
                                         }
 
                                         with open(write_path, "a") as out:

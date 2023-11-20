@@ -345,24 +345,7 @@ def lcsstr(value1, value2):
     return score
 
 
-# This is used to calculate similarity for relevance, but only used there
-# can throw it into that function if we want
-def ragas_calculate_similarity(question, generated_questions, embeddings):
-    question_vec = np.asarray(embeddings.embed_query(question)).reshape(1, -1)
-    gen_question_vec = np.asarray(
-        embeddings.embed_documents(generated_questions)
-    )
-    norm = np.linalg.norm(gen_question_vec, axis=1) * np.linalg.norm(
-        question_vec, axis=1
-    )
-    return (
-        np.dot(gen_question_vec, question_vec.T).reshape(
-            -1,
-        )
-        / norm
-    )
-
-def ragas_answer_relevance(question, answer):
+def answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -395,7 +378,7 @@ def ragas_answer_relevance(question, answer):
             openai_api_base=openai.api_base,
         )
 
-    # TODO: Is this required to just be OpenAIEmbeddings/are there Azure alternatives
+    # I haven't found Azure alternatives to this yet so it's not dependent on openai.api_type
     embeddings = OpenAIEmbeddings(
         deployment=config.EMBEDDING_MODEL_NAME,
         model=config.EMBEDDING_MODEL_NAME,
@@ -408,6 +391,8 @@ def ragas_answer_relevance(question, answer):
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
 
     print(f"Generating results")
+    # From the call today, sounds like this should be configurable
+    # Potentially specify in search_config?
     # TODO: Update to take in configurable strictness (# of chat generations to create)
     chat_model.n = 3
 
@@ -418,9 +403,12 @@ def ragas_answer_relevance(question, answer):
     results = [[i.text for i in r] for r in results.generations]
     results = [item for sublist in results for item in sublist]
 
-    score = ragas_calculate_similarity(question, results, embeddings)
+    # TODO: Fix this to iterate over results
+    score = cosine_similarity(question, results)
     return score.mean()
-def ragas_context_precision(question, context):
+
+
+def context_precision(question, context):
     """
     Average Precision is a metric that evaluates whether all of the
     relevant items selected by the model are ranked higher or not.
@@ -583,7 +571,7 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(actual, expected, metric_type):
+def compute_metrics(actual, expected, context, metric_type):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -661,30 +649,10 @@ def compute_metrics(actual, expected, metric_type):
         score = compare_semantic_document_values(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
-    else:
-        pass
-
-    return score
-
-
-def compute_llm_metrics(question, answer, context, llm_metric_type):
-    """
-    Computes a score for the specific llm metric using a combination of question, answer, or context.
-
-    Args:
-        question (str): The question the LLM generates.
-        answer (str): The answer the LLM generates.
-        context (str): The context the LLM uses to generate the question/answer pair.
-        llm_metric_type (str): The type of metric to use for comparison. Valid options are:
-            - "ragas_answer_relevance": Scores the relevancy of the answer according to the given question.
-            - "ragas_context_precision": Scores the precision of a question given its context.
-    Returns:
-        float: The similarity score between the two strings, as determined by the specified metric.
-    """
-    if llm_metric_type == "ragas_answer_relevance":
-        score = ragas_answer_relevance(question, answer)
-    elif llm_metric_type == "ragas_context_precision":
-        score = ragas_context_precision(question, context)
+    elif metric_type == "answer_relevance":
+        score = answer_relevance(actual, expected)
+    elif metric_type == "context_precision":
+        score = context_precision(actual, context)
     else:
         pass
 
