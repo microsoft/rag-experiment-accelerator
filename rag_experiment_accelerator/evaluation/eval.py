@@ -662,7 +662,6 @@ def evaluate_prompts(
     """
 
     metric_types = config.METRIC_TYPES
-    llm_metric_types = config.LLM_METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
@@ -720,7 +719,6 @@ def evaluate_prompts(
                         total_precision_scores_by_search_type[search_type][i + 1] = [
                             score
                         ]
-
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
