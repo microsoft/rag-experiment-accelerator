@@ -19,7 +19,6 @@ class Config:
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
-        EMBEDDING_DIMENSIONS (list[int]): The number of dimensions to use for document embeddings.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
@@ -35,6 +34,11 @@ class Config:
         SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
+        LANGUAGE (dict): Language settings.
+        OpenAICredentials (OpenAICredentials): OpenAI credentials.
+        AzureSearchCredentials (AzureSearchCredentials): Azure Search credentials.
+        AzureMLCredentials (AzureMLCredentials): Azure ML credentials.
+        emebdding_models (list[EmbeddingModel]): a list of emebedding models to use for document embeddings.
     """
 
     def __init__(self, config_filename: str = "search_config.json") -> None:
@@ -114,21 +118,20 @@ class Config:
             raise ValueError(f"Model {model_name} does not exist.")
 
     def _check_deployment(self):
-        """
-        Checks the deployment environment.
+            """
+            Checks the deployment environment.
 
-        This function checks if the OpenAI API type and chat model name are set,
-        and then tries to retrieve the model with specified tags.
+            This function checks if the embedding models and chat model are ready for use.
+            It tries to retrieve the embedding models and the chat model with specified tags.
+            """
+            for embedding_model in self.embedding_models:
+                embedding_model.try_retrieve_model()
+                logger.info(f"Model {embedding_model.model_name} is ready for use.")
 
-        """
-        for embedding_model in self.embedding_models:
-            embedding_model.try_retrieve_model()
-            logger.info(f"Model {embedding_model.model_name} is ready for use.")
-
-        if self.OpenAICredentials.OPENAI_API_TYPE is not None:
-            if self.CHAT_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.CHAT_MODEL_NAME,
-                    tags=["chat_completion", "inference"],
-                )
-                logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
+            if self.OpenAICredentials.OPENAI_API_TYPE is not None:
+                if self.CHAT_MODEL_NAME is not None:
+                    self._try_retrieve_model(
+                        self.CHAT_MODEL_NAME,
+                        tags=["chat_completion", "inference"],
+                    )
+                    logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
