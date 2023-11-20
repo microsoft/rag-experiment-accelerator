@@ -1,11 +1,11 @@
 import pytest
+from unittest.mock import patch
 import json
+import openai
+
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.auth import OpenAICredentials
-import openai
-from unittest.mock import patch, call
 
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModelBase
 
 class TestEmbeddingsModel:
     def __init__(self, model_name, dimension):
