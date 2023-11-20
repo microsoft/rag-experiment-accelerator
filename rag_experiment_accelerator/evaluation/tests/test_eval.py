@@ -1,8 +1,17 @@
-from rag_experiment_accelerator.evaluation.eval import bleu
-from rag_experiment_accelerator.evaluation.eval import answer_relevance
-from rag_experiment_accelerator.evaluation.eval import context_precision
+from rag_experiment_accelerator.evaluation.eval import (
+    bleu,
+    answer_relevance,
+    context_precision,
+    get_result_from_model,
+)
 
+from langchain.prompts import ChatPromptTemplate
+from rag_experiment_accelerator.llm.prompts import (
+    answer_relevance_instruction,
+)
 from unittest.mock import patch
+from langchain.schema.output import LLMResult, Generation
+
 
 def test_bleu():
     predictions = [
@@ -24,15 +33,19 @@ def test_bleu():
     score = bleu(predictions, references)
     assert round(score) == 50
 
+
 @patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
 def test_answer_relevance(mock_get_result_from_model):
     mock_get_result_from_model.return_value = "What is the credit challenge posed by the push towards alternative-fuel vehicles for Japan Inc.?"
 
     question = "What is the credit challenge posed by the push towards alternative-fuel vehicles for Japan Inc.?"
-    answer = "The push towards alternative-fuel vehicles poses a credit challenge for multiple sectors in Japan, including Japanese auto manufacturers and associated industries, which will make sizable upfront investments in alternative-fuel vehicle technologies while bearing risks around the scale and speed of this vehicle take-up. The risks of miscalculating this transition are substantial.",
+    answer = (
+        "The push towards alternative-fuel vehicles poses a credit challenge for multiple sectors in Japan, including Japanese auto manufacturers and associated industries, which will make sizable upfront investments in alternative-fuel vehicle technologies while bearing risks around the scale and speed of this vehicle take-up. The risks of miscalculating this transition are substantial.",
+    )
     score = answer_relevance(question, answer)
     assert score == 1.0
-    
+
+
 @patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
 def test_context_precision(mock_get_result_from_model):
     mock_get_result_from_model.return_value = "Yes"
@@ -41,3 +54,20 @@ def test_context_precision(mock_get_result_from_model):
 
     score = context_precision(question, context)
     assert score == 1.0
+
+
+@patch("rag_experiment_accelerator.evaluation.eval.openai")
+@patch("rag_experiment_accelerator.evaluation.eval.AzureChatOpenAI")
+def test_get_result_from_model(mock_azure_chat_open_ai, mock_open_ai):
+    generation = [[Generation(text="response")]]
+    llm_result = LLMResult(generations=generation)
+    
+    mock_azure_chat_open_ai().generate.return_value = llm_result
+    mock_open_ai.api_type = "azure"
+
+    human_prompt = answer_relevance_instruction.format(answer="answer")
+    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
+
+    result = get_result_from_model(prompt)
+
+    assert result == "response"

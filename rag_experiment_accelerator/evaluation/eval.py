@@ -21,7 +21,10 @@ import plotly.express as px
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
 
-from rag_experiment_accelerator.llm.prompts import context_precision_instruction, answer_relevance_instruction
+from rag_experiment_accelerator.llm.prompts import (
+    context_precision_instruction,
+    answer_relevance_instruction,
+)
 from rag_experiment_accelerator.config import Config
 
 from sentence_transformers import SentenceTransformer
@@ -366,7 +369,8 @@ def get_result_from_model(prompt):
 
     result = chat_model.generate(prompt)
     result = result.generations
-    return result
+    # list of 1 because we're only getting 1 generation with 1 input
+    return result[0][0].text
 
 
 def answer_relevance(question, answer):
@@ -390,21 +394,18 @@ def answer_relevance(question, answer):
     """
 
     human_prompt = answer_relevance_instruction.format(answer=answer)
-
-    human_prompt = answer_relevance_instruction.format(answer=answer)
-    prompt = ChatPromptTemplate.from_messages([human_prompt]).format_messages()
+    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
 
     result = get_result_from_model(prompt)
 
     print(f"Generating results")
-    
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
     embedding2 = model.encode([str(result)])
     similarity_score = cosine_similarity(embedding1, embedding2)
 
-    return similarity_score
+    return similarity_score[0][0]
 
 
 def context_precision(question, context):
@@ -418,15 +419,17 @@ def context_precision(question, context):
     batch_size : int
         Batch size for openai completion.
     """
-    human_prompt = context_precision_instruction.format(question=question, context=context)
-    prompt = ChatPromptTemplate.from_messages([human_prompt]).format_messages()
-    
+    human_prompt = context_precision_instruction.format(
+        question=question, context=context
+    )
+    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
+
     result = get_result_from_model(prompt)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
-    if ("Yes" in result):
+    if "Yes" in result:
         return 1
-    
+
     return 0
 
 
