@@ -42,22 +42,10 @@
         "fuzzy",
         "bert_all_MiniLM_L6_v2",
         "cosine",
-        "bert_distilbert_base_nli_stsb_mean_tokens",
-        "lcsstr",
-        "lcsseq",
-        "cosine",
-        "jaro_winkler",
-        "hamming",
-        "jaccard",
-        "levenshtein",
-        "fuzzy"
+        "bert_distilbert_base_nli_stsb_mean_tokens"
     ],
     "chat_model_name": "gpt-35-turbo",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
-    "data_formats": "all",
-    "azure_openai": {
-        "api_version": "",
-        "api_base": ""
-    }
+    "data_formats": "all"
 }

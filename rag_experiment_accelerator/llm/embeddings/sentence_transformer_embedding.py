@@ -33,4 +33,3 @@ class SentenceTransformerEmbeddingModel(EmbeddingModel):
             return model
         except HTTPError as e:
             raise e
-        
