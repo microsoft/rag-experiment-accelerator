@@ -1,10 +1,10 @@
 import openai
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
 from rag_experiment_accelerator.llm.openai_model import OpenAIModel
 from rag_experiment_accelerator.config.auth import OpenAICredentials
 
 
-class OpenAIEmbeddingsModel(EmbeddingsModel, OpenAIModel):
+class OpenAIEmbeddingModel(EmbeddingModel, OpenAIModel):
 
     def __init__(self, model_name: str, openai_creds: OpenAICredentials, dimension: int = None) -> None:
         if dimension is None:

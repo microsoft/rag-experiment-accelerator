@@ -185,14 +185,22 @@ class OpenAICredentials:
         Raises:
             ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-
-        self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
-        self.OPENAI_API_VERSION = openai_api_version
+
+        if openai_api_type is None:
+            openai_api_type = 'open_ai'
+        if openai_api_type not in ["azure", 'open_ai']:
+            logger.critical(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
+            raise ValueError(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
+        self.OPENAI_API_TYPE = openai_api_type
+        
+        if openai_endpoint is None:
+            openai_endpoint = openai.api_base
         self.OPENAI_ENDPOINT = openai_endpoint
+
+        if openai_api_version is None:
+            openai_api_version = openai.api_version
+        self.OPENAI_API_VERSION = openai_api_version
 
         self.set_credentials()
 
@@ -229,15 +237,12 @@ class OpenAICredentials:
         """
         Sets the OpenAI credentials.
         """
-        openai.api_type = self.OPENAI_API_TYPE
-        openai.api_key = self.OPENAI_API_KEY
-        logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
-        if self.OPENAI_API_TYPE == "open_ai":
-                openai.api_version = None
-                if self.OPENAI_ENDPOINT is None:
-                    openai.api_base = "https://api.openai.com/v1"
-                else:
-                    openai.api_base = self.OPENAI_ENDPOINT
-        elif self.OPENAI_API_TYPE == "azure":
+        if openai.api_type != self.OPENAI_API_TYPE:
+            openai.api_type = self.OPENAI_API_TYPE
+        if openai.api_key != self.OPENAI_API_KEY:
+            openai.api_key = self.OPENAI_API_KEY
+            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
+        if openai.api_version != self.OPENAI_API_VERSION:
             openai.api_version = self.OPENAI_API_VERSION
+        if openai.api_base != self.OPENAI_ENDPOINT:
             openai.api_base = self.OPENAI_ENDPOINT

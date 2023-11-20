@@ -1,7 +1,7 @@
 import json
 import openai
-from rag_experiment_accelerator.llm.embeddings.factory import EmbeddingsModelFactory
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
+from rag_experiment_accelerator.llm.embeddings.factory import EmbeddingModelFactory
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
 from rag_experiment_accelerator.config.auth import OpenAICredentials, AzureSearchCredentials, AzureMLCredentials
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -63,10 +63,10 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
 
-        self.embedding_models: list[EmbeddingsModel] = []
+        self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model in embedding_model_config:
-            self.embedding_models.append(EmbeddingsModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials))
+            self.embedding_models.append(EmbeddingModelFactory.create(model.get("type"), model.get("model_name"), model.get("dimension"), self.OpenAICredentials))
 
         self._check_deployment()
 

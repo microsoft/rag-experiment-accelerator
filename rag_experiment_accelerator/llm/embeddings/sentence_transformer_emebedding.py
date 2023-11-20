@@ -1,12 +1,12 @@
 from requests import HTTPError
 from sentence_transformers import SentenceTransformer
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-class SentenceTransformerEmbeddingsModel(EmbeddingsModel):
+class SentenceTransformerEmbeddingModel(EmbeddingModel):
     _size_model_mapping = {
         "all-MiniLM-L6-v2": 384,
         "all-mpnet-base-v2": 768,

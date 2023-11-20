@@ -2,7 +2,7 @@ from abc import abstractmethod
 from rag_experiment_accelerator.llm.base import LLMModel
 
 
-class EmbeddingsModel(LLMModel):
+class EmbeddingModel(LLMModel):
 
     def __init__(self, model_name: str, dimension: int, *args, **kwargs) -> None:
         super().__init__(model_name=model_name, *args, **kwargs)

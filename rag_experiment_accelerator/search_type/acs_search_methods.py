@@ -1,6 +1,6 @@
 import azure
 
-from rag_experiment_accelerator.llm.embeddings.base import EmbeddingsModel
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import (
@@ -64,7 +64,7 @@ def search_for_match_semantic(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel,
+    embedding_model: EmbeddingModel,
 ):
     """
     Searches for documents in the Azure Cognitive Search index that match the given query using semantic search.
@@ -116,7 +116,7 @@ def search_for_match_Hybrid_multi(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel
+    embedding_model: EmbeddingModel
 ):
     """
     Searches for matching documents in Azure Cognitive Search using a hybrid approach that combines
@@ -171,7 +171,7 @@ def search_for_match_Hybrid_cross(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel
+    embedding_model: EmbeddingModel
 ):
     """
     Searches for matching documents using a hybrid cross search method.
@@ -248,7 +248,7 @@ def search_for_match_pure_vector(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel
+    embedding_model: EmbeddingModel
 ):
     """
     Searches for documents in the client's database that match the given query using pure vector search.
@@ -290,7 +290,7 @@ def search_for_match_pure_vector_multi(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel
+    embedding_model: EmbeddingModel
 ):
     """
     Searches for matching documents in the given client using the provided query and retrieves the specified number of documents.
@@ -342,7 +342,7 @@ def search_for_match_pure_vector_cross(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel
+    embedding_model: EmbeddingModel
 ):
     """
     Searches for documents that match the given query using pure vector cross search method.
@@ -385,7 +385,7 @@ def search_for_manual_hybrid(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingsModel
+    embedding_model: EmbeddingModel
 ):
     """
     Searches for documents using a combination of text, vector, and semantic matching.

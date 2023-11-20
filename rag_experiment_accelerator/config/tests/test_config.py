@@ -7,7 +7,7 @@ from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.auth import OpenAICredentials
 
 
-class TestEmbeddingsModel:
+class TestEmbeddingModel:
     def __init__(self, model_name, dimension):
         self.model_name = model_name
         self.dimension = dimension
@@ -29,7 +29,7 @@ def test_openai_creds():
 
 @patch("rag_experiment_accelerator.config.config.Config._try_retrieve_model")
 @patch("rag_experiment_accelerator.config.config.OpenAICredentials.from_env", new=test_openai_creds)
-@patch("rag_experiment_accelerator.config.config.EmbeddingsModelFactory.create")
+@patch("rag_experiment_accelerator.config.config.EmbeddingModelFactory.create")
 def test_config_init(
     mock_embeddings_model_factory,
     mock_openai_model_retrieve,
@@ -40,7 +40,7 @@ def test_config_init(
     ) as file:
         mock_config_data = json.load(file)
 
-    mock_embeddings_model_factory.side_effect = [TestEmbeddingsModel("", 123), TestEmbeddingsModel("", 123) ]
+    mock_embeddings_model_factory.side_effect = [TestEmbeddingModel("", 123), TestEmbeddingModel("", 123) ]
 
     mock_openai_model_retrieve.return_value = {
         "status": "succeeded",
@@ -163,10 +163,10 @@ def test_check_deployment(
 ):
     with (
         patch("rag_experiment_accelerator.config.config.Config._try_retrieve_model") as mock_try_retrieve_model,
-        patch("rag_experiment_accelerator.config.config.EmbeddingsModelFactory.create") as mock_embeddings_model_factory,
+        patch("rag_experiment_accelerator.config.config.EmbeddingModelFactory.create") as mock_embeddings_model_factory,
     ):
         mock_try_retrieve_model.return_value = None  # Adjust as needed
-        embedding_models = [TestEmbeddingsModel("", 123), TestEmbeddingsModel("", 123) ]
+        embedding_models = [TestEmbeddingModel("", 123), TestEmbeddingModel("", 123) ]
         mock_embeddings_model_factory.side_effect = embedding_models
 
         config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
