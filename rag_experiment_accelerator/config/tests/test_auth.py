@@ -91,29 +91,39 @@ def test_from_env_openai_credentials(mock_get_env_var):
 
 
 @pytest.mark.parametrize(
-    "api_type, expect_api_version, expect_api_base",
+    "api_type, api_version, api_base",
     [
         ("azure", "expected_version", "expected_endpoint"),
+        ("azure", "expected_version", None),
+        ("azure", None, "expected_endpoint"),
         ("open_ai", None, None),
         (None, None, None),
     ],
 )
 @patch("rag_experiment_accelerator.config.auth.openai")
-def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_base):
-    expect_api_key = "somekey"
-    creds = OpenAICredentials(
-        openai_api_type=api_type,
-        openai_api_key=expect_api_key,
-        openai_api_version=expect_api_version,
-        openai_endpoint=expect_api_base,
-    )
+def test_set_credentials(mock_openai, api_type, api_version, api_base):
+    api_key = "somekey"
 
-    creds.set_credentials()
+    if api_type == "azure" and (api_version is None or api_base is None):
+        with pytest.raises(ValueError):
+            creds = OpenAICredentials(
+                openai_api_type=api_type,
+                openai_api_key=api_key,
+                openai_api_version=api_version,
+                openai_endpoint=api_base,
+            )
+    else:
+        creds = OpenAICredentials(
+                openai_api_type=api_type,
+                openai_api_key=api_key,
+                openai_api_version=api_version,
+                openai_endpoint=api_base,
+            )
 
-    assert mock_openai.api_type == creds.OPENAI_API_TYPE
-    assert mock_openai.api_version == creds.OPENAI_API_VERSION
-    assert mock_openai.api_base == creds.OPENAI_ENDPOINT
-    assert mock_openai.api_key == creds.OPENAI_API_KEY
+        assert mock_openai.api_type == creds.OPENAI_API_TYPE
+        assert mock_openai.api_version == creds.OPENAI_API_VERSION
+        assert mock_openai.api_base == creds.OPENAI_ENDPOINT
+        assert mock_openai.api_key == creds.OPENAI_API_KEY
 
 
 
