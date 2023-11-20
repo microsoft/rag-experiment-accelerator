@@ -14,16 +14,21 @@ import textdistance
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
 from numpy import mean
-import numpy as np
+
+import ast
+import plotly.express as px
 
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 
 from rag_experiment_accelerator.llm.prompts import context_precision_instruction, answer_relevance_instruction
 from rag_experiment_accelerator.config import Config
 
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
 from rag_experiment_accelerator.utils.logging import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -214,10 +219,6 @@ def semantic_compare_values(
     differences.append(similarity_score * 100)
 
 
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-
-
 def semantic_compare_values(
     value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
 ) -> None:
@@ -345,6 +346,29 @@ def lcsstr(value1, value2):
     return score
 
 
+# Takes in BaseMessage as prompt
+def get_result_from_model(prompt):
+    config = Config()
+    chat_model = None
+
+    if openai.api_type == "azure":
+        chat_model = AzureChatOpenAI(
+            deployment_name=config.EVAL_MODEL_NAME,
+            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
+        )
+    else:
+        chat_model = ChatOpenAI(
+            model=config.EVAL_MODEL_NAME,
+            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
+        )
+
+    chat_model.n = 1
+
+    result = chat_model.generate(prompt)
+    result = result.generations
+    return result
+
+
 def answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
@@ -364,48 +388,25 @@ def answer_relevance(question, answer):
         The langchain wrapper of Embedding object.
         E.g. HuggingFaceEmbeddings('BAAI/bge-base-en')
     """
-    config = Config()
-    chat_model = None
-    
-    if openai.api_type == "azure":
-        chat_model = AzureChatOpenAI(
-            deployment_name=config.CHAT_MODEL_NAME,
-            openai_api_base=openai.api_base,
-        )
-    else:
-        chat_model = ChatOpenAI(
-            model=config.CHAT_MODEL_NAME,
-            openai_api_base=openai.api_base,
-        )
 
-    # I haven't found Azure alternatives to this yet so it's not dependent on openai.api_type
-    embeddings = OpenAIEmbeddings(
-        deployment=config.EMBEDDING_MODEL_NAME,
-        model=config.EMBEDDING_MODEL_NAME,
-        openai_api_base=openai.api_base,
-        openai_api_type=openai.api_type,
-    )
+    human_prompt = answer_relevance_instruction.format(answer=answer)
 
     prompts = []
     human_prompt = answer_relevance_instruction.format(answer=answer)
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
+    prompt = prompts[0].format_messages()
+
+    result = get_result_from_model(prompt)
 
     print(f"Generating results")
-    # From the call today, sounds like this should be configurable
-    # Potentially specify in search_config?
-    # TODO: Update to take in configurable strictness (# of chat generations to create)
-    chat_model.n = 3
+    
+    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
-    ps = [p.format_messages() for p in prompts]
-    results = chat_model.generate(ps)
-    # Aggregating the n chat generations into a single list
-    # TODO: There must be a simpler way to do this
-    results = [[i.text for i in r] for r in results.generations]
-    results = [item for sublist in results for item in sublist]
+    embedding1 = model.encode([str(question)])
+    embedding2 = model.encode([str(result)])
+    similarity_score = cosine_similarity(embedding1, embedding2)
 
-    # TODO: Fix this to iterate over results
-    score = cosine_similarity(question, results)
-    return score.mean()
+    return similarity_score
 
 
 def context_precision(question, context):
@@ -419,42 +420,18 @@ def context_precision(question, context):
     batch_size : int
         Batch size for openai completion.
     """
-    config = Config()
-    chat_model = None
-    
-    if openai.api_type == "azure":
-        chat_model = AzureChatOpenAI(
-            deployment_name=config.CHAT_MODEL_NAME,
-            openai_api_base=openai.api_base,
-        )
-    else:
-        chat_model = ChatOpenAI(
-            model=config.CHAT_MODEL_NAME,
-            openai_api_base=openai.api_base,
-        )
-
     prompts = []
     human_prompt = context_precision_instruction.format(question=question, context=context)
     prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
-    responses: list[list[str]] = []
+    prompt = prompts[0].format_messages()
     
-    # TODO: Update to take in configurable strictness (# of chat generations to create)
-    chat_model.n = 3
-    ps = [p.format_messages() for p in prompts]
-    results = chat_model.generate(ps)
-    
-    # TODO: Should be able to simplify this
-    responses = [[i.text for i in r] for r in results.generations]
-    responses = [item for sublist in responses for item in sublist]
+    result = get_result_from_model(prompt)
 
-    numerator = sum([int("Yes" in resp) for resp in responses])
-    demoninator = len(responses)        
+    # Since we're only asking for one response, the result is always a boolean 1 or 0
+    if ("Yes" in result):
+        return 1
     
-    return numerator / demoninator
-
-import ast
-import plotly.express as px
-import plotly.graph_objs as go
+    return 0
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -747,33 +724,6 @@ def evaluate_prompts(
                         total_precision_scores_by_search_type[search_type][i + 1] = [
                             score
                         ]
-
-    # I don't see how I can add these to the existing dataset since they're operating on different pieces of data
-    # Consider moving this to the bottom separate from the data_list stuff
-    llm_data_list = []
-    
-    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
-    with open(jsonl_file_path, "r") as file:
-        for line in file:
-            data = json.loads(line)
-            user_prompt = data.get("user_prompt")
-            output_prompt = data.get("output_prompt")
-            qna_context = data.get("context", "")
-
-            llm_metric_dic = {}
-            for llm_metric_type in llm_metric_types:
-                score = compute_llm_metrics(user_prompt, output_prompt, qna_context, llm_metric_type)
-                # TODO: figure out how to carry the score over downstream
-                llm_metric_dic[llm_metric_type] = score
-            llm_metric_dic["user_prompt"] = user_prompt
-            llm_metric_dic["output_prompt"] = output_prompt
-            # Ignoring context because it's huge and not useful for the metrics imo
-            # llm_metric_dic["context"] = qna_context
-
-            llm_data_list.append(llm_metric_dic)
-
-    llm_df = pd.DataFrame(llm_data_list)
-    llm_df.to_csv(f"{eval_score_folder}/{formatted_datetime}-llm.csv", index=False)
 
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
