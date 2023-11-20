@@ -391,10 +391,8 @@ def answer_relevance(question, answer):
 
     human_prompt = answer_relevance_instruction.format(answer=answer)
 
-    prompts = []
     human_prompt = answer_relevance_instruction.format(answer=answer)
-    prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
-    prompt = prompts[0].format_messages()
+    prompt = ChatPromptTemplate.from_messages([human_prompt]).format_messages()
 
     result = get_result_from_model(prompt)
 
@@ -420,10 +418,8 @@ def context_precision(question, context):
     batch_size : int
         Batch size for openai completion.
     """
-    prompts = []
     human_prompt = context_precision_instruction.format(question=question, context=context)
-    prompts.append(ChatPromptTemplate.from_messages([human_prompt]))
-    prompt = prompts[0].format_messages()
+    prompt = ChatPromptTemplate.from_messages([human_prompt]).format_messages()
     
     result = get_result_from_model(prompt)
 
