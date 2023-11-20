@@ -4,7 +4,6 @@
         "chunk_size": [1],
         "overlap_size": [2]
     },
-    "embedding_dimension": [3],
     "embedding_models": [
         {
             "type": "openai",
