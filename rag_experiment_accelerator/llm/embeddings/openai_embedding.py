@@ -42,8 +42,12 @@ class OpenAIEmbeddingModel(EmbeddingModel, OpenAIModel):
         """
         params = {
             "input": [chunk],
-            "engine": self.model_name
         }
+
+        if self._openai_creds.OPENAI_API_TYPE == "azure":
+            params["engine"] = self.model_name
+        else:
+            params["model"] = self.model_name
 
         self._openai_creds.set_credentials()
         embedding = openai.Embedding.create(**params)["data"][0]["embedding"]
