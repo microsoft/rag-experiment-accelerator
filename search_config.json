@@ -33,9 +33,9 @@
     "cross_encoder_at_k": 4,
     "crossencoder_model": "cross-encoder/stsb-roberta-base",
     "search_types": [
-        "search_for_match_pure_vector",
+        "search_for_manual_hybrid",
         "search_for_match_Hybrid_multi",
-        "search_for_match_text"
+        "search_for_match_semantic"
     ],
     "retrieve_num_of_documents": 5,
     "metric_types": [
