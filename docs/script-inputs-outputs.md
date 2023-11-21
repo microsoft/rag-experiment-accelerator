@@ -1,69 +1,57 @@
 # Script Overview
 
+This document provides an overview of the scripts that are used to run the RAG Experiment Accelerator. The scripts are numbered in the order of execution, and each script has its own inputs and outputs.
+
 ## Prerequisites
+Before running the scripts, you need to:
 
-Before running the scripts:
+- Install the required packages and dependencies by following the instructions in the installation guide.
+- Set up the required resources, such as Azure Cognitive Search, Azure ML Studio, and Azure OpenAI by following the steps in the [required resources guide](/docs/environment-variables.md#required-resources).
+- Create a `.env` file that contains the environment variables for the resources, such as subscription ID, resource group name, and service credentials. For more information on the `.env` file, see the [environment variables guide](/docs/environment-variables.md#environment-variables).
 
-- Follow installation instructions [here](/README.md#installation)
-  - For more information on required resources, see [required resources](/docs/environment-variables.md#required-resources)
-  - For more information on the .env file, see [.env file](/docs/environment-variables.md#environment-variables)
-
-## 01_index.py
+## 01_Index.py
+This script creates and populates a search index in your Azure Cognitive Search resource.
 
 Inputs:
 
-- Data must exist in the `/data` folder
-
-  - `/data` folder can have 4 potential subfolders for: pdf, html, markdown, text, see [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py)
+- A `/data` folder that contains the documents that you want to index. The `/data` folder can have four subfolders for different document formats: pdf, html, markdown, and text. For more information on how the documents are loaded, see the [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py) file.
 
 Outputs:
 
-- `artifacts/generated_index_names.jsonl`
-- populated search index in your Azure Cognitive Search resource
+- A `artifacts/generated_index_names.jsonl` file that contains the names of the generated search indexes.
+- A populated search index in your Azure Cognitive Search resource that contains the indexed documents and their metadata.
 
 ## 02_qa_generation.py
+This script generates question-answer pairs from the indexed documents using the RAG model.
 
 Inputs:
 
-- Sample `/data` folder as the previous step
+- The same `/data` folder as the previous step.
 
 Outputs:
 
-- `artifacts/eval_data.jsonl`
-  - list of json that contain `user_prompt`, `output_prompt`, and `context`
+- A `artifacts/eval_data.jsonl` file that contains a list of JSON objects. Each JSON object has three fields: `user_prompt`, `output_prompt`, and `context`. The `user_prompt` field contains the generated question, the `output_prompt` field contains the generated answer, and the `context` field contains the document sections from which the question-answer pair was generated.
 
 ## 03_querying.py
+This script queries the search index using the generated question-answer pairs and evaluates the search results.
 
 Inputs:
 
-- `artifacts/eval_data.jsonl` (default)
-
-  - You can choose to provide your own `.jsonl` file as input and update the path of that file in the `search_config.json` file in the `eval_data_jsonl_file_path` field.
-
-- `prompts_config.json` (optional)
-
-  - You can provide a custom prompt to be used as the main prompt for the questions generated to search the data. The custom prompt can be provided as a string as follows:
-
-```json
-{"main_prompt_instruction": "<custom_main_prompt_instruction>"}
-```
+- The `artifacts/eval_data.jsonl` file from the previous step.
 
 Outputs:
 
-- `artifacts/outputs/<CONFIG_VALUES>.jsonl`
-
-  - name of your output json is based on the values in your search_config.json
-  - list of json that contain config information, query information, and search_eval scores
-  - `<CONFIG_VALUES>.jsonl` also gets uploaded to Azure ML Studio under `Assets -> Data`
+- A `artifacts/outputs/<CONFIG_VALUES>.jsonl` file that contains a list of JSON objects. Each JSON object has eleven fields: `actual`, `expected`, and nine fields relating to configuration information. The name of the output file is based on the values in the `search_config.json` file.
+- The same output file is also uploaded to Azure Machine Learning Studio under `Assets -> Data`.
 
 ## 04_evaluation.py
+This script calculates and displays the overall evaluation scores for the search index using the output files from the previous step.
 
 Inputs:
 
-- `artifacts/outputs/<CONFIG_VALUES>.jsonl` uploaded to Azure ML Studio
+- The `artifacts/outputs/<CONFIG_VALUES>.jsonl` file that was uploaded to Azure Machine Learning Studio.
 
 Outputs:
 
-- `artifacts/eval_score/*.csv`
-  - various csv's with calculated scores
-  - also found in Azure ML Studio at `Jobs -> <CONFIG_NAME> -> Outputs + Logs`
+- Several `artifacts/eval_score/*.csv` files that contain the calculated scores for different evaluation metrics, such as bert score, fuzzy score, and mean average precision. The name of the CSV file indicates the evaluation metric and the configuration values.
+- The same CSV files are also found in Azure Machine Learning Studio at `Jobs -> <CONFIG_NAME> -> Outputs + Logs`.
