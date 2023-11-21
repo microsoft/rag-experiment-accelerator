@@ -25,5 +25,6 @@
     "embedding_model_name": "test_embedding_model_name",
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
-    "data_formats": "test_data_format"
+    "data_formats": "test_data_format",
+    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
 }

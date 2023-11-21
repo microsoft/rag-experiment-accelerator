@@ -192,6 +192,7 @@ def query_and_eval_acs_multi(
         evaluation_content (str): The content to use for evaluation.
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
+        main_prompt_instruction (str): The main prompt instruction for the query
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
@@ -222,9 +223,6 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        full_prompt_instruction = (
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        )
         openai_response = generate_response(
             full_prompt_instruction,
             original_prompt,
@@ -247,7 +245,7 @@ def main():
     config = Config()
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
-    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
+    jsonl_file_path = config.EVAL_DATA_JSONL_FILE_PATH
     question_count = 0
     # ensure we have a valid Azure credential before going throught the loop.
     azure_cred = get_default_az_cred()
@@ -256,8 +254,8 @@ def main():
             for line in file:
                 question_count += 1
 
-        if config.MAIN_PROMPT_INSTRUCTIONS:
-            prompt_instruction = config.MAIN_PROMPT_INSTRUCTIONS
+        if config.MAIN_PROMPT_INSTRUCTION:
+            prompt_instruction = config.MAIN_PROMPT_INSTRUCTION
         else:
             prompt_instruction = main_prompt_instruction
 
@@ -386,7 +384,7 @@ def main():
                                             "actual": openai_response,
                                             "expected": output_prompt,
                                             "search_type": s_v,
-                                            "search_evals": search_evals,
+                                            "search_evals": search_evals
                                         }
 
                                         with open(write_path, "a") as out:

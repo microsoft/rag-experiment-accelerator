@@ -39,5 +39,6 @@
     "embedding_model_name": "text-embedding-ada-002",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
-    "data_formats": "all"
+    "data_formats": "all",
+    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
 }
