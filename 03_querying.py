@@ -234,16 +234,14 @@ def query_and_eval_acs_multi(
     return context, evals
 
 
-def main(config: Config):
+def main():
     """
     Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
-
-    Args:
-        config (Config): A configuration object containing experiment parameters.
 
     Returns:
         None
     """
+    config = Config()
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     jsonl_file_path = config.EVAL_DATA_JSONL_FILE_PATH
@@ -258,8 +256,12 @@ def main(config: Config):
         else:
             prompt_instruction = main_prompt_instruction
 
-        directory_path = "artifacts/outputs"
-        os.makedirs(directory_path, exist_ok=True)
+        try:
+            directory_path = "artifacts/outputs"
+            os.makedirs(directory_path, exist_ok=True)
+        except Exception as e:
+            logger.error(f"Unable to create the '{directory_path}' directory. Please ensure you have the proper permissions and try again")
+            raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
@@ -395,5 +397,4 @@ def main(config: Config):
 
 
 if __name__ == "__main__":
-    config = Config()
-    main(config)
+    main()

@@ -11,11 +11,18 @@ import mlflow
 
 logger = get_logger(__name__)
 
-if __name__ == "__main__":
+def main():
+    """
+    Runs the evaluation process for the RAG experiment accelerator.
+
+    This function initializes the configuration, sets up the ML client, and runs the evaluation process
+    for all combinations of chunk sizes, overlap sizes, embedding dimensions, EF constructions, and EF searches.
+
+    Returns:
+        None
+    """
     config = Config()
 
-    # This should not be global, because it complicates writing tests
-    # Also usage of global variables is not recommended
     ml_client = MLClient(
         DefaultAzureCredential(),
         config.AzureMLCredentials.SUBSCRIPTION_ID,
@@ -49,3 +56,6 @@ if __name__ == "__main__":
                             ef_construction=ef_construction,
                             ef_search=ef_search,
                         )
+
+if __name__ == "__main__":
+    main()
