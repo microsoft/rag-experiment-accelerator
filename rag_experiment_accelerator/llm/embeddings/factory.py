@@ -1,3 +1,4 @@
+from typing import Optional
 from rag_experiment_accelerator.llm.embeddings.openai_embedding import OpenAIEmbeddingModel
 from rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding import SentenceTransformerEmbeddingModel
 from rag_experiment_accelerator.config.auth import OpenAICredentials
@@ -9,7 +10,7 @@ class EmbeddingModelFactory:
     """
 
     @staticmethod
-    def create(embedding_type: str, model_name: str, dimension: int, openai_creds: OpenAICredentials):
+    def create(embedding_type: str, model_name: str, dimension: int, openai_creds: Optional[OpenAICredentials]):
         """
         Create an embedding model based on the specified embedding type.
 

@@ -19,19 +19,13 @@ class TestEmbeddingModel:
         return [1, 2, 3]
 
 
-def test_openai_creds():
-    return OpenAICredentials(
-        openai_api_type="azure",
-        openai_api_key="somekey",
-        openai_api_version="v1",
-        openai_endpoint="http://example.com",
-    )
 
 @patch("rag_experiment_accelerator.config.config.Config._try_retrieve_model")
-@patch("rag_experiment_accelerator.config.config.OpenAICredentials.from_env", new=test_openai_creds)
+@patch("rag_experiment_accelerator.config.config.OpenAICredentials.from_env")
 @patch("rag_experiment_accelerator.config.config.EmbeddingModelFactory.create")
 def test_config_init(
     mock_embeddings_model_factory,
+    mock_from_env,
     mock_openai_model_retrieve,
 ):
     # Load mock config data from a json file
@@ -39,7 +33,12 @@ def test_config_init(
         "rag_experiment_accelerator/config/tests/data/test_config.json", "r"
     ) as file:
         mock_config_data = json.load(file)
-
+    mock_from_env.return_value = OpenAICredentials(
+        openai_api_type="azure",
+        openai_api_key="somekey",
+        openai_api_version="v1",
+        openai_endpoint="http://example.com",
+    )
     mock_embeddings_model_factory.side_effect = [TestEmbeddingModel("", 123), TestEmbeddingModel("", 123) ]
 
     mock_openai_model_retrieve.return_value = {
@@ -122,11 +121,11 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
 
             if raises_exception:
                 with pytest.raises(ValueError):
-                    config = Config()
+                    config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
                     config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                     config._try_retrieve_model("model_name", tags)
             else:
-                config = Config()
+                config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
                 config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                 result = config._try_retrieve_model("model_name", tags)
                 assert result == mock_model
@@ -136,7 +135,7 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
             side_effect=openai.error.InvalidRequestError("Test error", "404"),
         ):
             with pytest.raises(ValueError):
-                config = Config()
+                config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
                 config._try_retrieve_model("model_name", tags)
 
 
