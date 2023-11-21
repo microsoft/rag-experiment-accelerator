@@ -5,7 +5,8 @@ from azure.search.documents import SearchClient
 from rag_experiment_accelerator.llm.prompts import (
     prompt_instruction_title,
     prompt_instruction_summary,
-    generate_qna_instruction,
+    generate_qna_instruction_system_prompt,
+    generate_qna_instruction_user_prompt,
     multiple_prompt_instruction,
     do_need_multiple_prompt_instruction,
 )
@@ -150,24 +151,36 @@ def generate_qna(docs, model_name, temperature):
     for i, chunk in enumerate(docs):
         if len(chunk.page_content) > 50:
             response = generate_response(
-                generate_qna_instruction, chunk.page_content, model_name, temperature
+                generate_qna_instruction_system_prompt, generate_qna_instruction_user_prompt + chunk.page_content + "\nEND OF CONTEXT", model_name, temperature
             )
             try:
                 response_dict = json.loads(response)
-                for each_pair in response_dict["prompts"]:
+                for item in response_dict:
+                    if item.get("role") == "user":
+                        user_prompt = item["content"]
+                    if item.get("role") == "assistant":
+                        output_prompt = item["content"]
+                    
+                if user_prompt is not None and output_prompt is not None:
                     data = {
-                        "user_prompt": each_pair["question"],
-                        "output_prompt": each_pair["answer"],
+                        "user_prompt": user_prompt,
+                        "output_prompt": output_prompt,
                         "context": chunk.page_content,
                     }
-                new_df = new_df._append(data, ignore_index=True)
-                logger.info(
-                    f"Generated {len(response_dict['prompts'])} QnA for document {i}"
+                    new_df = new_df._append(data, ignore_index=True)
+                    logger.info(
+                        f"Generated QnA for document {i}"
+                    )
+                else:
+                    logger.error(
+                    f"User Prompt: {user_prompt} and Output Prompt: {output_prompt}"
                 )
-            except:
+            except Exception as e:
                 logger.error(
                     "could not generate a valid json so moving over to next question !"
                 )
+                logger.debug(e)
+                logger.debug(f"LLM Response: {response}")
 
     new_df.to_json("./artifacts/eval_data.jsonl", orient="records", lines=True)
 

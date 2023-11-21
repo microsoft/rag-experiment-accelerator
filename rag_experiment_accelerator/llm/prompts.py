@@ -19,28 +19,26 @@ prompt_instruction_summary = "Summarize the given user text in a single sentence
 prompt_instruction_entities = "Identify the key entities (person, organization, location, date, year, brand, geography, proper nouns, month etc) with context for the given user text. Format as comma separated and output only the entities. Do not provide output in list format and do not output any additional text and metadata."
 
 
-generate_qna_instruction = """you are a prompt creator and have ability to generate new prompts based on the given context.
-    You are very creative and use techniques under textual paraphrasing like Synonym Replacement,
-    Sentence Restructuring, Word Order Variation, Sentence Expansion or Condensation, Tense and Aspect Transformation,
-    Active to Passive Voice (and vice versa), Direct to Indirect Speech (and vice versa) and 
-    Negation and Affirmation Transformation to generate the prompts. You also use advance vocabulary,
-    out of vocabulary, translated text to generate the prompts. you also use techniques under 
-    textual manipulation like Word Substitution or Replacement, Sentence Swapping or Reordering, 
-    Sentence Splitting or Combination, Parallelism and Repetition, Change in Conjunctions or Connectors,
-    Transformation of Question Types, Comparative and Superlative Alteration, Appositives or Parenthetical Elements to generate the prompts.
-    The generated prompts are also based on asking question related to step by step reasoning.  
-    Generate 1 most relevant new prompt in json format according to mentioned schema completely from scratch. 
-
-    schema:
+generate_qna_instruction_system_prompt = """you are a prompt creator and have ability to generate new JSON prompts based on the given CONTEXT.
+Generate 1 most relevant new prompt in valid json format according to "RESPONSE SCHEMA EXAMPLE" completely from scratch.
+"RESPONSE SCHEMA EXAMPLE":
+[
     {
-    "prompts" :[ {
-        "question": "This is the generated prompt text",
-        "answer": "the expected, rightful and correct answer for the question"
-        }
-        ]
-    }
+        "role: "user", 
+        "content": "This is the generated prompt text",
+    },
+    {
+        "role: "assitant",
+        "content": "the expected, rightful and correct answer for the question"
+    },
+]
+"""
+generate_qna_instruction_user_prompt = """The response must be valid JSON array containing two objects. The first object must contain the keys "role" and "content". The second object must also contain the keys "role" and "content".
+    The response must follow the "RESPONSE SCHEMA EXAMPLE".
+    The most important thing is that the response must be valid JSON ARRAY. DO NOT include anything other than valid schema.
 
-    context:
+    CONTEXT:
+
     """
 
 rerank_prompt_instruction = """A list of documents is shown below. Each document has a number next to it along with a summary of the document. A question is also provided.
