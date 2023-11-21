@@ -42,10 +42,10 @@ Inputs:
 
 - `prompts_config.json` (optional)
 
-  - You can use custom prompt(s) to be used as main prompt(s) for the questions generated to search the data. The custom prompts can be provided as a list of strings as follows:
+  - You can provide a custom prompt to be used as the main prompt for the questions generated to search the data. The custom prompt can be provided as a string as follows:
 
 ```json
-{"main_prompt_instructions": ["<main_prompt_1>", "<main_prompt_2>"]}
+{"main_prompt_instruction": "<custom_main_prompt_instruction>"}
 ```
 
 Outputs:
