@@ -36,9 +36,6 @@ algs = textdistance.algorithms
 
 pd.set_option("display.max_columns", None)
 
-eval_score_folder = "./artifacts/eval_score"
-os.makedirs(eval_score_folder, exist_ok=True)
-
 
 def process_text(text):
     """
@@ -567,12 +564,17 @@ def evaluate_prompts(
     Returns:
         None
     """
+    try:
+        eval_score_folder = "./artifacts/eval_score"
+        os.makedirs(eval_score_folder, exist_ok=True)
+    except Exception as e:
+        logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
+        raise e
 
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
-    # time.sleep(30)
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
 
@@ -682,6 +684,7 @@ def evaluate_prompts(
     )
     plot_map_scores(map_scores_df, run_id, client)
 
+    mlflow.log_param("chunk_size", chunk_size)
     mlflow.log_param("question_count", question_count)
     mlflow.log_param("rerank", rerank)
     mlflow.log_param("rerank_type", rerank_type)
@@ -700,7 +703,6 @@ def evaluate_prompts(
     draw_hist_df(sum_df, run_id, client)
     generate_metrics(exp_name, run_id, client)
     mlflow.end_run()
-    # time.sleep(10)
 
 
 def draw_search_chart(temp_df, run_id, client):
