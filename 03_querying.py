@@ -5,6 +5,7 @@ from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 from dotenv import load_dotenv
 
@@ -246,6 +247,8 @@ def main():
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     jsonl_file_path = config.EVAL_DATA_JSONL_FILE_PATH
     question_count = 0
+    # ensure we have a valid Azure credential before going throught the loop.
+    azure_cred = get_default_az_cred()
     try:
         with open(jsonl_file_path, "r") as file:
             for line in file:
@@ -390,7 +393,7 @@ def main():
 
                             search_client.close()
                             create_data_asset(
-                                write_path, index_name, config.AzureMLCredentials
+                                write_path, index_name, azure_cred, config.AzureMLCredentials
                             )
     except FileNotFoundError:
         logger.error("The file does not exist: " + jsonl_file_path)

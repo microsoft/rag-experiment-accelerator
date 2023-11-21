@@ -2,10 +2,10 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation import eval
 from rag_experiment_accelerator.utils.logging import get_logger
-from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 import mlflow
 
@@ -24,7 +24,7 @@ def main():
     config = Config()
 
     ml_client = MLClient(
-        DefaultAzureCredential(),
+        get_default_az_cred(),
         config.AzureMLCredentials.SUBSCRIPTION_ID,
         config.AzureMLCredentials.RESOURCE_GROUP_NAME,
         config.AzureMLCredentials.WORKSPACE_NAME,
