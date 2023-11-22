@@ -183,6 +183,10 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any questio
 - **Naming Conventions**: 
     - Use snake case for metric names and configuration variables, like `example_snake_case`.
     - Set up your Git username to be your first and last name, like this: `git config --global user.name "First Last"`
+- **Branch Hygiene**: 
+    - Delete the branch after it has been merged.
+- **Issue Tracking**:
+    - Working on a contribution to the RAG Experiment Accelerator? Before opening a new issue, make sure to check if the feature has already been requested by searching for it in the associated [project issue tracker](https://github.com/orgs/microsoft/projects/991), and consider adding to that discussion instead. Otherwise, please open an issue for it using the feature request template or create a PR and make sure it is associated to the [project](https://github.com/orgs/microsoft/projects/991).
 
 
 ## Trademarks
