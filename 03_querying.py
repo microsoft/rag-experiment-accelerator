@@ -56,7 +56,7 @@ def query_acs(
     search_client: SearchClient,
     user_prompt: str,
     s_v: str,
-    retrieve_num_of_documents: str,
+    retrieve_num_of_documents: int,
     embedding_model: EmbeddingModel,
 ):
     """
