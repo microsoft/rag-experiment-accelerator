@@ -376,18 +376,13 @@ def answer_relevance(question, answer):
     Answers with incomplete, redundant or unnecessary information is penalized.
     Score can range from 0 to 1 with 1 being the best.
 
-    Attributes
-    ----------
-    name: string
-        The name of the metrics
-    batch_size: int
-        batch size for evaluation
-    strictness: int
-        Here indicates the number questions generated per answer.
-        Ideal range between 3 to 5.
-    embeddings: Embedding
-        The langchain wrapper of Embedding object.
-        E.g. HuggingFaceEmbeddings('BAAI/bge-base-en')
+    Args:
+        question (str): The question being asked.
+        answer (str): The generated answer.
+
+    Returns:
+        double: The relevancy score generated between the question and answer.
+
     """
 
     human_prompt = answer_relevance_instruction.format(answer=answer)
@@ -407,14 +402,14 @@ def answer_relevance(question, answer):
 
 def context_precision(question, context):
     """
-    Average Precision is a metric that evaluates whether all of the
-    relevant items selected by the model are ranked higher or not.
+    Verifies whether or not a given context is useful for answering a question.
 
-    Attributes
-    ----------
-    name : str
-    batch_size : int
-        Batch size for openai completion.
+    Args:
+        question (str): The question being asked.
+        context (str): The given context.
+
+    Returns:
+        int: 1 or 0 depending on if the context is relevant or not.
     """
     human_prompt = context_precision_instruction.format(
         question=question, context=context
