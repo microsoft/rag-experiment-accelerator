@@ -117,6 +117,7 @@ def test_from_env_openai_credentials(mock_get_env_var):
     [
         ("azure", "expected_version", "expected_endpoint"),
         ("open_ai", None, None),
+        (None, None, None),
     ],
 )
 @patch("rag_experiment_accelerator.config.config.openai")
@@ -124,18 +125,26 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
     creds = OpenAICredentials(
         openai_api_type=api_type,
         openai_api_key="somekey",
-        openai_api_version="expected_version",
-        openai_endpoint="expected_endpoint",
+        openai_api_version=expect_api_version,
+        openai_endpoint=expect_api_base,
     )
 
     creds._set_credentials()
-
     assert str(mock_openai.api_key) == "somekey"
 
     if api_type == "azure":
-        assert str(mock_openai.api_type) == api_type
-        assert str(mock_openai.api_version) == expect_api_version
-        assert str(mock_openai.api_base) == expect_api_base
+        assert str(mock_openai.api_base) == str(expect_api_base)
+        assert str(mock_openai.api_version) == str(expect_api_version)
+    elif api_type == "open_ai":
+        if expect_api_base is None:
+            assert str(mock_openai.api_base) == "https://api.openai.com/v1"
+        else:
+            assert str(mock_openai.api_base) == str(expect_api_base)
+        assert str(mock_openai.api_version) == str(expect_api_version)
+    elif api_type is None:
+        assert str(mock_openai.api_type) == "open_ai"
+    else:
+        assert False, "Unexpected api_type"
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
