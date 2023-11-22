@@ -6,10 +6,6 @@
     },
     "embedding_models": [
         {
-            "type": "openai",
-            "model_name": "text-embedding-ada-002"
-        },
-        {
             "type": "huggingface",
             "model_name": "all-mpnet-base-v2"
         }
