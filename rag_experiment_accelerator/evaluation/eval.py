@@ -2,6 +2,7 @@ import json
 import os
 import warnings
 from datetime import datetime
+from typing import List
 
 import openai
 import evaluate
@@ -20,6 +21,7 @@ import plotly.express as px
 
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain.schema.messages import BaseMessage
 
 from rag_experiment_accelerator.llm.prompts import (
     context_precision_instruction,
@@ -350,7 +352,7 @@ def lcsstr(value1, value2):
 
 
 # Takes in BaseMessage as prompt
-def get_result_from_model(prompt):
+def get_result_from_model(prompt: list[List[BaseMessage]]):
     config = Config()
     chat_model = None
 
@@ -364,8 +366,6 @@ def get_result_from_model(prompt):
             model=config.EVAL_MODEL_NAME,
             openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
         )
-
-    chat_model.n = 1
 
     result = chat_model.generate(prompt)
     result = result.generations
@@ -398,7 +398,7 @@ def answer_relevance(question, answer):
 
     result = get_result_from_model(prompt)
 
-    print(f"Generating results")
+    logger.info(f"Generating results")
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
@@ -691,6 +691,7 @@ def evaluate_prompts(
             cross_encoder_at_k = data.get("cross_encoder_at_k")
             question_count = data.get("question_count")
             search_evals = data.get("search_evals")
+            context = data.get("context")
 
             actual = remove_spaces(lower(actual))
             expected = remove_spaces(lower(expected))
@@ -698,7 +699,7 @@ def evaluate_prompts(
             metric_dic = {}
 
             for metric_type in metric_types:
-                score = compute_metrics(actual, expected, metric_type)
+                score = compute_metrics(actual, expected, context, metric_type)
                 metric_dic[metric_type] = score
             metric_dic["actual"] = actual
             metric_dic["expected"] = expected
