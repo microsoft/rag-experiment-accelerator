@@ -36,11 +36,11 @@ def test_bleu():
 
 @patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
 def test_answer_relevance(mock_get_result_from_model):
-    mock_get_result_from_model.return_value = "What is the credit challenge posed by the push towards alternative-fuel vehicles for Japan Inc.?"
+    mock_get_result_from_model.return_value = "What is the name of the largest bone in the human body?"
 
-    question = "What is the credit challenge posed by the push towards alternative-fuel vehicles for Japan Inc.?"
+    question = "What is the name of the largest bone in the human body?"
     answer = (
-        "The push towards alternative-fuel vehicles poses a credit challenge for multiple sectors in Japan, including Japanese auto manufacturers and associated industries, which will make sizable upfront investments in alternative-fuel vehicle technologies while bearing risks around the scale and speed of this vehicle take-up. The risks of miscalculating this transition are substantial.",
+        "The largest bone in the human body is the femur, also known as the thigh bone. It is about 19.4 inches (49.5 cm) long on average and can support up to 30 times the weight of a person’s body.",
     )
     score = answer_relevance(question, answer)
     assert score == 1.0
@@ -49,9 +49,9 @@ def test_answer_relevance(mock_get_result_from_model):
 @patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
 def test_context_precision(mock_get_result_from_model):
     mock_get_result_from_model.return_value = "Yes"
-    question = "What is the credit challenge posed by the push towards alternative-fuel vehicles for Japan Inc.?"
-    context = "CORPORATES\nSECTOR IN-DEPTH\n9 April 2018\nTABLE OF CONTENTS\nAlternative-fuel vehicles will have\nsignificant effects on key Japanese\nindustries 2\nAuto manufacturers \u2013 credit negative 4\nAuto-parts suppliers \u2013 mixed credit\nimpact 5\nElectronics \u2013 credit positive 6\nSteel \u2013 credit negative 7\nChemicals \u2013 credit positive 7\nRefining \u2013 credit negative 7\nRegional and local governments \u2013\ncredit negative 8\nElectric utilities \u2013 credit positive 8\nMoody\u2019s related publications 9\nAnalyst Contacts\nMotoki Yanase +81.3.5408.4154\nVP-Sr Credit Officer Moody\u2019s Japan K.K.\nmotoki.yanase@moodys.com\nMariko Semetko +81.3.5408.4209\nVP-Sr Credit Officer Moody\u2019s Japan K.K.\nmariko.semetko@moodys.com\nMasako Kuwahara +81.3.5408.4155\nVP-Senior Analyst Moody\u2019s Japan K.K.\nmasako.kuwahara@moodys.com\nTakashi Akimoto +81.3.5408.4208\nAVP-Analyst Moody\u2019s Japan K.K.\ntakashi.akimoto@moodys.com\nMihoko Manabe, CFA +81.3.5408.4033\nAssociate Managing\nDirectorMoody\u2019s Japan K.K.\nmihoko.manabe@moodys.com\nBrian Cahill +61.2.9270.8105\nMD-Asia Pac Corp &\nInfra Fin\nbrian.cahill@moodys.comCross-Sector\nPush for alternative-fuel vehicles presents\nchallenges for Japan Inc.\n\u00bbThe push toward alternative-fuel vehicles poses a credit challenge for multiple\nsectors in Japan.  Over the next decade, Japanese auto manufacturers and associated\nindustries, which we refer to as Japan Inc., will make sizable upfront investments in\nalternative-fuel vehicle technologies while bearing risks around the scale and speed of this\nvehicle take-up. The risks of miscalculating this transition are substantial.\n\u00bbElectrification will have widespread effects on key industries.  The credit impact\non Japan Inc. is weighted to the negative because of the challenges facing the large\nauto sector, and the direct impact on sectors such as steel and refining. Lower gasoline\nconsumption will also reduce a meaningful source of government tax revenue, which\nfunds road construction and public works programs."
-
+    question = "What is the name of the largest bone in the human body?"
+    context = "According to the Cleveland Clinic, \"The femur is the largest and strongest bone in the human body. It can support as much as 30 times the weight of your body. The average adult male femur is 48 cm (18.9 in) in length and 2.34 cm (0.92 in) in diameter. The average weight among adult males in the United States is 196 lbs (872 N). Therefore, the adult male femur can support roughly 6,000 lbs of compressive force.\""
+    
     score = context_precision(question, context)
     assert score == 1.0
 
