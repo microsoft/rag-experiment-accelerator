@@ -11,20 +11,31 @@ from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
-from spacy import cli
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-def main(config: Config):
+def main():
+    """
+    Runs the main experiment loop, which chunks and uploads data to Azure Cognitive Search indexes based on the configuration specified in the Config class.
+    
+    Returns:
+        None
+    """
+    config = Config()
     pre_process = Preprocess()
 
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
 
-    os.makedirs("artifacts", exist_ok=True)
+    try:
+        directory = "artifacts"
+        os.makedirs(directory, exist_ok=True)
+    except Exception as e:
+        logger.error(f"Unable to create the '{directory}' directory. Please ensure you have the proper permissions and try again")
+        raise e
 
     all_index_config = "artifacts/generated_index_names.jsonl"
     index_dict = {"indexes": []}
@@ -87,5 +98,4 @@ def main(config: Config):
 
 
 if __name__ == "__main__":
-    config = Config()
-    main(config)
+    main()
