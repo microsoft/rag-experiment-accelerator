@@ -52,7 +52,7 @@ git clone https://github.com/microsoft/rag-experiment-accelerator.git
 2. **setup env file**: Copy `.env.template` and save as `.env` file. Provide values for all the keys
 
 LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
-OPENAI_API_TYPE should be either `azure`` if you planning to use Azure, `open_ai` if you want to use openai or excluded, if none of these required.
+OPENAI_API_TYPE should be either `azure` if you are planning to use Azure, `open_ai` if you want to use OpenAI.
 
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
@@ -167,6 +167,23 @@ pre-commit install
 This project follows the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any questions or comments.
+
+### Developer Contribution Guidelines
+
+- **Branch Naming Convention**: 
+    - Use the GitHub UI to include a tag in the branch name, then create the branch directly from the UI. Here are some examples:
+        - `bug/11-short-description`
+        - `feature/22-short-description`
+- **Merging Changes**: 
+    - When merging, squash your commits to have up to 3 incremental commits for Pull Requests (PRs) and merges.
+- **Branch Hygiene**: 
+    - Delete the branch after it has been merged.
+- **Testing Changes Locally**: 
+    - Before merging, test your changes locally.
+- **Naming Conventions**: 
+    - Use snake case for metric names and configuration variables, like `example_snake_case`.
+    - Set up your Git username to be your first and last name, like this: `git config --global user.name "First Last"`
+
 
 ## Trademarks
 
