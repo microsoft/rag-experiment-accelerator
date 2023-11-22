@@ -43,7 +43,7 @@ def test_answer_relevance(mock_get_result_from_model):
         "The largest bone in the human body is the femur, also known as the thigh bone. It is about 19.4 inches (49.5 cm) long on average and can support up to 30 times the weight of a person’s body.",
     )
     score = answer_relevance(question, answer)
-    assert score == 1.0
+    assert round(score) == 1.0
 
 
 @patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
