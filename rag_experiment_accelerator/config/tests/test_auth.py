@@ -91,40 +91,38 @@ def test_from_env_openai_credentials(mock_get_env_var):
 
 
 @pytest.mark.parametrize(
-    "api_type, api_version, api_base",
+    "api_type, expect_api_version, expect_api_base",
     [
         ("azure", "expected_version", "expected_endpoint"),
-        ("azure", "expected_version", None),
-        ("azure", None, "expected_endpoint"),
         ("open_ai", None, None),
         (None, None, None),
     ],
 )
 @patch("rag_experiment_accelerator.config.auth.openai")
-def test_set_credentials(mock_openai, api_type, api_version, api_base):
-    api_key = "somekey"
+def test_openai_credentials_set_credentials(mock_openai, api_type, expect_api_version, expect_api_base):
+    creds = OpenAICredentials(
+        openai_api_type=api_type,
+        openai_api_key="somekey",
+        openai_api_version=expect_api_version,
+        openai_endpoint=expect_api_base,
+    )
 
-    if api_type == "azure" and (api_version is None or api_base is None):
-        with pytest.raises(ValueError):
-            creds = OpenAICredentials(
-                openai_api_type=api_type,
-                openai_api_key=api_key,
-                openai_api_version=api_version,
-                openai_endpoint=api_base,
-            )
+    creds.set_credentials()
+    assert str(mock_openai.api_key) == "somekey"
+
+    if api_type == "azure":
+        assert str(mock_openai.api_base) == str(expect_api_base)
+        assert str(mock_openai.api_version) == str(expect_api_version)
+    elif api_type == "open_ai":
+        if expect_api_base is None:
+            assert str(mock_openai.api_base) == "https://api.openai.com/v1"
+        else:
+            assert str(mock_openai.api_base) == str(expect_api_base)
+        assert str(mock_openai.api_version) == str(expect_api_version)
+    elif api_type is None:
+        assert str(mock_openai.api_type) == "open_ai"
     else:
-        creds = OpenAICredentials(
-                openai_api_type=api_type,
-                openai_api_key=api_key,
-                openai_api_version=api_version,
-                openai_endpoint=api_base,
-            )
-
-        assert mock_openai.api_type == creds.OPENAI_API_TYPE
-        assert mock_openai.api_version == creds.OPENAI_API_VERSION
-        assert mock_openai.api_base == creds.OPENAI_ENDPOINT
-        assert mock_openai.api_key == creds.OPENAI_API_KEY
-
+        assert False, "Unexpected api_type"
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:

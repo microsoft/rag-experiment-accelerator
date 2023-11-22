@@ -193,17 +193,16 @@ class OpenAICredentials:
             logger.critical(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
             raise ValueError(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
         self.OPENAI_API_TYPE = openai_api_type
-        
+
         if openai_endpoint is None:
             if openai_api_type == 'azure':
                 raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
-            openai_endpoint = openai.api_base
+            openai_endpoint = "https://api.openai.com/v1"
         self.OPENAI_ENDPOINT = openai_endpoint
 
         if openai_api_version is None:
             if openai_api_type == 'azure':
                 raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
-            openai_api_version = openai.api_version
         self.OPENAI_API_VERSION = openai_api_version
 
         self.set_credentials()
