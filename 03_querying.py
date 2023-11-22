@@ -1,6 +1,5 @@
 import os
 import json
-import azure
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
@@ -54,7 +53,7 @@ search_mapping = {
 
 
 def query_acs(
-    search_client: azure.search.documents.SearchClient,
+    search_client: SearchClient,
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
@@ -172,8 +171,7 @@ def query_and_eval_acs_multi(
     output_prompt: str,
     search_type: str,
     evaluation_content: str,
-    chat_model_name: str,
-    temperature: float,
+    config: Config,
     evaluator: SpacyEvaluator,
     main_prompt_instruction: str,
     embedding_model: EmbeddingModel,
@@ -225,8 +223,8 @@ def query_and_eval_acs_multi(
         openai_response = generate_response(
             full_prompt_instruction,
             original_prompt,
-            chat_model_name,
-            temperature,
+            config.CHAT_MODEL_NAME,
+            config.TEMPERATURE,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -337,8 +335,7 @@ def main():
                                                 output_prompt=output_prompt,
                                                 search_type=s_v,
                                                 evaluation_content=evaluation_content,
-                                                chat_model_name=config.CHAT_MODEL_NAME,
-                                                temperature=config.TEMPERATURE,
+                                                config=config,
                                                 evaluator=evaluator,
                                                 main_prompt_instruction=prompt_instruction,
                                                 embedding_model=embedding_model
