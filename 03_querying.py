@@ -384,7 +384,8 @@ def main():
                                             "actual": openai_response,
                                             "expected": output_prompt,
                                             "search_type": s_v,
-                                            "search_evals": search_evals
+                                            "search_evals": search_evals,
+                                            "context": qna_context,
                                         }
 
                                         with open(write_path, "a") as out:
