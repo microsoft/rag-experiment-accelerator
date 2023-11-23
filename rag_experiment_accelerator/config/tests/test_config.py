@@ -76,7 +76,7 @@ def test_init_invalid_api_type_openai_credentials():
             openai_api_type="invalid",
             openai_api_key="somekey",
             openai_api_version="v1",
-            openai_endpoint=None,
+            openai_endpoint="http://example.com",
         )
 
 
