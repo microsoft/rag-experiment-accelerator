@@ -54,10 +54,9 @@ def main():
                         eval.evaluate_prompts(
                             exp_name=config.NAME_PREFIX,
                             data_path=write_path,
+                            config=config,
                             client=client,
                             chunk_size=chunk_size,
-                            metric_types=config.METRIC_TYPES,
-                            search_variants=config.SEARCH_VARIANTS,
                             chunk_overlap=overlap,
                             embedding_dimension=embedding_model.dimension,
                             ef_construction=ef_construction,

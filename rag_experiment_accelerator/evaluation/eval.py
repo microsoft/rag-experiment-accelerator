@@ -630,10 +630,9 @@ def compute_metrics(actual, expected, context, metric_type):
 def evaluate_prompts(
     exp_name,
     data_path,
+    config,
     client,
     chunk_size,
-    metric_types,
-    search_variants,
     chunk_overlap,
     embedding_dimension,
     ef_construction,
@@ -645,6 +644,7 @@ def evaluate_prompts(
     Args:
         exp_name (str): Name of the experiment to log the results to.
         data_path (str): Path to the file containing the prompts to evaluate.
+        config (Config): The configuration settings to use for evaluation.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
         chunk_overlap (int): Amount of overlap between the chunks.
@@ -662,6 +662,8 @@ def evaluate_prompts(
         logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
         raise e
 
+    metric_types = config.METRIC_TYPES
+    num_search_type = config.SEARCH_VARIANTS
     data_list = []
     run_name = f"{exp_name}_{formatted_datetime}"
     mlflow.set_experiment(exp_name)
@@ -749,9 +751,9 @@ def evaluate_prompts(
 
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
 
-    if isinstance(search_variants, str):
-        search_variants = [search_variants]
-    sum_all_columns = temp_df.sum() / (question_count * len(search_variants))
+    if isinstance(num_search_type, str):
+        num_search_type = [num_search_type]
+    sum_all_columns = temp_df.sum() / (question_count * len(num_search_type))
     sum_df = pd.DataFrame([sum_all_columns], columns=temp_df.columns)
 
     sum_dict = {}
