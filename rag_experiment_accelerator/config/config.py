@@ -190,10 +190,10 @@ class OpenAICredentials:
             raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
         
         if openai_api_type == 'azure' and openai_api_version is None:
-                raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
+            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
 
         if openai_api_type == 'azure' and openai_endpoint is None:
-                raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
+            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
 
         self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
