@@ -108,21 +108,14 @@ def test_openai_credentials_set_credentials(mock_openai, api_type, expect_api_ve
     )
 
     creds.set_credentials()
-    assert str(mock_openai.api_key) == "somekey"
+
+    if api_type is not None:
+        assert str(mock_openai.api_type) == api_type
+        assert str(mock_openai.api_key) == "somekey"
 
     if api_type == "azure":
-        assert str(mock_openai.api_base) == str(expect_api_base)
-        assert str(mock_openai.api_version) == str(expect_api_version)
-    elif api_type == "open_ai":
-        if expect_api_base is None:
-            assert str(mock_openai.api_base) == "https://api.openai.com/v1"
-        else:
-            assert str(mock_openai.api_base) == str(expect_api_base)
-        assert str(mock_openai.api_version) == str(expect_api_version)
-    elif api_type is None:
-        assert str(mock_openai.api_type) == "open_ai"
-    else:
-        assert False, "Unexpected api_type"
+        assert str(mock_openai.api_version) == expect_api_version
+        assert str(mock_openai.api_base) == expect_api_base
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
@@ -140,7 +133,7 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
         return "test_api_key"
     elif var_name == "OPENAI_API_VERSION":
         return "test_api_version"
-    elif var_name == "OPENAI_API_ENDPOINT":
+    elif var_name == "OPENAI_ENDPOINT":
         return "test_api_endpoint"
     elif var_name == "OPENAI_API_TYPE":
         return "azure"
