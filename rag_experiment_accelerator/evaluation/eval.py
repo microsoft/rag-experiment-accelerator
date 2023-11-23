@@ -353,7 +353,7 @@ def get_result_from_model(prompt: list[List[BaseMessage]]):
     config = Config()
     chat_model = None
 
-    if openai.api_type == "azure":
+    if config.OpenAICredentials.OPENAI_API_TYPE == "azure":
         chat_model = AzureChatOpenAI(
             deployment_name=config.EVAL_MODEL_NAME,
             openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
