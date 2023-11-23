@@ -127,9 +127,6 @@ class Config:
             This function checks if the embedding models and chat model are ready for use.
             It tries to retrieve the embedding models and the chat model with specified tags.
             """
-            for embedding_model in self.embedding_models:
-                embedding_model.try_retrieve_model()
-                logger.info(f"Model {embedding_model.model_name} is ready for use.")
 
             if self.OpenAICredentials.OPENAI_API_TYPE is not None:
                 if self.CHAT_MODEL_NAME is not None:
@@ -138,3 +135,6 @@ class Config:
                         tags=["chat_completion", "inference"],
                     )
                     logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
+                for embedding_model in self.embedding_models:
+                    embedding_model.try_retrieve_model()
+                    logger.info(f"Model {embedding_model.model_name} is ready for use.")
