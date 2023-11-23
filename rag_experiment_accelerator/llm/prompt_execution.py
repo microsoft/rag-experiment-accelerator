@@ -1,4 +1,11 @@
 import openai
+import time
+from openai.error import RateLimitError
+from rag_experiment_accelerator.utils.logging import get_logger
+
+
+retry_count = 5
+logger = get_logger(__name__)
 
 
 def generate_response(sys_message, prompt, engine_model, temperature):
@@ -32,6 +39,12 @@ def generate_response(sys_message, prompt, engine_model, temperature):
     else:
         params["model"] = engine_model
 
-    response = openai.ChatCompletion.create(**params)
-    answer = response.choices[0]["message"]["content"]
-    return answer
+    for i in range(retry_count):
+        try:
+            response = openai.ChatCompletion.create(**params)
+            return response.choices[0]["message"]["content"]
+        except RateLimitError as e:
+            logger.warning("Recieved rate limit error. Retrying in 10 seconds...", e)
+            time.sleep(10)
+
+    raise Exception("Maximum retries reached", e)
