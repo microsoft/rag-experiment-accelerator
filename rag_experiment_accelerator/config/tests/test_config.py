@@ -130,21 +130,14 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
     )
 
     creds._set_credentials()
-    assert str(mock_openai.api_key) == "somekey"
+
+    if api_type is not None:
+        assert str(mock_openai.api_type) == api_type
+        assert str(mock_openai.api_key) == "somekey"
 
     if api_type == "azure":
-        assert str(mock_openai.api_base) == str(expect_api_base)
-        assert str(mock_openai.api_version) == str(expect_api_version)
-    elif api_type == "open_ai":
-        if expect_api_base is None:
-            assert str(mock_openai.api_base) == "https://api.openai.com/v1"
-        else:
-            assert str(mock_openai.api_base) == str(expect_api_base)
-        assert str(mock_openai.api_version) == str(expect_api_version)
-    elif api_type is None:
-        assert str(mock_openai.api_type) == "open_ai"
-    else:
-        assert False, "Unexpected api_type"
+        assert str(mock_openai.api_version) == expect_api_version
+        assert str(mock_openai.api_base) == expect_api_base
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
@@ -216,7 +209,6 @@ def test_config_init(
     assert (
         mock_openai_model_retrieve.called
     )  # Ensure that the OpenAI model is retrieved
-
 
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(

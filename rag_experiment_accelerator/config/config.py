@@ -182,28 +182,68 @@ class OpenAICredentials:
             openai_api_version (str): The version of the OpenAI API to use.
             openai_endpoint (str): The endpoint for the OpenAI API.
 
+        Raises:
+            ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        self.OPENAI_API_KEY = openai_api_key
+        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
+            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+        
+        if openai_api_type == 'azure' and openai_api_version is None:
+                raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
 
-        if openai_api_type is None:
-            openai_api_type = 'open_ai'
-        if openai_api_type not in ["azure", 'open_ai']:
-            logger.critical(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
-            raise ValueError(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
-        self.OPENAI_API_TYPE = openai_api_type
-
-        if openai_endpoint is None:
-            if openai_api_type == 'azure':
+        if openai_api_type == 'azure' and openai_endpoint is None:
                 raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
-            openai_endpoint = "https://api.openai.com/v1"
+
+        self.OPENAI_ENDPOINT = openai_endpoint
+        self.OPENAI_API_TYPE = openai_api_type
+        self.OPENAI_API_KEY = openai_api_key
+        self.OPENAI_API_VERSION = openai_api_version
         self.OPENAI_ENDPOINT = openai_endpoint
 
-        if openai_api_version is None:
-            if openai_api_type == 'azure':
-                raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
-        self.OPENAI_API_VERSION = openai_api_version
-
         self._set_credentials()
+
+    @classmethod
+    def from_env(cls) -> "OpenAICredentials":
+        """
+        Creates an OpenAICredentials object from environment variables.
+
+        Returns:
+            OpenAICredentials: The OpenAICredentials object.
+        """
+        return cls(
+            openai_api_type=_get_env_var(
+                var_name="OPENAI_API_TYPE",
+                critical=False,
+                mask=False,
+            ),
+            openai_api_key=_get_env_var(
+                var_name="OPENAI_API_KEY", critical=False, mask=True
+            ),
+            openai_api_version=_get_env_var(
+                var_name="OPENAI_API_VERSION",
+                critical=False,
+                mask=False,
+            ),
+            openai_endpoint=_get_env_var(
+                var_name="OPENAI_ENDPOINT",
+                critical=False,
+                mask=True,
+            ),
+        )
+
+    def _set_credentials(self) -> None:
+        """
+        Sets the OpenAI credentials.
+        """
+        if self.OPENAI_API_TYPE is not None:
+            openai.api_type = self.OPENAI_API_TYPE
+            openai.api_key = self.OPENAI_API_KEY
+            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
+
+            if self.OPENAI_API_TYPE == "azure":
+                openai.api_version = self.OPENAI_API_VERSION
+                openai.api_base = self.OPENAI_ENDPOINT
 
     @classmethod
     def from_env(cls) -> "OpenAICredentials":
