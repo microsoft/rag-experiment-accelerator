@@ -256,6 +256,7 @@ class Config:
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         CHAT_MODEL_NAME (str): The name of the chat model to use.
         EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
+        EVAL_MODEL_NAME (str): The name of the chat model to use for prod.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
@@ -282,6 +283,7 @@ class Config:
         self.SEARCH_VARIANTS = data["search_types"]
         self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
         self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
+        self.EVAL_MODEL_NAME = data.get("eval_model_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]
