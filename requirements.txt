@@ -30,3 +30,4 @@ datasets==2.14.6
 evaluate==0.4.1
 black==23.10.1
 pre-commit==3.5.0
+jq==1.6.0
