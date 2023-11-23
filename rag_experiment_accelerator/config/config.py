@@ -245,49 +245,6 @@ class OpenAICredentials:
                 openai.api_version = self.OPENAI_API_VERSION
                 openai.api_base = self.OPENAI_ENDPOINT
 
-    @classmethod
-    def from_env(cls) -> "OpenAICredentials":
-        """
-        Creates an OpenAICredentials object from environment variables.
-
-        Returns:
-            OpenAICredentials: The OpenAICredentials object.
-        """
-        return cls(
-            openai_api_type=_get_env_var(
-                var_name="OPENAI_API_TYPE",
-                critical=False,
-                mask=False,
-            ),
-            openai_api_key=_get_env_var(
-                var_name="OPENAI_API_KEY", critical=False, mask=True
-            ),
-            openai_api_version=_get_env_var(
-                var_name="OPENAI_API_VERSION",
-                critical=False,
-                mask=False,
-            ),
-            openai_endpoint=_get_env_var(
-                var_name="OPENAI_ENDPOINT",
-                critical=False,
-                mask=True,
-            ),
-        )
-
-    def _set_credentials(self) -> None:
-        """
-        Sets the OpenAI credentials.
-        """
-        if openai.api_type != self.OPENAI_API_TYPE:
-            openai.api_type = self.OPENAI_API_TYPE
-        if openai.api_key != self.OPENAI_API_KEY:
-            openai.api_key = self.OPENAI_API_KEY
-            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
-        if openai.api_version != self.OPENAI_API_VERSION:
-            openai.api_version = self.OPENAI_API_VERSION
-        if openai.api_base != self.OPENAI_ENDPOINT:
-            openai.api_base = self.OPENAI_ENDPOINT
-
 
 class Config:
     """
