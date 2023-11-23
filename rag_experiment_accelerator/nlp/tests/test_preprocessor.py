@@ -1,9 +1,5 @@
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 
-# Bug with vscode and pytest
-import sys
-
-sys.path.append("/workspaces/rag-experiment-accelerator/nlp")
 
 
 def test_sentence_tokenize():
@@ -32,3 +28,10 @@ def test_lemmatize():
     text = "kites babies dogs flying smiling driving died tried feet"
     expected = "kite baby dog fly smile drive die try foot"
     assert preprocessor.lemmatize(text) == expected
+
+
+def test_remove_punct():
+    preprocessor = Preprocess()
+    text = """this!" is*+,-. /a#$ sentence%& with'() a:;<= lot>?@[ of\\]^_ punctuation`{|}~"""
+    expected = "this is a sentence with a lot of punctuation"
+    assert preprocessor.remove_punct(text) == expected

@@ -1,7 +1,8 @@
-main_prompt_instruction = """you are a financial expert and knows everything about financial reports, 
-company finance and general finance along with their numbers and statistics. You answer exactly and pointed to the question asked. 
+from langchain.prompts import HumanMessagePromptTemplate
+
+main_prompt_instruction = """You provide answers to questions based on information available. You give precise answers to the question asked. 
 You do not answer more than what is needed. You are always exact to the point. You Answer the question using the provided context.
-If the answer is not contained within the given context, say 'I dont know.'. The below context is an excerpt from a financial report.
+If the answer is not contained within the given context, say 'I dont know.'. The below context is an excerpt from a report or data.
 Answer the user question using only the data provided in the sources below. Each sentence or paragraph within the context has a filename. 
 It is absolutely mandatory and non-compromising to add the filenames in your response when you use those sentences and paragraphs for your final response.
 
@@ -102,3 +103,22 @@ multiple_prompt_instruction = """Generate two questions in json format based on 
         questions:[ "question1", "question2", "questionN" ]
     }
 """
+
+answer_relevance_instruction = HumanMessagePromptTemplate.from_template(
+    """Generate question for the given answer.
+Answer:\nThe PSLV-C56 mission is scheduled to be launched on Sunday, 30 July 2023 at 06:30 IST / 01:00 UTC. It will be launched from the Satish Dhawan Space Centre, Sriharikota, Andhra Pradesh, India 
+Question: When is the scheduled launch date and time for the PSLV-C56 mission, and where will it be launched from?
+
+Answer:{answer}
+Question:
+""" 
+)
+
+context_precision_instruction = HumanMessagePromptTemplate.from_template(
+    """\
+Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer.
+question:{question}
+context:\n{context}
+answer:
+"""  # noqa: E501
+)

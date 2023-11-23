@@ -5,6 +5,7 @@ from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 from dotenv import load_dotenv
 
@@ -191,6 +192,7 @@ def query_and_eval_acs_multi(
         evaluation_content (str): The content to use for evaluation.
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
+        main_prompt_instruction (str): The main prompt instruction for the query
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
@@ -221,9 +223,6 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        full_prompt_instruction = (
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        )
         openai_response = generate_response(
             full_prompt_instruction,
             original_prompt,
@@ -236,32 +235,36 @@ def query_and_eval_acs_multi(
     return context, evals
 
 
-def main(config: Config):
+def main():
     """
     Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
-
-    Args:
-        config (Config): A configuration object containing experiment parameters.
 
     Returns:
         None
     """
+    config = Config()
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
-    jsonl_file_path = config.EVAL_DATA_JSON_FILE_PATH
+    jsonl_file_path = config.EVAL_DATA_JSONL_FILE_PATH
     question_count = 0
+    # ensure we have a valid Azure credential before going throught the loop.
+    azure_cred = get_default_az_cred()
     try:
         with open(jsonl_file_path, "r") as file:
             for line in file:
                 question_count += 1
 
-        if config.MAIN_PROMPT_INSTRUCTIONS:
-            prompt_instruction = config.MAIN_PROMPT_INSTRUCTIONS
+        if config.MAIN_PROMPT_INSTRUCTION:
+            prompt_instruction = config.MAIN_PROMPT_INSTRUCTION
         else:
             prompt_instruction = main_prompt_instruction
 
-        directory_path = "artifacts/outputs"
-        os.makedirs(directory_path, exist_ok=True)
+        try:
+            directory_path = "artifacts/outputs"
+            os.makedirs(directory_path, exist_ok=True)
+        except Exception as e:
+            logger.error(f"Unable to create the '{directory_path}' directory. Please ensure you have the proper permissions and try again")
+            raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
@@ -382,6 +385,7 @@ def main(config: Config):
                                             "expected": output_prompt,
                                             "search_type": s_v,
                                             "search_evals": search_evals,
+                                            "context": qna_context,
                                         }
 
                                         with open(write_path, "a") as out:
@@ -390,12 +394,11 @@ def main(config: Config):
 
                             search_client.close()
                             create_data_asset(
-                                write_path, index_name, config.AzureMLCredentials
+                                write_path, index_name, azure_cred, config.AzureMLCredentials
                             )
     except FileNotFoundError:
         logger.error("The file does not exist: " + jsonl_file_path)
 
 
 if __name__ == "__main__":
-    config = Config()
-    main(config)
+    main()

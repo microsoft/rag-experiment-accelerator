@@ -41,7 +41,7 @@ class Preprocess:
         Returns:
             str: The text with all punctuation removed.
         """
-        return " ".join(c for c in text if c not in punctuation)
+        return "".join(c for c in text if c not in punctuation)
 
     def remove_Tags(self, text):
         """
