@@ -49,6 +49,5 @@ class OpenAIEmbeddingModel(EmbeddingModel, OpenAIModel):
         else:
             params["model"] = self.model_name
 
-        self._openai_creds.set_credentials()
         embedding = openai.Embedding.create(**params)["data"][0]["embedding"]
         return [embedding]
