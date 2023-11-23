@@ -185,25 +185,21 @@ class OpenAICredentials:
         Raises:
             ValueError: If openai_api_type is not 'azure' or 'open_ai'.
         """
-        self.OPENAI_API_KEY = openai_api_key
-
-        if openai_api_type is None:
-            openai_api_type = 'open_ai'
-        if openai_api_type not in ["azure", 'open_ai']:
-            logger.critical(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
-            raise ValueError(f"OPENAI_API_TYPE is set to {openai_api_type} but must be either 'azure' or 'open_ai'.")
-        self.OPENAI_API_TYPE = openai_api_type
-
-        if openai_endpoint is None:
-            if openai_api_type == 'azure':
-                raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
-            openai_endpoint = "https://api.openai.com/v1"
-        self.OPENAI_ENDPOINT = openai_endpoint
-
-        if openai_api_version is None:
-            if openai_api_type == 'azure':
+        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
+            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+        
+        if openai_api_type == 'azure' and openai_api_version is None:
                 raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
+
+        if openai_api_type == 'azure' and openai_endpoint is None:
+                raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
+
+        self.OPENAI_ENDPOINT = openai_endpoint
+        self.OPENAI_API_TYPE = openai_api_type
+        self.OPENAI_API_KEY = openai_api_key
         self.OPENAI_API_VERSION = openai_api_version
+        self.OPENAI_ENDPOINT = openai_endpoint
 
         self.set_credentials()
 
@@ -240,12 +236,12 @@ class OpenAICredentials:
         """
         Sets the OpenAI credentials.
         """
-        if openai.api_type != self.OPENAI_API_TYPE:
+        if self.OPENAI_API_TYPE is not None:
             openai.api_type = self.OPENAI_API_TYPE
-        if openai.api_key != self.OPENAI_API_KEY:
             openai.api_key = self.OPENAI_API_KEY
             logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
-        if openai.api_version != self.OPENAI_API_VERSION:
-            openai.api_version = self.OPENAI_API_VERSION
-        if openai.api_base != self.OPENAI_ENDPOINT:
-            openai.api_base = self.OPENAI_ENDPOINT
+
+            if self.OPENAI_API_TYPE == "azure":
+                openai.api_version = self.OPENAI_API_VERSION
+                openai.api_base = self.OPENAI_ENDPOINT
+
