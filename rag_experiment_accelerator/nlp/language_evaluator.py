@@ -76,20 +76,25 @@ class LanguageEvaluator:
                 logger.error(
                     "Unable to detect language: {doc.id} {doc.error}"
                 )
-        return doc.primary_language                
+        return { "name": doc.primary_language.name,
+                 "confidentce_score": doc.primary_language.confidence_score,
+                "iso6391_name": doc.primary_language.iso6391_name 
+                }           
 
     def is_confident(self, text: str):
+        print('here')
         primary_language = self.detect_language(text)
-        confidence_score = primary_language.confidence_score
-        language = primary_language.name
+        confidence_score = primary_language.get('confidence_score')
+        language = primary_language.get('name')
         logger.info(f"Language: {language} Confidence Score: {confidence_score}")
 
         return confidence_score >= self.confidence_threshold
 
     def is_language_match(self, text: str, language: str):
         primary_language = self.detect_language(text)
-        confidence_score = primary_language.confidence_score
-        language = primary_language.name        
+        confidence_score = primary_language.get('confidence_score')
+        language = primary_language.get('name')
         logger.info(f"Language: {language} Confidence Score: {confidence_score}")
 
-        return language == primary_language.iso6391_name and confidence_score >= self.confidence_threshold                
+        return language == primary_language.get('iso6391_name') and confidence_score >= self.confidence_threshold                
+

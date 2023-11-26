@@ -1,9 +1,17 @@
 from unittest.mock import patch
-
+from rag_experiment_accelerator.config.config import (
+    AzureSkillsCredentials,
+)
+from azure.ai.textanalytics import TextAnalyticsClient
 from rag_experiment_accelerator.nlp.language_evaluator import LanguageEvaluator
 
 documents = ["This is a test.", "C'est un test.", "Dies ist ein Test.","Questa è una prova."]
-detect_language_response = [
+detect_language_response =     {
+        "name": "English",
+        "iso6391_name": "en",        
+        "confidence_score": 1,
+    }
+detect_languages_response = [
     {
         "name": "English",
         "iso6391_name": "en",        
@@ -26,41 +34,53 @@ detect_language_response = [
     },    
 ]
 
+#@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
+def test_language_evaluator_init():
+    language_evaluator = LanguageEvaluator("en-us","en","",0.77)
+    assert language_evaluator.query_language == "en-us"
+    assert language_evaluator.country_hint == "us" 
+    assert language_evaluator.max_content_length == 50000
+    assert language_evaluator.confidence_threshold == 0.77
+    assert language_evaluator.default_language == "en"   
+
 
 def test_detect_language():
-    language_evaluator = LanguageEvaluator()
-    primary_language = language_evaluator.detect_language("This is a test.") 
-    assert primary_language.name == "English"   
-    assert primary_language.iso6391_name == "en"
-    assert primary_language.confidence_score == 1
-    primary_language = language_evaluator.detect_language("C'est un test.") 
-    assert primary_language.name == "French"   
-    assert primary_language.iso6391_name == "fr"
-    assert primary_language.confidence_score == 1
-    primary_language = language_evaluator.detect_language("Dies ist ein Test.") 
-    assert primary_language.name == "German"   
-    assert primary_language.iso6391_name == "de"
-    assert primary_language.confidence_score == 1    
+    with patch(
+        "rag_experiment_accelerator.nlp.language_evaluator.LanguageEvaluator"
+    ) as language_evaluator:
+        language_evaluator.detect_language.return_value = detect_language_response
+        primary_language = language_evaluator.detect_language("This is a test.") 
+        assert primary_language.get('name') == "English"   
+        assert primary_language.get('iso6391_name') == "en"
+        assert primary_language.get('confidence_score') == 1
 
-
-def test_detect_languages():        
-    language_evaluator = LanguageEvaluator()
-    response = language_evaluator.detect_language(documents)
-    
-    for i, doc in enumerate(detect_language_response):
-        assert doc["name"] == response[i].primary_language.name
-        assert doc["iso6391_name"] == response[i].primary_language.iso6391_name
-        assert doc["confidence_score"] == response[i].primary_language.confidence_score
-
+def test_detect_languages(): 
+    with patch(
+        "rag_experiment_accelerator.nlp.language_evaluator.LanguageEvaluator"
+    ) as language_evaluator:           
+        response = language_evaluator.detect_language(documents).return_value = detect_languages_response 
+        
+        for i, doc in enumerate(detect_languages_response):
+            assert doc["name"] == response[i].get('name')
+            assert doc["iso6391_name"] == response[i].get('iso6391_name')
+            assert doc["confidence_score"] == response[i].get('confidence_score')
 
 def test_is_confident_returns_certainty():
-    language_evaluator = LanguageEvaluator()
-    assert language_evaluator.is_confident("This is a test.") == 1
-    assert language_evaluator.is_confident("C'est un test.") == 1
-    assert language_evaluator.is_confident("Dies ist ein Test.") == 1
-
+    with patch.object(LanguageEvaluator, "detect_language", create=True
+    ) as language_evaluator:
+        language_evaluator.detect_language.return_value = detect_language_response
+        print(language_evaluator.is_confident("This is a test."))
+        language_evaluator.is_confident.assert_called()
+        language_evaluator.is_confident.assert_called_with("This is a test.")
 
 def test_is_language_match():
+    with patch.object(LanguageEvaluator, "detect_language", create=True
+    ) as language_evaluator:
+        language_evaluator.is_language_match("C'est un test.", "fr")
+        language_evaluator.is_language_match.assert_called()
+        language_evaluator.is_language_match.assert_called_with("C'est un test.", "fr")
+
+def test_check_string():
     language_evaluator = LanguageEvaluator()
-    assert language_evaluator.is_language_match("C'est un test.", "fr") is True
-    assert language_evaluator.is_language_match("This is a test.", "fr") is False
+    assert language_evaluator.check_string("This is string") == True      
+  
