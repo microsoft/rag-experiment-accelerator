@@ -34,7 +34,6 @@ detect_languages_response = [
     },    
 ]
 
-#@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 def test_language_evaluator_init():
     language_evaluator = LanguageEvaluator("en-us","en","",0.77)
     assert language_evaluator.query_language == "en-us"
@@ -83,4 +82,3 @@ def test_is_language_match():
 def test_check_string():
     language_evaluator = LanguageEvaluator()
     assert language_evaluator.check_string("This is string") == True      
-  
