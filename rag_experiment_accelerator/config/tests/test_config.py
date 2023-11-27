@@ -83,7 +83,7 @@ def test_init_invalid_api_type_openai_credentials():
 def test_raises_when_openai_endpoint_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
-            openai_api_type='azure',
+            openai_api_type="azure",
             openai_api_key="somekey",
             openai_api_version="v1",
             openai_endpoint=None,
@@ -93,7 +93,7 @@ def test_raises_when_openai_endpoint_is_none_for_azure_openai():
 def test_raises_when_openai_api_version_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
-            openai_api_type='azure',
+            openai_api_type="azure",
             openai_api_key="somekey",
             openai_api_version=None,
             openai_endpoint="http://example.com",
@@ -163,7 +163,13 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
 
 @patch("rag_experiment_accelerator.config.config.openai.Model.retrieve")
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
+@patch("rag_experiment_accelerator.config.config.EmbeddingModelFactory.create")
+@patch("rag_experiment_accelerator.llm.embeddings.openai_embedding")
+@patch("rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding")
 def test_config_init(
+    mock_sentence_transformer_embedding,
+    mock_openai_embedding,
+    mock_embeddings_model_factory,
     mock_openai_model_retrieve,
 ):
     # Load mock config data from a YAML file
@@ -172,6 +178,13 @@ def test_config_init(
     ) as file:
         mock_config_data = json.load(file)
 
+    mock_openai_embedding().try_retrieve_model.return_value = None
+    mock_sentence_transformer_embedding().try_retrieve_model.return_value = None
+
+    mock_embeddings_model_factory.side_effect = [
+        mock_openai_embedding,
+        mock_sentence_transformer_embedding,
+    ]
     mock_openai_model_retrieve.return_value = {
         "status": "succeeded",
         "capabilities": {
@@ -184,7 +197,6 @@ def test_config_init(
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
-    assert config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
     assert config.EF_CONSTRUCTIONS == mock_config_data["ef_construction"]
     assert config.EF_SEARCHES == mock_config_data["ef_search"]
     assert config.RERANK == mock_config_data["rerank"]
@@ -195,7 +207,6 @@ def test_config_init(
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
     assert config.CHAT_MODEL_NAME == mock_config_data["chat_model_name"]
-    assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (
         config.SEARCH_RELEVANCY_THRESHOLD
@@ -209,6 +220,12 @@ def test_config_init(
     assert (
         mock_openai_model_retrieve.called
     )  # Ensure that the OpenAI model is retrieved
+
+    # ensure config has embedding models and try_retrieve_model is called
+    assert mock_embeddings_model_factory.call_count == 2
+    assert mock_openai_embedding.try_retrieve_model.called
+    assert mock_sentence_transformer_embedding.try_retrieve_model.called
+
 
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(
@@ -277,6 +294,9 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
 
 
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
+@patch("rag_experiment_accelerator.config.config.EmbeddingModelFactory.create")
+@patch("rag_experiment_accelerator.llm.embeddings.openai_embedding")
+@patch("rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding")
 @pytest.mark.parametrize(
     "api_type, chat_model_name, embedding_model_name, chat_tags, embedding_tags",
     [
@@ -292,6 +312,9 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
     ],
 )
 def test_check_deployment(
+    mock_sentence_transformer_embedding,
+    mock_openai_embedding,
+    mock_embeddings_model_factory,
     api_type,
     chat_model_name,
     embedding_model_name,
@@ -302,20 +325,25 @@ def test_check_deployment(
         "rag_experiment_accelerator.config.config.Config._try_retrieve_model"
     ) as mock_try_retrieve_model:
         mock_try_retrieve_model.return_value = None  # Adjust as needed
+        mock_embeddings_model_factory.side_effect = [
+            mock_openai_embedding,
+            mock_sentence_transformer_embedding,
+        ]
 
-        config = Config()
+        mock_openai_embedding().try_retrieve_model.return_value = None
+        mock_sentence_transformer_embedding().try_retrieve_model.return_value = None
+
+        config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
         config.OpenAICredentials.OPENAI_API_TYPE = api_type
         config.CHAT_MODEL_NAME = chat_model_name
-        config.EMBEDDING_MODEL_NAME = embedding_model_name
-
         config._check_deployment()
         calls = []
         if chat_model_name:
             calls.append(call(chat_model_name, tags=chat_tags))
-        if embedding_model_name:
-            calls.append(call(embedding_model_name, tags=embedding_tags))
-
         mock_try_retrieve_model.assert_has_calls(calls)
+
+        assert mock_openai_embedding.try_retrieve_model.called
+        assert mock_sentence_transformer_embedding.try_retrieve_model.called
 
 
 @pytest.mark.parametrize(

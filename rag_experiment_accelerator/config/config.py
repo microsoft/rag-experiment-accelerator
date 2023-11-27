@@ -188,12 +188,16 @@ class OpenAICredentials:
         if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
             logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
             raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-        
-        if openai_api_type == 'azure' and openai_api_version is None:
-            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
 
-        if openai_api_type == 'azure' and openai_endpoint is None:
-            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
+        if openai_api_type == "azure" and openai_api_version is None:
+            raise ValueError(
+                f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set."
+            )
+
+        if openai_api_type == "azure" and openai_endpoint is None:
+            raise ValueError(
+                f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set."
+            )
 
         self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
@@ -245,6 +249,11 @@ class OpenAICredentials:
                 openai.api_base = self.OPENAI_ENDPOINT
 
 
+# imported here to avoid circular imports - we should think about moving all Credentials to its own file
+from rag_experiment_accelerator.llm.embeddings.factory import EmbeddingModelFactory
+from rag_experiment_accelerator.llm.embeddings.base import EmbeddingModel
+
+
 class Config:
     """
     A class for storing configuration settings for the RAG Experiment Accelerator.
@@ -255,13 +264,11 @@ class Config:
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
-        EMBEDDING_DIMENSIONS (list[int]): The number of dimensions to use for document embeddings.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         CHAT_MODEL_NAME (str): The name of the chat model to use.
-        EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
         EVAL_MODEL_NAME (str): The name of the chat model to use for prod.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
@@ -274,6 +281,10 @@ class Config:
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
+        OpenAICredentials (OpenAICredentials): OpenAI credentials.
+        AzureSearchCredentials (AzureSearchCredentials): Azure Search credentials.
+        AzureMLCredentials (AzureMLCredentials): Azure ML credentials.
+        emebdding_models (list[EmbeddingModel]): a list of emebedding models to use for document embeddings.
     """
 
     def __init__(self, config_filename: str = "search_config.json") -> None:
@@ -282,13 +293,11 @@ class Config:
 
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
-        self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
         self.EF_CONSTRUCTIONS = data["ef_construction"]
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
         self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
-        self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
         self.EVAL_MODEL_NAME = data.get("eval_model_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
@@ -305,6 +314,19 @@ class Config:
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
+
+        self.embedding_models: list[EmbeddingModel] = []
+        embedding_model_config = data.get("embedding_models", [])
+        for model in embedding_model_config:
+            self.embedding_models.append(
+                EmbeddingModelFactory.create(
+                    model.get("type"),
+                    model.get("model_name"),
+                    model.get("dimension"),
+                    self.OpenAICredentials,
+                )
+            )
+
         self._check_deployment()
 
         with open("prompt_config.json", "r") as json_file:
@@ -352,10 +374,10 @@ class Config:
         """
         Checks the deployment environment.
 
-        This function checks if the OpenAI API type and chat model name are set,
-        and then tries to retrieve the model with specified tags.
-
+        This function checks if the embedding models and chat model are ready for use.
+        It tries to retrieve the embedding models and the chat model with specified tags.
         """
+
         if self.OpenAICredentials.OPENAI_API_TYPE is not None:
             if self.CHAT_MODEL_NAME is not None:
                 self._try_retrieve_model(
@@ -363,9 +385,6 @@ class Config:
                     tags=["chat_completion", "inference"],
                 )
                 logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
-            if self.EMBEDDING_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.EMBEDDING_MODEL_NAME,
-                    tags=["embeddings", "inference"],
-                )
-                logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")
+            for embedding_model in self.embedding_models:
+                embedding_model.try_retrieve_model()
+                logger.info(f"Model {embedding_model.model_name} is ready for use.")

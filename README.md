@@ -99,7 +99,11 @@ To use the **RAG Experiment Accelerator**, follow these steps:
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
     },
-    "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
+    "embedding_models" : [
+        "type": "One of 'openai', 'huggingface'",
+        "model_name": "The name of the model when using 'huggingface' or deployment name if using openai",
+        "dimension": "The dimension of the model. This can be omitted when using 'huggingface' models: [all-MiniLM-L6-v2, all-mpnet-base-v2, bert-large-nli-mean-tokens]. Default for 'openai' model is 1536 which is the size of text-embedding-ada-002."
+    ],
     "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,
     "ef_search":  "ef_search value determines the value of Azure Cognitive Search vector configuration.",
     "language": {
@@ -116,7 +120,6 @@ To use the **RAG Experiment Accelerator**, follow these steps:
     "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
     "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
     "chat_model_name":  "determines the OpenAI model",
-    "embedding_model_name": "embedding model name",
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0"
 }

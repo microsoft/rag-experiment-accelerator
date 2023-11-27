@@ -4,7 +4,12 @@
         "chunk_size": [1000],
         "overlap_size": [200]
     },
-    "embedding_dimension": [768],
+    "embedding_models": [
+        {
+            "type": "huggingface",
+            "model_name": "all-mpnet-base-v2"
+        }
+    ],
     "ef_construction": [400],
     "ef_search": [400],
     "language":{

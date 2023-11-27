@@ -6,10 +6,12 @@ from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation import eval
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.utils import get_index_name
 from azure.ai.ml import MLClient
 import mlflow
 
 logger = get_logger(__name__)
+
 
 def main():
     """
@@ -35,27 +37,34 @@ def main():
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     client = mlflow.MlflowClient(mlflow_tracking_uri)
 
-    for config_item in config.CHUNK_SIZES:
+    for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
-            for dimension in config.EMBEDDING_DIMENSIONS:
+            for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
-                        logger.info(
-                            f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                        index_name = get_index_name(
+                            prefix=config.NAME_PREFIX,
+                            chunk_size=chunk_size,
+                            overlap=overlap,
+                            embedding_model_name=embedding_model.model_name,
+                            ef_construction=ef_construction,
+                            ef_search=ef_search,
                         )
+                        logger.info(f"Evaluating Index: {index_name}")
                         write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
                         eval.evaluate_prompts(
                             exp_name=config.NAME_PREFIX,
                             data_path=write_path,
                             config=config,
                             client=client,
-                            chunk_size=config_item,
+                            chunk_size=chunk_size,
                             chunk_overlap=overlap,
-                            embedding_dimension=dimension,
+                            embedding_dimension=embedding_model.dimension,
                             ef_construction=ef_construction,
                             ef_search=ef_search,
                         )
+                        logger.info(f"Finished evaluating index: {index_name}")
+
 
 if __name__ == "__main__":
     main()
