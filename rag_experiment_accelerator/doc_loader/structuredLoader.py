@@ -50,10 +50,17 @@ def load_structured_files(
         documents += document
 
     logger.debug(f"Loaded {len(documents)} {language.upper()} files")
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=overlap_size,
-    ).from_language(language=language)
+    if language == "json":
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=overlap_size,
+            length_function=len,
+        )
+    else:
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=overlap_size,
+        ).from_language(language=language)
 
     logger.debug(
         f"Splitting {language.upper()} files into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
