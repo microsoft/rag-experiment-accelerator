@@ -6,7 +6,7 @@ Before running the scripts:
     - For more information on required resources, see [required resources](/docs/environment-variables.md#required-resources)
     - For more information on the .env file, see [.env file](/docs/environment-variables.md#environment-variables)
 
-## 01_Index.py
+## 01_index.py
 Inputs:
 - Data must exist in the `/data` folder
     - `/data` folder can have 4 potential subfolders for: pdf, html, markdown, text, see [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py)

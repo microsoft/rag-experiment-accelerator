@@ -77,7 +77,7 @@ class LanguageEvaluator:
                     "Unable to detect language: {doc.id} {doc.error}"
                 )
         return { "name": doc.primary_language.name,
-                 "confidentce_score": doc.primary_language.confidence_score,
+                 "confidence_score": doc.primary_language.confidence_score,
                 "iso6391_name": doc.primary_language.iso6391_name 
                 }           
 
