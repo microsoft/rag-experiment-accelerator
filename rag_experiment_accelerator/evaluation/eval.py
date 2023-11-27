@@ -630,7 +630,7 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(actual, expected, context, context, metric_type):
+def compute_metrics(actual, expected, context, metric_type):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -798,7 +798,7 @@ def evaluate_prompts(
             metric_dic = {}
 
             for metric_type in metric_types:
-                score = compute_metrics(actual, expected, context, context, metric_type)
+                score = compute_metrics(actual, expected, context, metric_type)
                 metric_dic[metric_type] = score
             metric_dic["actual"] = actual
             metric_dic["expected"] = expected
