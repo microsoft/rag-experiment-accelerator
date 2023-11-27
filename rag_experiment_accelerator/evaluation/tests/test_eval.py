@@ -11,6 +11,19 @@ from rag_experiment_accelerator.llm.prompts import (
 )
 from unittest.mock import patch
 from langchain.schema.output import LLMResult, Generation
+from rag_experiment_accelerator.evaluation.eval import (
+    bleu,
+    answer_relevance,
+    context_precision,
+    get_result_from_model,
+)
+
+from langchain.prompts import ChatPromptTemplate
+from rag_experiment_accelerator.llm.prompts import (
+    answer_relevance_instruction,
+)
+from unittest.mock import patch
+from langchain.schema.output import LLMResult, Generation
 
 
 def test_bleu():
@@ -56,18 +69,17 @@ def test_context_precision(mock_get_result_from_model):
     assert score == 1.0
 
 
-@patch("rag_experiment_accelerator.evaluation.eval.openai")
 @patch("rag_experiment_accelerator.evaluation.eval.AzureChatOpenAI")
-def test_get_result_from_model(mock_azure_chat_open_ai, mock_open_ai):
+@patch("rag_experiment_accelerator.evaluation.eval.Config")
+def test_get_result_from_model(mock_config, mock_azure_chat_open_ai):
     generation = [[Generation(text="response")]]
     llm_result = LLMResult(generations=generation)
-    
+    mock_config().OpenAICredentials.OPENAI_API_TYPE = 'azure'
+
     mock_azure_chat_open_ai().generate.return_value = llm_result
-    mock_open_ai.api_type = "azure"
 
     human_prompt = answer_relevance_instruction.format(answer="answer")
     prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
 
     result = get_result_from_model(prompt)
-
     assert result == "response"

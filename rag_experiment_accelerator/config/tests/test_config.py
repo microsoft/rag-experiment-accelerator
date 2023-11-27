@@ -80,6 +80,26 @@ def test_init_invalid_api_type_openai_credentials():
         )
 
 
+def test_raises_when_openai_endpoint_is_none_for_azure_openai():
+    with pytest.raises(ValueError):
+        OpenAICredentials(
+            openai_api_type='azure',
+            openai_api_key="somekey",
+            openai_api_version="v1",
+            openai_endpoint=None,
+        )
+
+
+def test_raises_when_openai_api_version_is_none_for_azure_openai():
+    with pytest.raises(ValueError):
+        OpenAICredentials(
+            openai_api_type='azure',
+            openai_api_key="somekey",
+            openai_api_version=None,
+            openai_endpoint="http://example.com",
+        )
+
+
 @patch("rag_experiment_accelerator.config.config._get_env_var")
 def test_from_env_openai_credentials(mock_get_env_var):
     mock_get_env_var.side_effect = ["azure", "envkey", "v1", "http://envexample.com"]
@@ -105,8 +125,8 @@ def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_b
     creds = OpenAICredentials(
         openai_api_type=api_type,
         openai_api_key="somekey",
-        openai_api_version="expected_version",
-        openai_endpoint="expected_endpoint",
+        openai_api_version=expect_api_version,
+        openai_endpoint=expect_api_base,
     )
 
     creds._set_credentials()
@@ -135,8 +155,8 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
         return "test_api_key"
     elif var_name == "OPENAI_API_VERSION":
         return "test_api_version"
-    elif var_name == "OPENAI_API_VERSION":
-        return "test_api_version"
+    elif var_name == "OPENAI_ENDPOINT":
+        return "test_api_endpoint"
     elif var_name == "OPENAI_API_TYPE":
         return "azure"
 
@@ -190,7 +210,7 @@ def test_config_init(
         mock_openai_model_retrieve.called
     )  # Ensure that the OpenAI model is retrieved
 
-
+@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(
     "model_status, capabilities, tags, raises_exception",
     [
@@ -256,6 +276,7 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
                 config._try_retrieve_model("model_name", tags)
 
 
+@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(
     "api_type, chat_model_name, embedding_model_name, chat_tags, embedding_tags",
     [

@@ -25,10 +25,10 @@ jobs:
       - name: Execute Unit Tests
         shell: bash
         run: |
-          pytest . --cov=. --cov-report=xml
+          pytest . --cov=. --cov-report=html
 
       - name: Publish Unit Test Results
         uses: actions/upload-artifact@v3
         with:
           name: unit-test-results
-          path: "**/test-*.xml"
+          path: "htmlcov/**"
