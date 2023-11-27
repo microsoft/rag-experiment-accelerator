@@ -74,7 +74,7 @@ class LanguageEvaluator:
                 logger.info(f"Detected language: {doc.primary_language}")
             else:
                 logger.error(
-                    "Unable to detect language: {doc.id} {doc.error}"
+                    f"Unable to detect language: {doc.id} {doc.error}"
                 )
         return { "name": doc.primary_language.name,
                  "confidence_score": doc.primary_language.confidence_score,
