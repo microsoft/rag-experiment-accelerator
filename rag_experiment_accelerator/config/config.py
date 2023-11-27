@@ -105,7 +105,7 @@ class AzureSkillsCredentials:
 
     Attributes:
         AZURE_LANGUAGE_SERVICE_ENDPOINT (str): The endpoint URL of the Azure Language Detection service.
-        AZURE_LANGUAGE_SERVICE_KEY (str): ThE key required to access the Azure Language Detection service.
+        AZURE_LANGUAGE_SERVICE_KEY (str): The key required to access the Azure Language Detection service.
     """
 
     def __init__(
