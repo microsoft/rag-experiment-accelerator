@@ -11,19 +11,6 @@ from rag_experiment_accelerator.llm.prompts import (
 )
 from unittest.mock import patch
 from langchain.schema.output import LLMResult, Generation
-from rag_experiment_accelerator.evaluation.eval import (
-    bleu,
-    answer_relevance,
-    context_precision,
-    get_result_from_model,
-)
-
-from langchain.prompts import ChatPromptTemplate
-from rag_experiment_accelerator.llm.prompts import (
-    answer_relevance_instruction,
-)
-from unittest.mock import patch
-from langchain.schema.output import LLMResult, Generation
 
 
 def test_bleu():

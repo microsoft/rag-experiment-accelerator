@@ -32,22 +32,6 @@ from rag_experiment_accelerator.config import Config
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-import ast
-import plotly.express as px
-
-from langchain.prompts import ChatPromptTemplate
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
-from langchain.schema.messages import BaseMessage
-
-from rag_experiment_accelerator.llm.prompts import (
-    context_precision_instruction,
-    answer_relevance_instruction,
-)
-from rag_experiment_accelerator.config import Config
-
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-
 from rag_experiment_accelerator.utils.logging import get_logger
 
 
@@ -712,10 +696,6 @@ def compute_metrics(actual, expected, context, metric_type):
         score = answer_relevance(actual, expected)
     elif metric_type == "context_precision":
         score = context_precision(actual, context)
-    elif metric_type == "answer_relevance":
-        score = answer_relevance(actual, expected)
-    elif metric_type == "context_precision":
-        score = context_precision(actual, context)
     else:
         pass
 
@@ -756,12 +736,6 @@ def evaluate_prompts(
     except Exception as e:
         logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
         raise e
-    try:
-        eval_score_folder = "./artifacts/eval_score"
-        os.makedirs(eval_score_folder, exist_ok=True)
-    except Exception as e:
-        logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
-        raise e
 
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
@@ -789,7 +763,6 @@ def evaluate_prompts(
             cross_encoder_at_k = data.get("cross_encoder_at_k")
             question_count = data.get("question_count")
             search_evals = data.get("search_evals")
-            context = data.get("context")
             context = data.get("context")
 
             actual = remove_spaces(lower(actual))
@@ -878,7 +851,6 @@ def evaluate_prompts(
     )
     plot_map_scores(map_scores_df, run_id, client)
 
-    mlflow.log_param("chunk_size", chunk_size)
     mlflow.log_param("chunk_size", chunk_size)
     mlflow.log_param("question_count", question_count)
     mlflow.log_param("rerank", rerank)
