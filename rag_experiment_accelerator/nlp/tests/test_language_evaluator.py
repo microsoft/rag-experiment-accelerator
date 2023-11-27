@@ -68,7 +68,7 @@ def test_is_confident_returns_certainty():
     with patch.object(LanguageEvaluator, "detect_language", create=True
     ) as language_evaluator:
         language_evaluator.detect_language.return_value = detect_language_response
-        print(language_evaluator.is_confident("This is a test."))
+        language_evaluator.is_confident("This is a test.")
         language_evaluator.is_confident.assert_called()
         language_evaluator.is_confident.assert_called_with("This is a test.")
 

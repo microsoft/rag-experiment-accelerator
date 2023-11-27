@@ -36,7 +36,7 @@ class LanguageEvaluator:
         detect_languages(list[str}) -> DetectLanguageResult: Detect language for a batch of documents.
         detect_language(text: str) -> DetectLanguageResult: Detect language for a text sample.
         is_confident(text: str) -> bool: Determines whether language detected is reliable based on confidence score.
-        is_language_match(text: str, language: str) -> bool: Determines whether language matches language detected.
+        is_language_match(text: str, language_code: str) -> bool: Determines whether language matches language detected.
         check_string(text: str) -> Check the length of an input string.
     """    
     def __init__(self, query_language="en-us", default_language="en", country_hint="", confidence_threshold=0.8) -> None:
@@ -82,7 +82,6 @@ class LanguageEvaluator:
                 }           
 
     def is_confident(self, text: str):
-        print('here')
         primary_language = self.detect_language(text)
         confidence_score = primary_language.get('confidence_score')
         language = primary_language.get('name')
@@ -90,11 +89,11 @@ class LanguageEvaluator:
 
         return confidence_score >= self.confidence_threshold
 
-    def is_language_match(self, text: str, language: str):
+    def is_language_match(self, text: str, language_code: str):
         primary_language = self.detect_language(text)
         confidence_score = primary_language.get('confidence_score')
         language = primary_language.get('name')
         logger.info(f"Language: {language} Confidence Score: {confidence_score}")
 
-        return language == primary_language.get('iso6391_name') and confidence_score >= self.confidence_threshold                
+        return language_code == primary_language.get('iso6391_name') and confidence_score >= self.confidence_threshold                
 
