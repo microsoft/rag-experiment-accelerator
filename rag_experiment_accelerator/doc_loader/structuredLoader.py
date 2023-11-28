@@ -57,10 +57,7 @@ def load_structured_files(
             length_function=len,
         )
     else:
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=overlap_size,
-        ).from_language(
+        text_splitter = RecursiveCharacterTextSplitter().from_language(
             language=language, chunk_size=chunk_size, chunk_overlap=overlap_size
         )
 
