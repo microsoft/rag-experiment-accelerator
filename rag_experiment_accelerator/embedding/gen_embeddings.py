@@ -23,15 +23,24 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
         list[float]: A list of floats representing the embedding for the given text chunk.
     """
     if size == 1536:
-        params = {
-            "input": [chunk],
-        }
-        if openai.api_type == "azure":
-            params["engine"] = model_name
+        # Check if the input is too large
+        if len(chunk) > 8191:
+            # If so, break it up into smaller chunks
+            chunks = [chunk[i:i + 8191] for i in range(0, len(chunk), 8191)]
         else:
-            params["model"] = model_name
+            # Otherwise, proceed as normal
+            chunks = [chunk]
 
-        embedding = openai.Embedding.create(**params)["data"][0]["embedding"]
+        for chunk in chunks:
+            params = {
+                "input": [chunk],
+            }
+            if openai.api_type == "azure":
+                params["engine"] = model_name
+            else:
+                params["model"] = model_name
+
+            embedding = openai.Embedding.create(**params)["data"][0]["embedding"]
         return [embedding]
 
     if size in size_model_mapping:
