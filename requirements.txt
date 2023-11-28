@@ -19,7 +19,7 @@ mlflow==2.8.1
 rouge-score==0.1.2
 hnswlib==0.7.0
 pypdf==3.17.0
-langchain==0.0.325
+langchain==0.0.329
 sentence-transformers==2.2.2
 pytest==7.4.3
 pytest-cov==4.1.0
