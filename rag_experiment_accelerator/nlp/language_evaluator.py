@@ -62,24 +62,28 @@ class LanguageEvaluator:
             return None
 
     def detect_language(self, text: str):
-        service_endpoint = self.creds.AZURE_LANGUAGE_SERVICE_ENDPOINT
-        key = self.creds.AZURE_LANGUAGE_SERVICE_KEY
-        
-        client = TextAnalyticsClient(endpoint=service_endpoint, credential=AzureKeyCredential(key))
-        response = client.detect_language(documents=[text])
-        
-        for doc in response:
-            if not doc.is_error:
-                logger.info(f"Detected language: {doc.primary_language}")
-            else:
-                logger.error(
-                    f"Unable to detect language: {doc.id} {doc.error}"
-                )
-                return None
-        return { "name": doc.primary_language.name,
-                 "confidence_score": doc.primary_language.confidence_score,
-                "iso6391_name": doc.primary_language.iso6391_name 
-                }           
+        try:
+            service_endpoint = self.creds.AZURE_LANGUAGE_SERVICE_ENDPOINT
+            key = self.creds.AZURE_LANGUAGE_SERVICE_KEY
+            
+            client = TextAnalyticsClient(endpoint=service_endpoint, credential=AzureKeyCredential(key))
+            response = client.detect_language(documents=[text])
+            
+            for doc in response:
+                if not doc.is_error:
+                    logger.info(f"Detected language: {doc.primary_language}")
+                else:
+                    logger.error(
+                        f"Unable to detect language: {doc.id} {doc.error}"
+                    )
+            client.close()            
+            return { "name": doc.primary_language.name,
+                    "confidence_score": doc.primary_language.confidence_score,
+                    "iso6391_name": doc.primary_language.iso6391_name 
+                    }   
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")
+            return None                
 
     def is_confident(self, text: str):
         primary_language = self.detect_language(text)
