@@ -226,7 +226,13 @@ def search_for_match_Hybrid_cross(
     return formatted_search_results
 
 
-def search_for_match_text(client, size, query, retrieve_num_of_documents):
+def search_for_match_text(
+    client: azure.search.documents.SearchClient,
+    size: int,
+    query: str,
+    retrieve_num_of_documents: int,
+    model_name: str = None,
+):
     """
     Searches for matching text in the given client using the specified query.
 
@@ -422,12 +428,14 @@ def search_for_manual_hybrid(
         A list of documents matching the search query.
     """
     context = []
-    text_context = search_for_match_text(client, size, query, retrieve_num_of_documents)
+    text_context = search_for_match_text(
+        client, size, query, retrieve_num_of_documents, model_name
+    )
     vector_context = search_for_match_pure_vector_cross(
-        client, size, query, retrieve_num_of_documents
+        client, size, query, retrieve_num_of_documents, model_name
     )
     semantic_context = search_for_match_semantic(
-        client, size, query, retrieve_num_of_documents
+        client, size, query, retrieve_num_of_documents, model_name
     )
 
     context.extend(text_context)
