@@ -33,8 +33,7 @@ class LanguageEvaluator:
         max_content_length (int): The maximum size of a content allowed measured by length (e.g. 50,000 characters)
 
     Methods:
-        detect_languages(list[str}) -> DetectLanguageResult: Detect language for a batch of documents.
-        detect_language(text: str) -> DetectLanguageResult: Detect language for a text sample.
+        detect_language(text: str | list[str]) -> Dict[str, str] | None: Detect language for a text sample or a batch of documents.
         is_confident(text: str) -> bool: Determines whether language detected is reliable based on confidence score.
         is_language_match(text: str, language_code: str) -> bool: Determines whether language matches language detected.
         check_string(text: str) -> Check the length of an input string.
@@ -76,6 +75,7 @@ class LanguageEvaluator:
                 logger.error(
                     f"Unable to detect language: {doc.id} {doc.error}"
                 )
+                return None
         return { "name": doc.primary_language.name,
                  "confidence_score": doc.primary_language.confidence_score,
                 "iso6391_name": doc.primary_language.iso6391_name 
