@@ -1,7 +1,3 @@
-from rag_experiment_accelerator.utils.logging import get_logger
-
-logger = get_logger(__name__)
-
 
 def get_index_name(
     prefix: str,
