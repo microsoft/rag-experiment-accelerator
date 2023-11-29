@@ -2,6 +2,7 @@ import os
 import json
 import azure
 from azure.search.documents import SearchClient
+import openai
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
@@ -318,80 +319,87 @@ def main():
                                         new_questions.append(user_prompt)
 
                                     evaluation_content = user_prompt + qna_context
-                                    for s_v in config.SEARCH_VARIANTS:
-                                        search_evals = []
-                                        if is_multi_question:
-                                            (
-                                                docs,
-                                                search_evals,
-                                            ) = query_and_eval_acs_multi(
-                                                search_client,
-                                                dimension,
-                                                new_questions,
-                                                user_prompt,
-                                                output_prompt,
-                                                s_v,
-                                                evaluation_content,
-                                                config,
-                                                evaluator,
-                                                prompt_instruction,
-                                            )
-                                        else:
-                                            docs, evaluation = query_and_eval_acs(
-                                                search_client=search_client,
-                                                dimension=dimension,
-                                                query=user_prompt,
-                                                search_type=s_v,
-                                                evaluation_content=evaluation_content,
-                                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                evaluator=evaluator,
-                                                model_name=config.EMBEDDING_MODEL_NAME
-                                            )
-                                            search_evals.append(evaluation)
-
-                                        if config.RERANK:
-                                            prompt_instruction_context = (
-                                                rerank_documents(
+                                    try:
+                                        for s_v in config.SEARCH_VARIANTS:
+                                            search_evals = []
+                                            if is_multi_question:
+                                                (
                                                     docs,
+                                                    search_evals,
+                                                ) = query_and_eval_acs_multi(
+                                                    search_client,
+                                                    dimension,
+                                                    new_questions,
                                                     user_prompt,
                                                     output_prompt,
+                                                    s_v,
+                                                    evaluation_content,
                                                     config,
+                                                    evaluator,
+                                                    prompt_instruction,
                                                 )
+                                            else:
+                                                docs, evaluation = query_and_eval_acs(
+                                                    search_client=search_client,
+                                                    dimension=dimension,
+                                                    query=user_prompt,
+                                                    search_type=s_v,
+                                                    evaluation_content=evaluation_content,
+                                                    retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                    evaluator=evaluator,
+                                                    model_name=config.EMBEDDING_MODEL_NAME
+                                                )
+                                                search_evals.append(evaluation)
+
+                                            if config.RERANK:
+                                                prompt_instruction_context = (
+                                                    rerank_documents(
+                                                        docs,
+                                                        user_prompt,
+                                                        output_prompt,
+                                                        config,
+                                                    )
+                                                )
+                                            else:
+                                                prompt_instruction_context = docs
+
+                                            full_prompt_instruction = (
+                                                prompt_instruction
+                                                + "\n"
+                                                + "\n".join(prompt_instruction_context)
                                             )
-                                        else:
-                                            prompt_instruction_context = docs
+                                            openai_response = generate_response(
+                                                full_prompt_instruction,
+                                                user_prompt,
+                                                config.CHAT_MODEL_NAME,
+                                                config.TEMPERATURE,
+                                            )
+                                            logger.debug(openai_response)
 
-                                        full_prompt_instruction = (
-                                            prompt_instruction
-                                            + "\n"
-                                            + "\n".join(prompt_instruction_context)
+                                            output = {
+                                                "rerank": config.RERANK,
+                                                "rerank_type": config.RERANK_TYPE,
+                                                "crossencoder_model": config.CROSSENCODER_MODEL,
+                                                "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
+                                                "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                "cross_encoder_at_k": config.CROSSENCODER_AT_K,
+                                                "question_count": question_count,
+                                                "actual": openai_response,
+                                                "expected": output_prompt,
+                                                "search_type": s_v,
+                                                "search_evals": search_evals,
+                                                "context": qna_context,
+                                            }
+
+                                            with open(write_path, "a") as out:
+                                                json_string = json.dumps(output)
+                                                out.write(json_string + "\n")
+                                    except openai.error.InvalidRequestError as e:
+                                        logger.error(
+                                            f"Invalid request. Skipping question: {user_prompt}",
+                                            exc_info=e,
                                         )
-                                        openai_response = generate_response(
-                                            full_prompt_instruction,
-                                            user_prompt,
-                                            config.CHAT_MODEL_NAME,
-                                            config.TEMPERATURE,
-                                        )
-                                        logger.debug(openai_response)
-
-                                        output = {
-                                            "rerank": config.RERANK,
-                                            "rerank_type": config.RERANK_TYPE,
-                                            "crossencoder_model": config.CROSSENCODER_MODEL,
-                                            "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
-                                            "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                            "cross_encoder_at_k": config.CROSSENCODER_AT_K,
-                                            "question_count": question_count,
-                                            "actual": openai_response,
-                                            "expected": output_prompt,
-                                            "search_type": s_v,
-                                            "search_evals": search_evals,
-                                            "context": qna_context,
-                                        }
-
-                                        with open(write_path, "a") as out:
-                                            json_string = json.dumps(output)
-                                            out.write(json_string + "\n")
+                                        continue
 
                             search_client.close()
                             create_data_asset(
