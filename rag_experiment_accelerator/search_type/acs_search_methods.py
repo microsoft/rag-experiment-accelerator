@@ -171,7 +171,7 @@ def search_for_match_Hybrid_cross(
     client: azure.search.documents.SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    embedding_model: EmbeddingModel = None,
+    embedding_model: EmbeddingModel,
 ):
     """
     Searches for matching documents using a hybrid cross search method.
@@ -227,9 +227,10 @@ def search_for_match_text(
 
     Args:
         client: The client to search in.
-        size: The size of the search.
+        size: Not used.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
+        model_name: Not used.
 
     Returns:
         A list of formatted search results.

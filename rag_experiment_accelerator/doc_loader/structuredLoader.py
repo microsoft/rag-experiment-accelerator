@@ -57,10 +57,9 @@ def load_structured_files(
             length_function=len,
         )
     else:
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=overlap_size,
-        ).from_language(language=language)
+        text_splitter = RecursiveCharacterTextSplitter().from_language(
+            language=language, chunk_size=chunk_size, chunk_overlap=overlap_size
+        )
 
     logger.debug(
         f"Splitting {language.upper()} files into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
