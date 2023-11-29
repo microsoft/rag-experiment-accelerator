@@ -83,5 +83,6 @@ class SentenceTransformerEmbeddingModel(EmbeddingModel):
             model = SentenceTransformer(self.model_name)
             logger.info(f"Retrieved model {self.model_name}")
             return model
-        except HTTPError as e:
-            raise e
+        except Exception as e:
+            logger.debug(e)
+            raise ValueError(f"Unable to retrieve Sentence Transformer model with name: {self.model_name}")
