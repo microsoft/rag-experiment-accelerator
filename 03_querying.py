@@ -338,13 +338,14 @@ def main():
                                             )
                                         else:
                                             docs, evaluation = query_and_eval_acs(
-                                                search_client,
-                                                dimension,
-                                                user_prompt,
-                                                s_v,
-                                                evaluation_content,
-                                                config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                evaluator,
+                                                search_client=search_client,
+                                                dimension=dimension,
+                                                query=user_prompt,
+                                                search_type=s_v,
+                                                evaluation_content=evaluation_content,
+                                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                evaluator=evaluator,
+                                                model_name=config.EMBEDDING_MODEL_NAME
                                             )
                                             search_evals.append(evaluation)
 
