@@ -15,11 +15,11 @@ azure-identity==1.14.1
 textdistance==4.6.0
 azureml-mlflow==1.53.0
 fuzzywuzzy==0.18.0
-mlflow==2.7.1
+mlflow==2.8.1
 rouge-score==0.1.2
 hnswlib==0.7.0
 pypdf==3.17.0
-langchain==0.0.325
+langchain==0.0.329
 sentence-transformers==2.2.2
 pytest==7.4.3
 pytest-cov==4.1.0
@@ -31,3 +31,4 @@ evaluate==0.4.1
 black==23.10.1
 pre-commit==3.5.0
 jq==1.6.0
+azure-ai-textanalytics==5.3.0
