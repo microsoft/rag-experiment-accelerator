@@ -416,13 +416,13 @@ class Config:
         It tries to retrieve the embedding models and the chat model with specified tags.
         """
 
-        if self.OpenAICredentials.OPENAI_API_TYPE is not None:
-            if self.CHAT_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.CHAT_MODEL_NAME,
-                    tags=["chat_completion", "inference"],
-                )
-                logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
-            for embedding_model in self.embedding_models:
-                embedding_model.try_retrieve_model()
-                logger.info(f"Model {embedding_model.model_name} is ready for use.")
+        if self.CHAT_MODEL_NAME is not None:
+            self._try_retrieve_model(
+                self.CHAT_MODEL_NAME,
+                tags=["chat_completion", "inference"],
+            )
+            logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
+
+        for embedding_model in self.embedding_models:
+            embedding_model.try_retrieve_model()
+            logger.info(f"Model {embedding_model.model_name} is ready for use.")

@@ -45,7 +45,7 @@ class OpenAIModel(LLMModel):
         """
         try:
             model = openai.Model.retrieve(self.model_name)
-            if self._openai_creds.OPENAI_API_TYPE == "open_ai":
+            if self._openai_creds.OPENAI_API_TYPE != "azure":
                 return model
 
             if model["status"] != "succeeded":
