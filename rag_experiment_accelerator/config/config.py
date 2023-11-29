@@ -99,6 +99,43 @@ class AzureSearchCredentials:
             ),
         )
 
+class AzureSkillsCredentials:
+    """
+    A class representing the credentials required to access the skills provided with Azure Cognitive Search.
+
+    Attributes:
+        AZURE_LANGUAGE_SERVICE_ENDPOINT (str): The endpoint URL of the Azure Language Detection service.
+        AZURE_LANGUAGE_SERVICE_KEY (str): The key required to access the Azure Language Detection service.
+    """
+
+    def __init__(
+        self,
+        azure_language_service_endpoint: str,
+        azure_language_service_key: str,
+    ) -> None:
+        self.AZURE_LANGUAGE_SERVICE_ENDPOINT = azure_language_service_endpoint
+        self.AZURE_LANGUAGE_SERVICE_KEY = azure_language_service_key
+
+    @classmethod
+    def from_env(cls) -> "AzureSkillsCredentials":
+        """
+        Creates an instance of AzureSkillsCredentials using environment variables.
+
+        Returns:
+            AzureSkillsCredentials: An instance of AzureSkillsCredentials.
+        """
+        return cls(
+            azure_language_service_endpoint=_get_env_var(
+                var_name="AZURE_LANGUAGE_SERVICE_ENDPOINT",
+                critical=False,
+                mask=False,
+            ),
+            azure_language_service_key=_get_env_var(
+                var_name="AZURE_LANGUAGE_SERVICE_KEY",
+                critical=False,
+                mask=True,
+            ),
+        )                
 
 class AzureMLCredentials:
     """
@@ -305,6 +342,7 @@ class Config:
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
+        self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
         self._check_deployment()
 
         with open("prompt_config.json", "r") as json_file:
