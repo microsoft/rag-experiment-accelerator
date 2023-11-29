@@ -63,11 +63,10 @@ def query_acs(
 
     Args:
         search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension to search within.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the model to use for searching.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         list: A list of documents matching the search query.
@@ -138,13 +137,12 @@ def query_and_eval_acs(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension of the search index to query.
         query (str): The search query to execute.
         search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
-        model_name (str): The name of the model to use for searching.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
@@ -181,7 +179,6 @@ def query_and_eval_acs_multi(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client.
-        dimension (int): The number of dimensions in the embedding space.
         questions (list[str]): A list of questions to query the search service with.
         original_prompt (str): The original prompt to generate the response from.
         output_prompt (str): The output prompt to use for reranking the search results.
@@ -190,6 +187,7 @@ def query_and_eval_acs_multi(
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
         main_prompt_instruction (str): The main prompt instruction for the query
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation

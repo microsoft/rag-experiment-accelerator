@@ -71,10 +71,9 @@ def search_for_match_semantic(
 
     Args:
         client (azure.search.documents.SearchClient): The Azure Cognitive Search client.
-        size (int): The size of the embedding vector.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
     Returns:
         list: A list of formatted search results.
     """
@@ -125,10 +124,9 @@ def search_for_match_Hybrid_multi(
 
     Args:
         client (azure.search.documents.SearchClient): The Azure Cognitive Search client.
-        size (int): The size of the embedding vector.
         query (str): The search query.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         list: A list of formatted search results.
@@ -178,10 +176,9 @@ def search_for_match_Hybrid_cross(
 
     Args:
         client: An instance of the Azure Cognitive Search client.
-        size (int): The size of the embedding.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         A list of formatted search results.
@@ -227,10 +224,9 @@ def search_for_match_text(
 
     Args:
         client: The client to search in.
-        size: Not used.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        model_name: Not used.
+        embedding_model: Not used.
 
     Returns:
         A list of formatted search results.
@@ -261,10 +257,9 @@ def search_for_match_pure_vector(
 
     Args:
         client (Client): The client object used to connect to the database.
-        size (int): The size of the embedding vectors.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         A list of dictionaries containing the search results, where each dictionary represents a single document and
@@ -303,10 +298,9 @@ def search_for_match_pure_vector_multi(
 
     Args:
         client: The client to search in.
-        size: The size of the embedding.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         A list of formatted search results.
@@ -355,10 +349,9 @@ def search_for_match_pure_vector_cross(
 
     Args:
         client: An instance of the search client.
-        size: The size of the embedding.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         A list of dictionaries containing the formatted search results.
@@ -398,9 +391,9 @@ def search_for_manual_hybrid(
 
     Args:
         client: Elasticsearch client object.
-        size: Maximum number of documents to retrieve.
         query: Query string to search for.
         retrieve_num_of_documents: Number of documents to retrieve.
+        embedding_model (EmbeddingModel): The embedding model used for searching.
 
     Returns:
         A list of documents matching the search query.
