@@ -223,6 +223,7 @@ def test_config_init(
 
     # ensure config has embedding models and try_retrieve_model is called
     assert mock_embeddings_model_factory.call_count == 2
+    assert len(config.embedding_models) == 2
     assert mock_openai_embedding.try_retrieve_model.called
     assert mock_sentence_transformer_embedding.try_retrieve_model.called
 
