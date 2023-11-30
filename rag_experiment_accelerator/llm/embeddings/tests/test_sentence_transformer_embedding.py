@@ -19,17 +19,17 @@ def test_generate_embedding(mock_encode):
     assert embeddings == expected_embeddings.tolist()
 
 
-def test_try_retrieve_model_raises_non_existing_model():
-    with pytest.raises(Exception):
+def test_sentence_transformer_embedding_model_raises_non_existing_model():
+    with pytest.raises(ValueError):
         SentenceTransformerEmbeddingModel("non-existing-model", 123)
 
 
-def test_try_retrieve_model_raises_unsupported_model():
-    with pytest.raises(Exception):
+def test_sentence_transformer_embedding_model_raises_unsupported_model():
+    with pytest.raises(ValueError):
         SentenceTransformerEmbeddingModel("non-existing-model")
 
 
-def test_try_retrieve_model_succeeds():
+def test_sentence_transformer_embedding_model_succeeds():
     try:
         SentenceTransformerEmbeddingModel("all-mpnet-base-v2")
     except:
