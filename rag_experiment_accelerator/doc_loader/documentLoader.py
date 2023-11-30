@@ -5,6 +5,7 @@ from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
 from rag_experiment_accelerator.doc_loader.markdownLoader import load_markdown_files
 from rag_experiment_accelerator.doc_loader.textLoader import load_text_files
 from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
+from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -16,6 +17,7 @@ _FORMAT_VERSIONS = {
     "markdown": ["md", "markdown"],
     "json": ["json"],
     "text": ["txt", "rtf"],
+    "docx": ["docx"],
 }
 _FORMAT_PROCESSORS = {
     "pdf": load_pdf_files,
@@ -23,6 +25,7 @@ _FORMAT_PROCESSORS = {
     "markdown": load_markdown_files,
     "json": load_json_files,
     "text": load_text_files,
+    "docx": load_docx_files,
 }
 
 

@@ -10,6 +10,7 @@ pytesseract==0.3.10
 azure-search-documents==11.4.b11
 python-dotenv==1.0.0
 PyMuPDF==1.23.5
+docx2txt==0.8
 azure-ai-ml==1.11.1
 azure-identity==1.14.1
 textdistance==4.6.0
