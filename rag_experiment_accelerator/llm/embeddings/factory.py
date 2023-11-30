@@ -1,4 +1,3 @@
-from typing import Optional
 from rag_experiment_accelerator.llm.embeddings.openai_embedding import (
     OpenAIEmbeddingModel,
 )
@@ -17,8 +16,8 @@ class EmbeddingModelFactory:
     def create(
         embedding_type: str,
         model_name: str,
-        dimension: int,
-        openai_creds: Optional[OpenAICredentials],
+        dimension: int = None,
+        openai_creds: OpenAICredentials = None,
     ):
         """
         Create an embedding model based on the specified embedding type.

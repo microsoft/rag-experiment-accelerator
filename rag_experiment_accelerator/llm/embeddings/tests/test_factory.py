@@ -1,6 +1,8 @@
 import pytest
 from rag_experiment_accelerator.llm.embeddings.factory import EmbeddingModelFactory
 from rag_experiment_accelerator.config.config import OpenAICredentials
+from rag_experiment_accelerator.llm.embeddings.openai_embedding import OpenAIEmbeddingModel
+from rag_experiment_accelerator.llm.embeddings.sentence_transformer_embedding import SentenceTransformerEmbeddingModel
 
 
 def test_create_openai_embedding_model():
@@ -14,7 +16,7 @@ def test_create_openai_embedding_model():
         dimension=dimension,
         openai_creds=openai_creds,
     )
-    model.__class__ == "OpenAIEmbeddingModel"
+    assert isinstance(model, OpenAIEmbeddingModel)
 
 
 def test_create_huggingface_embedding_model():
@@ -28,7 +30,7 @@ def test_create_huggingface_embedding_model():
         dimension=dimension,
         openai_creds=openai_creds,
     )
-    model.__class__ == "SentenceTransformersEmbeddingModel"
+    assert isinstance(model, SentenceTransformerEmbeddingModel)
 
 
 def test_create_raise_invalid_embedding_type():
