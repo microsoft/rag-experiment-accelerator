@@ -100,8 +100,8 @@ To use the **RAG Experiment Accelerator**, follow these steps:
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
     },
     "embedding_models" : [
-        "type": "One of 'openai', 'huggingface'",
-        "model_name": "The name of the model when using 'huggingface' or deployment name if using openai",
+        "type": "One of: 'openai', 'huggingface'. When 'openai' is specified, the connection values are loaded from the .env file",
+        "model_name": "When 'type' is 'huggingface': The name of the model. When 'type' is 'openai': the deployment name for Azure OpenAI or the model name for OpenAI",
         "dimension": "The dimension of the model. This can be omitted when using 'huggingface' models: [all-MiniLM-L6-v2, all-mpnet-base-v2, bert-large-nli-mean-tokens]. Default for 'openai' model is 1536 which is the size of text-embedding-ada-002."
     ],
     "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,

@@ -13,10 +13,12 @@ Familiarity with [ReadMe configuration of elements](/README.md#Description-of-co
     - [Overlap][Overlap]
 - [Embedding][Embeddings]
     - Models: The accelerator can use [Sentence Transformer][Sentence Transformer] emebdding models or OpenAI embedding models to generate the embeddings.
-    - Dimensions: When `type` is set to 'hugggingface', each model name value maps to the embedding dimension.
-        - [all-MiniLM-L6-v2][all-MiniLM-L6-v2]: 384
-        - [all-mpnet-base-v2][all-mpnet-base-v2]: 768
-        - [bert-large-nli-mean-tokens][bert-large-nli-mean-tokens: 1024
+    - Dimensions: 
+        - When `type` is set to `'hugggingface'`, each model name value maps to the embedding dimension.
+            - [all-MiniLM-L6-v2][all-MiniLM-L6-v2]: 384
+            - [all-mpnet-base-v2][all-mpnet-base-v2]: 768
+            - [bert-large-nli-mean-tokens][bert-large-nli-mean-tokens: 1024
+        - When `type` is `'openai'` the default dimension is 1536 which is the size of `text-embedding-ada-002`." 
 - LLM Metrics calculated using scikit-learn in combination with `Math.mean`
     - [Precision][precision score]
     - [Recall][recall score]
