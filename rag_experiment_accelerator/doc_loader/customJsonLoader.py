@@ -6,6 +6,7 @@ from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
 
 # Replaces langchain.document_loaders.JSONLoader to not use jq for windows compatibility
+# Note: Does not currently support jsonl, which is what the seq_num metadata field tracks
 class JSoNLoader(BaseLoader):
     def __init__(
         self,
@@ -14,13 +15,11 @@ class JSoNLoader(BaseLoader):
         content_key: Optional[str] = None,
         metadata_func: Optional[Callable[[Dict, Dict], Dict]] = None,
         text_content: bool = True,
-        # json_lines: bool = False,
         ):
         self.file_path = Path(file_path).resolve()
         self._content_key = content_key
         self._metadata_func = metadata_func
         self._text_content = text_content
-        # self._json_lines = json_lines
 
     def load(self) -> List[Document]:
         """Load and return documents from the JSON file."""
@@ -37,7 +36,9 @@ class JSoNLoader(BaseLoader):
                 })
 
             metadata = {
-                'source': self.file_path,
+                'source': str(self.file_path),
+                # seq_num exists to be consistent with the langchain document metadata
+                'seq_num': 1
             }
             docs.append(Document(page_content=str(page_content), metadata=metadata))
         return docs
