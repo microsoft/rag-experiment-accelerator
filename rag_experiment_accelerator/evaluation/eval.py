@@ -561,6 +561,8 @@ def compute_metrics(actual, expected, context, metric_type):
             - "bert_large_nli_stsb_mean_tokens": BERT-based semantic similarity (large model, STS-B, mean tokens)
             - "bert_distilbert_base_nli_stsb_mean_tokens": BERT-based semantic similarity (DistilBERT base model, STS-B, mean tokens)
             - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
+            - "answer_relevance": How relevant the answer is to the question
+            - "context_precision": How relevant the provided context is to the question
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
