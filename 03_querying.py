@@ -399,5 +399,4 @@ def run(config_dir: str):
 
 if __name__ == "__main__":
     directory = get_directory_arg()
-    print(directory)
     run(directory)
