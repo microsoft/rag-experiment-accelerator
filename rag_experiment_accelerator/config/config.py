@@ -2,6 +2,7 @@ import json
 import os
 import openai
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 
 logger = get_logger(__name__)
 
@@ -356,9 +357,10 @@ class Config:
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
                 logger.warn("prompt_config.json found but main_prompt_instruction is not set. Using default prompts")
+                self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
             logger.warn("prompt_config.json not found. Using default prompts")
-            self.MAIN_PROMPT_INSTRUCTION = None
+            self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """

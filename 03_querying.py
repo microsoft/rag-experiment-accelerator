@@ -255,11 +255,6 @@ def run(config_dir: str):
             for line in file:
                 question_count += 1
 
-        if config.MAIN_PROMPT_INSTRUCTION:
-            prompt_instruction = config.MAIN_PROMPT_INSTRUCTION
-        else:
-            prompt_instruction = main_prompt_instruction
-
         try:
             output_dir = f"{config.artifacts_dir}/outputs"
             os.makedirs(output_dir, exist_ok=True)
@@ -335,7 +330,7 @@ def run(config_dir: str):
                                                 evaluation_content,
                                                 config,
                                                 evaluator,
-                                                prompt_instruction,
+                                                config.MAIN_PROMPT_INSTRUCTION,
                                             )
                                         else:
                                             docs, evaluation = query_and_eval_acs(
@@ -363,7 +358,7 @@ def run(config_dir: str):
                                             prompt_instruction_context = docs
 
                                         full_prompt_instruction = (
-                                            prompt_instruction
+                                            config.MAIN_PROMPT_INSTRUCTION
                                             + "\n"
                                             + "\n".join(prompt_instruction_context)
                                         )
