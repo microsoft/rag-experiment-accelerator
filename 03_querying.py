@@ -5,6 +5,7 @@ from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.run.args import get_directory_arg
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 from dotenv import load_dotenv
@@ -235,22 +236,22 @@ def query_and_eval_acs_multi(
     return context, evals
 
 
-def main():
+def run(config_dir: str):
     """
     Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
 
     Returns:
         None
     """
-    config = Config()
+    config = Config(config_dir)
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
-    jsonl_file_path = config.EVAL_DATA_JSONL_FILE_PATH
+    eval_data_file = config.eval_data_filepath
     question_count = 0
     # ensure we have a valid Azure credential before going throught the loop.
     azure_cred = get_default_az_cred()
     try:
-        with open(jsonl_file_path, "r") as file:
+        with open(eval_data_file, "r") as file:
             for line in file:
                 question_count += 1
 
@@ -260,10 +261,10 @@ def main():
             prompt_instruction = main_prompt_instruction
 
         try:
-            directory_path = "artifacts/outputs"
-            os.makedirs(directory_path, exist_ok=True)
+            output_dir = f"{config.artifacts_dir}/outputs"
+            os.makedirs(output_dir, exist_ok=True)
         except Exception as e:
-            logger.error(f"Unable to create the '{directory_path}' directory. Please ensure you have the proper permissions and try again")
+            logger.error(f"Unable to create the '{output_dir}' directory. Please ensure you have the proper permissions and try again")
             raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
@@ -277,7 +278,7 @@ def main():
                             logger.info(f"Index: {index_name}")
 
                             write_path = (
-                                f"{directory_path}/eval_output_{index_name}.jsonl"
+                                f"{output_dir}/eval_output_{index_name}.jsonl"
                             )
                             if os.path.exists(write_path):
                                 continue
@@ -286,7 +287,7 @@ def main():
                                 service_endpoint, index_name, search_admin_key
                             )
 
-                            with open(jsonl_file_path, "r") as file:
+                            with open(eval_data_file, "r") as file:
                                 for line in file:
                                     data = json.loads(line)
                                     user_prompt = data.get("user_prompt")
@@ -398,8 +399,10 @@ def main():
                                 write_path, index_name, azure_cred, config.AzureMLCredentials
                             )
     except FileNotFoundError:
-        logger.error("The file does not exist: " + jsonl_file_path)
+        logger.error("The file does not exist: " + eval_data_file)
 
 
 if __name__ == "__main__":
-    main()
+    directory = get_directory_arg()
+    print(directory)
+    run(directory)

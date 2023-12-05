@@ -312,11 +312,15 @@ class Config:
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
     """
-
-    def __init__(self, config_filename: str = "search_config.json") -> None:
-        with open(config_filename, "r") as json_file:
+    dir = os.getcwd()
+    def __init__(self, config_dir: str = "search_config.json") -> None:
+        with open(f"{config_dir}/search_config.json", "r") as json_file:
             data = json.load(json_file)
 
+        self.config_dir = config_dir
+        self.artifacts_dir = f"{config_dir}/artifacts"
+        self.eval_data_filepath = f"{self.artifacts_dir}/eval_data.jsonl"
+        self.data_dir = f"{config_dir}/data"
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
@@ -344,11 +348,17 @@ class Config:
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
         self._check_deployment()
-
-        with open("prompt_config.json", "r") as json_file:
-            data = json.load(json_file)
-
-        self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
+        
+        try:
+            with open("prompt_config.json", "r") as json_file:
+                data = json.load(json_file)
+    
+            self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
+            if self.MAIN_PROMPT_INSTRUCTION is None:
+                logger.warn("prompt_config.json found but main_prompt_instruction is not set. Using default prompts")
+        except OSError:
+            logger.warn("prompt_config.json not found. Using default prompts")
+            self.MAIN_PROMPT_INSTRUCTION = None
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
         """
