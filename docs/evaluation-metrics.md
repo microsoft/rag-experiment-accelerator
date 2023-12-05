@@ -57,7 +57,8 @@ Computes the longest common subsequence (LCS) similarity score between two input
 | ----------------- | -------------------- | ------------------ |
 | `cosine`          | `actual`, `expected` | Percentage (0-100) |
 
-The cosine similarity is calculated as the cosine of the angle between the two vectors of the strings.
+The cosine similarity is calculated as the cosine of the angle between the two vector representations (also known as
+embeddings) of the strings.
 
 ### Jaro-Winkler distance
 
