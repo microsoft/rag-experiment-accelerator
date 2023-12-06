@@ -1,0 +1,10 @@
+inputs: {}
+outputs: {}
+nodes:
+- name: create_index
+  type: python
+  source:
+    type: code
+    path: create_index.py
+  inputs:
+    should_index: true

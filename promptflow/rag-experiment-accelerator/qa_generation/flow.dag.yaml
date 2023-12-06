@@ -1,0 +1,9 @@
+inputs: {}
+outputs: {}
+nodes:
+- name: generate_qa
+  type: python
+  source:
+    type: code
+    path: generate_qa.py
+  inputs: {}

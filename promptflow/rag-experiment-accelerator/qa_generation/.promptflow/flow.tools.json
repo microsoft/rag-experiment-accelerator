@@ -1,0 +1,10 @@
+{
+  "package": {},
+  "code": {
+    "generate_qa.py": {
+      "type": "python",
+      "source": "generate_qa.py",
+      "function": "my_python_tool"
+    }
+  }
+}
