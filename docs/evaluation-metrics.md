@@ -1,4 +1,4 @@
-# RAG Answer Evaluation Metrics
+# Evaluation Metrics
 
 The following is an overview of the available evaluation metrics that can be used to evaluate end-to-end performance of
 a RAG application by measuring a distance between the ground truth answer and the predicted answer.
