@@ -1,5 +1,6 @@
 import pytest
 import json
+import os
 from rag_experiment_accelerator.config.config import (
     AzureSearchCredentials,
     AzureMLCredentials,
@@ -11,6 +12,9 @@ from rag_experiment_accelerator.config.config import (
 import openai
 from unittest.mock import patch, call
 
+
+def get_test_config_dir():
+    return os.path.join(os.path.dirname(__file__), "data")
 
 def test_init_search_credentials():
     creds = AzureSearchCredentials(
@@ -168,7 +172,7 @@ def test_config_init(
 ):
     # Load mock config data from a YAML file
     with open(
-        "rag_experiment_accelerator/config/tests/data/test_config.json", "r"
+        f"{get_test_config_dir()}/search_config.json", "r"
     ) as file:
         mock_config_data = json.load(file)
 
@@ -180,7 +184,7 @@ def test_config_init(
             "chat_completion": True,
         },
     }
-    config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
+    config = Config(get_test_config_dir())
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
@@ -258,11 +262,11 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
 
             if raises_exception:
                 with pytest.raises(ValueError):
-                    config = Config()
+                    config = Config(get_test_config_dir())
                     config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                     config._try_retrieve_model("model_name", tags)
             else:
-                config = Config()
+                config = Config(get_test_config_dir())
                 config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                 result = config._try_retrieve_model("model_name", tags)
                 assert result == mock_model
@@ -272,7 +276,7 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
             side_effect=openai.error.InvalidRequestError("Test error", "404"),
         ):
             with pytest.raises(ValueError):
-                config = Config()
+                config = Config(get_test_config_dir())
                 config._try_retrieve_model("model_name", tags)
 
 
@@ -303,7 +307,7 @@ def test_check_deployment(
     ) as mock_try_retrieve_model:
         mock_try_retrieve_model.return_value = None  # Adjust as needed
 
-        config = Config()
+        config = Config(get_test_config_dir())
         config.OpenAICredentials.OPENAI_API_TYPE = api_type
         config.CHAT_MODEL_NAME = chat_model_name
         config.EMBEDDING_MODEL_NAME = embedding_model_name
