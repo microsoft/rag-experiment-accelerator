@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from rag_experiment_accelerator.run.args import get_directory_arg
 
 load_dotenv(override=True)
 
@@ -11,7 +12,7 @@ import mlflow
 
 logger = get_logger(__name__)
 
-def main():
+def run(config_dir: str):
     """
     Runs the evaluation process for the RAG experiment accelerator.
 
@@ -21,7 +22,7 @@ def main():
     Returns:
         None
     """
-    config = Config()
+    config = Config(config_dir)
 
     ml_client = MLClient(
         get_default_az_cred(),
@@ -44,7 +45,8 @@ def main():
                         logger.info(
                             f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
                         )
-                        write_path = f"artifacts/outputs/eval_output_{index_name}.jsonl"
+                        config.artifacts_dir
+                        write_path = f"{config.artifacts_dir}/outputs/eval_output_{index_name}.jsonl"
                         eval.evaluate_prompts(
                             exp_name=config.NAME_PREFIX,
                             data_path=write_path,
@@ -58,4 +60,5 @@ def main():
                         )
 
 if __name__ == "__main__":
-    main()
+    directory = get_directory_arg()
+    run(directory)
