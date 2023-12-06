@@ -314,7 +314,7 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
     """
 
-    def __init__(self, config_dir: str = "search_config.json") -> None:
+    def __init__(self, config_dir: str = os.getcwd()) -> None:
         with open(f"{config_dir}/search_config.json", "r") as json_file:
             data = json.load(json_file)
 

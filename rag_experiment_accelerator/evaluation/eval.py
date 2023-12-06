@@ -656,7 +656,7 @@ def evaluate_prompts(
         None
     """
     try:
-        eval_score_folder = "./artifacts/eval_score"
+        eval_score_folder = f"{config.artifacts_dir}/eval_score"
         os.makedirs(eval_score_folder, exist_ok=True)
     except Exception as e:
         logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
