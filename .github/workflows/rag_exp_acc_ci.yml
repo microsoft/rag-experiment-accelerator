@@ -8,10 +8,12 @@ on:
     branches:
       - main
       - development
+      - feature/promptflow
   push:
     branches:
       - main
       - development
+      - feature/promptflow
 
 jobs:
   execute-code-and-check:
