@@ -1,6 +1,6 @@
 from rag_experiment_accelerator.doc_loader.structuredLoader import load_structured_files
-from langchain.document_loaders import JSONLoader
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.doc_loader.customJsonLoader import CustomJSONLoader
 
 logger = get_logger(__name__)
 
@@ -29,7 +29,7 @@ def load_json_files(
     return load_structured_files(
         file_format="JSON",
         language=None,
-        loader=JSONLoader,
+        loader=CustomJSONLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,
         overlap_size=overlap_size,
