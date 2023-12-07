@@ -38,7 +38,7 @@ This script queries the search index using the generated question-answer pairs a
 Inputs:
 
 - The `artifacts/eval_data.jsonl` file from the previous step.
-- You can choose to provide your own `.jsonl` file (with same format as the one generated in the previous step) as input and update `search_config.json` with the full path of your file in the `eval_data_jsonl_file_path` field.
+- You can choose to provide your own `.jsonl` file (with same format as the one generated in the previous step) as input and update `config.json` with the full path of your file in the `eval_data_jsonl_file_path` field.
 - `prompts_config.json` (optional)
   - You can provide a custom prompt to be used as the main prompt for the questions generated to search the data. The custom prompt can be provided as a string as follows:
 
@@ -50,7 +50,7 @@ Inputs:
 
 Outputs:
 
-- A `artifacts/outputs/<CONFIG_VALUES>.jsonl` file that contains a list of JSON objects. Each JSON object has eleven fields: `actual`, `expected`, and nine fields relating to configuration information. The name of the output file is based on the values in the `search_config.json` file.
+- A `artifacts/outputs/<CONFIG_VALUES>.jsonl` file that contains a list of JSON objects. Each JSON object has eleven fields: `actual`, `expected`, and nine fields relating to configuration information. The name of the output file is based on the values in the `config.json` file.
 - The same output file is also uploaded to Azure Machine Learning Studio under `Assets -> Data`.
 
 ## 04_evaluation.py
