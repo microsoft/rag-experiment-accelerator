@@ -146,7 +146,7 @@ information is penalized.
 
 ### Context precision
 
-Configuraion key: `context_precision`
+Configuration key: `context_precision`
 
 | Configuration Key   | Calculation Base     | Possible Values                                        |
 | ------------------- | -------------------- | ------------------------------------------------------ |
