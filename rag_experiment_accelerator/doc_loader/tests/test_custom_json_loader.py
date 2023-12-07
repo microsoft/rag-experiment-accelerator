@@ -15,7 +15,8 @@ def test_load_json_files():
     overlap_size = 200
     
     original_doc = load_structured_files(
-        language="json",
+        file_format="JSON",
+        language=None,
         loader=JSONLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,
@@ -25,7 +26,8 @@ def test_load_json_files():
     )
     
     custom_doc = load_structured_files(
-        language="json",
+        file_format="JSON",
+        language=None,
         loader=CustomJSONLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,
