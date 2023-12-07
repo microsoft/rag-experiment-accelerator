@@ -1,7 +1,7 @@
 from langchain.document_loaders import JSONLoader
 
 from rag_experiment_accelerator.doc_loader.customJsonLoader import (
-    JSoNLoader
+    CustomJSONLoader
 )
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files
@@ -26,7 +26,7 @@ def test_load_json_files():
     
     custom_doc = load_structured_files(
         language="json",
-        loader=JSoNLoader,
+        loader=CustomJSONLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,
         overlap_size=overlap_size,

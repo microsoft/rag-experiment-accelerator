@@ -7,7 +7,7 @@ from langchain.document_loaders.base import BaseLoader
 
 # Replaces langchain.document_loaders.JSONLoader to not use jq for windows compatibility
 # Note: Does not currently support jsonl, which is what the seq_num metadata field tracks
-class JSoNLoader(BaseLoader):
+class CustomJSONLoader(BaseLoader):
     def __init__(
         self,
         file_path: Union[str, Path],
