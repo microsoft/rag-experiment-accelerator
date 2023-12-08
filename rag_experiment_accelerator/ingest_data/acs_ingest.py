@@ -38,7 +38,7 @@ def my_hash(s):
     return hashlib.md5(s.encode()).hexdigest()
 
 
-def generate_title(chunk, model_name, temperature, openai_creds):
+def generate_title(chunk, model_name, temperature):
     """
     Generates a title for a given chunk of text using a language model.
 
@@ -46,18 +46,17 @@ def generate_title(chunk, model_name, temperature, openai_creds):
         chunk (str): The input text to generate a title for.
         model_name (str): The name of the language model to use.
         temperature (float): The temperature to use when generating the title.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         str: The generated title.
     """
     response = generate_response(
-        prompt_instruction_title, chunk, model_name, temperature, openai_creds
+        prompt_instruction_title, chunk, model_name, temperature
     )
     return response
 
 
-def generate_summary(chunk, model_name, temperature, openai_creds):
+def generate_summary(chunk, model_name, temperature):
     """
     Generates a summary of the given chunk of text using the specified language model.
 
@@ -65,13 +64,12 @@ def generate_summary(chunk, model_name, temperature, openai_creds):
         chunk (str): The text to summarize.
         model_name (str): The name of the language model to use.
         temperature (float): The "temperature" parameter to use when generating the summary.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         str: The generated summary.
     """
     response = generate_response(
-        prompt_instruction_summary, chunk, model_name, temperature, openai_creds
+        prompt_instruction_summary, chunk, model_name, temperature
     )
     return response
 
@@ -85,7 +83,6 @@ def upload_data(
     chat_model_name: str,
     embedding_model_name: str,
     temperature: float,
-    openai_creds: OpenAICredentials
 ):
     """
     Uploads data to an Azure Cognitive Search index.
@@ -99,7 +96,6 @@ def upload_data(
         chat_model_name (str): The name of the chat model to use for generating titles and summaries.
         embedding_model_name (str): The name of the embedding model to use for generating embeddings.
         temperature (float): The temperature to use when generating titles and summaries.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         None
@@ -110,8 +106,8 @@ def upload_data(
     )
     documents = []
     for i, chunk in enumerate(chunks):
-        title = generate_title(str(chunk["content"]), chat_model_name, temperature, openai_creds)
-        summary = generate_summary(str(chunk["content"]), chat_model_name, temperature, openai_creds)
+        title = generate_title(str(chunk["content"]), chat_model_name, temperature)
+        summary = generate_summary(str(chunk["content"]), chat_model_name, temperature)
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,
@@ -123,13 +119,11 @@ def upload_data(
                 size=dimension,
                 chunk=str(pre_process.preprocess(summary)),
                 model_name=embedding_model_name,
-                openai_creds=openai_creds
             )[0],
             "contentTitle": generate_embedding(
                 size=dimension,
                 chunk=str(pre_process.preprocess(title)),
                 model_name=embedding_model_name,
-                openai_creds=openai_creds
             )[0],
         }
 
@@ -140,7 +134,7 @@ def upload_data(
     logger.info("all documents have been uploaded to the search index")
 
 
-def generate_qna(docs, model_name, temperature, openai_creds):
+def generate_qna(docs, model_name, temperature):
     """
     Generates a set of questions and answers from a list of documents using a language model.
 
@@ -164,7 +158,6 @@ def generate_qna(docs, model_name, temperature, openai_creds):
                 + "\nEND OF CONTEXT",
                 model_name,
                 temperature,
-                openai_creds
             )
             try:
                 response_dict = json.loads(response)
@@ -191,7 +184,7 @@ def generate_qna(docs, model_name, temperature, openai_creds):
     new_df.to_json("./artifacts/eval_data.jsonl", orient="records", lines=True)
 
 
-def we_need_multiple_questions(question, model_name, temperature, openai_creds):
+def we_need_multiple_questions(question, model_name, temperature):
     """
     Generates a response to a given question using a language model with multiple prompts.
 
@@ -199,7 +192,6 @@ def we_need_multiple_questions(question, model_name, temperature, openai_creds):
         question (str): The question to generate a response for.
         model_name (str): The name of the language model to use.
         temperature (float): The temperature to use when generating the response.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         str: The generated response.
@@ -207,11 +199,11 @@ def we_need_multiple_questions(question, model_name, temperature, openai_creds):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = generate_response(full_prompt_instruction, "", model_name, temperature, openai_creds)
+    response1 = generate_response(full_prompt_instruction, "", model_name, temperature)
     return response1
 
 
-def do_we_need_multiple_questions(question, model_name, temperature, openai_creds):
+def do_we_need_multiple_questions(question, model_name, temperature):
     """
     Determines if we need to ask multiple questions based on the response generated by the model.
 
@@ -219,7 +211,6 @@ def do_we_need_multiple_questions(question, model_name, temperature, openai_cred
         question (str): The question to ask.
         model_name (str): The name of the model to use for generating the response.
         temperature (float): The temperature to use for generating the response.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
@@ -227,5 +218,5 @@ def do_we_need_multiple_questions(question, model_name, temperature, openai_cred
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = generate_response(full_prompt_instruction, "", model_name, temperature, openai_creds)
+    response1 = generate_response(full_prompt_instruction, "", model_name, temperature)
     return re.search(r"\bHIGH\b", response1.upper())

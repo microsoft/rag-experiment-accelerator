@@ -58,7 +58,6 @@ def query_acs(
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
-    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -70,7 +69,6 @@ def query_acs(
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the model to use for searching.
 
     Returns:
@@ -84,7 +82,6 @@ def query_acs(
         size=dimension,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        openai_creds=openai_creds,
         model_name=model_name,
     )
 
@@ -115,7 +112,6 @@ def rerank_documents(
             config.CHAT_MODEL_NAME,
             config.TEMPERATURE,
             config.LLM_RERANK_THRESHOLD,
-            config.OpenAICredentials,
         )
     elif config.RERANK_TYPE == "crossencoder":
         result = cross_encoder_rerank_documents(
@@ -137,7 +133,6 @@ def query_and_eval_acs(
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
-    openai_creds: OpenAICredentials,
     model_name: str = None,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
@@ -153,7 +148,6 @@ def query_and_eval_acs(
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the model to use for searching.
 
     Returns:
@@ -165,7 +159,6 @@ def query_and_eval_acs(
         user_prompt=query,
         s_v=search_type,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        openai_creds=openai_creds,
         model_name=model_name,
     )
     docs, evaluation = evaluate_search_result(
@@ -218,7 +211,6 @@ def query_and_eval_acs_multi(
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
-            openai_creds=config.OpenAICredentials,
             model_name=config.EMBEDDING_MODEL_NAME,
         )
         evals.append(evaluation)
@@ -238,7 +230,6 @@ def query_and_eval_acs_multi(
             original_prompt,
             config.CHAT_MODEL_NAME,
             config.TEMPERATURE,
-            config.OpenAICredentials,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -359,7 +350,6 @@ def main():
                                                     evaluation_content=evaluation_content,
                                                     retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                                                     evaluator=evaluator,
-                                                    openai_creds=config.OpenAICredentials
                                                     model_name=config.EMBEDDING_MODEL_NAME
                                                 )
                                                 search_evals.append(evaluation)

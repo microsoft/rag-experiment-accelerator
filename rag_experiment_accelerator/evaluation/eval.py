@@ -362,7 +362,7 @@ def answer_relevance(question, answer):
 
     """
     config = Config()
-    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE, openai_creds=config.OpenAICredentials)
+    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -386,7 +386,7 @@ def context_precision(question, context):
     """
     config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE, openai_creds=config.OpenAICredentials)
+    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:

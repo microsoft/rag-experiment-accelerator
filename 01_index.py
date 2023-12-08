@@ -81,8 +81,7 @@ def main():
                                     chunk=str(
                                         pre_process.preprocess(docs.page_content)
                                     ),
-                                    model_name=config.EMBEDDING_MODEL_NAME,
-                                    openai_creds=config.OpenAICredentials
+                                    model_name=config.EMBEDDING_MODEL_NAME
                                 ),
                             }
                             data_load.append(chunk_dict)
@@ -95,7 +94,6 @@ def main():
                             chat_model_name=config.CHAT_MODEL_NAME,
                             embedding_model_name=config.EMBEDDING_MODEL_NAME,
                             temperature=config.TEMPERATURE,
-                            openai_creds=config.OpenAICredentials,
                         )
 
 

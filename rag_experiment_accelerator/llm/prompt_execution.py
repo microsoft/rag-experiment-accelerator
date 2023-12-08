@@ -1,8 +1,8 @@
 from openai import AzureOpenAI, OpenAI
-from rag_experiment_accelerator.config.config import OpenAICredentials
+from rag_experiment_accelerator.config.config import Config, OpenAICredentials
 
 
-def generate_response(sys_message, prompt, engine_model, temperature, openai_creds: OpenAICredentials):
+def generate_response(sys_message, prompt, engine_model, temperature):
     """
     Generates a response to a given prompt using the OpenAI Chat API.
 
@@ -15,19 +15,22 @@ def generate_response(sys_message, prompt, engine_model, temperature, openai_cre
     Returns:
         str: The generated response to the user's prompt.
     """
+    config = Config()
+    
+
     messages = [
             {"role": "system", "content": sys_message}, 
             {"role": "user", "content": prompt}
         ]
-    if openai_creds.OPENAI_API_TYPE == 'azure':
+    if config.OpenAICredentials.OPENAI_API_TYPE == 'azure':
         client = AzureOpenAI(
-            azure_endpoint=openai_creds.OPENAI_ENDPOINT, 
-            api_key=openai_creds.OPENAI_API_KEY,  
-            api_version=openai_creds.OPENAI_API_VERSION
+            azure_endpoint=config.OpenAICredentials.OPENAI_ENDPOINT, 
+            api_key=config.OpenAICredentials.OPENAI_API_KEY,  
+            api_version=config.OpenAICredentials.OPENAI_API_VERSION
         )
     else:
         client = OpenAI(
-            api_key=openai_creds.OPENAI_API_KEY,  
+            api_key=config.OpenAICredentials.OPENAI_API_KEY,  
         )
 
     response = client.chat.completions.create(

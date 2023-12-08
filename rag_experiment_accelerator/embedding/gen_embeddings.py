@@ -1,6 +1,6 @@
 from openai import AzureOpenAI, OpenAI
 from sentence_transformers import SentenceTransformer
-from rag_experiment_accelerator.config.config import OpenAICredentials
+from rag_experiment_accelerator.config.config import Config, OpenAICredentials
 
 size_model_mapping = {
     384: "all-MiniLM-L6-v2",
@@ -11,7 +11,7 @@ size_model_mapping = {
 
 # If we were about to choose model by the name, code would be cleaner.
 # We could give user an option to choose the model either by the name or by the size, whichever is specified.
-def generate_embedding(size: int, chunk: str, model_name: str, openai_creds: OpenAICredentials) -> list[float]:
+def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
     """
     Generates an embedding for a given text chunk using a pre-trained transformer model.
 
@@ -19,23 +19,24 @@ def generate_embedding(size: int, chunk: str, model_name: str, openai_creds: Ope
         size (int): The size of the transformer model to use. Must be one of 384, 768, 1024 or 1536.
         chunk (str): The text chunk to generate an embedding for.
         model_name (str): Name of the model used to generate the embedding.
-        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         list[float]: A list of floats representing the embedding for the given text chunk.
     """
-    if size == 1536:
-        if openai_creds.OPENAI_API_TYPE == 'azure':
+    config = Config()
 
+    if size == 1536:
+        if config.OpenAICredentials.OPENAI_API_TYPE == 'azure':
             client = AzureOpenAI(
-                azure_endpoint=openai_creds.OPENAI_ENDPOINT, 
-                api_key=openai_creds.OPENAI_API_KEY,  
-                api_version=openai_creds.OPENAI_API_VERSION
+                azure_endpoint=config.OpenAICredentials.OPENAI_ENDPOINT, 
+                api_key=config.OpenAICredentials.OPENAI_API_KEY,  
+                api_version=config.OpenAICredentials.OPENAI_API_VERSION
             )
         else:
             client = OpenAI(
-                api_key=openai_creds.OPENAI_API_KEY,  
+                api_key=config.OpenAICredentials.OPENAI_API_KEY,  
             )
+
 
         response = client.embeddings.create(
             input=chunk,

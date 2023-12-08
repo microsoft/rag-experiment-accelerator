@@ -42,7 +42,7 @@ def cross_encoder_rerank_documents(
 
 
 def llm_rerank_documents(
-    documents, question, deployment_name, temperature, rerank_threshold, openai_creds
+    documents, question, deployment_name, temperature, rerank_threshold
 ):
     """
     Reranks a list of documents based on a given question using the LLM model.
@@ -69,7 +69,7 @@ def llm_rerank_documents(
     """
 
     response = generate_response(
-        rerank_prompt_instruction, prompt, deployment_name, temperature, openai_creds
+        rerank_prompt_instruction, prompt, deployment_name, temperature
     )
     logger.debug("Response", response)
     pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
