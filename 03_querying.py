@@ -4,7 +4,6 @@ import azure
 from azure.search.documents import SearchClient
 from openai import BadRequestError
 from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.config.config import OpenAICredentials
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from rag_experiment_accelerator.utils.auth import get_default_az_cred

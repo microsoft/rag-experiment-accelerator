@@ -1,5 +1,5 @@
 from openai import AzureOpenAI, OpenAI
-from rag_experiment_accelerator.config.config import Config, OpenAICredentials
+from rag_experiment_accelerator.config.config import Config
 
 
 def generate_response(sys_message, prompt, engine_model, temperature):

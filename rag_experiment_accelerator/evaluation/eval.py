@@ -19,7 +19,6 @@ from numpy import mean
 import ast
 import plotly.express as px
 
-from rag_experiment_accelerator.config.config import OpenAICredentials
 from rag_experiment_accelerator.llm.prompt_execution import generate_response
 
 from rag_experiment_accelerator.llm.prompts import (

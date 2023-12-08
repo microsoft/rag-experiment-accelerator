@@ -1,6 +1,6 @@
 from openai import AzureOpenAI, OpenAI
 from sentence_transformers import SentenceTransformer
-from rag_experiment_accelerator.config.config import Config, OpenAICredentials
+from rag_experiment_accelerator.config.config import Config
 
 size_model_mapping = {
     384: "all-MiniLM-L6-v2",
