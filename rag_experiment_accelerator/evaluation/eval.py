@@ -347,7 +347,7 @@ def lcsstr(value1, value2):
     return score
 
 
-def answer_relevance(question: str, answer: str, model_name: str, temperature: float, openai_creds: OpenAICredentials):
+def answer_relevance(question: str, answer: str):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -361,7 +361,8 @@ def answer_relevance(question: str, answer: str, model_name: str, temperature: f
         double: The relevancy score generated between the question and answer.
 
     """
-    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=model_name, temperature=temperature, openai_creds=openai_creds)
+    config = Config()
+    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE, openai_creds=config.OpenAICredentials)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -372,7 +373,7 @@ def answer_relevance(question: str, answer: str, model_name: str, temperature: f
     return similarity_score[0][0]
 
 
-def context_precision(question: str, context: str, model_name: str, temperature: float, openai_creds: OpenAICredentials):
+def context_precision(question: str, context: str):
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -383,8 +384,9 @@ def context_precision(question: str, context: str, model_name: str, temperature:
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
+    config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=model_name, temperature=temperature, openai_creds=openai_creds)
+    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE, openai_creds=config.OpenAICredentials)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
@@ -507,7 +509,7 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(actual, expected, context, metric_type, model_name, temperature, openai_creds):
+def compute_metrics(actual, expected, context, metric_type):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -586,9 +588,9 @@ def compute_metrics(actual, expected, context, metric_type, model_name, temperat
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
     elif metric_type == "answer_relevance":
-        score = answer_relevance(actual, expected, model_name, temperature, openai_creds)
+        score = answer_relevance(actual, expected)
     elif metric_type == "context_precision":
-        score = context_precision(actual, context, model_name, temperature, openai_creds)
+        score = context_precision(actual, context)
     else:
         pass
 
@@ -664,7 +666,7 @@ def evaluate_prompts(
             metric_dic = {}
 
             for metric_type in metric_types:
-                score = compute_metrics(actual, expected, context, metric_type, config.EVAL_MODEL_NAME, config.TEMPERATURE, config.OpenAICredentials)
+                score = compute_metrics(actual, expected, context, metric_type)
                 metric_dic[metric_type] = score
             metric_dic["actual"] = actual
             metric_dic["expected"] = expected
