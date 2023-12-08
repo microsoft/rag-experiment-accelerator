@@ -37,5 +37,7 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
     if size in size_model_mapping:
         model = SentenceTransformer(size_model_mapping[size])
         return model.encode([str(chunk)]).tolist()
-
-    # todo: log error and/or handle the default setup
+    else:
+        raise ValueError(
+            f"Invalid embedding size {size}. Size must be one of 1536, {list(size_model_mapping.keys())}."
+        )
