@@ -1,0 +1,4 @@
+$schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
+name: rag-accelerator--wheel-context
+build:
+  path: ./custom_environment
