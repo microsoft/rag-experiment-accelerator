@@ -13,7 +13,6 @@ from rag_experiment_accelerator.llm.prompts import (
 from rag_experiment_accelerator.llm.prompt_execution import generate_response
 from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
-from rag_experiment_accelerator.config.config import OpenAICredentials
 import pandas as pd
 
 pre_process = Preprocess()

@@ -81,7 +81,7 @@ def main():
                                     chunk=str(
                                         pre_process.preprocess(docs.page_content)
                                     ),
-                                    model_name=config.EMBEDDING_MODEL_NAME
+                                    model_name=config.EMBEDDING_MODEL_NAME,
                                 ),
                             }
                             data_load.append(chunk_dict)
