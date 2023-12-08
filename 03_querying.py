@@ -69,6 +69,7 @@ def query_acs(
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the model to use for searching.
 
     Returns:
@@ -151,6 +152,7 @@ def query_and_eval_acs(
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the model to use for searching.
 
     Returns:

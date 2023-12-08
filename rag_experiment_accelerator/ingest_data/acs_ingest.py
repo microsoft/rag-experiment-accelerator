@@ -46,6 +46,7 @@ def generate_title(chunk, model_name, temperature, openai_creds):
         chunk (str): The input text to generate a title for.
         model_name (str): The name of the language model to use.
         temperature (float): The temperature to use when generating the title.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         str: The generated title.
@@ -64,6 +65,7 @@ def generate_summary(chunk, model_name, temperature, openai_creds):
         chunk (str): The text to summarize.
         model_name (str): The name of the language model to use.
         temperature (float): The "temperature" parameter to use when generating the summary.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         str: The generated summary.
@@ -97,6 +99,7 @@ def upload_data(
         chat_model_name (str): The name of the chat model to use for generating titles and summaries.
         embedding_model_name (str): The name of the embedding model to use for generating embeddings.
         temperature (float): The temperature to use when generating titles and summaries.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         None
@@ -196,6 +199,7 @@ def we_need_multiple_questions(question, model_name, temperature, openai_creds):
         question (str): The question to generate a response for.
         model_name (str): The name of the language model to use.
         temperature (float): The temperature to use when generating the response.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         str: The generated response.
@@ -215,6 +219,7 @@ def do_we_need_multiple_questions(question, model_name, temperature, openai_cred
         question (str): The question to ask.
         model_name (str): The name of the model to use for generating the response.
         temperature (float): The temperature to use for generating the response.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.

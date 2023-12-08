@@ -77,7 +77,7 @@ def search_for_match_semantic(
         size (int): The size of the embedding vector.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.        
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.        
         model_name (str): The name of the Azure deployment to use for embeddings.
     Returns:
         list: A list of formatted search results.
@@ -138,7 +138,7 @@ def search_for_match_Hybrid_multi(
         size (int): The size of the embedding vector.
         query (str): The search query.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -196,7 +196,7 @@ def search_for_match_Hybrid_cross(
         size (int): The size of the embedding.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.        
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.        
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -286,7 +286,7 @@ def search_for_match_pure_vector(
         size (int): The size of the embedding vectors.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -334,7 +334,7 @@ def search_for_match_pure_vector_multi(
         size: The size of the embedding.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.        
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.        
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -391,7 +391,7 @@ def search_for_match_pure_vector_cross(
         size: The size of the embedding.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -439,7 +439,7 @@ def search_for_manual_hybrid(
         client: Elasticsearch client object.
         size: Maximum number of documents to retrieve.
         query: Query string to search for.
-        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
         retrieve_num_of_documents: Number of documents to retrieve.
 
     Returns:

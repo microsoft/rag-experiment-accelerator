@@ -19,6 +19,7 @@ def generate_embedding(size: int, chunk: str, model_name: str, openai_creds: Ope
         size (int): The size of the transformer model to use. Must be one of 384, 768, 1024 or 1536.
         chunk (str): The text chunk to generate an embedding for.
         model_name (str): Name of the model used to generate the embedding.
+        openai_creds (OpenAICredentials): The credentials for the OpenAI API.
 
     Returns:
         list[float]: A list of floats representing the embedding for the given text chunk.
