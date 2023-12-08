@@ -299,7 +299,6 @@ def main():
                                         user_prompt,
                                         config.CHAT_MODEL_NAME,
                                         config.TEMPERATURE,
-                                        config.OpenAICredentials
                                     )
                                     if is_multi_question:
                                         responses = json.loads(
@@ -307,7 +306,6 @@ def main():
                                                 user_prompt,
                                                 config.CHAT_MODEL_NAME,
                                                 config.TEMPERATURE,
-                                                config.OpenAICredentials,
                                             )
                                         )
                                         new_questions = []
