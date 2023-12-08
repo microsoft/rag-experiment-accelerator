@@ -284,10 +284,10 @@ class OpenAICredentials:
 
 class Config:
     """
-    A class for storing configuration settings for the RAG Experiment Accelerator.
+    A singleton class for storing configuration settings for the RAG Experiment Accelerator.
 
     Parameters:
-        config_filename (str): The name of the JSON file containing configuration settings. Default is 'search_config.json'.
+        config_filename (str): The name of the JSON file containing configuration settings. Default is 'config.json'.
 
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
@@ -313,7 +313,25 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
     """
 
-    def __init__(self, config_filename: str = "search_config.json") -> None:
+    _instance = None 
+
+    def __new__(cls, config_filename: str = "config.json"):
+        """
+        Creates a new instance of Config only if it doesn't already exist.
+
+        Parameters:
+            config_filename (str): The name of the JSON file containing configuration settings.
+
+        Returns:
+            Config: The singleton instance of Config.
+        """
+
+        if cls._instance is None:
+            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance._initialize(config_filename)
+        return cls._instance
+    
+    def _initialize(self, config_filename: str) -> None:
         with open(config_filename, "r") as json_file:
             data = json.load(json_file)
 
