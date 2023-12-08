@@ -356,17 +356,17 @@ class Config:
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]):
         """
-        Tries to retrieve a specified model from OpenAI.
+        Tries to retrieve a specified model from OpenAI or AzureOpenAI.
 
         Args:
             model_name (str): The name of the model to retrieve.
             tags (list[str]): A list of capability tags to check for.
         Returns:
-            openai.Model: The retrieved model object if successful.
+            Model: The retrieved model object if successful.
 
         Raises:
             ValueError: If the model is not ready or does not have the required capabilities.
-            openai.error.InvalidRequestError: If the model does not exist.
+            NotFoundError: If the model does not exist.
         """
         try:
             if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
