@@ -347,7 +347,7 @@ def lcsstr(value1, value2):
     return score
 
 
-def answer_relevance(question: str, answer: str):
+def answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -373,7 +373,7 @@ def answer_relevance(question: str, answer: str):
     return similarity_score[0][0]
 
 
-def context_precision(question: str, context: str):
+def context_precision(question, context):
     """
     Verifies whether or not a given context is useful for answering a question.
 
