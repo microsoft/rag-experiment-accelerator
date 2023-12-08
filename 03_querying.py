@@ -359,6 +359,7 @@ def main():
                                                     evaluation_content=evaluation_content,
                                                     retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                                                     evaluator=evaluator,
+                                                    openai_creds=config.OpenAICredentials
                                                     model_name=config.EMBEDDING_MODEL_NAME
                                                 )
                                                 search_evals.append(evaluation)
