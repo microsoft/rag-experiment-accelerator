@@ -182,7 +182,6 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-    openai_creds: OpenAICredentials,
     main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
@@ -216,7 +215,7 @@ def query_and_eval_acs_multi(
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
-            openai_creds=openai_creds,
+            openai_creds=config.OpenAICredentials,
             model_name=config.EMBEDDING_MODEL_NAME,
         )
         evals.append(evaluation)
@@ -345,7 +344,6 @@ def main():
                                                 evaluation_content,
                                                 config,
                                                 evaluator,
-                                                config.OpenAICredentials,
                                                 prompt_instruction,
                                             )
                                         else:
