@@ -1,7 +1,8 @@
-import openai
+from openai import AzureOpenAI, OpenAI
+from rag_experiment_accelerator.config.config import OpenAICredentials
 
 
-def generate_response(sys_message, prompt, engine_model, temperature):
+def generate_response(sys_message, prompt, engine_model, temperature, openai_creds: OpenAICredentials):
     """
     Generates a response to a given prompt using the OpenAI Chat API.
 
@@ -14,24 +15,27 @@ def generate_response(sys_message, prompt, engine_model, temperature):
     Returns:
         str: The generated response to the user's prompt.
     """
-    prompt_structure = [
-        {
-            "role": "system",
-            "content": sys_message,
-        }
-    ]
-
-    prompt_structure.append({"role": "user", "content": prompt})
-
-    params = {
-        "messages": prompt_structure,
-        "temperature": temperature,
-    }
-    if openai.api_type == "azure":
-        params["engine"] = engine_model
+    messages = [
+            {"role": "system", "content": sys_message}, 
+            {"role": "user", "content": prompt}
+        ]
+    if openai_creds.OPENAI_API_TYPE == 'azure':
+        client = AzureOpenAI(
+            azure_endpoint=openai_creds.OPENAI_ENDPOINT, 
+            api_key=openai_creds.OPENAI_API_KEY,  
+            api_version=openai_creds.OPENAI_API_VERSION
+        )
     else:
-        params["model"] = engine_model
+        client = OpenAI(
+            api_key=openai_creds.OPENAI_API_KEY,  
+        )
 
-    response = openai.ChatCompletion.create(**params)
-    answer = response.choices[0]["message"]["content"]
-    return answer
+    response = client.chat.completions.create(
+        model=engine_model, # model = "deployment_name" for AzureOpenAI
+        messages=messages,
+        temperature=temperature
+    )
+
+    # TODO: It is possible that this will return None. 
+    #       We need to ensure that this is handled properly in the places where this function gets called.
+    return response.choices[0].message.content

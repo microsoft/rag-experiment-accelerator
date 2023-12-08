@@ -1,5 +1,6 @@
-import openai
+from openai import AzureOpenAI, OpenAI
 from sentence_transformers import SentenceTransformer
+from rag_experiment_accelerator.config.config import OpenAICredentials
 
 size_model_mapping = {
     384: "all-MiniLM-L6-v2",
@@ -10,7 +11,7 @@ size_model_mapping = {
 
 # If we were about to choose model by the name, code would be cleaner.
 # We could give user an option to choose the model either by the name or by the size, whichever is specified.
-def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
+def generate_embedding(size: int, chunk: str, model_name: str, openai_creds: OpenAICredentials) -> list[float]:
     """
     Generates an embedding for a given text chunk using a pre-trained transformer model.
 
@@ -23,15 +24,24 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
         list[float]: A list of floats representing the embedding for the given text chunk.
     """
     if size == 1536:
-        params = {
-            "input": [chunk],
-        }
-        if openai.api_type == "azure":
-            params["engine"] = model_name
-        else:
-            params["model"] = model_name
+        if openai_creds.OPENAI_API_TYPE == 'azure':
 
-        embedding = openai.Embedding.create(**params)["data"][0]["embedding"]
+            client = AzureOpenAI(
+                azure_endpoint=openai_creds.OPENAI_ENDPOINT, 
+                api_key=openai_creds.OPENAI_API_KEY,  
+                api_version=openai_creds.OPENAI_API_VERSION
+            )
+        else:
+            client = OpenAI(
+                api_key=openai_creds.OPENAI_API_KEY,  
+            )
+
+        response = client.embeddings.create(
+            input=chunk,
+            model=model_name
+        )
+
+        embedding = response.data[0].embedding
         return [embedding]
 
     if size in size_model_mapping:

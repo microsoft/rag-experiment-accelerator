@@ -1,4 +1,5 @@
 import azure
+from rag_experiment_accelerator.config.config import OpenAICredentials
 
 from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential
@@ -65,6 +66,7 @@ def search_for_match_semantic(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -75,12 +77,13 @@ def search_for_match_semantic(
         size (int): The size of the embedding vector.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.        
         model_name (str): The name of the Azure deployment to use for embeddings.
     Returns:
         list: A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name, openai_creds=openai_creds
     )
 
     vector1 = RawVectorQuery(
@@ -122,6 +125,7 @@ def search_for_match_Hybrid_multi(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -134,13 +138,14 @@ def search_for_match_Hybrid_multi(
         size (int): The size of the embedding vector.
         query (str): The search query.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         list: A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name, openai_creds=openai_creds
     )
 
     vector1 = RawVectorQuery(
@@ -180,6 +185,7 @@ def search_for_match_Hybrid_cross(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -190,13 +196,14 @@ def search_for_match_Hybrid_cross(
         size (int): The size of the embedding.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.        
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name, openai_creds=openai_creds
     )
 
     vector1 = RawVectorQuery(
@@ -231,6 +238,7 @@ def search_for_match_text(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -241,6 +249,7 @@ def search_for_match_text(
         size: Not used.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
+        openai_creds: Not used.
         model_name: Not used.
 
     Returns:
@@ -266,6 +275,7 @@ def search_for_match_pure_vector(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -276,6 +286,7 @@ def search_for_match_pure_vector(
         size (int): The size of the embedding vectors.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -284,7 +295,7 @@ def search_for_match_pure_vector(
     """
     # function body here
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name, openai_creds=openai_creds
     )
 
     vector1 = RawVectorQuery(
@@ -312,6 +323,7 @@ def search_for_match_pure_vector_multi(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -322,13 +334,14 @@ def search_for_match_pure_vector_multi(
         size: The size of the embedding.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.        
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name, openai_creds=openai_creds
     )
 
     vector1 = RawVectorQuery(
@@ -367,6 +380,7 @@ def search_for_match_pure_vector_cross(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -377,6 +391,7 @@ def search_for_match_pure_vector_cross(
         size: The size of the embedding.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -384,7 +399,7 @@ def search_for_match_pure_vector_cross(
     """
     # Function code here
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name, openai_creds=openai_creds
     )
 
     vector1 = RawVectorQuery(
@@ -414,6 +429,7 @@ def search_for_manual_hybrid(
     size: int,
     query: str,
     retrieve_num_of_documents: int,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -423,6 +439,7 @@ def search_for_manual_hybrid(
         client: Elasticsearch client object.
         size: Maximum number of documents to retrieve.
         query: Query string to search for.
+        openai_creds (OPENAI_CREDENTIALS): The credentials for the OpenAI API.
         retrieve_num_of_documents: Number of documents to retrieve.
 
     Returns:
@@ -430,13 +447,13 @@ def search_for_manual_hybrid(
     """
     context = []
     text_context = search_for_match_text(
-        client, size, query, retrieve_num_of_documents, model_name
+        client, size, query, retrieve_num_of_documents,openai_creds,  model_name
     )
     vector_context = search_for_match_pure_vector_cross(
-        client, size, query, retrieve_num_of_documents, model_name
+        client, size, query, retrieve_num_of_documents, openai_creds, model_name
     )
     semantic_context = search_for_match_semantic(
-        client, size, query, retrieve_num_of_documents, model_name
+        client, size, query, retrieve_num_of_documents, openai_creds, model_name
     )
 
     context.extend(text_context)

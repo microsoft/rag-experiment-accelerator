@@ -19,9 +19,8 @@ from numpy import mean
 import ast
 import plotly.express as px
 
-from langchain.prompts import ChatPromptTemplate
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
-from langchain.schema.messages import BaseMessage
+from rag_experiment_accelerator.config.config import OpenAICredentials
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
 
 from rag_experiment_accelerator.llm.prompts import (
     context_precision_instruction,
@@ -348,29 +347,7 @@ def lcsstr(value1, value2):
     return score
 
 
-# Takes in BaseMessage as prompt
-def get_result_from_model(prompt: list[List[BaseMessage]]):
-    config = Config()
-    chat_model = None
-
-    if config.OpenAICredentials.OPENAI_API_TYPE == "azure":
-        chat_model = AzureChatOpenAI(
-            deployment_name=config.EVAL_MODEL_NAME,
-            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
-        )
-    else:
-        chat_model = ChatOpenAI(
-            model=config.EVAL_MODEL_NAME,
-            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
-        )
-
-    result = chat_model.generate(prompt)
-    result = result.generations
-    # list of 1 because we're only getting 1 generation with 1 input
-    return result[0][0].text
-
-
-def answer_relevance(question, answer):
+def answer_relevance(question: str, answer: str, model_name: str, temperature: float, openai_creds: OpenAICredentials):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -384,13 +361,8 @@ def answer_relevance(question, answer):
         double: The relevancy score generated between the question and answer.
 
     """
+    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=model_name, temperature=temperature, openai_creds=openai_creds)
 
-    human_prompt = answer_relevance_instruction.format(answer=answer)
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
-
-    logger.info(f"Generating results")
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
@@ -400,7 +372,7 @@ def answer_relevance(question, answer):
     return similarity_score[0][0]
 
 
-def context_precision(question, context):
+def context_precision(question: str, context: str, model_name: str, temperature: float, openai_creds: OpenAICredentials):
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -411,12 +383,8 @@ def context_precision(question, context):
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
-    human_prompt = context_precision_instruction.format(
-        question=question, context=context
-    )
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
+    prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
+    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=model_name, temperature=temperature, openai_creds=openai_creds)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
@@ -539,7 +507,7 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(actual, expected, context, metric_type):
+def compute_metrics(actual, expected, context, metric_type, model_name, temperature, openai_creds):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -618,9 +586,9 @@ def compute_metrics(actual, expected, context, metric_type):
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
     elif metric_type == "answer_relevance":
-        score = answer_relevance(actual, expected)
+        score = answer_relevance(actual, expected, model_name, temperature, openai_creds)
     elif metric_type == "context_precision":
-        score = context_precision(actual, context)
+        score = context_precision(actual, context, model_name, temperature, openai_creds)
     else:
         pass
 
@@ -696,7 +664,7 @@ def evaluate_prompts(
             metric_dic = {}
 
             for metric_type in metric_types:
-                score = compute_metrics(actual, expected, context, metric_type)
+                score = compute_metrics(actual, expected, context, metric_type, config.EVAL_MODEL_NAME, config.TEMPERATURE, config.OpenAICredentials)
                 metric_dic[metric_type] = score
             metric_dic["actual"] = actual
             metric_dic["expected"] = expected

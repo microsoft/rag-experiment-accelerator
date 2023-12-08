@@ -3,6 +3,7 @@ import json
 import azure
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import OpenAICredentials
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
@@ -56,6 +57,7 @@ def query_acs(
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ):
     """
@@ -80,6 +82,7 @@ def query_acs(
         size=dimension,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
+        openai_creds=openai_creds,
         model_name=model_name,
     )
 
@@ -110,6 +113,7 @@ def rerank_documents(
             config.CHAT_MODEL_NAME,
             config.TEMPERATURE,
             config.LLM_RERANK_THRESHOLD,
+            config.OpenAICredentials,
         )
     elif config.RERANK_TYPE == "crossencoder":
         result = cross_encoder_rerank_documents(
@@ -131,6 +135,7 @@ def query_and_eval_acs(
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
+    openai_creds: OpenAICredentials,
     model_name: str = None,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
@@ -157,6 +162,7 @@ def query_and_eval_acs(
         user_prompt=query,
         s_v=search_type,
         retrieve_num_of_documents=retrieve_num_of_documents,
+        openai_creds=openai_creds,
         model_name=model_name,
     )
     docs, evaluation = evaluate_search_result(
@@ -176,6 +182,7 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
+    openai_creds: OpenAICredentials,
     main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
@@ -209,6 +216,7 @@ def query_and_eval_acs_multi(
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
+            openai_creds=openai_creds,
             model_name=config.EMBEDDING_MODEL_NAME,
         )
         evals.append(evaluation)
@@ -228,6 +236,7 @@ def query_and_eval_acs_multi(
             original_prompt,
             config.CHAT_MODEL_NAME,
             config.TEMPERATURE,
+            config.OpenAICredentials,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -297,6 +306,7 @@ def main():
                                         user_prompt,
                                         config.CHAT_MODEL_NAME,
                                         config.TEMPERATURE,
+                                        config.OpenAICredentials
                                     )
                                     if is_multi_question:
                                         responses = json.loads(
@@ -304,6 +314,7 @@ def main():
                                                 user_prompt,
                                                 config.CHAT_MODEL_NAME,
                                                 config.TEMPERATURE,
+                                                config.OpenAICredentials,
                                             )
                                         )
                                         new_questions = []
@@ -334,6 +345,7 @@ def main():
                                                 evaluation_content,
                                                 config,
                                                 evaluator,
+                                                config.OpenAICredentials,
                                                 prompt_instruction,
                                             )
                                         else:
@@ -345,6 +357,7 @@ def main():
                                                 evaluation_content=evaluation_content,
                                                 retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                                                 evaluator=evaluator,
+                                                openai_creds=config.OpenAICredentials,
                                                 model_name=config.EMBEDDING_MODEL_NAME
                                             )
                                             search_evals.append(evaluation)
@@ -371,6 +384,7 @@ def main():
                                             user_prompt,
                                             config.CHAT_MODEL_NAME,
                                             config.TEMPERATURE,
+                                            config.OpenAICredentials
                                         )
                                         logger.debug(openai_response)
 

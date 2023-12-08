@@ -3,7 +3,7 @@ azure-core==1.29.4
 matplotlib==3.8.0
 plotly==5.18.0
 tiktoken==0.5.1
-openai==0.28.1
+openai==1.3.7
 spacy==3.7.2
 scikit-learn==1.3.2
 pytesseract==0.3.10

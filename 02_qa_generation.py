@@ -17,7 +17,7 @@ def main():
     """
     config = Config()
     all_docs = load_documents(config.DATA_FORMATS, "./data/", 2000, 0)
-    generate_qna(all_docs, config.CHAT_MODEL_NAME, config.TEMPERATURE)
+    generate_qna(all_docs, config.CHAT_MODEL_NAME, config.TEMPERATURE, config.OpenAICredentials)
 
 
 if __name__ == "__main__":
