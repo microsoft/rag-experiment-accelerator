@@ -1,5 +1,4 @@
 import azure
-from rag_experiment_accelerator.config.config import OpenAICredentials
 
 from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential
@@ -75,7 +74,7 @@ def search_for_match_semantic(
         client (azure.search.documents.SearchClient): The Azure Cognitive Search client.
         size (int): The size of the embedding vector.
         query (str): The query string to search for.
-        retrieve_num_of_documents (int): The number of documents to retrieve.      
+        retrieve_num_of_documents (int): The number of documents to retrieve.
         model_name (str): The name of the Azure deployment to use for embeddings.
     Returns:
         list: A list of formatted search results.
@@ -190,7 +189,7 @@ def search_for_match_Hybrid_cross(
         client: An instance of the Azure Cognitive Search client.
         size (int): The size of the embedding.
         query (str): The query string to search for.
-        retrieve_num_of_documents (int): The number of documents to retrieve.       
+        retrieve_num_of_documents (int): The number of documents to retrieve.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
@@ -322,7 +321,7 @@ def search_for_match_pure_vector_multi(
         client: The client to search in.
         size: The size of the embedding.
         query: The query to search for.
-        retrieve_num_of_documents: The number of documents to retrieve.      
+        retrieve_num_of_documents: The number of documents to retrieve.
         model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
