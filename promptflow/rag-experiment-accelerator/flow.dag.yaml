@@ -2,16 +2,28 @@ additional_includes:
 - ./qa_generation/generate_qa.py
 - ./index/create_index.py
 - ./querying/querying.py
-- ../../config.json
+- ./config.json
+- ./createDataAsset.py
 inputs:
   should_index:
     type: bool
     default: true
   config_dir:
     type: string
-    default: /workspaces/rag-experiment-accelerator
+    default: ./
 outputs: {}
 nodes:
+- name: createFileAsset
+  type: python
+  source:
+    type: code
+    path: createDataAsset.py
+  inputs:
+    name: search_config
+    conn: Secrets_provider
+    description: This is the search config file.
+    path: ./search_config.json
+    previousStepCompleted: true
 - name: index
   type: python
   source:

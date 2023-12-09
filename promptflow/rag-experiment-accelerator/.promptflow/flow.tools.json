@@ -54,6 +54,38 @@
       },
       "source": "load_config.py",
       "function": "my_python_tool"
+    },
+    "createDataAsset.py": {
+      "type": "python",
+      "inputs": {
+        "previousStepCompleted": {
+          "type": [
+            "bool"
+          ]
+        },
+        "conn": {
+          "type": [
+            "CustomConnection"
+          ]
+        },
+        "path": {
+          "type": [
+            "string"
+          ]
+        },
+        "description": {
+          "type": [
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "createDataAsset.py",
+      "function": "createFileDataAsset"
     }
   }
 }
