@@ -4,6 +4,7 @@ inputs:
     default: true
   config_dir:
     type: string
+    default: "./"
 outputs: {}
 nodes:
 - name: setup
