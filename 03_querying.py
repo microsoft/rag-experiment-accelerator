@@ -246,12 +246,11 @@ def run(config_dir: str):
     config = Config(config_dir)
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
-    eval_data_file = config.eval_data_filepath
     question_count = 0
     # ensure we have a valid Azure credential before going throught the loop.
     azure_cred = get_default_az_cred()
     try:
-        with open(eval_data_file, "r") as file:
+        with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
             for line in file:
                 question_count += 1
 
@@ -282,7 +281,7 @@ def run(config_dir: str):
                                 service_endpoint, index_name, search_admin_key
                             )
 
-                            with open(eval_data_file, "r") as file:
+                            with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
                                 for line in file:
                                     data = json.loads(line)
                                     user_prompt = data.get("user_prompt")
@@ -394,7 +393,7 @@ def run(config_dir: str):
                                 write_path, index_name, azure_cred, config.AzureMLCredentials
                             )
     except FileNotFoundError:
-        logger.error("The file does not exist: " + eval_data_file)
+        logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)
 
 
 if __name__ == "__main__":

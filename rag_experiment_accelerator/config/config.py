@@ -320,7 +320,6 @@ class Config:
 
         self.config_dir = config_dir
         self.artifacts_dir = f"{config_dir}/artifacts"
-        self.eval_data_filepath = f"{self.artifacts_dir}/eval_data.jsonl"
         self.data_dir = f"{config_dir}/data"
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
