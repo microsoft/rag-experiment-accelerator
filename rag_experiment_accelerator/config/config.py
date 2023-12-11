@@ -1,6 +1,6 @@
 import json
 import os
-import openai
+from openai import AzureOpenAI, NotFoundError, OpenAI
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -237,7 +237,6 @@ class OpenAICredentials:
         self.OPENAI_API_VERSION = openai_api_version
         self.OPENAI_ENDPOINT = openai_endpoint
 
-        self._set_credentials()
 
     @classmethod
     def from_env(cls) -> "OpenAICredentials":
@@ -267,19 +266,6 @@ class OpenAICredentials:
                 mask=True,
             ),
         )
-
-    def _set_credentials(self) -> None:
-        """
-        Sets the OpenAI credentials.
-        """
-        if self.OPENAI_API_TYPE is not None:
-            openai.api_type = self.OPENAI_API_TYPE
-            openai.api_key = self.OPENAI_API_KEY
-            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
-
-            if self.OPENAI_API_TYPE == "azure":
-                openai.api_version = self.OPENAI_API_VERSION
-                openai.api_base = self.OPENAI_ENDPOINT
 
 
 class Config:
@@ -368,39 +354,47 @@ class Config:
 
         self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
 
-    def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
+    def _try_retrieve_model(self, model_name: str, tags: list[str]):
         """
-        Tries to retrieve a specified model from OpenAI.
+        Tries to retrieve a specified model from OpenAI or AzureOpenAI.
 
         Args:
             model_name (str): The name of the model to retrieve.
             tags (list[str]): A list of capability tags to check for.
         Returns:
-            openai.Model: The retrieved model object if successful.
+            Model: The retrieved model object if successful.
 
         Raises:
             ValueError: If the model is not ready or does not have the required capabilities.
-            openai.error.InvalidRequestError: If the model does not exist.
+            NotFoundError: If the model does not exist.
         """
         try:
-            model = openai.Model.retrieve(model_name)
-
-            # For non-azure models we can't retrieve status and capabilities
             if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
+                client = OpenAI(api_key=self.OpenAICredentials.OPENAI_API_KEY)
+                model = client.models.retrieve(model=model_name)
+                # For non-azure models we can't retrieve status and capabilities
                 return model
-            if model["status"] != "succeeded":
-                logger.critical(f"Model {model_name} is not ready.")
-                raise ValueError(f"Model {model_name} is not ready.")
-            for tag in tags:
-                if not model["capabilities"][tag]:
-                    logger.critical(
-                        f"Model {model_name} does not have the {tag} capability."
-                    )
-                    raise ValueError(
-                        f"Model {model_name} does not have the {tag} capability."
-                    )
-            return model
-        except openai.error.InvalidRequestError as e:
+            else:
+                client = AzureOpenAI(
+                    azure_endpoint=self.OpenAICredentials.OPENAI_ENDPOINT, 
+                    api_key=self.OpenAICredentials.OPENAI_API_KEY,  
+                    api_version=self.OpenAICredentials.OPENAI_API_VERSION
+                )
+                model = client.models.retrieve(model=model_name)
+
+                if model.status != "succeeded":
+                    logger.critical(f"Model {model_name} is not ready.")
+                    raise ValueError(f"Model {model_name} is not ready.")
+                for tag in tags:
+                    if not model.capabilities[tag]:
+                        logger.critical(
+                            f"Model {model_name} does not have the {tag} capability."
+                        )
+                        raise ValueError(
+                            f"Model {model_name} does not have the {tag} capability."
+                        )
+                return model
+        except NotFoundError:
             logger.critical(f"Model {model_name} does not exist.")
             raise ValueError(f"Model {model_name} does not exist.")
 

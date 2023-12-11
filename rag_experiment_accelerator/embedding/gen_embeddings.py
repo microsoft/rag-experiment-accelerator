@@ -1,5 +1,6 @@
-import openai
+from openai import AzureOpenAI, OpenAI
 from sentence_transformers import SentenceTransformer
+from rag_experiment_accelerator.config.config import Config
 
 size_model_mapping = {
     384: "all-MiniLM-L6-v2",
@@ -22,16 +23,27 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
     Returns:
         list[float]: A list of floats representing the embedding for the given text chunk.
     """
-    if size == 1536:
-        params = {
-            "input": [chunk],
-        }
-        if openai.api_type == "azure":
-            params["engine"] = model_name
-        else:
-            params["model"] = model_name
+    config = Config()
 
-        embedding = openai.Embedding.create(**params)["data"][0]["embedding"]
+    if size == 1536:
+        if config.OpenAICredentials.OPENAI_API_TYPE == 'azure':
+            client = AzureOpenAI(
+                azure_endpoint=config.OpenAICredentials.OPENAI_ENDPOINT, 
+                api_key=config.OpenAICredentials.OPENAI_API_KEY,  
+                api_version=config.OpenAICredentials.OPENAI_API_VERSION
+            )
+        else:
+            client = OpenAI(
+                api_key=config.OpenAICredentials.OPENAI_API_KEY,  
+            )
+
+
+        response = client.embeddings.create(
+            input=chunk,
+            model=model_name
+        )
+
+        embedding = response.data[0].embedding
         return [embedding]
 
     if size in size_model_mapping:

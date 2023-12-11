@@ -2,7 +2,7 @@ import os
 import json
 import azure
 from azure.search.documents import SearchClient
-import openai
+from openai import BadRequestError
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
@@ -394,7 +394,7 @@ def main():
                                             with open(write_path, "a") as out:
                                                 json_string = json.dumps(output)
                                                 out.write(json_string + "\n")
-                                    except openai.error.InvalidRequestError as e:
+                                    except BadRequestError as e:
                                         logger.error(
                                             f"Invalid request. Skipping question: {user_prompt}",
                                             exc_info=e,
