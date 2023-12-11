@@ -2,7 +2,7 @@ additional_includes:
 - ./qa_generation/generate_qa.py
 - ./index/create_index.py
 - ./querying/querying.py
-- ../../search_config.json
+- ../../config.json
 inputs:
   should_index:
     type: bool
