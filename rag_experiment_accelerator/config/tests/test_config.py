@@ -185,7 +185,7 @@ def test_config_init(
     assert config.DATA_FORMATS == mock_config_data["data_formats"]
     assert (
         config.EVAL_DATA_JSONL_FILE_PATH
-        == f"{config.artifacts_dir}/{mock_config_data['eval_data_jsonl_filename']}"
+        == f"{config.artifacts_dir}/{mock_config_data['eval_data_jsonl_file_path']}"
     )
     assert (
         mock_azure_openai().models.retrieve.called
