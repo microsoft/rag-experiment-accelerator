@@ -402,8 +402,3 @@ def run(config_dir: str):
                             )
     except FileNotFoundError:
         logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)
-
-
-if __name__ == "__main__":
-    directory = get_directory_arg()
-    run(directory)

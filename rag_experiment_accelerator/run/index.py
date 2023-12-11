@@ -94,8 +94,3 @@ def run(config_dir: str) -> None:
                             embedding_model_name=config.EMBEDDING_MODEL_NAME,
                             temperature=config.TEMPERATURE,
                         )
-
-
-if __name__ == "__main__":
-    directory = get_directory_arg()
-    run(directory)

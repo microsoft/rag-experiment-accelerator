@@ -58,7 +58,3 @@ def run(config_dir: str):
                             ef_construction=ef_construction,
                             ef_search=ef_search,
                         )
-
-if __name__ == "__main__":
-    directory = get_directory_arg()
-    run(directory)
