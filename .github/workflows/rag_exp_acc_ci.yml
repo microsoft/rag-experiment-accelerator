@@ -55,4 +55,4 @@ jobs:
       - name: execute evaluation step
         shell: bash
         run: |
-          python 04_evaluation.py 
+          python 04_evaluation.py
