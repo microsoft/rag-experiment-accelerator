@@ -18,7 +18,7 @@ def run(config_dir: str):
     """
     config = Config(config_dir)
     all_docs = load_documents(config.DATA_FORMATS, config.data_dir, 2000, 0)
-    generate_qna(all_docs, config.CHAT_MODEL_NAME, config.TEMPERATURE, config.eval_data_filepath)
+    generate_qna(all_docs, config.CHAT_MODEL_NAME, config.TEMPERATURE, config.EVAL_DATA_JSONL_FILE_PATH)
 
 
 if __name__ == "__main__":
