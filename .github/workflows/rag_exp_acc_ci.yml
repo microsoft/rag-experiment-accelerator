@@ -43,16 +43,16 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_index.py
+          python 01_index.py  
       - name: execute qna step
         shell: bash
         run: |
-          python 02_qa_generation.py
+          python 02_qa_generation.py  
       - name: execute querying step
         shell: bash
         run: |
-          python 03_querying.py
+          python 03_querying.py  
       - name: execute evaluation step
         shell: bash
         run: |
-          python 04_evaluation.py       
+          python 04_evaluation.py 
