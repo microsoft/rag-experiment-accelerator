@@ -26,5 +26,5 @@
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
     "data_formats": "test_data_format",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
+    "eval_data_jsonl_filename": "eval_data.jsonl"
 }
