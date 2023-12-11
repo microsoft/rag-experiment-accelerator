@@ -151,7 +151,7 @@ def test_config_init(
 ):
     # Load mock config data from a YAML file
     with open(
-        f"{get_test_config_dir()}/search_config.json", "r"
+        f"{get_test_config_dir()}/config.json", "r"
     ) as file:
         mock_config_data = json.load(file)
 
