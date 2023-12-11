@@ -3,6 +3,7 @@ import json
 from dotenv import load_dotenv
 
 from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.run.args import get_directory_arg
 
 load_dotenv(override=True)
 
@@ -17,27 +18,24 @@ from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-def main():
+def run(config_dir: str) -> None:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure Cognitive Search indexes based on the configuration specified in the Config class.
     
     Returns:
         None
     """
-    config = Config()
+    config = Config(config_dir)
     pre_process = Preprocess()
 
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
 
     try:
-        directory = "artifacts"
-        os.makedirs(directory, exist_ok=True)
+        os.makedirs(config.artifacts_dir, exist_ok=True)
     except Exception as e:
-        logger.error(f"Unable to create the '{directory}' directory. Please ensure you have the proper permissions and try again")
+        logger.error(f"Unable to create the '{config.artifacts_dir}' directory. Please ensure you have the proper permissions and try again")
         raise e
-
-    all_index_config = "artifacts/generated_index_names.jsonl"
     index_dict = {"indexes": []}
 
     for config_item in config.CHUNK_SIZES:
@@ -60,7 +58,8 @@ def main():
                         )
                         index_dict["indexes"].append(index_name)
 
-    with open(all_index_config, "w") as index_name:
+    index_output_file = f"{config.artifacts_dir}/generated_index_names.jsonl"
+    with open(index_output_file, "w") as index_name:
         json.dump(index_dict, index_name, indent=4)
 
     for config_item in config.CHUNK_SIZES:
@@ -70,7 +69,7 @@ def main():
                     for ef_search in config.EF_SEARCHES:
                         index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
                         all_docs = load_documents(
-                            config.DATA_FORMATS, "./data/", config_item, overlap
+                            config.DATA_FORMATS, config.data_dir, config_item, overlap
                         )
                         data_load = []
                         for docs in all_docs:
@@ -98,4 +97,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    directory = get_directory_arg()
+    run(directory)

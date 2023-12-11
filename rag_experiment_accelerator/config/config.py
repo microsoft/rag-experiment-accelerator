@@ -2,6 +2,7 @@ import json
 import os
 from openai import AzureOpenAI, NotFoundError, OpenAI
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 
 logger = get_logger(__name__)
 
@@ -317,10 +318,13 @@ class Config:
             cls._instance._initialize(config_filename)
         return cls._instance
     
-    def _initialize(self, config_filename: str) -> None:
-        with open(config_filename, "r") as json_file:
+    def _initialize(self, config_dir: str = os.getcwd()) -> None:
+        with open(f"{config_dir}/config.json", "r") as json_file:
             data = json.load(json_file)
 
+        self.config_dir = config_dir
+        self.artifacts_dir = f"{config_dir}/artifacts"
+        self.data_dir = f"{config_dir}/data"
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
@@ -348,11 +352,18 @@ class Config:
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
         self._check_deployment()
-
-        with open("prompt_config.json", "r") as json_file:
-            data = json.load(json_file)
-
-        self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
+        
+        try:
+            with open("prompt_config.json", "r") as json_file:
+                data = json.load(json_file)
+    
+            self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
+            if self.MAIN_PROMPT_INSTRUCTION is None:
+                logger.warn("prompt_config.json found but main_prompt_instruction is not set. Using default prompts")
+                self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
+        except OSError:
+            logger.warn("prompt_config.json not found. Using default prompts")
+            self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
 
     def _try_retrieve_model(self, model_name: str, tags: list[str]):
         """
