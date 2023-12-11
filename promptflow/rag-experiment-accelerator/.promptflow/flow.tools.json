@@ -9,7 +9,7 @@
             "bool"
           ]
         },
-        "search_config_dir": {
+        "config_dir": {
           "type": [
             "string"
           ]
@@ -21,7 +21,7 @@
     "qa_generation/generate_qa.py": {
       "type": "python",
       "inputs": {
-        "search_config_dir": {
+        "config_dir": {
           "type": [
             "string"
           ]
@@ -33,7 +33,7 @@
     "querying/querying.py": {
       "type": "python",
       "inputs": {
-        "search_config_dir": {
+        "config_dir": {
           "type": [
             "string"
           ]
