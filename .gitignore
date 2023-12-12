@@ -176,3 +176,6 @@ data/*
 !data/markdown/sample-markdown.md
 !data/markdown/sample-txt.txt
 !data/json/sample-json.json
+
+#  promptflow folders
+.promptflow

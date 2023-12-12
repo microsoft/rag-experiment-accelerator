@@ -9,6 +9,12 @@
 			"version": "latest"
 		}
 	},
-
-	"postCreateCommand": "pip install -e ."
+	"postCreateCommand": "pip install -e .",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"prompt-flow.prompt-flow"
+			]
+		}
+	}
 }
