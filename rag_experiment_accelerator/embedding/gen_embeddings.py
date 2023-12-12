@@ -3,9 +3,9 @@ from sentence_transformers import SentenceTransformer
 from rag_experiment_accelerator.config.config import Config
 
 size_model_mapping = {
-    384: "all-MiniLM-L6-v2",
-    768: "all-mpnet-base-v2",
-    1024: "bert-large-nli-mean-tokens",
+    '384': "all-MiniLM-L6-v2",
+    '768': "all-mpnet-base-v2",
+    '1024': "bert-large-nli-mean-tokens",
 }
 
 
@@ -46,8 +46,8 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
         embedding = response.data[0].embedding
         return [embedding]
 
-    if size in size_model_mapping:
-        model = SentenceTransformer(size_model_mapping[size])
+    if str(size) in size_model_mapping:
+        model = SentenceTransformer(size_model_mapping[str(size)])
         return model.encode([str(chunk)]).tolist()
     else:
         raise ValueError(
