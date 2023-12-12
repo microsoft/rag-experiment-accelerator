@@ -2,16 +2,38 @@ additional_includes:
 - ./qa_generation/generate_qa.py
 - ./index/create_index.py
 - ./querying/querying.py
-- ../../config.json
+- ./createDataAsset.py
+- ./config.json
 inputs:
   should_index:
     type: bool
     default: true
   config_dir:
     type: string
-    default: /workspaces/rag-experiment-accelerator
-outputs: {}
+    default: ./
+  asset_type_file:
+    type: string
+    default: uri_file
+  asset_type_folder:
+    type: string
+    default: uri_folder
+outputs:
+  fileAssetCreated:
+    type: string
+    reference: ${createFileAsset.output}
 nodes:
+- name: createFileAsset
+  type: python
+  source:
+    type: code
+    path: createDataAsset.py
+  inputs:
+    name: config
+    type: ${inputs.asset_type_file}
+    conn: Secrets_provider
+    description: This is the search config file.
+    path: ./config.json
+    previousStepCompleted: true
 - name: index
   type: python
   source:
@@ -20,6 +42,9 @@ nodes:
   inputs:
     should_index: ${inputs.should_index}
     config_dir: ${inputs.config_dir}
+  activate:
+    when: ${inputs.should_index}
+    is: true
 - name: generate_qa
   type: python
   source:

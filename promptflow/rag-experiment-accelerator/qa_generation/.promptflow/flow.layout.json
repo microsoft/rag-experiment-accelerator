@@ -1,0 +1,20 @@
+{
+  "nodeLayouts": {
+    "inputs": {
+      "x": 12,
+      "y": 62,
+      "index": -1
+    },
+    "outputs": {
+      "x": 12,
+      "y": 322,
+      "index": -1
+    },
+    "generate_qa": {
+      "x": 12,
+      "y": 172,
+      "index": 0
+    }
+  },
+  "orientation": "Vertical"
+}

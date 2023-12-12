@@ -1,0 +1,96 @@
+{
+  "package": {},
+  "code": {
+    "index/create_index.py": {
+      "type": "python",
+      "inputs": {
+        "should_index": {
+          "type": [
+            "bool"
+          ]
+        },
+        "config_dir": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "index/create_index.py",
+      "function": "my_python_tool"
+    },
+    "qa_generation/generate_qa.py": {
+      "type": "python",
+      "inputs": {
+        "config_dir": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "qa_generation/generate_qa.py",
+      "function": "my_python_tool"
+    },
+    "querying/querying.py": {
+      "type": "python",
+      "inputs": {
+        "config_dir": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "querying/querying.py",
+      "function": "my_python_tool"
+    },
+    "load_config.py": {
+      "type": "python",
+      "inputs": {
+        "config_dir": {
+          "type": [
+            "string"
+          ],
+          "default": "."
+        }
+      },
+      "source": "load_config.py",
+      "function": "my_python_tool"
+    },
+    "createDataAsset.py": {
+      "type": "python",
+      "inputs": {
+        "previousStepCompleted": {
+          "type": [
+            "bool"
+          ]
+        },
+        "conn": {
+          "type": [
+            "CustomConnection"
+          ]
+        },
+        "path": {
+          "type": [
+            "string"
+          ]
+        },
+        "description": {
+          "type": [
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "string"
+          ]
+        },
+        "type": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "createDataAsset.py",
+      "function": "createFileDataAsset"
+    }
+  }
+}
