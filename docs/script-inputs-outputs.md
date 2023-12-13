@@ -14,7 +14,7 @@ This script creates and populates a search index in your Azure Cognitive Search 
 
 Inputs:
 
-- A `/data` folder that contains the documents that you want to index. The `/data` folder can have four subfolders for different document formats: pdf, html, markdown, and text. For more information on how the documents are loaded, see the [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py) file.
+- A `/data` folder that contains the documents that you want to index. The `/data` folder (and its subfolders) can have documents in the following formats: PDF, HTML, Markdown, Text, JSON and Word (DOCX). For more information on how the documents are loaded, see the [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py) file.
 
 Outputs:
 

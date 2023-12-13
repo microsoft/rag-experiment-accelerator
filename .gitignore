@@ -173,6 +173,7 @@ data/*
 # Keep sample files
 !data/pdf/sample-pdf.pdf
 !data/html/sample-html.html
+!data/docx/sample-docx.docx
 !data/markdown/sample-markdown.md
 !data/markdown/sample-txt.txt
 !data/json/sample-json.json
