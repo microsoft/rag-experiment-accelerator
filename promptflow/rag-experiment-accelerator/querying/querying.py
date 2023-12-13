@@ -8,6 +8,5 @@ def my_python_tool(config_dir: str) -> bool:
         run(config_dir)
     except Exception as e:
         print(e)
-        
         return False	
     return True
