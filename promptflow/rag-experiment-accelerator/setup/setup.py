@@ -1,13 +1,23 @@
 import os
 import requests
 import subprocess
+import argparse
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-location = "westus2"
-connection_name="rag_connection"
+argParser = argparse.ArgumentParser()
+argParser.add_argument("-l", "--location", help="location of your AzureML workspace", required=True)
+argParser.add_argument("-n", "--name", help="connection name", required=False)
+args = argParser.parse_args()
+
+location = args.location
+if args.name:
+    connection_name=args.name
+else:
+    connection_name="rag_connection"
+
 subscription_id = os.environ["AML_SUBSCRIPTION_ID"]
 rg_name = os.environ["AML_RESOURCE_GROUP_NAME"]
 workspace_name = os.environ["AML_WORKSPACE_NAME"]

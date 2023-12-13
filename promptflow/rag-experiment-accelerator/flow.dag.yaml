@@ -10,6 +10,9 @@ inputs:
   config_dir:
     type: string
     default: /workspaces/rag-experiment-accelerator
+  connection:
+    type: string
+    default: rag_connection
 outputs: {}
 nodes:
 - name: setup
@@ -18,7 +21,7 @@ nodes:
     type: code
     path: setup/setup_env.py
   inputs:
-    connection: rag_connection
+    connection: ${inputs.rag_connection}
 - name: index
   type: python
   source:
