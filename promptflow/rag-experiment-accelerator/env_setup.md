@@ -30,6 +30,11 @@ And the remaining variables must not be set as secret:
 - OPENAI_ENDPOINT
 - OPENAI_API_VERSION
 
+The following variables are optional:
+- AZURE_LANGUAGE_SERVICE_KEY - secret
+- AZURE_LANGUAGE_SERVICE_ENDPOINT - non secret
+- LOGGING_LEVEL - non secret
+
 Configure promptflow to connect to AzureML, see instructions [here](https://microsoft.github.io/promptflow/how-to-guides/set-global-configs.html#azureml).
 ``` bash
 # Set your promptflow connection provider to azureml
