@@ -1,12 +1,44 @@
 from setuptools import setup, find_packages
 
-with open("requirements.txt", "r") as f:
-    requirements = f.read().splitlines()
-
 setup(
     name="rag-experiment-accelerator",
-    version="0.9",
+    version="1.0.0",
     packages=find_packages(),
-    install_requires=requirements,
+    install_requires=[
+        'PyPDF2~=2.0',
+        'azure-core==1.29.4',
+        'matplotlib==3.8.0',
+        'plotly==5.18.0',
+        'tiktoken==0.5.1',
+        'openai==0.28.1',
+        'spacy==3.7.2',
+        'scikit-learn==1.3.2',
+        'pytesseract==0.3.10',
+        'azure-search-documents==11.4.b11',
+        'python-dotenv==1.0.0',
+        'PyMuPDF==1.23.5',
+        'azure-ai-ml==1.11.1',
+        'azure-identity==1.14.1',
+        'textdistance==4.6.0',
+        'azureml-mlflow==1.53.0',
+        'fuzzywuzzy==0.18.0',
+        'mlflow==2.8.1',
+        'rouge-score==0.1.2',
+        'hnswlib==0.7.0',
+        'pypdf==3.17.0',
+        'langchain==0.0.329',
+        'sentence-transformers==2.2.2',
+        'pytest==7.4.3',
+        'pytest-cov==4.1.0',
+        'beautifulsoup4==4.12.2',
+        'lxml==4.9.3',
+        'unstructured==0.10.26',
+        'datasets==2.14.6',
+        'evaluate==0.4.1',
+        'black==23.10.1',
+        'pre-commit==3.5.0',
+        'jq==1.6.0',
+        'azure-ai-textanalytics==5.3.0'
+    ],
     python_requires=">=3.9, <4",
 )
