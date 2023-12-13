@@ -1,7 +1,7 @@
 # Promptflow Secret Setup
 
 ## Prerequisites
-Ensure that your `.env` file is properly created, instructions [here](../../../README.md#installation), install the dev-requirements and login to the az cli.
+Install the dev-requirements and login to the az cli.
 ``` bash
 # Install the dev requirements
 pip install -r dev-requirements.txt 
