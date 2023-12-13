@@ -2,7 +2,6 @@ from rag_experiment_accelerator.evaluation.eval import (
     bleu,
     answer_relevance,
     context_precision,
-    get_result_from_model,
 )
 
 from langchain.prompts import ChatPromptTemplate
@@ -34,9 +33,9 @@ def test_bleu():
     assert round(score) == 50
 
 
-@patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
-def test_answer_relevance(mock_get_result_from_model):
-    mock_get_result_from_model.return_value = "What is the name of the largest bone in the human body?"
+@patch("rag_experiment_accelerator.evaluation.eval.generate_response")
+def test_answer_relevance(mock_generate_response):
+    mock_generate_response.return_value = "What is the name of the largest bone in the human body?"
 
     question = "What is the name of the largest bone in the human body?"
     answer = (
@@ -46,28 +45,12 @@ def test_answer_relevance(mock_get_result_from_model):
     assert round(score) == 1.0
 
 
-@patch("rag_experiment_accelerator.evaluation.eval.get_result_from_model")
-def test_context_precision(mock_get_result_from_model):
-    mock_get_result_from_model.return_value = "Yes"
+@patch("rag_experiment_accelerator.evaluation.eval.generate_response")
+def test_context_precision(mock_generate_response):
+    mock_generate_response.return_value = "Yes"
     question = "What is the name of the largest bone in the human body?"
     context = "According to the Cleveland Clinic, \"The femur is the largest and strongest bone in the human body. It can support as much as 30 times the weight of your body. The average adult male femur is 48 cm (18.9 in) in length and 2.34 cm (0.92 in) in diameter. The average weight among adult males in the United States is 196 lbs (872 N). Therefore, the adult male femur can support roughly 6,000 lbs of compressive force.\""
     
     score = context_precision(question, context)
     assert score == 1.0
 
-
-@patch("rag_experiment_accelerator.evaluation.eval.openai")
-@patch("rag_experiment_accelerator.evaluation.eval.AzureChatOpenAI")
-def test_get_result_from_model(mock_azure_chat_open_ai, mock_open_ai):
-    generation = [[Generation(text="response")]]
-    llm_result = LLMResult(generations=generation)
-    
-    mock_azure_chat_open_ai().generate.return_value = llm_result
-    mock_open_ai.api_type = "azure"
-
-    human_prompt = answer_relevance_instruction.format(answer="answer")
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
-
-    assert result == "response"

@@ -19,9 +19,7 @@ from numpy import mean
 import ast
 import plotly.express as px
 
-from langchain.prompts import ChatPromptTemplate
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
-from langchain.schema.messages import BaseMessage
+from rag_experiment_accelerator.llm.prompt_execution import generate_response
 
 from rag_experiment_accelerator.llm.prompts import (
     context_precision_instruction,
@@ -348,28 +346,6 @@ def lcsstr(value1, value2):
     return score
 
 
-# Takes in BaseMessage as prompt
-def get_result_from_model(prompt: list[List[BaseMessage]]):
-    config = Config()
-    chat_model = None
-
-    if openai.api_type == "azure":
-        chat_model = AzureChatOpenAI(
-            deployment_name=config.EVAL_MODEL_NAME,
-            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
-        )
-    else:
-        chat_model = ChatOpenAI(
-            model=config.EVAL_MODEL_NAME,
-            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
-        )
-
-    result = chat_model.generate(prompt)
-    result = result.generations
-    # list of 1 because we're only getting 1 generation with 1 input
-    return result[0][0].text
-
-
 def answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
@@ -384,13 +360,9 @@ def answer_relevance(question, answer):
         double: The relevancy score generated between the question and answer.
 
     """
+    config = Config()
+    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
 
-    human_prompt = answer_relevance_instruction.format(answer=answer)
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
-
-    logger.info(f"Generating results")
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
@@ -411,12 +383,9 @@ def context_precision(question, context):
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
-    human_prompt = context_precision_instruction.format(
-        question=question, context=context
-    )
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
+    config = Config()
+    prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
+    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
@@ -656,7 +625,7 @@ def evaluate_prompts(
         None
     """
     try:
-        eval_score_folder = "./artifacts/eval_score"
+        eval_score_folder = f"{config.artifacts_dir}/eval_score"
         os.makedirs(eval_score_folder, exist_ok=True)
     except Exception as e:
         logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")

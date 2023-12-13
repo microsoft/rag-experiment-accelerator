@@ -27,6 +27,7 @@ def load_html_files(
     logger.debug("Loading html files")
 
     return load_structured_files(
+        file_format="HTML",
         language="html",
         loader=BSHTMLLoader,
         folder_path=folder_path,

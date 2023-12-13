@@ -69,7 +69,7 @@ az account set  --subscription="<your_subscription_guid>"
 az account show
 ```
 
-5. Copy your `.pdf` files into the `data` folder.
+5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
 
 ## Pre-requisites
@@ -83,7 +83,7 @@ az account show
 
 To use the **RAG Experiment Accelerator**, follow these steps:
 
-1. Modify the `search_config.json` file with the hyperparameters for your experiment.
+1. Modify the `config.json` file with the hyperparameters for your experiment.
 2. Run `01_index.py` (python 01_index.py) to create Azure Cognitive Search indexes and load data into them.
 3. Run `02_qa_generation.py` (python 02_qa_generation.py) to generate question-answer pairs using Azure OpenAI.
 4. Run `03_querying.py` (python 03_querying.py) to query Azure Cognitive Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context. 

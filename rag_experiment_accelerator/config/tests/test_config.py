@@ -1,5 +1,7 @@
+import httpx
 import pytest
 import json
+import os
 from rag_experiment_accelerator.config.config import (
     AzureSearchCredentials,
     AzureMLCredentials,
@@ -8,9 +10,12 @@ from rag_experiment_accelerator.config.config import (
     _mask_string,
     _get_env_var,
 )
-import openai
+from openai import NotFoundError
 from unittest.mock import patch, call
 
+
+def get_test_config_dir():
+    return os.path.join(os.path.dirname(__file__), "data")
 
 def test_init_search_credentials():
     creds = AzureSearchCredentials(
@@ -80,6 +85,26 @@ def test_init_invalid_api_type_openai_credentials():
         )
 
 
+def test_raises_when_openai_endpoint_is_none_for_azure_openai():
+    with pytest.raises(ValueError):
+        OpenAICredentials(
+            openai_api_type='azure',
+            openai_api_key="somekey",
+            openai_api_version="v1",
+            openai_endpoint=None,
+        )
+
+
+def test_raises_when_openai_api_version_is_none_for_azure_openai():
+    with pytest.raises(ValueError):
+        OpenAICredentials(
+            openai_api_type='azure',
+            openai_api_key="somekey",
+            openai_api_version=None,
+            openai_endpoint="http://example.com",
+        )
+
+
 @patch("rag_experiment_accelerator.config.config._get_env_var")
 def test_from_env_openai_credentials(mock_get_env_var):
     mock_get_env_var.side_effect = ["azure", "envkey", "v1", "http://envexample.com"]
@@ -92,32 +117,6 @@ def test_from_env_openai_credentials(mock_get_env_var):
     assert creds.OPENAI_ENDPOINT == "http://envexample.com"
 
 
-@pytest.mark.parametrize(
-    "api_type, expect_api_version, expect_api_base",
-    [
-        ("azure", "expected_version", "expected_endpoint"),
-        ("open_ai", None, None),
-        (None, None, None),
-    ],
-)
-@patch("rag_experiment_accelerator.config.config.openai")
-def test_set_credentials(mock_openai, api_type, expect_api_version, expect_api_base):
-    creds = OpenAICredentials(
-        openai_api_type=api_type,
-        openai_api_key="somekey",
-        openai_api_version="expected_version",
-        openai_endpoint="expected_endpoint",
-    )
-
-    creds._set_credentials()
-
-    if api_type is not None:
-        assert str(mock_openai.api_type) == api_type
-        assert str(mock_openai.api_key) == "somekey"
-
-    if api_type == "azure":
-        assert str(mock_openai.api_version) == expect_api_version
-        assert str(mock_openai.api_base) == expect_api_base
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
@@ -135,32 +134,34 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
         return "test_api_key"
     elif var_name == "OPENAI_API_VERSION":
         return "test_api_version"
-    elif var_name == "OPENAI_API_VERSION":
-        return "test_api_version"
+    elif var_name == "OPENAI_ENDPOINT":
+        return "test_api_endpoint"
     elif var_name == "OPENAI_API_TYPE":
         return "azure"
 
+class MockModelRetrieveResponse:
+    def __init__(self, status, capabilities):
+        self.status = status
+        self.capabilities = capabilities
 
-@patch("rag_experiment_accelerator.config.config.openai.Model.retrieve")
+@patch("rag_experiment_accelerator.config.config.AzureOpenAI")
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 def test_config_init(
-    mock_openai_model_retrieve,
+    mock_azure_openai,
 ):
     # Load mock config data from a YAML file
     with open(
-        "rag_experiment_accelerator/config/tests/data/test_config.json", "r"
+        f"{get_test_config_dir()}/config.json", "r"
     ) as file:
         mock_config_data = json.load(file)
 
-    mock_openai_model_retrieve.return_value = {
-        "status": "succeeded",
-        "capabilities": {
+    mock_azure_openai().models.retrieve.return_value = MockModelRetrieveResponse(status="succeeded", capabilities={
             "embeddings": True,
             "inference": True,
             "chat_completion": True,
         },
-    }
-    config = Config("rag_experiment_accelerator/config/tests/data/test_config.json")
+    )
+    config = Config(get_test_config_dir())
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
@@ -184,20 +185,20 @@ def test_config_init(
     assert config.DATA_FORMATS == mock_config_data["data_formats"]
     assert (
         config.EVAL_DATA_JSONL_FILE_PATH
-        == mock_config_data["eval_data_jsonl_file_path"]
+        == f"{get_test_config_dir()}/{mock_config_data['eval_data_jsonl_file_path']}"
     )
     assert (
-        mock_openai_model_retrieve.called
+        mock_azure_openai().models.retrieve.called
     )  # Ensure that the OpenAI model is retrieved
 
-
+@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(
     "model_status, capabilities, tags, raises_exception",
     [
         (
             "succeeded",
-            {"chat_completion": True, "inference": True},
-            ["chat_completion", "inference"],
+            {"chat_completion": True, "inference": True, "embeddings": True},
+            ["chat_completion", "inference", "embeddings"],
             False,
         ),
         (
@@ -223,39 +224,32 @@ def test_config_init(
 def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
     if model_status is not None:
         with patch(
-            "rag_experiment_accelerator.config.config.openai.Model.retrieve"
-        ) as mock_retrieve:
-            mock_model = {
-                "status": model_status,
-                "capabilities": {
-                    "chat_completion": capabilities["chat_completion"],
-                    "inference": capabilities["inference"],
-                    "embeddings": True,
-                    "test": True,
-                },
-            }
-            mock_retrieve.return_value = mock_model
+            "rag_experiment_accelerator.config.config.AzureOpenAI"
+        ) as mock_azure_openai:
+            mock_azure_openai().models.retrieve.return_value = MockModelRetrieveResponse(status=model_status, capabilities=capabilities)
 
             if raises_exception:
                 with pytest.raises(ValueError):
-                    config = Config()
+                    config = Config(get_test_config_dir())
                     config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                     config._try_retrieve_model("model_name", tags)
             else:
-                config = Config()
+                config = Config(get_test_config_dir())
                 config.OpenAICredentials.OPENAI_API_TYPE = "azure"
                 result = config._try_retrieve_model("model_name", tags)
-                assert result == mock_model
+                assert result == mock_azure_openai().models.retrieve.return_value
     else:
         with patch(
-            "rag_experiment_accelerator.config.config.openai.Model.retrieve",
-            side_effect=openai.error.InvalidRequestError("Test error", "404"),
-        ):
+            "rag_experiment_accelerator.config.config.AzureOpenAI",
+        ) as mock_azure_openai:
+            response = httpx.Response(status_code=404, request=httpx.Request("GET", "http://example.com"), content=b"Test content")
+            mock_azure_openai().models.retrieve.side_effect = NotFoundError(message="Test error", response=response, body="Test body")
             with pytest.raises(ValueError):
-                config = Config()
+                config = Config(get_test_config_dir())
                 config._try_retrieve_model("model_name", tags)
 
 
+@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(
     "api_type, chat_model_name, embedding_model_name, chat_tags, embedding_tags",
     [
@@ -282,7 +276,7 @@ def test_check_deployment(
     ) as mock_try_retrieve_model:
         mock_try_retrieve_model.return_value = None  # Adjust as needed
 
-        config = Config()
+        config = Config(get_test_config_dir())
         config.OpenAICredentials.OPENAI_API_TYPE = api_type
         config.CHAT_MODEL_NAME = chat_model_name
         config.EMBEDDING_MODEL_NAME = embedding_model_name

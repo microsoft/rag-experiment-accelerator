@@ -1,7 +1,8 @@
 import json
 import os
-import openai
+from openai import AzureOpenAI, NotFoundError, OpenAI
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 
 logger = get_logger(__name__)
 
@@ -22,7 +23,7 @@ def _mask_string(s: str, start: int = 2, end: int = 2, mask_char: str = "*") -> 
     Raises:
         None
     """
-    if s == "":
+    if s is None or s == "":
         return ""
 
     if len(s) <= start + end:
@@ -99,6 +100,43 @@ class AzureSearchCredentials:
             ),
         )
 
+class AzureSkillsCredentials:
+    """
+    A class representing the credentials required to access the skills provided with Azure Cognitive Search.
+
+    Attributes:
+        AZURE_LANGUAGE_SERVICE_ENDPOINT (str): The endpoint URL of the Azure Language Detection service.
+        AZURE_LANGUAGE_SERVICE_KEY (str): The key required to access the Azure Language Detection service.
+    """
+
+    def __init__(
+        self,
+        azure_language_service_endpoint: str,
+        azure_language_service_key: str,
+    ) -> None:
+        self.AZURE_LANGUAGE_SERVICE_ENDPOINT = azure_language_service_endpoint
+        self.AZURE_LANGUAGE_SERVICE_KEY = azure_language_service_key
+
+    @classmethod
+    def from_env(cls) -> "AzureSkillsCredentials":
+        """
+        Creates an instance of AzureSkillsCredentials using environment variables.
+
+        Returns:
+            AzureSkillsCredentials: An instance of AzureSkillsCredentials.
+        """
+        return cls(
+            azure_language_service_endpoint=_get_env_var(
+                var_name="AZURE_LANGUAGE_SERVICE_ENDPOINT",
+                critical=False,
+                mask=False,
+            ),
+            azure_language_service_key=_get_env_var(
+                var_name="AZURE_LANGUAGE_SERVICE_KEY",
+                critical=False,
+                mask=True,
+            ),
+        )                
 
 class AzureMLCredentials:
     """
@@ -188,13 +226,18 @@ class OpenAICredentials:
         if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
             logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
             raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+        
+        if openai_api_type == 'azure' and openai_api_version is None:
+            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
+
+        if openai_api_type == 'azure' and openai_endpoint is None:
+            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
 
         self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
         self.OPENAI_API_VERSION = openai_api_version
         self.OPENAI_ENDPOINT = openai_endpoint
 
-        self._set_credentials()
 
     @classmethod
     def from_env(cls) -> "OpenAICredentials":
@@ -225,26 +268,13 @@ class OpenAICredentials:
             ),
         )
 
-    def _set_credentials(self) -> None:
-        """
-        Sets the OpenAI credentials.
-        """
-        if self.OPENAI_API_TYPE is not None:
-            openai.api_type = self.OPENAI_API_TYPE
-            openai.api_key = self.OPENAI_API_KEY
-            logger.info(f"OpenAI API key set to {_mask_string(openai.api_key)}")
-
-            if self.OPENAI_API_TYPE == "azure":
-                openai.api_version = self.OPENAI_API_VERSION
-                openai.api_base = self.OPENAI_ENDPOINT
-
 
 class Config:
     """
-    A class for storing configuration settings for the RAG Experiment Accelerator.
+    A singleton class for storing configuration settings for the RAG Experiment Accelerator.
 
     Parameters:
-        config_filename (str): The name of the JSON file containing configuration settings. Default is 'search_config.json'.
+        config_filename (str): The name of the JSON file containing configuration settings. Default is 'config.json'.
 
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
@@ -270,10 +300,32 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
     """
 
-    def __init__(self, config_filename: str = "search_config.json") -> None:
-        with open(config_filename, "r") as json_file:
+    _instance = None 
+
+    def __new__(cls, config_filename: str = "config.json"):
+        """
+        Creates a new instance of Config only if it doesn't already exist.
+
+        Parameters:
+            config_filename (str): The name of the JSON file containing configuration settings.
+
+        Returns:
+            Config: The singleton instance of Config.
+        """
+
+        if cls._instance is None:
+            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance._initialize(config_filename)
+        return cls._instance
+    
+    def _initialize(self, config_dir: str = os.getcwd()) -> None:
+        with open(f"{config_dir}/config.json", "r") as json_file:
             data = json.load(json_file)
 
+        self.config_dir = config_dir
+        self.artifacts_dir = f"{config_dir}/artifacts"
+        self.data_dir = f"{config_dir}/data"
+        self.EVAL_DATA_JSONL_FILE_PATH = f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
@@ -295,50 +347,65 @@ class Config:
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
         self.LANGUAGE = data.get("language", {})
-        self.EVAL_DATA_JSONL_FILE_PATH = data["eval_data_jsonl_file_path"]
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
+        self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
         self._check_deployment()
+        
+        try:
+            with open("prompt_config.json", "r") as json_file:
+                data = json.load(json_file)
+    
+            self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
+            if self.MAIN_PROMPT_INSTRUCTION is None:
+                logger.warn("prompt_config.json found but main_prompt_instruction is not set. Using default prompts")
+                self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
+        except OSError:
+            logger.warn("prompt_config.json not found. Using default prompts")
+            self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
 
-        with open("prompt_config.json", "r") as json_file:
-            data = json.load(json_file)
-
-        self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
-
-    def _try_retrieve_model(self, model_name: str, tags: list[str]) -> openai.Model:
+    def _try_retrieve_model(self, model_name: str, tags: list[str]):
         """
-        Tries to retrieve a specified model from OpenAI.
+        Tries to retrieve a specified model from OpenAI or AzureOpenAI.
 
         Args:
             model_name (str): The name of the model to retrieve.
             tags (list[str]): A list of capability tags to check for.
         Returns:
-            openai.Model: The retrieved model object if successful.
+            Model: The retrieved model object if successful.
 
         Raises:
             ValueError: If the model is not ready or does not have the required capabilities.
-            openai.error.InvalidRequestError: If the model does not exist.
+            NotFoundError: If the model does not exist.
         """
         try:
-            model = openai.Model.retrieve(model_name)
-
-            # For non-azure models we can't retrieve status and capabilities
             if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
+                client = OpenAI(api_key=self.OpenAICredentials.OPENAI_API_KEY)
+                model = client.models.retrieve(model=model_name)
+                # For non-azure models we can't retrieve status and capabilities
                 return model
-            if model["status"] != "succeeded":
-                logger.critical(f"Model {model_name} is not ready.")
-                raise ValueError(f"Model {model_name} is not ready.")
-            for tag in tags:
-                if not model["capabilities"][tag]:
-                    logger.critical(
-                        f"Model {model_name} does not have the {tag} capability."
-                    )
-                    raise ValueError(
-                        f"Model {model_name} does not have the {tag} capability."
-                    )
-            return model
-        except openai.error.InvalidRequestError as e:
+            else:
+                client = AzureOpenAI(
+                    azure_endpoint=self.OpenAICredentials.OPENAI_ENDPOINT, 
+                    api_key=self.OpenAICredentials.OPENAI_API_KEY,  
+                    api_version=self.OpenAICredentials.OPENAI_API_VERSION
+                )
+                model = client.models.retrieve(model=model_name)
+
+                if model.status != "succeeded":
+                    logger.critical(f"Model {model_name} is not ready.")
+                    raise ValueError(f"Model {model_name} is not ready.")
+                for tag in tags:
+                    if not model.capabilities[tag]:
+                        logger.critical(
+                            f"Model {model_name} does not have the {tag} capability."
+                        )
+                        raise ValueError(
+                            f"Model {model_name} does not have the {tag} capability."
+                        )
+                return model
+        except NotFoundError:
             logger.critical(f"Model {model_name} does not exist.")
             raise ValueError(f"Model {model_name} does not exist.")
 
