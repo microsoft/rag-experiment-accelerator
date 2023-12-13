@@ -12,6 +12,13 @@ inputs:
     default: /workspaces/rag-experiment-accelerator
 outputs: {}
 nodes:
+- name: setup
+  type: python
+  source:
+    type: code
+    path: setup/setup_env.py
+  inputs:
+    connection: ""
 - name: index
   type: python
   source:
@@ -20,6 +27,9 @@ nodes:
   inputs:
     should_index: ${inputs.should_index}
     config_dir: ${inputs.config_dir}
+  activate:
+    when: ${setup.output}
+    is: true
 - name: generate_qa
   type: python
   source:
