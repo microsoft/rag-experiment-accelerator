@@ -12,6 +12,13 @@ inputs:
     default: /workspaces/rag-experiment-accelerator
 outputs: {}
 nodes:
+- name: setup
+  type: python
+  source:
+    type: code
+    path: setup/setup_env.py
+  inputs:
+    connection: rag_connection
 - name: index
   type: python
   source:
@@ -20,7 +27,6 @@ nodes:
   inputs:
     should_index: ${inputs.should_index}
     config_dir: ${inputs.config_dir}
-    connection: rag_connection
 - name: generate_qa
   type: python
   source:
@@ -28,7 +34,6 @@ nodes:
     path: qa_generation/generate_qa.py
   inputs:
     config_dir: ${inputs.config_dir}
-    connection: rag_connection
   activate:
     when: ${index.output}
     is: true
@@ -39,7 +44,6 @@ nodes:
     path: querying/querying.py
   inputs:
     config_dir: ${inputs.config_dir}
-    connection: rag_connection
   activate:
     when: ${generate_qa.output}
     is: true
