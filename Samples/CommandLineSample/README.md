@@ -20,6 +20,7 @@ OPENAI_API_TYPE should be either `azure` if you are planning to use Azure, `open
 ```bash
 conda create -n rag-test python=3.10
 conda activate rag-test
+cd rag-experiment-accelerator
 python setup.py sdist
 ```
 
@@ -34,7 +35,7 @@ az account show
 
 6. Install rag-experiment-accelerator package from the root of the project
 ```bash
-pip install dist/rag-experiment-accelerator-1.0.0.tar.gz
+pip install rag-experiment-accelerator/dist/rag-experiment-accelerator-1.0.0.tar.gz
 ```
 
 
