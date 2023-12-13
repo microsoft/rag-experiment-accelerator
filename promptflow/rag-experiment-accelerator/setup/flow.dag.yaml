@@ -6,4 +6,3 @@ nodes:
   source:
     type: code
     path: setup_env.py
-

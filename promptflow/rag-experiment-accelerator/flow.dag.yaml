@@ -18,7 +18,7 @@ nodes:
     type: code
     path: setup/setup_env.py
   inputs:
-    connection: rag_connection
+    connection: ""
 - name: index
   type: python
   source:
