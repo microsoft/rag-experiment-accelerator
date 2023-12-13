@@ -23,3 +23,5 @@ def my_python_tool(connection: CustomConnection):
 
     if "LOGGING_LEVEL" in connection.configs:
         os.environ["LOGGING_LEVEL"] = connection.configs["LOGGING_LEVEL"]
+        
+    return True
