@@ -27,6 +27,7 @@ def load_markdown_files(
     logger.debug("Loading markdown files")
 
     return load_structured_files(
+        file_format="MARKDOWN",
         language="markdown",
         loader=UnstructuredMarkdownLoader,
         folder_path=folder_path,

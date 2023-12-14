@@ -12,13 +12,13 @@ def load_text_files(
     glob_patterns: list[str] = ["txt", "rtf"],
 ):
     """
-    Load and process HTML files from a given folder path.
+    Load and process text files from a given folder path.
 
     Args:
         folder_path (str): The path of the folder where files are located.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
-        glob_patterns (list[str]): List of file extensions to consider (e.g., ["html", "htm", ...]).
+        glob_patterns (list[str]): List of file extensions to consider (e.g., ["txt", "rtf", ...]).
 
     Returns:
         list[Document]: A list of processed and split document chunks.
@@ -27,7 +27,8 @@ def load_text_files(
     logger.debug("Loading text files")
 
     return load_structured_files(
-        language="markdown",
+        file_format="TEXT",
+        language=None,
         loader=TextLoader,
         folder_path=folder_path,
         chunk_size=chunk_size,

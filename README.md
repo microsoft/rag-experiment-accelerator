@@ -69,7 +69,7 @@ az account set  --subscription="<your_subscription_guid>"
 az account show
 ```
 
-5. Copy your `.pdf` files into the `data` folder.
+5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
 
 ## Pre-requisites

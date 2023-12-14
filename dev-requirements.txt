@@ -1,2 +1,2 @@
-promptflow==1.0.0
-promptflow-tools==0.1.0b15
+promptflow==1.1.1
+promptflow-tools==1.0.0
