@@ -47,7 +47,7 @@ cd ./custom_environment
 az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
 ```
 2. Create a custom runtime using the newly created environment. See [Create runtime in UI](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/how-to-create-manage-runtime?view=azureml-api-2#create-runtime-in-ui).
-3. Modify the `config.json` file with the hyperparameters for your experiment. Full documentation on can be found [here](#description-of-configuration-elements)
+3. Modify the `config.json` file with the hyperparameters for your experiment. Full documentation can be found [here](#description-of-configuration-elements)
 4. Create a custom connection. See [env_setup](./env_setup.md).
 4. Add your own documents to the `./data` folder. (a set of sample documents are provided for testing purposes)
 5. Modify the `config.json` file with the hyperparameters for your experiment. Full documentation on can be found [here](#description-of-configuration-elements)
