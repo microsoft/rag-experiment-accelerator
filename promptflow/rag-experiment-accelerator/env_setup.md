@@ -11,11 +11,10 @@ az login
 ```
 
 ## AzureML Connections
-AzureML connections are recommended as the secrets are stored securely in Key Vault and config is stored in the workspace.
+A Custom Connection is a generic connection type that stores and manages credentials required for interacting with LLMs. It has two dictionaries, `secrets` for secrets to be stored in Key Vault, and `configs` for non-secrets that are stored in the AzureML workspace.
 
-Create a custom connection in the AzureML workspace, instructions [here](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/tools-reference/python-tool?view=azureml-api-2#create-a-custom-connection).
 
-The key value pairs should correspond to the variables in the `.env.template` [here](.env.template).
+You can create a custom connection in the AzureML workspace by following the instructions [here](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/tools-reference/python-tool?view=azureml-api-2#create-a-custom-connection). The key-value pairs required are listed in the Secrets and Configs sections.
 
 The following variables are required to be set as secret:
 - AZURE_SEARCH_ADMIN_KEY
@@ -26,7 +25,6 @@ The following variables are required to be set as secret:
 
 And the remaining variables must not be set as secret:
 - AZURE_SEARCH_SERVICE_ENDPOINT
-- OPENAI_API_TYPE
 - OPENAI_ENDPOINT
 - OPENAI_API_VERSION
 
@@ -35,8 +33,15 @@ The following variables are optional:
 - AZURE_LANGUAGE_SERVICE_ENDPOINT - non secret
 - LOGGING_LEVEL - non secret
 
-Configure promptflow to connect to AzureML, see instructions [here](https://microsoft.github.io/promptflow/how-to-guides/set-global-configs.html#azureml).
+## Configuring your connection locally 
+To configure promptflow to connect to AzureML, you need to update the `./azureml/config.json` file with the `workspace_name`, `resource_group`, and `subscription_id` that your connection is stored in. You can find more information about this in the [documentation](https://microsoft.github.io/promptflow/how-to-guides/set-global-configs.html#azureml).
+
+To update the local promptflow connection provider to look for AzureML connections, you can use the following code:
 ``` bash
 # Set your promptflow connection provider to azureml
 pf config set connection.provider=azureml
+
+# Verify that the connection appears
+pf connection list
 ```
+Note: Depending on the context you're running the `pf` commands from, you may need to move the `.azureml` folder into the root of the repository.

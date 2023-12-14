@@ -8,7 +8,7 @@ def my_python_tool(connection: CustomConnection):
     os.environ["AZURE_SEARCH_SERVICE_ENDPOINT"] = connection.configs["AZURE_SEARCH_SERVICE_ENDPOINT"]
     os.environ["AZURE_SEARCH_ADMIN_KEY"] = connection.secrets["AZURE_SEARCH_ADMIN_KEY"]
     os.environ["OPENAI_API_KEY"] = connection.secrets["OPENAI_API_KEY"]
-    os.environ["OPENAI_API_TYPE"] = connection.configs["OPENAI_API_TYPE"]
+    os.environ["OPENAI_API_TYPE"] = "azure"
     os.environ["OPENAI_ENDPOINT"] = connection.configs["OPENAI_ENDPOINT"]
     os.environ["OPENAI_API_VERSION"] = connection.configs["OPENAI_API_VERSION"]
     os.environ["AML_SUBSCRIPTION_ID"] = connection.secrets["AML_SUBSCRIPTION_ID"]
