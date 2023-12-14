@@ -1,6 +1,7 @@
 inputs:
-  config:
+  config_dir:
     type: string
+    default: ../
   should_index:
     type: bool
     default: true
@@ -20,7 +21,7 @@ nodes:
     path: create_index.py
   inputs:
     should_index: true
-    config_dir: ${inputs.config}
+    config_dir: ${inputs.config_dir}
   activate:
     when: ${setup_env.output}
     is: true
