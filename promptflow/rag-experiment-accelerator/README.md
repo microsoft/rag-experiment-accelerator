@@ -5,6 +5,8 @@ The RAG Experiment Accelerator is a versatile tool that helps you conduct experi
 
 The top-level `flow.dag.yaml` runs the rag experiment end-to-end based on the configuration provided in `config.json`.
 
+![rag-end-to-end-flow-diagram](./images/end_to_end_flow_diagram.png)
+
 ### Set Up
 The `setup` node runs first and loads the required environment variables from a custom connection
 
@@ -127,6 +129,7 @@ The top-level `flow.dag.yaml` runs the RAG experiments end-to-end and each step 
 
 - `data` - the directory for the documents. A set of sample documents are provided for testing
 - `custom_environment` - contains the `Dockerfile`, `evironment.yaml` and the `rag-experiment-accelerator` `.whl` file. Building an image is necessary when running in Prompt Flow from the ML workspace.
+- `images` - contains the images used in this `README.md`
 
 Flows:
 - `setup` - (sets the necessary environment variables)
