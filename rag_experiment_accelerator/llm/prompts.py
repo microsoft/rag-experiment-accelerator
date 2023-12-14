@@ -100,9 +100,9 @@ multiple_prompt_instruction = """Generate two questions in json format based on 
     }
 """
 
-answer_relevance_instruction = """Generate question for the given answer.
+llm_answer_relevance_instruction = """Generate question for the given answer.
 Answer: The PSLV-C56 mission is scheduled to be launched on Sunday, 30 July 2023 at 06:30 IST / 01:00 UTC. It will be launched from the Satish Dhawan Space Centre, Sriharikota, Andhra Pradesh, India
 Question: When is the scheduled launch date and time for the PSLV-C56 mission, and where will it be launched from?
 """
 
-context_precision_instruction = "Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer."
+llm_context_precision_instruction = "Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer."
