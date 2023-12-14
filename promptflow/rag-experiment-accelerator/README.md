@@ -21,7 +21,7 @@ The `index` node will:
 If the indexes have been previously created, this node is optional and can be skipped by setting the input `should_index` to `False`.
 
 ### QA Generation
-The `qa_generation`` node will chunk each document and generate ground truth questions and answers for each chunk. 
+The `qa_generation` node will chunk each document and generate ground truth questions and answers for each chunk. 
 
 Optionally, this node can be skipped and a set of user-provided ground truth questions and answers can be used. User-provided questions and answers should be in the `jsonl` file format and by default, in the location `./artifacts/eval_data.jsonl`. This location can be configured by updating the `eval_data_jsonl_file_path` value in `config.json`. Each line of the `jsonl` file should contain the keys:
 - user_prompt (the question to ask the LLM)
