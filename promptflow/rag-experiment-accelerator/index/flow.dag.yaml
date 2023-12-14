@@ -1,6 +1,18 @@
-inputs: {}
+inputs:
+  config:
+    type: string
+  should_index:
+    type: bool
+    default: true
 outputs: {}
 nodes:
+- name: setup_env
+  type: python
+  source:
+    type: code
+    path: ../setup/setup_env.py
+  inputs:
+    connection: ""
 - name: create_index
   type: python
   source:
@@ -8,3 +20,7 @@ nodes:
     path: create_index.py
   inputs:
     should_index: true
+    config_dir: ${inputs.config}
+  activate:
+    when: ${setup_env.output}
+    is: true

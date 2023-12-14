@@ -733,7 +733,7 @@ def evaluate_prompts(
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
-        f"artifacts/eval_score/{formatted_datetime}_ap_scores_at_k_test.csv",
+        f"{eval_score_folder}/{formatted_datetime}_ap_scores_at_k_test.csv",
         index=False,
     )
     plot_apk_scores(ap_scores_df, run_id, client)
@@ -741,7 +741,7 @@ def evaluate_prompts(
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        f"artifacts/eval_score/{formatted_datetime}_map_scores_test.csv", index=False
+        f"{eval_score_folder}/{formatted_datetime}_map_scores_test.csv", index=False
     )
     plot_map_scores(map_scores_df, run_id, client)
 

@@ -10,11 +10,11 @@ nodes:
     path: ../setup/setup_env.py
   inputs:
     connection: ""
-- name: querying
+- name: evaluation
   type: python
   source:
     type: code
-    path: querying.py
+    path: evaluation.py
   inputs:
     config_dir: ${inputs.config_dir}
   activate:

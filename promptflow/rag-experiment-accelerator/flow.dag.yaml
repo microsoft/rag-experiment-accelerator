@@ -1,15 +1,9 @@
-additional_includes:
-- ./qa_generation/generate_qa.py
-- ./index/create_index.py
-- ./querying/querying.py
-- ../../config.json
 inputs:
   should_index:
     type: bool
     default: true
   config_dir:
     type: string
-    default: /workspaces/rag-experiment-accelerator
 outputs: {}
 nodes:
 - name: setup
@@ -49,4 +43,14 @@ nodes:
     config_dir: ${inputs.config_dir}
   activate:
     when: ${generate_qa.output}
+    is: true
+- name: evaluation
+  type: python
+  source:
+    type: code
+    path: evaluation/evaluation.py
+  inputs:
+    config_dir: ${inputs.config_dir}
+  activate:
+    when: ${querying.output}
     is: true

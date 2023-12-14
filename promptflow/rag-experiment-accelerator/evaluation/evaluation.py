@@ -1,5 +1,5 @@
 from promptflow import tool
-from rag_experiment_accelerator.run.querying import run
+from rag_experiment_accelerator.run.evaluation import run
 
 
 @tool

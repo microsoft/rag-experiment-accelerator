@@ -354,7 +354,7 @@ class Config:
         self._check_deployment()
         
         try:
-            with open("prompt_config.json", "r") as json_file:
+            with open(f"{config_dir}/prompt_config.json", "r") as json_file:
                 data = json.load(json_file)
     
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
