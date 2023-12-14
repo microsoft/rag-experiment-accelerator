@@ -23,7 +23,7 @@ If the indexes have been previously created, this node is optional and can be sk
 ### QA Generation
 The `qa_generation` node will chunk each document and generate ground truth questions and answers for each chunk. 
 
-Optionally, this node can be skipped and a set of user-provided ground truth questions and answers can be used. User-provided questions and answers should be in the `jsonl` file format and by default, in the location `./artifacts/eval_data.jsonl`. This location can be configured by updating the `eval_data_jsonl_file_path` value in `config.json`. Each line of the `jsonl` file should contain the keys:
+Optionally, this node can be skipped by setting the input `should_generate_qa` to `false` and a set of user-provided ground truth questions and answers can be used. User-provided questions and answers should be in the `jsonl` file format and by default, in the location `./artifacts/eval_data.jsonl`. This location can be configured by updating the `eval_data_jsonl_file_path` value in `config.json`. Each line of the `jsonl` file should contain the keys:
 - user_prompt (the question to ask the LLM)
 - output_prompt (the ground truth answer to the user prompt question)
 - context (the document context that contains the answer)
