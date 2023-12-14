@@ -4,7 +4,7 @@
     "querying.py": {
       "type": "python",
       "inputs": {
-        "search_config_dir": {
+        "config_dir": {
           "type": [
             "string"
           ]

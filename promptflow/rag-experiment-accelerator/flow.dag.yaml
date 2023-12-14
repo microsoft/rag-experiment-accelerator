@@ -19,10 +19,10 @@ nodes:
     type: code
     path: createDataAsset.py
   inputs:
-    name: search_config
+    name: config
     conn: Secrets_provider
-    description: This is the search config file.
-    path: ./search_config.json
+    description: Configuration file with the hyperparameters for your experiment.
+    path: ./config.json
     previousStepCompleted: true
 - name: index
   type: python
