@@ -22,8 +22,8 @@ import plotly.express as px
 from rag_experiment_accelerator.llm.prompt_execution import generate_response
 
 from rag_experiment_accelerator.llm.prompts import (
-    context_precision_instruction,
-    answer_relevance_instruction,
+    llm_context_precision_instruction,
+    llm_answer_relevance_instruction,
 )
 from rag_experiment_accelerator.config import Config
 
@@ -346,7 +346,7 @@ def lcsstr(value1, value2):
     return score
 
 
-def answer_relevance(question, answer):
+def llm_answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -361,7 +361,7 @@ def answer_relevance(question, answer):
 
     """
     config = Config()
-    result = generate_response(sys_message=answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
+    result = generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -369,10 +369,10 @@ def answer_relevance(question, answer):
     embedding2 = model.encode([str(result)])
     similarity_score = cosine_similarity(embedding1, embedding2)
 
-    return similarity_score[0][0]
+    return int(similarity_score[0][0] * 100)
 
 
-def context_precision(question, context):
+def llm_context_precision(question, context):
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -385,11 +385,11 @@ def context_precision(question, context):
     """
     config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = generate_response(sys_message=context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
+    result = generate_response(sys_message=llm_context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
-        return 1
+        return 100
 
     return 0
 
@@ -586,10 +586,10 @@ def compute_metrics(actual, expected, context, metric_type):
         score = compare_semantic_document_values(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
-    elif metric_type == "answer_relevance":
-        score = answer_relevance(actual, expected)
-    elif metric_type == "context_precision":
-        score = context_precision(actual, context)
+    elif metric_type == "llm_answer_relevance":
+        score = llm_answer_relevance(actual, expected)
+    elif metric_type == "llm_context_precision":
+        score = llm_context_precision(actual, context)
     else:
         pass
 
