@@ -1,9 +1,23 @@
-inputs: {}
+inputs:
+  config_dir:
+    type: string
+    default: /workspaces/rag-experiment-accelerator
 outputs: {}
 nodes:
+- name: setup_env
+  type: python
+  source:
+    type: code
+    path: ../setup/setup_env.py
+  inputs:
+    connection: rag_connection
 - name: querying
   type: python
   source:
     type: code
     path: querying.py
-  inputs: {}
+  inputs:
+    config_dir: ${inputs.config_dir}
+  activate:
+    when: ${setup_env.output}
+    is: true

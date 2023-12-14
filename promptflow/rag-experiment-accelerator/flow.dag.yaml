@@ -1,9 +1,3 @@
-additional_includes:
-- ./qa_generation/generate_qa.py
-- ./index/create_index.py
-- ./querying/querying.py
-- ./evaluation/evaluation.py
-- ../../config.json
 inputs:
   should_index:
     type: bool
@@ -19,7 +13,7 @@ nodes:
     type: code
     path: setup/setup_env.py
   inputs:
-    connection: ""
+    connection: rag_connection
 - name: index
   type: python
   source:

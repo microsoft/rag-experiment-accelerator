@@ -1,6 +1,19 @@
-inputs: {}
+inputs:
+  config:
+    type: string
+    default: /workspaces/rag-experiment-accelerator
+  should_index:
+    type: bool
+    default: true
 outputs: {}
 nodes:
+- name: setup_env
+  type: python
+  source:
+    type: code
+    path: ../setup/setup_env.py
+  inputs:
+    connection: rag_connection
 - name: create_index
   type: python
   source:
@@ -8,3 +21,7 @@ nodes:
     path: create_index.py
   inputs:
     should_index: true
+    config_dir: ${inputs.config}
+  activate:
+    when: ${setup_env.output}
+    is: true
