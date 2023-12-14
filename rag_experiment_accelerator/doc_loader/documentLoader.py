@@ -57,6 +57,8 @@ def load_documents(
 
     if allowed_formats == "all":
         allowed_formats = _FORMAT_VERSIONS.keys()
+    else:
+        allowed_formats = [allowed_formats]
 
     logger.debug(
         f"Loading documents from {folder_path} with allowed formats {', '.join(allowed_formats)}"
