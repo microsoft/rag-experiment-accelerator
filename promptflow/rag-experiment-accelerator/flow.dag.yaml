@@ -35,7 +35,7 @@ nodes:
   inputs:
     config_dir: ${inputs.config_dir}
   activate:
-    when: ${index.output}
+    when: ${inputs.should_generate_qa}
     is: true
 - name: querying
   type: python
