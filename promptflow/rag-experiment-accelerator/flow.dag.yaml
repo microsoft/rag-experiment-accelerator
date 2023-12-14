@@ -15,7 +15,8 @@ nodes:
   source:
     type: code
     path: setup/setup_env.py
-  inputs: {}
+  inputs: 
+    connection: ""
 - name: index
   type: python
   source:
@@ -34,7 +35,7 @@ nodes:
     path: qa_generation/generate_qa.py
   inputs:
     config_dir: ${inputs.config_dir}
-    activate: ${inputs.should_generate_qa}
+    should_generate_qa: ${inputs.should_generate_qa}
   activate:
     when: ${index.output}
     is: true
