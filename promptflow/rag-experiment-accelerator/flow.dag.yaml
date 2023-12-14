@@ -2,6 +2,7 @@ additional_includes:
 - ./qa_generation/generate_qa.py
 - ./index/create_index.py
 - ./querying/querying.py
+- ./evaluation/evaluation.py
 - ../../config.json
 inputs:
   should_index:
@@ -49,4 +50,14 @@ nodes:
     config_dir: ${inputs.config_dir}
   activate:
     when: ${generate_qa.output}
+    is: true
+- name: evaluation
+  type: python
+  source:
+    type: code
+    path: evaluation/evaluation.py
+  inputs:
+    config_dir: ${inputs.config_dir}
+  activate:
+    when: ${querying.output}
     is: true

@@ -1,0 +1,9 @@
+inputs: {}
+outputs: {}
+nodes:
+- name: evaluation
+  type: python
+  source:
+    type: code
+    path: evaluation.py
+  inputs: {}
