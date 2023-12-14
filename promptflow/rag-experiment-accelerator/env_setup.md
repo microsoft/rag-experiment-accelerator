@@ -13,7 +13,7 @@ az login
 ## AzureML Connections
 Connections are objects stored in the AzureML workspace that storage and manage credentials required for interacting with LLMs. We will be using a Custom Connection, which is a generic connection type. Custom Connections have two dictionaries, `secrets` for secrets to be stored in Key Vault, and `configs` for non secrets that are stored in the AzureML workspace. 
 
-Create a custom connection in the AzureML workspace, instructions [here](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/tools-reference/python-tool?view=azureml-api-2#create-a-custom-connection). Ensure that the key value pairs used correspond to the variables in the `.env.template` [here](.env.template), also listed below.
+Create a custom connection in the AzureML workspace, instructions [here](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/tools-reference/python-tool?view=azureml-api-2#create-a-custom-connection). The key value pairs required are listed below.
 
 The following variables are required to be set as secret:
 - AZURE_SEARCH_ADMIN_KEY
@@ -24,7 +24,7 @@ The following variables are required to be set as secret:
 
 And the remaining variables must not be set as secret:
 - AZURE_SEARCH_SERVICE_ENDPOINT
-- OPENAI_API_TYPE
+- OPENAI_API_TYPE - must be `azure`
 - OPENAI_ENDPOINT
 - OPENAI_API_VERSION
 
