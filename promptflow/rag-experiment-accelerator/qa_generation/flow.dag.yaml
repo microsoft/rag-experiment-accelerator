@@ -1,7 +1,6 @@
 inputs:
   config_dir:
     type: string
-    default: /workspaces/rag-experiment-accelerator
 outputs: {}
 nodes:
 - name: setup_env
@@ -10,7 +9,7 @@ nodes:
     type: code
     path: ../setup/setup_env.py
   inputs:
-    connection: rag_connection
+    connection: ""
 - name: generate_qa
   type: python
   source:

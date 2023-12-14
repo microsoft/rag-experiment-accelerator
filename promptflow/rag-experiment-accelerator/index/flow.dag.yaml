@@ -1,7 +1,6 @@
 inputs:
   config:
     type: string
-    default: /workspaces/rag-experiment-accelerator
   should_index:
     type: bool
     default: true
@@ -13,7 +12,7 @@ nodes:
     type: code
     path: ../setup/setup_env.py
   inputs:
-    connection: rag_connection
+    connection: ""
 - name: create_index
   type: python
   source:
