@@ -133,7 +133,7 @@ def upload_data(
     logger.info("all documents have been uploaded to the search index")
 
 
-def generate_qna(docs, model_name, temperature, eval_data_filepath):
+def generate_qna(docs, model_name, temperature):
     """
     Generates a set of questions and answers from a list of documents using a language model.
 
@@ -180,7 +180,7 @@ def generate_qna(docs, model_name, temperature, eval_data_filepath):
                 logger.debug(e)
                 logger.debug(f"LLM Response: {response}")
 
-    new_df.to_json(eval_data_filepath, orient="records", lines=True)
+    return new_df
 
 
 def we_need_multiple_questions(question, model_name, temperature):
