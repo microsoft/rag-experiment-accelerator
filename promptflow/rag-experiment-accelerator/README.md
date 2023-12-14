@@ -89,7 +89,7 @@ az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
 }
 ```
 
-# Folder structure
+## Folder structure
 
 The top-level `flow.dag.yaml` runs the RAG experiments end-to-end using the five steps: 
     1. Setup (sets the necessary environment variables)
