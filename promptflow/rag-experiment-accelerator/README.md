@@ -12,7 +12,7 @@ The `setup` node runs first and loads the required environment variables from a 
 
 ### Index
 The `index` node will:
-- create indexes based on the paramters set in `config.json`. Each index name will be in the following format: `{name_prefix}-{chunk_size}-{overlap}-{dimension}-{ef_construction}-{ef_search}`
+- Create indexes based on the paramters set in `config.json`. Each index name will be in the following format: `{name_prefix}-{chunk_size}-{overlap}-{dimension}-{ef_construction}-{ef_search}`
 - Chunk documents based on the chunking parameters in `config.json`
 - Generate a summary and title for each chunk
 - Create embeddings for each chunk's content, generated title, and generated summary
@@ -24,16 +24,16 @@ If the indexes have been previously created, this node is optional and can be sk
 The `qa_generation` node will chunk each document and generate ground truth questions and answers for each chunk. 
 
 Optionally, this node can be skipped by setting the input `should_generate_qa` to `false` and a set of user-provided ground truth questions and answers can be used. User-provided questions and answers should be in the `jsonl` file format and by default, in the location `./artifacts/eval_data.jsonl`. This location can be configured by updating the `eval_data_jsonl_file_path` value in `config.json`. Each line of the `jsonl` file should contain the keys:
-- user_prompt (the question to ask the LLM)
-- output_prompt (the ground truth answer to the user prompt question)
-- context (the document context that contains the answer)
+- `user_prompt` (the question to ask the LLM)
+- `output_prompt` (the ground truth answer to the user prompt question)
+- `context` (the document context that contains the answer)
 
 ### Querying
 The `querying` node takes the `user_prompt`'s that were generated from the `qa_generation` node and searches Azure AI Search for using the `search_types` specified in `config.json`. 
 
 For each `user_prompt` and `search_type`:
 - If the `user_prompt` is complex, it is broken down into multiple prompts and both prompts are used in Azure AI Search
-- the search results are optionally reranked based on the `rerank` setting in `config.json`
+- The search results are optionally reranked based on the `rerank` setting in `config.json`
 - Search result metrics are calulated
 - The content from the search results are added as context to the `user_prompt` and the LLM is called.
 - The responses from the LLM are uploaded as a data asset and used by evaluation node.
