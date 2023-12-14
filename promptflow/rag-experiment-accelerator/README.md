@@ -92,24 +92,24 @@ az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
 ## Folder structure
 
 The top-level `flow.dag.yaml` runs the RAG experiments end-to-end using the five steps: 
-    1. Setup (sets the necessary environment variables)
-    2. Index 
-        - chunks documents
-        - creates indexes
-        - generates a summary and title using an LLM
-        - generate embeddings for the chunk content, title, and summary
-        - uploads to the index 
-    3. Question and answer generation
-        - Chunks documents 
-        - Generates a question and answer for each chunk
-    4. Querying
-        - Takes each generated question and queries Azure AI search based on the search methods defined in `config.json`
-        - If the generated question is complex, the question is broken down into multiple questions and both questions are used in Azure AI Search
-        - Optionally reranks the search results based on `config.json`
-        - Adds the search content as context to the generated question and calls the LLM
-        - the LLM response and search metrics are saved as a data asset to be used in the evaluation step
-    5. Evaluation
-        - evaluates the LLM response with the generated answer from step 3 using the metrics specified in `config.json`
-        - logs the results to MLflow
+1. Setup (sets the necessary environment variables)
+2. Index 
+    - chunks documents
+    - creates indexes
+    - generates a summary and title using an LLM
+    - generate embeddings for the chunk content, title, and summary
+    - uploads to the index 
+3. Question and answer generation
+    - Chunks documents 
+    - Generates a question and answer for each chunk
+4. Querying
+    - Takes each generated question and queries Azure AI search based on the search methods defined in `config.json`
+    - If the generated question is complex, the question is broken down into multiple questions and both questions are used in Azure AI Search
+    - Optionally reranks the search results based on `config.json`
+    - Adds the search content as context to the generated question and calls the LLM
+    - the LLM response and search metrics are saved as a data asset to be used in the evaluation step
+5. Evaluation
+    - evaluates the LLM response with the generated answer from step 3 using the metrics specified in `config.json`
+    - logs the results to MLflow
 
 Each step can also be run indepedently and the flow is contained in its correspinding folder. When runnning the flows independently, an inital `setup` will run to ensure the proper environment variables are set.
