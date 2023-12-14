@@ -113,25 +113,3 @@ The top-level `flow.dag.yaml` runs the RAG experiments end-to-end using the five
         - logs the results to MLflow
 
 Each step can also be run indepedently and the flow is contained in its correspinding folder. When runnning the flows independently, an inital `setup` will run to ensure the proper environment variables are set.
-
-## Getting Started
-To use the **RAG Experiment Accelerator** in Prompt Flow, follow these steps:
-- 1. Modify the `config.json` file with the hyperparameters for your experiment. 
-<!-- TODO: fix this - Full documentation on can be found [here](../README.md#description-of-configuration-elements) -->
-- 2. Setup connection [add setup instruction here]
-
-## Creating a custom environment for prompt flow runtime
-
-```bash
-az login
-
-az account set --subscription <subscription ID>
-
-az extension add --name ml
-
-az configure --defaults workspace=$MLWorkSpaceName group=$ResourceGroupName
-
-cd ./promptflow/rag-experiment-accelerator/custom_environment
-
-az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
-```
