@@ -4,6 +4,10 @@ inputs:
     default: true
   config_dir:
     type: string
+    default: ./
+  should_generate_qa:
+    type: bool
+    default: true
 outputs: {}
 nodes:
 - name: setup
@@ -11,7 +15,7 @@ nodes:
   source:
     type: code
     path: setup/setup_env.py
-  inputs:
+  inputs: 
     connection: ""
 - name: index
   type: python
@@ -31,6 +35,7 @@ nodes:
     path: qa_generation/generate_qa.py
   inputs:
     config_dir: ${inputs.config_dir}
+    should_generate_qa: ${inputs.should_generate_qa}
   activate:
     when: ${index.output}
     is: true
