@@ -34,8 +34,8 @@
         "bert_all_MiniLM_L6_v2",
         "cosine",
         "bert_distilbert_base_nli_stsb_mean_tokens",
-        "answer_relevance",
-        "context_precision"
+        "llm_answer_relevance",
+        "llm_context_precision"
     ],
     "chat_model_name": "gpt-35-turbo",
     "embedding_model_name": "text-embedding-ada-002",
