@@ -79,7 +79,7 @@ def upload_data(
     index_name: str,
     search_key: str,
     dimension: int,
-    chat_model_name: str,
+    aoai_deployment_name: str,
     embedding_model_name: str,
     temperature: float,
 ):
@@ -92,7 +92,7 @@ def upload_data(
         index_name (str): The name of the index to upload data to.
         search_key (str): The search key for the Azure Cognitive Search service.
         dimension (int): The dimensionality of the embeddings to generate.
-        chat_model_name (str): The name of the chat model to use for generating titles and summaries.
+        aoai_deployment_name (str): The name of the Azure Opan AI deployment to use for generating titles and summaries.
         embedding_model_name (str): The name of the embedding model to use for generating embeddings.
         temperature (float): The temperature to use when generating titles and summaries.
 
@@ -105,8 +105,8 @@ def upload_data(
     )
     documents = []
     for i, chunk in enumerate(chunks):
-        title = generate_title(str(chunk["content"]), chat_model_name, temperature)
-        summary = generate_summary(str(chunk["content"]), chat_model_name, temperature)
+        title = generate_title(str(chunk["content"]), aoai_deployment_name, temperature)
+        summary = generate_summary(str(chunk["content"]), aoai_deployment_name, temperature)
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,

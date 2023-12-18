@@ -109,7 +109,7 @@ def rerank_documents(
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.CHAT_MODEL_NAME,
+            config.AOAI_DEPLOYMENT_NAME,
             config.TEMPERATURE,
             config.LLM_RERANK_THRESHOLD,
         )
@@ -228,7 +228,7 @@ def query_and_eval_acs_multi(
         openai_response = generate_response(
             full_prompt_instruction,
             original_prompt,
-            config.CHAT_MODEL_NAME,
+            config.AOAI_DEPLOYMENT_NAME,
             config.TEMPERATURE,
         )
         context.append(openai_response)
@@ -291,14 +291,14 @@ def run(config_dir: str):
 
                                     is_multi_question = do_we_need_multiple_questions(
                                         user_prompt,
-                                        config.CHAT_MODEL_NAME,
+                                        config.AOAI_DEPLOYMENT_NAME,
                                         config.TEMPERATURE,
                                     )
                                     if is_multi_question:
                                         responses = json.loads(
                                             we_need_multiple_questions(
                                                 user_prompt,
-                                                config.CHAT_MODEL_NAME,
+                                                config.AOAI_DEPLOYMENT_NAME,
                                                 config.TEMPERATURE,
                                             )
                                         )
@@ -366,7 +366,7 @@ def run(config_dir: str):
                                             openai_response = generate_response(
                                                 full_prompt_instruction,
                                                 user_prompt,
-                                                config.CHAT_MODEL_NAME,
+                                                config.AOAI_DEPLOYMENT_NAME,
                                                 config.TEMPERATURE,
                                             )
                                             logger.debug(openai_response)

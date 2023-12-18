@@ -284,7 +284,7 @@ class Config:
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
-        CHAT_MODEL_NAME (str): The name of the chat model to use.
+        AOAI_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
         EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
         EVAL_MODEL_NAME (str): The name of the chat model to use for prod.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
@@ -333,7 +333,7 @@ class Config:
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
-        self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
+        self.AOAI_DEPLOYMENT_NAME = data.get("aoai_deployment_name", None)
         self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
         self.EVAL_MODEL_NAME = data.get("eval_model_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
@@ -418,12 +418,12 @@ class Config:
 
         """
         if self.OpenAICredentials.OPENAI_API_TYPE is not None:
-            if self.CHAT_MODEL_NAME is not None:
+            if self.AOAI_DEPLOYMENT_NAME is not None:
                 self._try_retrieve_model(
-                    self.CHAT_MODEL_NAME,
+                    self.AOAI_DEPLOYMENT_NAME,
                     tags=["chat_completion", "inference"],
                 )
-                logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
+                logger.info(f"Model {self.AOAI_DEPLOYMENT_NAME} is ready for use.")
             if self.EMBEDDING_MODEL_NAME is not None:
                 self._try_retrieve_model(
                     self.EMBEDDING_MODEL_NAME,

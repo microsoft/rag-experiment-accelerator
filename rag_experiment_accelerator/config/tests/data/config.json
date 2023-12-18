@@ -21,7 +21,7 @@
         "test_metric_type_1",
         "test_metric_type_2"
     ],
-    "chat_model_name": "test_chat_model_name",
+    "aoai_deployment_name": "test_chat_model_name",
     "embedding_model_name": "test_embedding_model_name",
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
