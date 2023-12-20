@@ -10,7 +10,7 @@ from rag_experiment_accelerator.llm.prompts import (
     multiple_prompt_instruction,
     do_need_multiple_prompt_instruction,
 )
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 import pandas as pd
@@ -37,38 +37,38 @@ def my_hash(s):
     return hashlib.md5(s.encode()).hexdigest()
 
 
-def generate_title(chunk, model_name, temperature):
+def generate_title(chunk, aoai_deployment_name, temperature):
     """
     Generates a title for a given chunk of text using a language model.
 
     Args:
         chunk (str): The input text to generate a title for.
-        model_name (str): The name of the language model to use.
+        aoai_deployment_name (str): The name of Azure Open AI deployment to use.
         temperature (float): The temperature to use when generating the title.
 
     Returns:
         str: The generated title.
     """
-    response = generate_response(
-        prompt_instruction_title, chunk, model_name, temperature
+    response = ResponseGenerator().generate_response(
+        prompt_instruction_title, chunk, aoai_deployment_name, temperature
     )
     return response
 
 
-def generate_summary(chunk, model_name, temperature):
+def generate_summary(chunk, aoai_deployment_name, temperature):
     """
     Generates a summary of the given chunk of text using the specified language model.
 
     Args:
         chunk (str): The text to summarize.
-        model_name (str): The name of the language model to use.
+        aoai_deployment_name (str): The name of Azure Open AI deployment to use.
         temperature (float): The "temperature" parameter to use when generating the summary.
 
     Returns:
         str: The generated summary.
     """
-    response = generate_response(
-        prompt_instruction_summary, chunk, model_name, temperature
+    response = ResponseGenerator().generate_response(
+        prompt_instruction_summary, chunk, aoai_deployment_name, temperature
     )
     return response
 
@@ -150,7 +150,7 @@ def generate_qna(docs, model_name, temperature):
 
     for i, chunk in enumerate(docs):
         if len(chunk.page_content) > 50:
-            response = generate_response(
+            response = ResponseGenerator().generate_response(
                 generate_qna_instruction_system_prompt,
                 generate_qna_instruction_user_prompt
                 + chunk.page_content
@@ -198,7 +198,7 @@ def we_need_multiple_questions(question, model_name, temperature):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = generate_response(full_prompt_instruction, "", model_name, temperature)
+    response1 = ResponseGenerator().generate_response(full_prompt_instruction, "", model_name, temperature)
     return response1
 
 
@@ -217,5 +217,5 @@ def do_we_need_multiple_questions(question, model_name, temperature):
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = generate_response(full_prompt_instruction, "", model_name, temperature)
+    response1 = ResponseGenerator().generate_response(full_prompt_instruction, "", model_name, temperature)
     return re.search(r"\bHIGH\b", response1.upper())

@@ -29,7 +29,7 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 )
 from rag_experiment_accelerator.search_type.acs_search_methods import create_client
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.reranking.reranker import (
     llm_rerank_documents,
@@ -225,7 +225,7 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        openai_response = generate_response(
+        openai_response = ResponseGenerator().generate_response(
             full_prompt_instruction,
             original_prompt,
             config.AOAI_DEPLOYMENT_NAME,
@@ -363,7 +363,7 @@ def run(config_dir: str):
                                                 + "\n"
                                                 + "\n".join(prompt_instruction_context)
                                             )
-                                            openai_response = generate_response(
+                                            openai_response = ResponseGenerator().generate_response(
                                                 full_prompt_instruction,
                                                 user_prompt,
                                                 config.AOAI_DEPLOYMENT_NAME,

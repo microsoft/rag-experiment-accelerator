@@ -221,19 +221,20 @@ class OpenAICredentials:
             openai_endpoint (str): The endpoint for the OpenAI API.
 
         Raises:
-            ValueError: If openai_api_type is not 'azure' or 'open_ai'.
+            ValueError: If some required environment variables are not set.
         """
-        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+        # For now we only support Azure Open AI
+        self.OPENAI_API_TYPE = 'azure'
         
-        if openai_api_type == 'azure' and openai_api_version is None:
+        if openai_api_version is None:
             raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
 
-        if openai_api_type == 'azure' and openai_endpoint is None:
+        if openai_endpoint is None:
             raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
+        
+        if openai_api_key is None:
+            raise ValueError(f"It is required OPENAI_API_KEY to be set.")
 
-        self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
         self.OPENAI_API_VERSION = openai_api_version
         self.OPENAI_ENDPOINT = openai_endpoint
@@ -351,7 +352,6 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
-        self._check_deployment()
         
         try:
             with open(f"{config_dir}/prompt_config.json", "r") as json_file:
@@ -365,68 +365,3 @@ class Config:
             logger.warn("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
 
-    def _try_retrieve_model(self, model_name: str, tags: list[str]):
-        """
-        Tries to retrieve a specified model from OpenAI or AzureOpenAI.
-
-        Args:
-            model_name (str): The name of the model to retrieve.
-            tags (list[str]): A list of capability tags to check for.
-        Returns:
-            Model: The retrieved model object if successful.
-
-        Raises:
-            ValueError: If the model is not ready or does not have the required capabilities.
-            NotFoundError: If the model does not exist.
-        """
-        try:
-            if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
-                client = OpenAI(api_key=self.OpenAICredentials.OPENAI_API_KEY)
-                model = client.models.retrieve(model=model_name)
-                # For non-azure models we can't retrieve status and capabilities
-                return model
-            else:
-                client = AzureOpenAI(
-                    azure_endpoint=self.OpenAICredentials.OPENAI_ENDPOINT, 
-                    api_key=self.OpenAICredentials.OPENAI_API_KEY,  
-                    api_version=self.OpenAICredentials.OPENAI_API_VERSION
-                )
-                model = client.models.retrieve(model=model_name)
-
-                if model.status != "succeeded":
-                    logger.critical(f"Model {model_name} is not ready.")
-                    raise ValueError(f"Model {model_name} is not ready.")
-                for tag in tags:
-                    if not model.capabilities[tag]:
-                        logger.critical(
-                            f"Model {model_name} does not have the {tag} capability."
-                        )
-                        raise ValueError(
-                            f"Model {model_name} does not have the {tag} capability."
-                        )
-                return model
-        except NotFoundError:
-            logger.critical(f"Model {model_name} does not exist.")
-            raise ValueError(f"Model {model_name} does not exist.")
-
-    def _check_deployment(self):
-        """
-        Checks the deployment environment.
-
-        This function checks if the OpenAI API type and chat model name are set,
-        and then tries to retrieve the model with specified tags.
-
-        """
-        if self.OpenAICredentials.OPENAI_API_TYPE is not None:
-            if self.AOAI_DEPLOYMENT_NAME is not None:
-                self._try_retrieve_model(
-                    self.AOAI_DEPLOYMENT_NAME,
-                    tags=["chat_completion", "inference"],
-                )
-                logger.info(f"Model {self.AOAI_DEPLOYMENT_NAME} is ready for use.")
-            if self.EMBEDDING_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.EMBEDDING_MODEL_NAME,
-                    tags=["embeddings", "inference"],
-                )
-                logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")

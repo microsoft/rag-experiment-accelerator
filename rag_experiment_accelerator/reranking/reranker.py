@@ -1,7 +1,7 @@
 import json
 import re
 from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 import numpy as np
 from sentence_transformers import CrossEncoder
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -68,7 +68,7 @@ def llm_rerank_documents(
         Question: {question}
     """
 
-    response = generate_response(
+    response = ResponseGenerator().generate_response(
         rerank_prompt_instruction, prompt, deployment_name, temperature
     )
     logger.debug("Response", response)
