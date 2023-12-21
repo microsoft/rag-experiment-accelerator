@@ -384,6 +384,7 @@ def run(config_dir: str):
                                                 "search_type": s_v,
                                                 "search_evals": search_evals,
                                                 "context": qna_context,
+                                                "question": user_prompt,
                                             }
 
                                             with open(write_path, "a") as out:
