@@ -4,7 +4,7 @@ inputs:
     default: true
   config_dir:
     type: string
-    default: ./
+    default: ../..
   should_generate_qa:
     type: bool
     default: true
@@ -15,7 +15,7 @@ nodes:
   source:
     type: code
     path: setup/setup_env.py
-  inputs: 
+  inputs:
     connection: ""
 - name: index
   type: python
