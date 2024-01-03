@@ -168,6 +168,7 @@ def generate_qna(docs, azure_oai_deployment_name):
                 )
                 logger.debug(e)
                 logger.debug(f"LLM Response: {response}")
+            
 
     return new_df
 
