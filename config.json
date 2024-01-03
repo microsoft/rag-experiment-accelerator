@@ -7,12 +7,8 @@
     "embedding_dimension": [768],
     "embedding_models": [
         {
-            "type": "azure",
-            "deployment_name": "text-embedding-ada-002"
-        },
-        {
             "type": "sentence-transformer",
-            "model_name": "all-MiniLM-L6-v2"
+            "model_name": "all-mpnet-base-v2"
         }
     ],
     "ef_construction": [400],
