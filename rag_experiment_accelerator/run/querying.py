@@ -67,7 +67,7 @@ def query_acs(
 
     Args:
         search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
-        embedding_model (EmbeddingModel): The model used to generate the embeddings
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
@@ -141,13 +141,12 @@ def query_and_eval_acs(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension of the search index to query.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query to execute.
         search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
-        model_name (str): The name of the model to use for searching.
 
     Returns:
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
@@ -184,7 +183,7 @@ def query_and_eval_acs_multi(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client.
-        dimension (int): The number of dimensions in the embedding space.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         questions (list[str]): A list of questions to query the search service with.
         original_prompt (str): The original prompt to generate the response from.
         output_prompt (str): The output prompt to use for reranking the search results.
