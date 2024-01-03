@@ -1,5 +1,5 @@
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
-from rag_experiment_accelerator.credentials.openai_credentials import OpenAICredentials
+from rag_experiment_accelerator.auth.credentials import OpenAICredentials
 from openai import AzureOpenAI
 
 
@@ -23,11 +23,12 @@ class AOAIEmbeddingModel(EmbeddingModel):
 
     """
 
-    def __init__(self, deployment_name: str, creds: OpenAICredentials, dimension: int = None) -> None:
+    def __init__(self, deployment_name: str, openai_creds: OpenAICredentials, dimension: int = None, **kwargs) -> None:
         if dimension is None:
             dimension = 1536
-        super().__init__(name=deployment_name, dimension=dimension)
-        self._client: AzureOpenAI = self._initilize_client(creds=creds)
+        super().__init__(name=deployment_name, dimension=dimension, **kwargs)
+        self.deployment_name = deployment_name
+        self._client: AzureOpenAI = self._initilize_client(creds=openai_creds)
 
         
     def _initilize_client(self, creds: OpenAICredentials) -> AzureOpenAI:
@@ -56,8 +57,8 @@ class AOAIEmbeddingModel(EmbeddingModel):
 
         response = self._client.embeddings.create(
             input=chunk,
-            model=self.model_name
+            model=self.deployment_name
         )
 
         embedding = response.data[0].embedding
-        return [embedding]
+        return embedding

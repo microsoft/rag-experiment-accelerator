@@ -1,6 +1,5 @@
 import json
 import os
-from openai import AzureOpenAI, NotFoundError, OpenAI
 from rag_experiment_accelerator.auth.credentials import AzureMLCredentials, AzureSearchCredentials, AzureSkillsCredentials, OpenAICredentials
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import EmbeddingModelFactory
@@ -95,15 +94,12 @@ class Config:
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
-        for model in embedding_model_config:
-            self.embedding_models.append(
-                EmbeddingModelFactory.create(
-                    embedding_type=model.get("type"), 
-                    model_name=model.get("model_name"),
-                    deployment_name=model.get("deployment_name"),
-                    dimension=model.get("dimension"), 
-                    openai_creds=self.OpenAICredentials
-                ))
+        for model_config in embedding_model_config:
+            kwargs = {
+                "openai_creds": self.OpenAICredentials,
+                **model_config
+            }
+            self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
         
         try:
             with open(f"{config_dir}/prompt_config.json", "r") as json_file:

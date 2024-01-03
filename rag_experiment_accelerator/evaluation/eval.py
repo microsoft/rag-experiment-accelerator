@@ -605,7 +605,7 @@ def evaluate_prompts(
     client,
     chunk_size,
     chunk_overlap,
-    embedding_dimension,
+    embedding_model,
     ef_construction,
     ef_search,
 ):
@@ -756,7 +756,8 @@ def evaluate_prompts(
     mlflow.log_param("retrieve_num_of_documents", retrieve_num_of_documents)
     mlflow.log_param("cross_encoder_at_k", cross_encoder_at_k)
     mlflow.log_param("chunk_overlap", chunk_overlap)
-    mlflow.log_param("embedding_dimension", embedding_dimension)
+    mlflow.log_param("embedding_dimension", embedding_model.dimension)
+    mlflow.log_param("embedding_model_name", embedding_model.name)
     mlflow.log_param("ef_construction", ef_construction)
     mlflow.log_param("ef_search", ef_search)
     mlflow.log_param("run_metrics", sum_dict)

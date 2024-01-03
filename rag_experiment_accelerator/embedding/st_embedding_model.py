@@ -31,7 +31,7 @@ class STEmbeddingModel(EmbeddingModel):
         "bert-large-nli-mean-tokens": 1024
     }
 
-    def __init__(self, model_name: str, dimension: int = None) -> None:
+    def __init__(self, model_name: str, dimension: int = None, **kwargs) -> None:
         """
         Initializes the SentenceTransformerEmbeddingModel object.
 
@@ -47,7 +47,7 @@ class STEmbeddingModel(EmbeddingModel):
             dimension = self._size_model_mapping.get(model_name)
             if dimension is None:
                 raise ValueError(f"Dimension not provided and model name {model_name} not found in mapping. Please provide a dimension or specify a supported model name in {self._size_model_mapping.keys()}")
-        super().__init__(name=model_name, dimension=dimension)
+        super().__init__(name=model_name, dimension=dimension, **kwargs)
         self._model = SentenceTransformer(self.name)
 
 
@@ -62,4 +62,4 @@ class STEmbeddingModel(EmbeddingModel):
             list: The embedding of the input text.
 
         """
-        return self._model.encode([str(chunk)]).tolist()
+        return self._model.encode([str(chunk)]).tolist()[0]
