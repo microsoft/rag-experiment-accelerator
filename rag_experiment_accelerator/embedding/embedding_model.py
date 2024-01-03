@@ -20,9 +20,8 @@ class EmbeddingModel(ABC):
         self.dimension = dimension
         self.name = name
 
-
     @abstractmethod
-    def generate_embedding(self, chunk: str) -> list:
+    def generate_embedding(self, chunk: str) -> list[float]:
         """
         abstract method to generate embeddings for a given chunk of text.
 

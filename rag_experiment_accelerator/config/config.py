@@ -1,6 +1,11 @@
 import json
 import os
-from rag_experiment_accelerator.auth.credentials import AzureMLCredentials, AzureSearchCredentials, AzureSkillsCredentials, OpenAICredentials
+from rag_experiment_accelerator.config.credentials import (
+    AzureMLCredentials,
+    AzureSearchCredentials,
+    AzureSkillsCredentials,
+    OpenAICredentials,
+)
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import EmbeddingModelFactory
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -40,7 +45,7 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
     """
 
-    _instance = None 
+    _instance = None
 
     def __new__(cls, config_dir: str = os.getcwd()):
         """
@@ -57,7 +62,7 @@ class Config:
             cls._instance = super(Config, cls).__new__(cls)
             cls._instance._initialize(config_dir)
         return cls._instance
-    
+
     def _initialize(self, config_dir: str) -> None:
         with open(f"{config_dir}/config.json", "r") as json_file:
             data = json.load(json_file)
@@ -65,10 +70,11 @@ class Config:
         self.config_dir = config_dir
         self.artifacts_dir = f"{config_dir}/artifacts"
         self.data_dir = f"{config_dir}/data"
-        self.EVAL_DATA_JSONL_FILE_PATH = f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
+        self.EVAL_DATA_JSONL_FILE_PATH = (
+            f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
+        )
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
-        self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
         self.EF_CONSTRUCTIONS = data["ef_construction"]
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
@@ -95,19 +101,18 @@ class Config:
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model_config in embedding_model_config:
-            kwargs = {
-                "openai_creds": self.OpenAICredentials,
-                **model_config
-            }
+            kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
             self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
-        
+
         try:
             with open(f"{config_dir}/prompt_config.json", "r") as json_file:
                 data = json.load(json_file)
-    
+
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn("prompt_config.json found but main_prompt_instruction is not set. Using default prompts")
+                logger.warn(
+                    "prompt_config.json found but main_prompt_instruction is not set. Using default prompts"
+                )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
             logger.warn("prompt_config.json not found. Using default prompts")

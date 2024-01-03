@@ -27,4 +27,6 @@ class EmbeddingModelFactory:
         elif type == "sentence-transformer":
             return STEmbeddingModel(**kwargs)
         else:
-            raise ValueError(f"Invalid embedding type: {type}. Must be one of ['azure', 'sentence-transformer']")
+            raise ValueError(
+                f"Invalid embedding type: {type}. Must be one of ['azure', 'sentence-transformer']"
+            )

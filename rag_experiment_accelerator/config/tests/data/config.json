@@ -4,7 +4,16 @@
         "chunk_size": [1],
         "overlap_size": [2]
     },
-    "embedding_dimension": [3],
+    "embedding_models": [
+        {
+            "type": "sentence-transformer",
+            "model_name": "all-MiniLM-L6-v2"
+        },
+        {
+            "type": "azure",
+            "deployment_name": "text-embedding-ada-002"
+        }
+    ],
     "ef_construction": [4],
     "ef_search": [5],
     "rerank": "test_rerank",
