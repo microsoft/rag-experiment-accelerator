@@ -4,7 +4,6 @@
         "chunk_size": [1000],
         "overlap_size": [200]
     },
-    "embedding_dimension": [768],
     "embedding_models": [
         {
             "type": "sentence-transformer",
