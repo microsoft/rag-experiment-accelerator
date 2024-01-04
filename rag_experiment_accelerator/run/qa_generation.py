@@ -33,7 +33,7 @@ def run(config_dir: str):
         raise e
     
     # generate qna
-    df = generate_qna(all_docs, config.CHAT_MODEL_NAME, config.TEMPERATURE)
+    df = generate_qna(all_docs, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME)
     # write to jsonl
     df.to_json(config.EVAL_DATA_JSONL_FILE_PATH, orient="records", lines=True)
     # create data asset in mlstudio
