@@ -28,7 +28,7 @@ def test_bleu():
     assert round(score) == 50
 
 
-@patch("rag_experiment_accelerator.evaluation.eval.generate_response")
+@patch("rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response")
 def test_llm_answer_relevance(mock_generate_response):
     mock_generate_response.return_value = "What is the name of the largest bone in the human body?"
 
@@ -40,7 +40,7 @@ def test_llm_answer_relevance(mock_generate_response):
     assert round(score) == 100
 
 
-@patch("rag_experiment_accelerator.evaluation.eval.generate_response")
+@patch("rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response")
 def test_llm_context_precision(mock_generate_response):
     mock_generate_response.return_value = "Yes"
     question = "What is the name of the largest bone in the human body?"
