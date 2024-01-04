@@ -175,13 +175,12 @@ def generate_qna(docs, azure_oai_deployment_name):
     return new_df
 
 
-def we_need_multiple_questions(question):
+def we_need_multiple_questions(question, azure_oai_deployment_name):
     """
     Generates a response to a given question using a language model with multiple prompts.
 
     Args:
         question (str): The question to generate a response for.
-        model_name (str): The name of the language model to use.
         azure_oai_deployment_name (str): The name of the Azure Opan AI deployment 
 
     Returns:
