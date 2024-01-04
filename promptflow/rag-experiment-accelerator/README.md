@@ -86,9 +86,10 @@ az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
 4. Add your own documents to the `./data` folder. (a set of sample documents are provided for testing purposes)
 5. Modify the `config.json` file with the hyperparameters for your experiment. Full documentation on can be found [here](#description-of-configuration-elements)
 6. Upload the flow to the ML workspace ![how to upload a local flow](./images/upload_local_flow.png)
-7. Select the custom runtime in Prompt Flow
-8. Click run in the UI
-9. Inspect the results in your ML workspace by selecting the `Jobs` tab under `Assets`. Click on the latest experiment run to view the metrics and results.
+7. Ensure you have also uploaded `config.json` and optionally `prompt_config.json` to the ML workspace.
+8. Select the custom runtime in Prompt Flow
+9. Click run in the UI
+10. Inspect the results in your ML workspace by selecting the `Jobs` tab under `Assets`. Click on the latest experiment run to view the metrics and results.
 
 
 ## Description of configuration elements
