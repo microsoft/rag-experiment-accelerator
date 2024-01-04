@@ -51,7 +51,7 @@ def test_config_init():
     assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
-    assert config.CHAT_MODEL_NAME == mock_config_data["chat_model_name"]
+    assert config.AZURE_OAI_CHAT_DEPLOYMENT_NAME == mock_config_data["azure_oai_chat_deployment_name"]
     assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (

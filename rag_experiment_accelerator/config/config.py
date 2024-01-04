@@ -29,9 +29,9 @@ class Config:
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
-        CHAT_MODEL_NAME (str): The name of the chat model to use.
+        AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
         EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
-        EVAL_MODEL_NAME (str): The name of the chat model to use for prod.
+        AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
@@ -79,9 +79,9 @@ class Config:
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
-        self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
+        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get("azure_oai_chat_deployment_name", None)
         self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
-        self.EVAL_MODEL_NAME = data.get("eval_model_name", None)
+        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get("azure_oai_eval_deployment_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]

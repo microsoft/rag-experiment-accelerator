@@ -80,7 +80,6 @@ def run(config_dir: str) -> None:
                             service_endpoint=service_endpoint,
                             index_name=index_name,
                             search_key=key,
-                            chat_model_name=config.CHAT_MODEL_NAME,
                             embedding_model=embedding_model,
-                            temperature=config.TEMPERATURE,
+                            azure_oai_deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                         )

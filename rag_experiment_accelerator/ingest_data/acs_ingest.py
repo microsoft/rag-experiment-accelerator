@@ -11,7 +11,7 @@ from rag_experiment_accelerator.llm.prompts import (
     multiple_prompt_instruction,
     do_need_multiple_prompt_instruction,
 )
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 import pandas as pd
 
@@ -37,38 +37,35 @@ def my_hash(s):
     return hashlib.md5(s.encode()).hexdigest()
 
 
-def generate_title(chunk, model_name, temperature):
+def generate_title(chunk, azure_oai_deployment_name):
     """
     Generates a title for a given chunk of text using a language model.
 
     Args:
         chunk (str): The input text to generate a title for.
-        model_name (str): The name of the language model to use.
-        temperature (float): The temperature to use when generating the title.
+        azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
 
     Returns:
         str: The generated title.
     """
-    response = generate_response(
-        prompt_instruction_title, chunk, model_name, temperature
+    response = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(
+        prompt_instruction_title, chunk
     )
     return response
 
 
-def generate_summary(chunk, model_name, temperature):
+def generate_summary(chunk, azure_oai_deployment_name):
     """
     Generates a summary of the given chunk of text using the specified language model.
 
     Args:
         chunk (str): The text to summarize.
-        model_name (str): The name of the language model to use.
-        temperature (float): The "temperature" parameter to use when generating the summary.
-
+        azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
     Returns:
         str: The generated summary.
     """
-    response = generate_response(
-        prompt_instruction_summary, chunk, model_name, temperature
+    response = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(
+        prompt_instruction_summary, chunk
     )
     return response
 
@@ -79,8 +76,7 @@ def upload_data(
     index_name: str,
     search_key: str,
     embedding_model: EmbeddingModel,
-    chat_model_name: str,
-    temperature: float,
+    azure_oai_deployment_name: str,
 ):
     """
     Uploads data to an Azure Cognitive Search index.
@@ -91,8 +87,7 @@ def upload_data(
         index_name (str): The name of the index to upload data to.
         search_key (str): The search key for the Azure Cognitive Search service.
         embedding_model (EmbeddingModel): The embedding model to generate the embedding.
-        chat_model_name (str): The name of the chat model to use for generating titles and summaries.
-        temperature (float): The temperature to use when generating titles and summaries.
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment to use for generating titles and summaries.
 
     Returns:
         None
@@ -103,8 +98,8 @@ def upload_data(
     )
     documents = []
     for i, chunk in enumerate(chunks):
-        title = generate_title(str(chunk["content"]), chat_model_name, temperature)
-        summary = generate_summary(str(chunk["content"]), chat_model_name, temperature)
+        title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
+        summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,
@@ -123,14 +118,13 @@ def upload_data(
     logger.info("all documents have been uploaded to the search index")
 
 
-def generate_qna(docs, model_name, temperature):
+def generate_qna(docs, azure_oai_deployment_name):
     """
     Generates a set of questions and answers from a list of documents using a language model.
 
     Args:
         docs (list): A list of documents to generate questions and answers from.
-        model_name (str): The name of the language model to use.
-        temperature (float): The temperature to use when generating responses.
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment 
 
     Returns:
         pandas.DataFrame: A DataFrame containing the generated questions, answers, and context for each document.
@@ -140,13 +134,11 @@ def generate_qna(docs, model_name, temperature):
 
     for i, chunk in enumerate(docs):
         if len(chunk.page_content) > 50:
-            response = generate_response(
+            response = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(
                 generate_qna_instruction_system_prompt,
                 generate_qna_instruction_user_prompt
                 + chunk.page_content
-                + "\nEND OF CONTEXT",
-                model_name,
-                temperature,
+                + "\nEND OF CONTEXT"
             )
             try:
                 response_dict = json.loads(response)
@@ -173,14 +165,14 @@ def generate_qna(docs, model_name, temperature):
     return new_df
 
 
-def we_need_multiple_questions(question, model_name, temperature):
+def we_need_multiple_questions(question, azure_oai_deployment_name):
     """
     Generates a response to a given question using a language model with multiple prompts.
 
     Args:
         question (str): The question to generate a response for.
         model_name (str): The name of the language model to use.
-        temperature (float): The temperature to use when generating the response.
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment 
 
     Returns:
         str: The generated response.
@@ -188,18 +180,17 @@ def we_need_multiple_questions(question, model_name, temperature):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = generate_response(full_prompt_instruction, "", model_name, temperature)
+    response1 = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
     return response1
 
 
-def do_we_need_multiple_questions(question, model_name, temperature):
+def do_we_need_multiple_questions(question, azure_oai_deployment_name):
     """
     Determines if we need to ask multiple questions based on the response generated by the model.
 
     Args:
         question (str): The question to ask.
-        model_name (str): The name of the model to use for generating the response.
-        temperature (float): The temperature to use for generating the response.
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment. 
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
@@ -207,5 +198,5 @@ def do_we_need_multiple_questions(question, model_name, temperature):
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = generate_response(full_prompt_instruction, "", model_name, temperature)
+    response1 = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
     return re.search(r"\bHIGH\b", response1.upper())

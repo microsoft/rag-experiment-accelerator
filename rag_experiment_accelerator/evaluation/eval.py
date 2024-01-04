@@ -19,7 +19,7 @@ from numpy import mean
 import ast
 import plotly.express as px
 
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 
 from rag_experiment_accelerator.llm.prompts import (
     llm_context_precision_instruction,
@@ -361,7 +361,7 @@ def llm_answer_relevance(question, answer):
 
     """
     config = Config()
-    result = generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
+    result = ResponseGenerator(deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -385,7 +385,7 @@ def llm_context_precision(question, context):
     """
     config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = generate_response(sys_message=llm_context_precision_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
+    result = ResponseGenerator(deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
