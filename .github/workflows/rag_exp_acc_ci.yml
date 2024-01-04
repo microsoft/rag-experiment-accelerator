@@ -8,12 +8,10 @@ on:
     branches:
       - main
       - development
-      - josh/test-cancel-in-progress-workflow
   push:
     branches:
       - main
       - development
-      - josh/test-cancel-in-progress-workflow
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

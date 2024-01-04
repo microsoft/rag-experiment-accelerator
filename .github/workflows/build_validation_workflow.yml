@@ -5,6 +5,10 @@ on:
   workflow_dispatch:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/development' || github.ref != 'refs/heads/main' }}
+
 jobs:
   validate-code:
     name: job for validating code and structure
