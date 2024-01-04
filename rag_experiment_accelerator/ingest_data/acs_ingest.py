@@ -123,8 +123,8 @@ def upload_data(
 
         documents.append(input_data)
 
-        search_client.upload_documents(documents)
-        logger.info(f"Uploaded {len(documents)} documents")
+        search_client.upload_documents([input_data])
+    logger.info(f"Uploaded {len(documents)} documents")
     logger.info("all documents have been uploaded to the search index")
 
 
