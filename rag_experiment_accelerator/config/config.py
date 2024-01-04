@@ -221,19 +221,20 @@ class OpenAICredentials:
             openai_endpoint (str): The endpoint for the OpenAI API.
 
         Raises:
-            ValueError: If openai_api_type is not 'azure' or 'open_ai'.
+            ValueError: If some required environment variables are not set.
         """
-        if openai_api_type is not None and openai_api_type not in ["azure", "open_ai"]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
+        # For now we only support Azure Open AI
+        self.OPENAI_API_TYPE = 'azure'
         
-        if openai_api_type == 'azure' and openai_api_version is None:
+        if openai_api_version is None:
             raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
 
-        if openai_api_type == 'azure' and openai_endpoint is None:
+        if openai_endpoint is None:
             raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
+        
+        if openai_api_key is None:
+            raise ValueError(f"It is required OPENAI_API_KEY to be set.")
 
-        self.OPENAI_API_TYPE = openai_api_type
         self.OPENAI_API_KEY = openai_api_key
         self.OPENAI_API_VERSION = openai_api_version
         self.OPENAI_ENDPOINT = openai_endpoint
@@ -284,9 +285,9 @@ class Config:
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
-        CHAT_MODEL_NAME (str): The name of the chat model to use.
+        AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
         EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
-        EVAL_MODEL_NAME (str): The name of the chat model to use for prod.
+        AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
@@ -333,9 +334,9 @@ class Config:
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
-        self.CHAT_MODEL_NAME = data.get("chat_model_name", None)
+        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get("azure_oai_chat_deployment_name", None)
         self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
-        self.EVAL_MODEL_NAME = data.get("eval_model_name", None)
+        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get("azure_oai_eval_deployment_name", None)
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]
@@ -351,7 +352,6 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
-        self._check_deployment()
         
         try:
             with open(f"{config_dir}/prompt_config.json", "r") as json_file:
@@ -365,68 +365,3 @@ class Config:
             logger.warn("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
 
-    def _try_retrieve_model(self, model_name: str, tags: list[str]):
-        """
-        Tries to retrieve a specified model from OpenAI or AzureOpenAI.
-
-        Args:
-            model_name (str): The name of the model to retrieve.
-            tags (list[str]): A list of capability tags to check for.
-        Returns:
-            Model: The retrieved model object if successful.
-
-        Raises:
-            ValueError: If the model is not ready or does not have the required capabilities.
-            NotFoundError: If the model does not exist.
-        """
-        try:
-            if self.OpenAICredentials.OPENAI_API_TYPE != "azure":
-                client = OpenAI(api_key=self.OpenAICredentials.OPENAI_API_KEY)
-                model = client.models.retrieve(model=model_name)
-                # For non-azure models we can't retrieve status and capabilities
-                return model
-            else:
-                client = AzureOpenAI(
-                    azure_endpoint=self.OpenAICredentials.OPENAI_ENDPOINT, 
-                    api_key=self.OpenAICredentials.OPENAI_API_KEY,  
-                    api_version=self.OpenAICredentials.OPENAI_API_VERSION
-                )
-                model = client.models.retrieve(model=model_name)
-
-                if model.status != "succeeded":
-                    logger.critical(f"Model {model_name} is not ready.")
-                    raise ValueError(f"Model {model_name} is not ready.")
-                for tag in tags:
-                    if not model.capabilities[tag]:
-                        logger.critical(
-                            f"Model {model_name} does not have the {tag} capability."
-                        )
-                        raise ValueError(
-                            f"Model {model_name} does not have the {tag} capability."
-                        )
-                return model
-        except NotFoundError:
-            logger.critical(f"Model {model_name} does not exist.")
-            raise ValueError(f"Model {model_name} does not exist.")
-
-    def _check_deployment(self):
-        """
-        Checks the deployment environment.
-
-        This function checks if the OpenAI API type and chat model name are set,
-        and then tries to retrieve the model with specified tags.
-
-        """
-        if self.OpenAICredentials.OPENAI_API_TYPE is not None:
-            if self.CHAT_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.CHAT_MODEL_NAME,
-                    tags=["chat_completion", "inference"],
-                )
-                logger.info(f"Model {self.CHAT_MODEL_NAME} is ready for use.")
-            if self.EMBEDDING_MODEL_NAME is not None:
-                self._try_retrieve_model(
-                    self.EMBEDDING_MODEL_NAME,
-                    tags=["embeddings", "inference"],
-                )
-                logger.info(f"Model {self.EMBEDDING_MODEL_NAME} is ready for use.")

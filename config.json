@@ -37,9 +37,9 @@
         "llm_answer_relevance",
         "llm_context_precision"
     ],
-    "chat_model_name": "gpt-35-turbo",
+    "azure_oai_chat_deployment_name": "gpt-35-turbo",
     "embedding_model_name": "text-embedding-ada-002",
-    "eval_model_name": "gpt-35-turbo",
+    "azure_oai_eval_deployment_name": "gpt-35-turbo",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
