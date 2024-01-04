@@ -29,7 +29,7 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 )
 from rag_experiment_accelerator.search_type.acs_search_methods import create_client
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.reranking.reranker import (
     llm_rerank_documents,
@@ -109,8 +109,7 @@ def rerank_documents(
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
+            config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
             config.LLM_RERANK_THRESHOLD,
         )
     elif config.RERANK_TYPE == "crossencoder":
@@ -225,11 +224,9 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        openai_response = generate_response(
+        openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME).generate_response(
             full_prompt_instruction,
             original_prompt,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -291,15 +288,14 @@ def run(config_dir: str):
 
                                     is_multi_question = do_we_need_multiple_questions(
                                         user_prompt,
-                                        config.CHAT_MODEL_NAME,
-                                        config.TEMPERATURE,
+                                        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                     )
                                     if is_multi_question:
                                         responses = json.loads(
                                             we_need_multiple_questions(
                                                 user_prompt,
-                                                config.CHAT_MODEL_NAME,
-                                                config.TEMPERATURE,
+                                                config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+
                                             )
                                         )
                                         new_questions = []
@@ -363,11 +359,9 @@ def run(config_dir: str):
                                                 + "\n"
                                                 + "\n".join(prompt_instruction_context)
                                             )
-                                            openai_response = generate_response(
+                                            openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,).generate_response(
                                                 full_prompt_instruction,
                                                 user_prompt,
-                                                config.CHAT_MODEL_NAME,
-                                                config.TEMPERATURE,
                                             )
                                             logger.debug(openai_response)
 
