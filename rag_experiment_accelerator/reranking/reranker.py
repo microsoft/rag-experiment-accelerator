@@ -42,7 +42,7 @@ def cross_encoder_rerank_documents(
 
 
 def llm_rerank_documents(
-    documents, question, deployment_name, temperature, rerank_threshold
+    documents, question, deployment_name, rerank_threshold
 ):
     """
     Reranks a list of documents based on a given question using the LLM model.
@@ -51,7 +51,6 @@ def llm_rerank_documents(
         documents (list): A list of documents to be reranked.
         question (str): The question to be used for reranking.
         deployment_name (str): The name of the LLM deployment to be used.
-        temperature (float): The temperature to be used for generating responses.
         rerank_threshold (int): The threshold for reranking documents.
 
     Returns:
@@ -68,8 +67,8 @@ def llm_rerank_documents(
         Question: {question}
     """
 
-    response = ResponseGenerator().generate_response(
-        rerank_prompt_instruction, prompt, deployment_name, temperature
+    response = ResponseGenerator(deployment_name=deployment_name).generate_response(
+        rerank_prompt_instruction, prompt
     )
     logger.debug("Response", response)
     pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"

@@ -361,7 +361,7 @@ def llm_answer_relevance(question, answer):
 
     """
     config = Config()
-    result = ResponseGenerator().generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer, aoai_deployment_name=config.AOAI_EVAL_DEPLOYMENT_NAME, temperature=config.TEMPERATURE)
+    result = ResponseGenerator(deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -385,7 +385,7 @@ def llm_context_precision(question, context):
     """
     config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = ResponseGenerator().generate_response(sys_message=llm_context_precision_instruction, prompt=prompt, aoai_deployment_name=config.AOAI_EVAL_DEPLOYMENT_NAME, temperature=config.TEMPERATURE)
+    result = ResponseGenerator(deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:

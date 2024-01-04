@@ -175,7 +175,7 @@ def test_config_init(
     assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
-    assert config.AOAI_DEPLOYMENT_NAME == mock_config_data["aoai_deployment_name"]
+    assert config.AZURE_OAI_CHAT_DEPLOYMENT_NAME == mock_config_data["azure_oai_chat_deployment_name"]
     assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (
@@ -251,7 +251,7 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
 
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
 @pytest.mark.parametrize(
-    "api_type, aoai_deployment_name, embedding_model_name, chat_tags, embedding_tags",
+    "api_type, azure_oai_chat_deployment_name, embedding_model_name, chat_tags, embedding_tags",
     [
         ("openai", "gpt-3", None, ["chat_completion", "inference"], None),
         ("azure", None, "bert", None, ["embeddings", "inference"]),
@@ -266,7 +266,7 @@ def test_try_retrieve_model(model_status, capabilities, tags, raises_exception):
 )
 def test_check_deployment(
     api_type,
-    aoai_deployment_name,
+    azure_oai_chat_deployment_name,
     embedding_model_name,
     chat_tags,
     embedding_tags,
@@ -278,13 +278,13 @@ def test_check_deployment(
 
         config = Config(get_test_config_dir())
         config.OpenAICredentials.OPENAI_API_TYPE = api_type
-        config.AOAI_DEPLOYMENT_NAME = aoai_deployment_name
+        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = azure_oai_chat_deployment_name
         config.EMBEDDING_MODEL_NAME = embedding_model_name
 
         config._check_deployment()
         calls = []
-        if aoai_deployment_name:
-            calls.append(call(aoai_deployment_name, tags=chat_tags))
+        if azure_oai_chat_deployment_name:
+            calls.append(call(azure_oai_chat_deployment_name, tags=chat_tags))
         if embedding_model_name:
             calls.append(call(embedding_model_name, tags=embedding_tags))
 

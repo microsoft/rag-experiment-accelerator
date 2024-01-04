@@ -109,8 +109,7 @@ def rerank_documents(
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.AOAI_DEPLOYMENT_NAME,
-            config.TEMPERATURE,
+            config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
             config.LLM_RERANK_THRESHOLD,
         )
     elif config.RERANK_TYPE == "crossencoder":
@@ -225,11 +224,9 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        openai_response = ResponseGenerator().generate_response(
+        openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME).generate_response(
             full_prompt_instruction,
             original_prompt,
-            config.AOAI_DEPLOYMENT_NAME,
-            config.TEMPERATURE,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -291,15 +288,14 @@ def run(config_dir: str):
 
                                     is_multi_question = do_we_need_multiple_questions(
                                         user_prompt,
-                                        config.AOAI_DEPLOYMENT_NAME,
-                                        config.TEMPERATURE,
+                                        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                     )
                                     if is_multi_question:
                                         responses = json.loads(
                                             we_need_multiple_questions(
                                                 user_prompt,
-                                                config.AOAI_DEPLOYMENT_NAME,
-                                                config.TEMPERATURE,
+                                                config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+
                                             )
                                         )
                                         new_questions = []
@@ -363,11 +359,9 @@ def run(config_dir: str):
                                                 + "\n"
                                                 + "\n".join(prompt_instruction_context)
                                             )
-                                            openai_response = ResponseGenerator().generate_response(
+                                            openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,).generate_response(
                                                 full_prompt_instruction,
                                                 user_prompt,
-                                                config.AOAI_DEPLOYMENT_NAME,
-                                                config.TEMPERATURE,
                                             )
                                             logger.debug(openai_response)
 
