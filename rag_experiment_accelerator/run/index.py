@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.run.args import get_directory_arg
 
-load_dotenv(override=True)
-
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.embedding.gen_embeddings import \
     generate_embedding
@@ -17,6 +15,7 @@ from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
+load_dotenv(override=True)
 
 
 def run(config_dir: str) -> None:

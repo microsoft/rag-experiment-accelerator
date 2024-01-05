@@ -6,14 +6,13 @@ from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
-load_dotenv(override=True)
-
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
 from rag_experiment_accelerator.run.args import get_directory_arg
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
+load_dotenv(override=True)
 
 
 def run(config_dir: str):

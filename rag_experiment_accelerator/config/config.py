@@ -1,8 +1,6 @@
 import json
 import os
 
-from openai import AzureOpenAI, NotFoundError, OpenAI
-
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 

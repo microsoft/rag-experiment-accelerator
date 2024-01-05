@@ -1,3 +1,5 @@
+from rag_experiment_accelerator.utils.logging import get_logger
+import hashlib
 import json
 import re
 
@@ -17,10 +19,6 @@ from rag_experiment_accelerator.nlp.preprocess import Preprocess
 
 pre_process = Preprocess()
 
-
-import hashlib
-
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

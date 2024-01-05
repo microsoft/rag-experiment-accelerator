@@ -14,8 +14,6 @@ from rag_experiment_accelerator.evaluation.spacy_evaluator import \
 from rag_experiment_accelerator.run.args import get_directory_arg
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
-load_dotenv(override=True)
-
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions, we_need_multiple_questions)
@@ -30,6 +28,7 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
     search_for_match_semantic, search_for_match_text)
 from rag_experiment_accelerator.utils.logging import get_logger
 
+load_dotenv(override=True)
 logger = get_logger(__name__)
 
 search_mapping = {

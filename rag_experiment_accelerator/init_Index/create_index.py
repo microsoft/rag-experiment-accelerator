@@ -11,7 +11,6 @@ from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

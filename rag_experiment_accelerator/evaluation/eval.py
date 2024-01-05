@@ -164,9 +164,6 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     return int(sum(differences) / len(differences))
 
 
-from sentence_transformers import SentenceTransformer
-
-
 def semantic_compare_values(
     value1: str,
     value2: str,
@@ -190,9 +187,6 @@ def semantic_compare_values(
     similarity_score = cosine_similarity(embedding1, embedding2)
 
     differences.append(similarity_score * 100)
-
-
-from sentence_transformers import SentenceTransformer
 
 
 def semantic_compare_values(

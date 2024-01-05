@@ -2,8 +2,6 @@ from dotenv import load_dotenv
 
 from rag_experiment_accelerator.run.args import get_directory_arg
 
-load_dotenv(override=True)
-
 import mlflow
 from azure.ai.ml import MLClient
 
@@ -13,6 +11,7 @@ from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
+load_dotenv(override=True)
 
 
 def run(config_dir: str):
