@@ -52,7 +52,8 @@ def test_evaluate_search_result_calulates_recall_score():
 def test_evaluate_search_result_returns_all_search_content():
     evaluator = SpacyEvaluator()
 
-    content, _ = evaluate_search_result(search_response, evaluation_content, evaluator)
+    content, _ = evaluate_search_result(
+        search_response, evaluation_content, evaluator)
 
     for i, doc in enumerate(search_response):
         assert doc["content"] == content[i]

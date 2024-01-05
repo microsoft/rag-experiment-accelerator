@@ -37,7 +37,8 @@ def create_data_asset(data_path, data_asset_name, azure_credential, azure_ml_cre
 
     data_create = ml_client.data.create_or_update(aml_dataset)
 
-    aml_dataset_unlabeled = ml_client.data.get(name=data_asset_name, label="latest")
+    aml_dataset_unlabeled = ml_client.data.get(
+        name=data_asset_name, label="latest")
 
     logger.info(f"Dataset version: {aml_dataset_unlabeled.version}")
     logger.info(f"Dataset ID: {aml_dataset_unlabeled.id}")

@@ -45,7 +45,6 @@ def test_llm_context_precision(mock_generate_response):
     mock_generate_response.return_value = "Yes"
     question = "What is the name of the largest bone in the human body?"
     context = "According to the Cleveland Clinic, \"The femur is the largest and strongest bone in the human body. It can support as much as 30 times the weight of your body. The average adult male femur is 48 cm (18.9 in) in length and 2.34 cm (0.92 in) in diameter. The average weight among adult males in the United States is 196 lbs (872 N). Therefore, the adult male femur can support roughly 6,000 lbs of compressive force.\""
-    
+
     score = llm_context_precision(question, context)
     assert score == 100
-

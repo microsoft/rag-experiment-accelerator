@@ -1,3 +1,5 @@
+from rag_experiment_accelerator.utils.logging import get_logger
+import hashlib
 import json
 import re
 from azure.core.credentials import AzureKeyCredential
@@ -17,9 +19,6 @@ import pandas as pd
 
 pre_process = Preprocess()
 
-
-import hashlib
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -100,8 +99,10 @@ def upload_data(
     )
     documents = []
     for i, chunk in enumerate(chunks):
-        title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
-        summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
+        title = generate_title(
+            str(chunk["content"]), azure_oai_deployment_name)
+        summary = generate_summary(
+            str(chunk["content"]), azure_oai_deployment_name)
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,
@@ -189,7 +190,8 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
+    response1 = ResponseGenerator(
+        deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
     return response1
 
 
@@ -207,5 +209,6 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
+    response1 = ResponseGenerator(
+        deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
     return re.search(r"\bHIGH\b", response1.upper())

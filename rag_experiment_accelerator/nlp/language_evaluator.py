@@ -37,15 +37,18 @@ class LanguageEvaluator:
         is_confident(text: str) -> bool: Determines whether language detected is reliable based on confidence score.
         is_language_match(text: str, language_code: str) -> bool: Determines whether language matches language detected.
         check_string(text: str) -> Check the length of an input string.
-    """    
+    """
+
     def __init__(self, query_language="en-us", default_language="en", country_hint="", confidence_threshold=0.8) -> None:
         try:
-            self.query_language = query_language            
-            self.default_language = default_language if default_language else query_language.split('-')[0]
-            self.country_hint = country_hint if country_hint else query_language.split('-')[1]
+            self.query_language = query_language
+            self.default_language = default_language if default_language else query_language.split(
+                '-')[0]
+            self.country_hint = country_hint if country_hint else query_language.split(
+                '-')[1]
             self.confidence_threshold = confidence_threshold
             self.creds = AzureSkillsCredentials.from_env()
-            self.max_content_length = 50000 # Data limit
+            self.max_content_length = 50000  # Data limit
         except Exception as e:
             logger.error(str(e))
 
@@ -65,10 +68,11 @@ class LanguageEvaluator:
         try:
             service_endpoint = self.creds.AZURE_LANGUAGE_SERVICE_ENDPOINT
             key = self.creds.AZURE_LANGUAGE_SERVICE_KEY
-            
-            client = TextAnalyticsClient(endpoint=service_endpoint, credential=AzureKeyCredential(key))
+
+            client = TextAnalyticsClient(
+                endpoint=service_endpoint, credential=AzureKeyCredential(key))
             response = client.detect_language(documents=[text])
-            
+
             for doc in response:
                 if not doc.is_error:
                     logger.info(f"Detected language: {doc.primary_language}")
@@ -76,20 +80,21 @@ class LanguageEvaluator:
                     logger.error(
                         f"Unable to detect language: {doc.id} {doc.error}"
                     )
-            client.close()            
-            return { "name": doc.primary_language.name,
+            client.close()
+            return {"name": doc.primary_language.name,
                     "confidence_score": doc.primary_language.confidence_score,
-                    "iso6391_name": doc.primary_language.iso6391_name 
-                    }   
+                    "iso6391_name": doc.primary_language.iso6391_name
+                    }
         except Exception as e:
             logger.error(f"An error occurred: {e}")
-            return None                
+            return None
 
     def is_confident(self, text: str):
         primary_language = self.detect_language(text)
         confidence_score = primary_language.get('confidence_score')
         language = primary_language.get('name')
-        logger.info(f"Language: {language} Confidence Score: {confidence_score}")
+        logger.info(
+            f"Language: {language} Confidence Score: {confidence_score}")
 
         return confidence_score >= self.confidence_threshold
 
@@ -97,7 +102,7 @@ class LanguageEvaluator:
         primary_language = self.detect_language(text)
         confidence_score = primary_language.get('confidence_score')
         language = primary_language.get('name')
-        logger.info(f"Language: {language} Confidence Score: {confidence_score}")
+        logger.info(
+            f"Language: {language} Confidence Score: {confidence_score}")
 
-        return language_code == primary_language.get('iso6391_name') and confidence_score >= self.confidence_threshold                
-
+        return language_code == primary_language.get('iso6391_name') and confidence_score >= self.confidence_threshold

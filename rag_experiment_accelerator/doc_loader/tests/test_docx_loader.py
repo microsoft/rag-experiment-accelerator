@@ -7,13 +7,13 @@ def test_load_docx_files():
     folder_path = "./data/"
     chunk_size = 1000
     overlap_size = 400
-    
+
     original_doc = load_docx_files(
-        folder_path = folder_path,
-        chunk_size = chunk_size,
-        overlap_size = overlap_size
+        folder_path=folder_path,
+        chunk_size=chunk_size,
+        overlap_size=overlap_size
     )
-    
+
     assert len(original_doc) == 3
 
     assert "We recently commissioned" in original_doc[0].page_content
