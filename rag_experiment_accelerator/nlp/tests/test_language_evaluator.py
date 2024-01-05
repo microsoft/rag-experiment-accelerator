@@ -1,8 +1,5 @@
 from unittest.mock import patch
 
-from azure.ai.textanalytics import TextAnalyticsClient
-
-from rag_experiment_accelerator.config.config import AzureSkillsCredentials
 from rag_experiment_accelerator.nlp.language_evaluator import LanguageEvaluator
 
 documents = [
@@ -105,4 +102,4 @@ def test_is_language_match():
 
 def test_check_string():
     language_evaluator = LanguageEvaluator()
-    assert language_evaluator.check_string("This is string") == True
+    assert language_evaluator.check_string("This is string")

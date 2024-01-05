@@ -1,6 +1,6 @@
 import logging
 
-from openai import AzureOpenAI, OpenAI
+from openai import AzureOpenAI
 from tenacity import (after_log, before_sleep_log, retry, stop_after_attempt,
                       wait_random_exponential)
 

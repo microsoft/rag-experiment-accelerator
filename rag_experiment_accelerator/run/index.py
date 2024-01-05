@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 
 from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.run.args import get_directory_arg
 
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.embedding.gen_embeddings import \

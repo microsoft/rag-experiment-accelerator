@@ -3,11 +3,9 @@ import json
 import os
 import warnings
 from datetime import datetime
-from typing import List
 
 import evaluate
 import mlflow
-import openai
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -178,56 +176,6 @@ def semantic_compare_values(
         value2 (str): The second value to compare.
         differences (list[float]): A list to store the similarity score between the two values.
         model_type (SentenceTransformer): A pre-trained SentenceTransformer model to encode the values.
-
-    Returns:
-        None
-    """
-    embedding1 = model_type.encode([str(value1)])
-    embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1, embedding2)
-
-    differences.append(similarity_score * 100)
-
-
-def semantic_compare_values(
-    value1: str,
-    value2: str,
-    differences: list[float],
-    model_type: SentenceTransformer,
-) -> None:
-    """
-    Computes the semantic similarity score between two values using the provided SentenceTransformer model.
-
-    Args:
-        value1 (str): The first value to compare.
-        value2 (str): The second value to compare.
-        differences (list[float]): A list to append the similarity score to.
-        model_type (SentenceTransformer): The SentenceTransformer model to use for encoding the values.
-
-    Returns:
-        None
-    """
-    embedding1 = model_type.encode([str(value1)])
-    embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1, embedding2)
-
-    differences.append(similarity_score * 100)
-
-
-def semantic_compare_values(
-    value1: str,
-    value2: str,
-    differences: list[float],
-    model_type: SentenceTransformer,
-) -> None:
-    """
-    Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
-
-    Args:
-        value1 (str): The first value to compare.
-        value2 (str): The second value to compare.
-        differences (list[float]): A list to store the similarity scores.
-        model_type (SentenceTransformer): The pre-trained SentenceTransformer model to use for encoding the values.
 
     Returns:
         None

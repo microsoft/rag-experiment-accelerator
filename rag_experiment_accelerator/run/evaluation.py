@@ -1,7 +1,5 @@
 from dotenv import load_dotenv
 
-from rag_experiment_accelerator.run.args import get_directory_arg
-
 import mlflow
 from azure.ai.ml import MLClient
 

@@ -11,13 +11,11 @@ from rag_experiment_accelerator.evaluation.search_eval import \
     evaluate_search_result
 from rag_experiment_accelerator.evaluation.spacy_evaluator import \
     SpacyEvaluator
-from rag_experiment_accelerator.run.args import get_directory_arg
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions, we_need_multiple_questions)
-from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents, llm_rerank_documents)
@@ -168,7 +166,6 @@ def query_and_eval_acs_multi(
     evaluation_content: str,
     config: Config,
     evaluator: SpacyEvaluator,
-    main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
@@ -213,8 +210,6 @@ def query_and_eval_acs_multi(
             prompt_instruction_context = docs
 
         full_prompt_instruction = (
-            main_prompt_instruction
-            + "\n"
             + "\n".join(prompt_instruction_context)
         )
         openai_response = ResponseGenerator(

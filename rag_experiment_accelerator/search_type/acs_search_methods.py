@@ -3,8 +3,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import (QueryAnswerType, QueryCaptionType,
                                            QueryLanguage, QueryType,
-                                           RawVectorQuery, VectorQuery,
-                                           VectorQueryKind)
+                                           RawVectorQuery)
 
 from rag_experiment_accelerator.embedding.gen_embeddings import \
     generate_embedding

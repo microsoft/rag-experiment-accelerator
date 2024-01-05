@@ -8,7 +8,6 @@ from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
-from rag_experiment_accelerator.run.args import get_directory_arg
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,10 +1,8 @@
 import json
 import os
-from unittest.mock import call, patch
+from unittest.mock import patch
 
-import httpx
 import pytest
-from openai import NotFoundError
 
 from rag_experiment_accelerator.config.config import (AzureMLCredentials,
                                                       AzureSearchCredentials,
