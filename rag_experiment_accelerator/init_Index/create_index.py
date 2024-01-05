@@ -23,7 +23,6 @@ from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -43,7 +42,8 @@ def create_acs_index(
     # Analyzer can only be used if neither search analyzer or index analyzer are set
     analyzer = analyzers["analyzer_name"] if analyzers["index_analyzer_name"] else ""
     # Create a search index
-    index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
+    index_client = SearchIndexClient(
+        endpoint=service_endpoint, credential=credential)
     fields = [
         SimpleField(name="id", type=SearchFieldDataType.String, key=True),
         SearchableField(
@@ -150,7 +150,8 @@ def create_acs_index(
     if analyzers["tokenizers"]:
         tokenizers = [
             LexicalTokenizer(
-                name=analyzers["tokenizers"]["name"], token_chars=["letter", "digit"]
+                name=analyzers["tokenizers"]["name"], token_chars=[
+                    "letter", "digit"]
             )
         ]
     if analyzers["token_filters"]:

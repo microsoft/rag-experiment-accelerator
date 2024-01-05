@@ -17,6 +17,7 @@ from unittest.mock import patch, call
 def get_test_config_dir():
     return os.path.join(os.path.dirname(__file__), "data")
 
+
 def test_init_search_credentials():
     creds = AzureSearchCredentials(
         azure_search_service_endpoint="http://example.com",
@@ -75,7 +76,6 @@ def test_init_openai_credentials():
     assert creds.OPENAI_ENDPOINT == "http://example.com"
 
 
-
 def test_raises_when_openai_endpoint_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
@@ -98,7 +98,8 @@ def test_raises_when_openai_api_version_is_none_for_azure_openai():
 
 @patch("rag_experiment_accelerator.config.config._get_env_var")
 def test_from_env_openai_credentials(mock_get_env_var):
-    mock_get_env_var.side_effect = ["azure", "envkey", "v1", "http://envexample.com"]
+    mock_get_env_var.side_effect = [
+        "azure", "envkey", "v1", "http://envexample.com"]
 
     creds = OpenAICredentials.from_env()
 
@@ -106,8 +107,6 @@ def test_from_env_openai_credentials(mock_get_env_var):
     assert creds.OPENAI_API_KEY == "envkey"
     assert creds.OPENAI_API_VERSION == "v1"
     assert creds.OPENAI_ENDPOINT == "http://envexample.com"
-
-
 
 
 def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
@@ -129,7 +128,6 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
         return "test_api_endpoint"
     elif var_name == "OPENAI_API_TYPE":
         return "azure"
-
 
 
 @patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
@@ -154,7 +152,8 @@ def test_config_init():
     assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
-    assert config.AZURE_OAI_CHAT_DEPLOYMENT_NAME == mock_config_data["azure_oai_chat_deployment_name"]
+    assert config.AZURE_OAI_CHAT_DEPLOYMENT_NAME == mock_config_data[
+        "azure_oai_chat_deployment_name"]
     assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (

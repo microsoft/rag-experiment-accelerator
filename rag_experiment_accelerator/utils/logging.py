@@ -6,7 +6,8 @@ _cached_logging_level = None
 
 
 def set_logging_params():
-    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
 
 
 def get_logger(name: str) -> logging.Logger:

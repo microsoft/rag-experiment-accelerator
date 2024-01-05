@@ -28,15 +28,14 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
     if size == 1536:
         if config.OpenAICredentials.OPENAI_API_TYPE == 'azure':
             client = AzureOpenAI(
-                azure_endpoint=config.OpenAICredentials.OPENAI_ENDPOINT, 
-                api_key=config.OpenAICredentials.OPENAI_API_KEY,  
+                azure_endpoint=config.OpenAICredentials.OPENAI_ENDPOINT,
+                api_key=config.OpenAICredentials.OPENAI_API_KEY,
                 api_version=config.OpenAICredentials.OPENAI_API_VERSION
             )
         else:
             client = OpenAI(
-                api_key=config.OpenAICredentials.OPENAI_API_KEY,  
+                api_key=config.OpenAICredentials.OPENAI_API_KEY,
             )
-
 
         response = client.embeddings.create(
             input=chunk,

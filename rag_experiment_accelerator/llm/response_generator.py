@@ -12,6 +12,7 @@ from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
+
 class ResponseGenerator:
 
     def __init__(self, deployment_name):
@@ -28,8 +29,6 @@ class ResponseGenerator:
             api_version=self.config.OpenAICredentials.OPENAI_API_VERSION
         )
 
-
-
     def generate_response(self, sys_message, prompt):
         """
         Generates a response to a given prompt using the OpenAI Chat API.
@@ -43,24 +42,23 @@ class ResponseGenerator:
         """
 
         messages = [
-                {"role": "system", "content": sys_message}, 
-                {"role": "user", "content": prompt}
-            ]
+            {"role": "system", "content": sys_message},
+            {"role": "user", "content": prompt}
+        ]
 
-        print(self.deployment_name, 
-            self.temperature)
+        print(self.deployment_name,
+              self.temperature)
 
         response = self._create_chat_completion_with_retry(
-            model=self.deployment_name, 
+            model=self.deployment_name,
             messages=messages,
             temperature=self.temperature
         )
 
-        # TODO: It is possible that this will return None. 
+        # TODO: It is possible that this will return None.
         #       We need to ensure that this is handled properly in the places where this function gets called.
         return response.choices[0].message.content
 
-    
     @retry(
         before_sleep=before_sleep_log(logger, logging.DEBUG),
         after=after_log(logger, logging.DEBUG),

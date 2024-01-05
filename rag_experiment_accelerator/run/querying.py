@@ -1,3 +1,26 @@
+from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.reranking.reranker import (
+    llm_rerank_documents,
+    cross_encoder_rerank_documents,
+)
+from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
+from rag_experiment_accelerator.search_type.acs_search_methods import create_client
+from rag_experiment_accelerator.search_type.acs_search_methods import (
+    search_for_match_pure_vector_multi,
+    search_for_match_semantic,
+    search_for_match_Hybrid_multi,
+    search_for_match_Hybrid_cross,
+    search_for_match_text,
+    search_for_match_pure_vector,
+    search_for_match_pure_vector_cross,
+    search_for_manual_hybrid,
+)
+from rag_experiment_accelerator.ingest_data.acs_ingest import (
+    we_need_multiple_questions,
+    do_we_need_multiple_questions,
+)
 import os
 import json
 import azure
@@ -13,30 +36,6 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-from rag_experiment_accelerator.ingest_data.acs_ingest import (
-    we_need_multiple_questions,
-    do_we_need_multiple_questions,
-)
-from rag_experiment_accelerator.search_type.acs_search_methods import (
-    search_for_match_pure_vector_multi,
-    search_for_match_semantic,
-    search_for_match_Hybrid_multi,
-    search_for_match_Hybrid_cross,
-    search_for_match_text,
-    search_for_match_pure_vector,
-    search_for_match_pure_vector_cross,
-    search_for_manual_hybrid,
-)
-from rag_experiment_accelerator.search_type.acs_search_methods import create_client
-from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
-from rag_experiment_accelerator.reranking.reranker import (
-    llm_rerank_documents,
-    cross_encoder_rerank_documents,
-)
-
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -222,7 +221,8 @@ def query_and_eval_acs_multi(
             prompt_instruction_context = docs
 
         full_prompt_instruction = (
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+            main_prompt_instruction + "\n" +
+            "\n".join(prompt_instruction_context)
         )
         openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME).generate_response(
             full_prompt_instruction,
@@ -256,7 +256,8 @@ def run(config_dir: str):
             output_dir = f"{config.artifacts_dir}/outputs"
             os.makedirs(output_dir, exist_ok=True)
         except Exception as e:
-            logger.error(f"Unable to create the '{output_dir}' directory. Please ensure you have the proper permissions and try again")
+            logger.error(
+                f"Unable to create the '{output_dir}' directory. Please ensure you have the proper permissions and try again")
             raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
@@ -381,7 +382,8 @@ def run(config_dir: str):
                                             }
 
                                             with open(write_path, "a") as out:
-                                                json_string = json.dumps(output)
+                                                json_string = json.dumps(
+                                                    output)
                                                 out.write(json_string + "\n")
                                     except BadRequestError as e:
                                         logger.error(
@@ -395,4 +397,5 @@ def run(config_dir: str):
                                 write_path, index_name, azure_cred, config.AzureMLCredentials
                             )
     except FileNotFoundError:
-        logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)
+        logger.error("The file does not exist: " +
+                     config.EVAL_DATA_JSONL_FILE_PATH)

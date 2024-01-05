@@ -37,7 +37,8 @@ def load_structured_files(
     logger.info(f"Loading {file_format} files from {folder_path}")
     matching_files = []
     for pattern in glob_patterns:
-        glob_pattern = f"**/[!.~]*.{pattern}" # "." is used for hidden files, "~" is used for Word temporary files
+        # "." is used for hidden files, "~" is used for Word temporary files
+        glob_pattern = f"**/[!.~]*.{pattern}"
         full_glob_pattern = os.path.join(folder_path, glob_pattern)
         matching_files += glob.glob(full_glob_pattern, recursive=True)
 
