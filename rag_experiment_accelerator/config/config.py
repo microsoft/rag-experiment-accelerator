@@ -1,13 +1,17 @@
 import json
 import os
+
 from openai import AzureOpenAI, NotFoundError, OpenAI
-from rag_experiment_accelerator.utils.logging import get_logger
+
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-def _mask_string(s: str, start: int = 2, end: int = 2, mask_char: str = "*") -> str:
+def _mask_string(
+    s: str, start: int = 2, end: int = 2, mask_char: str = "*"
+) -> str:
     """
     Masks a string by replacing some of its characters with a mask character.
 
@@ -100,6 +104,7 @@ class AzureSearchCredentials:
             ),
         )
 
+
 class AzureSkillsCredentials:
     """
     A class representing the credentials required to access the skills provided with Azure Cognitive Search.
@@ -136,7 +141,8 @@ class AzureSkillsCredentials:
                 critical=False,
                 mask=True,
             ),
-        )                
+        )
+
 
 class AzureMLCredentials:
     """
@@ -224,21 +230,26 @@ class OpenAICredentials:
             ValueError: If some required environment variables are not set.
         """
         # For now we only support Azure Open AI
-        self.OPENAI_API_TYPE = 'azure'
-        
+        self.OPENAI_API_TYPE = "azure"
+
         if openai_api_version is None:
-            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set.")
+            raise ValueError(
+                f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to"
+                f" be set."
+            )
 
         if openai_endpoint is None:
-            raise ValueError(f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
-        
+            raise ValueError(
+                f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be"
+                f" set."
+            )
+
         if openai_api_key is None:
             raise ValueError(f"It is required OPENAI_API_KEY to be set.")
 
         self.OPENAI_API_KEY = openai_api_key
         self.OPENAI_API_VERSION = openai_api_version
         self.OPENAI_ENDPOINT = openai_endpoint
-
 
     @classmethod
     def from_env(cls) -> "OpenAICredentials":
@@ -301,7 +312,7 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
     """
 
-    _instance = None 
+    _instance = None
 
     def __new__(cls, config_dir: str = os.getcwd()):
         """
@@ -318,7 +329,7 @@ class Config:
             cls._instance = super(Config, cls).__new__(cls)
             cls._instance._initialize(config_dir)
         return cls._instance
-    
+
     def _initialize(self, config_dir: str) -> None:
         with open(f"{config_dir}/config.json", "r") as json_file:
             data = json.load(json_file)
@@ -326,7 +337,9 @@ class Config:
         self.config_dir = config_dir
         self.artifacts_dir = f"{config_dir}/artifacts"
         self.data_dir = f"{config_dir}/data"
-        self.EVAL_DATA_JSONL_FILE_PATH = f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
+        self.EVAL_DATA_JSONL_FILE_PATH = (
+            f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
+        )
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EMBEDDING_DIMENSIONS = data["embedding_dimension"]
@@ -334,9 +347,13 @@ class Config:
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
-        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get("azure_oai_chat_deployment_name", None)
+        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get(
+            "azure_oai_chat_deployment_name", None
+        )
         self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
-        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get("azure_oai_eval_deployment_name", None)
+        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get(
+            "azure_oai_eval_deployment_name", None
+        )
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]
@@ -344,7 +361,9 @@ class Config:
         self.CROSSENCODER_AT_K = data["cross_encoder_at_k"]
         self.TEMPERATURE = data["openai_temperature"]
         self.RERANK = data["rerank"]
-        self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
+        self.SEARCH_RELEVANCY_THRESHOLD = data.get(
+            "search_relevancy_threshold", 0.8
+        )
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
         self.LANGUAGE = data.get("language", {})
@@ -352,16 +371,18 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
-        
+
         try:
             with open(f"{config_dir}/prompt_config.json", "r") as json_file:
                 data = json.load(json_file)
-    
+
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn("prompt_config.json found but main_prompt_instruction is not set. Using default prompts")
+                logger.warn(
+                    "prompt_config.json found but main_prompt_instruction is"
+                    " not set. Using default prompts"
+                )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
             logger.warn("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
-

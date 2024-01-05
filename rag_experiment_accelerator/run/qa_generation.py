@@ -1,7 +1,8 @@
 import os
-from rag_experiment_accelerator.config import Config
 
 from dotenv import load_dotenv
+
+from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
@@ -29,12 +30,20 @@ def run(config_dir: str):
     try:
         os.makedirs(config.artifacts_dir, exist_ok=True)
     except Exception as e:
-        logger.error(f"Unable to create the '{config.artifacts_dir}' directory. Please ensure you have the proper permissions and try again")
+        logger.error(
+            f"Unable to create the '{config.artifacts_dir}' directory. Please"
+            " ensure you have the proper permissions and try again"
+        )
         raise e
-    
+
     # generate qna
     df = generate_qna(all_docs, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME)
     # write to jsonl
     df.to_json(config.EVAL_DATA_JSONL_FILE_PATH, orient="records", lines=True)
     # create data asset in mlstudio
-    create_data_asset(config.EVAL_DATA_JSONL_FILE_PATH, "eval_data", azure_cred, config.AzureMLCredentials)
+    create_data_asset(
+        config.EVAL_DATA_JSONL_FILE_PATH,
+        "eval_data",
+        azure_cred,
+        config.AzureMLCredentials,
+    )

@@ -1,24 +1,12 @@
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    CharFilter,
-    CorsOptions,
-    SearchFieldDataType,
-    SimpleField,
-    SearchableField,
-    SearchIndex,
-    SemanticConfiguration,
-    PrioritizedFields,
-    SemanticField,
-    SearchField,
-    LexicalTokenizer,
-    SemanticSettings,
-    TokenFilter,
-    VectorSearch,
-    VectorSearchProfile,
-    HnswVectorSearchAlgorithmConfiguration,
-    HnswParameters,
-)
+    CharFilter, CorsOptions, HnswParameters,
+    HnswVectorSearchAlgorithmConfiguration, LexicalTokenizer,
+    PrioritizedFields, SearchableField, SearchField, SearchFieldDataType,
+    SearchIndex, SemanticConfiguration, SemanticField, SemanticSettings,
+    SimpleField, TokenFilter, VectorSearch, VectorSearchProfile)
+
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -29,21 +17,35 @@ logger = get_logger(__name__)
 
 
 def create_acs_index(
-    service_endpoint, index_name, key, dimension, ef_construction, ef_search, analyzers
+    service_endpoint,
+    index_name,
+    key,
+    dimension,
+    ef_construction,
+    ef_search,
+    analyzers,
 ):
     credential = AzureKeyCredential(key)
 
     # Apply checks on analyzer settings. Search analyzer and index analyzer must be set together
     index_analyzer = (
-        analyzers["index_analyzer_name"] if analyzers["search_analyzer_name"] else ""
+        analyzers["index_analyzer_name"]
+        if analyzers["search_analyzer_name"]
+        else ""
     )
     search_analyzer = (
-        analyzers["search_analyzer_name"] if analyzers["index_analyzer_name"] else ""
+        analyzers["search_analyzer_name"]
+        if analyzers["index_analyzer_name"]
+        else ""
     )
     # Analyzer can only be used if neither search analyzer or index analyzer are set
-    analyzer = analyzers["analyzer_name"] if analyzers["index_analyzer_name"] else ""
+    analyzer = (
+        analyzers["analyzer_name"] if analyzers["index_analyzer_name"] else ""
+    )
     # Create a search index
-    index_client = SearchIndexClient(endpoint=service_endpoint, credential=credential)
+    index_client = SearchIndexClient(
+        endpoint=service_endpoint, credential=credential
+    )
     fields = [
         SimpleField(name="id", type=SearchFieldDataType.String, key=True),
         SearchableField(
@@ -150,7 +152,8 @@ def create_acs_index(
     if analyzers["tokenizers"]:
         tokenizers = [
             LexicalTokenizer(
-                name=analyzers["tokenizers"]["name"], token_chars=["letter", "digit"]
+                name=analyzers["tokenizers"]["name"],
+                token_chars=["letter", "digit"],
             )
         ]
     if analyzers["token_filters"]:

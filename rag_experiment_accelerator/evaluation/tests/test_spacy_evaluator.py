@@ -1,4 +1,5 @@
-from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
+from rag_experiment_accelerator.evaluation.spacy_evaluator import \
+    SpacyEvaluator
 
 
 # TODO: Test model download as well

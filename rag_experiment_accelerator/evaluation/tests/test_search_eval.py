@@ -1,6 +1,9 @@
 from unittest.mock import patch
-from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
-from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
+
+from rag_experiment_accelerator.evaluation.search_eval import \
+    evaluate_search_result
+from rag_experiment_accelerator.evaluation.spacy_evaluator import \
+    SpacyEvaluator
 
 evaluation_content = "my content to evaluate"
 search_response = [
@@ -52,7 +55,9 @@ def test_evaluate_search_result_calulates_recall_score():
 def test_evaluate_search_result_returns_all_search_content():
     evaluator = SpacyEvaluator()
 
-    content, _ = evaluate_search_result(search_response, evaluation_content, evaluator)
+    content, _ = evaluate_search_result(
+        search_response, evaluation_content, evaluator
+    )
 
     for i, doc in enumerate(search_response):
         assert doc["content"] == content[i]

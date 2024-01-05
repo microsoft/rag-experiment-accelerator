@@ -22,7 +22,9 @@ class SpacyEvaluator:
         is_relevant(doc1: str, doc2: str) -> bool: Determines whether two documents are relevant based on their similarity score.
     """
 
-    def __init__(self, similarity_threshold=0.8, model="en_core_web_lg") -> None:
+    def __init__(
+        self, similarity_threshold=0.8, model="en_core_web_lg"
+    ) -> None:
         try:
             self.nlp = spacy.load(model)
         except OSError:
