@@ -7,15 +7,29 @@ It is absolutely mandatory and non-compromising to add the filenames in your res
 context:
 """
 
-prompt_instruction_title = "Identify and provide an appropriate title for the given user text in a single sentence with not more than 10-15 words. Do not provide output in list format and do not output any additional text and metadata."
-
-prompt_instruction_keywords = (
-    "provide unique keywords for the given user text. Format as comma separated values."
+prompt_instruction_title = (
+    "Identify and provide an appropriate title for the given user text in a"
+    " single sentence with not more than 10-15 words. Do not provide output in"
+    " list format and do not output any additional text and metadata."
 )
 
-prompt_instruction_summary = "Summarize the given user text in a single sentence using few words. Do not provide output using multiple sentences or as a list."
+prompt_instruction_keywords = (
+    "provide unique keywords for the given user text. Format as comma"
+    " separated values."
+)
 
-prompt_instruction_entities = "Identify the key entities (person, organization, location, date, year, brand, geography, proper nouns, month etc) with context for the given user text. Format as comma separated and output only the entities. Do not provide output in list format and do not output any additional text and metadata."
+prompt_instruction_summary = (
+    "Summarize the given user text in a single sentence using few words. Do"
+    " not provide output using multiple sentences or as a list."
+)
+
+prompt_instruction_entities = (
+    "Identify the key entities (person, organization, location, date, year,"
+    " brand, geography, proper nouns, month etc) with context for the given"
+    " user text. Format as comma separated and output only the entities. Do"
+    " not provide output in list format and do not output any additional text"
+    " and metadata."
+)
 
 
 generate_qna_instruction_system_prompt = """you are a prompt creator and have ability to generate new JSON prompts based on the given CONTEXT.
@@ -105,4 +119,7 @@ Answer: The PSLV-C56 mission is scheduled to be launched on Sunday, 30 July 2023
 Question: When is the scheduled launch date and time for the PSLV-C56 mission, and where will it be launched from?
 """
 
-llm_context_precision_instruction = "Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer."
+llm_context_precision_instruction = (
+    "Given a question and a context, verify if the information in the given"
+    " context is useful in answering the question. Return a Yes/No answer."
+)

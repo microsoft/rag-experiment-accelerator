@@ -1,14 +1,16 @@
 from azure.ai.ml import MLClient
-from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from azure.ai.ml.entities import Data
 
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-def create_data_asset(data_path, data_asset_name, azure_credential, azure_ml_credentials):
+def create_data_asset(
+    data_path, data_asset_name, azure_credential, azure_ml_credentials
+):
     """
     Creates a new data asset in Azure Machine Learning workspace.
 
@@ -38,7 +40,8 @@ def create_data_asset(data_path, data_asset_name, azure_credential, azure_ml_cre
     data_create = ml_client.data.create_or_update(aml_dataset)
 
     aml_dataset_unlabeled = ml_client.data.get(
-        name=data_asset_name, label="latest")
+        name=data_asset_name, label="latest"
+    )
 
     logger.info(f"Dataset version: {aml_dataset_unlabeled.version}")
     logger.info(f"Dataset ID: {aml_dataset_unlabeled.id}")

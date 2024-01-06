@@ -1,9 +1,11 @@
 import json
 import re
-from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+
 import numpy as np
 from sentence_transformers import CrossEncoder
+
+from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -67,9 +69,9 @@ def llm_rerank_documents(
         Question: {question}
     """
 
-    response = ResponseGenerator(deployment_name=deployment_name).generate_response(
-        rerank_prompt_instruction, prompt
-    )
+    response = ResponseGenerator(
+        deployment_name=deployment_name
+    ).generate_response(rerank_prompt_instruction, prompt)
     logger.debug("Response", response)
     pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
     try:
@@ -85,7 +87,8 @@ def llm_rerank_documents(
             result = [documents[i] for i in new_docs]
     except:
         logger.error(
-            "Unable to parse the rerank documents LLM response. Returning all documents."
+            "Unable to parse the rerank documents LLM response. Returning all"
+            " documents."
         )
         result = documents
     return result

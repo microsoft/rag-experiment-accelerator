@@ -1,6 +1,4 @@
-from rag_experiment_accelerator.doc_loader.docxLoader import (
-    load_docx_files
-)
+from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 
 
 def test_load_docx_files():
@@ -11,7 +9,7 @@ def test_load_docx_files():
     original_doc = load_docx_files(
         folder_path=folder_path,
         chunk_size=chunk_size,
-        overlap_size=overlap_size
+        overlap_size=overlap_size,
     )
 
     assert len(original_doc) == 3

@@ -1,6 +1,8 @@
-from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
 from sklearn import metrics
 
+from rag_experiment_accelerator.evaluation.spacy_evaluator import (
+    SpacyEvaluator,
+)
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -29,7 +31,8 @@ def evaluate_search_result(
 
         precision_score = round(
             metrics.precision_score(
-                is_relevant_results[:k], precision_predictions[:k]),
+                is_relevant_results[:k], precision_predictions[:k]
+            ),
             2,
         )
         precision_scores.append(precision_score)

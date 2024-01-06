@@ -1,11 +1,12 @@
 from openai import AzureOpenAI, OpenAI
 from sentence_transformers import SentenceTransformer
+
 from rag_experiment_accelerator.config.config import Config
 
 size_model_mapping = {
-    '384': "all-MiniLM-L6-v2",
-    '768': "all-mpnet-base-v2",
-    '1024': "bert-large-nli-mean-tokens",
+    "384": "all-MiniLM-L6-v2",
+    "768": "all-mpnet-base-v2",
+    "1024": "bert-large-nli-mean-tokens",
 }
 
 
@@ -26,21 +27,18 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
     config = Config()
 
     if size == 1536:
-        if config.OpenAICredentials.OPENAI_API_TYPE == 'azure':
+        if config.OpenAICredentials.OPENAI_API_TYPE == "azure":
             client = AzureOpenAI(
                 azure_endpoint=config.OpenAICredentials.OPENAI_ENDPOINT,
                 api_key=config.OpenAICredentials.OPENAI_API_KEY,
-                api_version=config.OpenAICredentials.OPENAI_API_VERSION
+                api_version=config.OpenAICredentials.OPENAI_API_VERSION,
             )
         else:
             client = OpenAI(
                 api_key=config.OpenAICredentials.OPENAI_API_KEY,
             )
 
-        response = client.embeddings.create(
-            input=chunk,
-            model=model_name
-        )
+        response = client.embeddings.create(input=chunk, model=model_name)
 
         embedding = response.data[0].embedding
         return [embedding]
@@ -50,5 +48,6 @@ def generate_embedding(size: int, chunk: str, model_name: str) -> list[float]:
         return model.encode([str(chunk)]).tolist()
     else:
         raise ValueError(
-            f"Invalid embedding size {size}. Size must be one of 1536, {list(size_model_mapping.keys())}."
+            f"Invalid embedding size {size}. Size must be one of 1536,"
+            f" {list(size_model_mapping.keys())}."
         )
