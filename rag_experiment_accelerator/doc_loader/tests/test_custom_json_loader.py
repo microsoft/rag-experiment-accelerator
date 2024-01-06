@@ -1,10 +1,10 @@
 from langchain.document_loaders import JSONLoader
 
 from rag_experiment_accelerator.doc_loader.customJsonLoader import (
-    CustomJSONLoader
+    CustomJSONLoader,
 )
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
-    load_structured_files
+    load_structured_files,
 )
 
 
@@ -23,7 +23,9 @@ def test_load_json_files():
         overlap_size=overlap_size,
         glob_patterns=["json"],
         loader_kwargs={
-            'jq_schema': '[.[] | {content: .content, title: .title}]', 'text_content': False}
+            "jq_schema": "[.[] | {content: .content, title: .title}]",
+            "text_content": False,
+        },
     )
 
     custom_doc = load_structured_files(
@@ -35,7 +37,9 @@ def test_load_json_files():
         overlap_size=overlap_size,
         glob_patterns=["json"],
         loader_kwargs={
-            'jq_schema': '[.[] | {content: .content, title: .title}]', 'text_content': False}
+            "jq_schema": "[.[] | {content: .content, title: .title}]",
+            "text_content": False,
+        },
     )
 
     assert len(original_doc) == len(custom_doc)

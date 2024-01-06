@@ -1,6 +1,10 @@
-from rag_experiment_accelerator.doc_loader.structuredLoader import load_structured_files
+from rag_experiment_accelerator.doc_loader.customJsonLoader import (
+    CustomJSONLoader,
+)
+from rag_experiment_accelerator.doc_loader.structuredLoader import (
+    load_structured_files,
+)
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.doc_loader.customJsonLoader import CustomJSONLoader
 
 logger = get_logger(__name__)
 
@@ -35,5 +39,7 @@ def load_json_files(
         overlap_size=overlap_size,
         glob_patterns=glob_patterns,
         loader_kwargs={
-            'jq_schema': '[.[] | {content: .content, title: .title}]', 'text_content': False}
+            "jq_schema": "[.[] | {content: .content, title: .title}]",
+            "text_content": False,
+        },
     )

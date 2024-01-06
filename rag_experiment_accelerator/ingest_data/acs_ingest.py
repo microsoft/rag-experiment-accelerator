@@ -1,21 +1,25 @@
-from rag_experiment_accelerator.utils.logging import get_logger
 import hashlib
 import json
 import re
+
+import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+
+from rag_experiment_accelerator.embedding.gen_embeddings import (
+    generate_embedding,
+)
 from rag_experiment_accelerator.llm.prompts import (
-    prompt_instruction_title,
-    prompt_instruction_summary,
+    do_need_multiple_prompt_instruction,
     generate_qna_instruction_system_prompt,
     generate_qna_instruction_user_prompt,
     multiple_prompt_instruction,
-    do_need_multiple_prompt_instruction,
+    prompt_instruction_summary,
+    prompt_instruction_title,
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
-import pandas as pd
+from rag_experiment_accelerator.utils.logging import get_logger
 
 pre_process = Preprocess()
 
@@ -47,9 +51,9 @@ def generate_title(chunk, azure_oai_deployment_name):
     Returns:
         str: The generated title.
     """
-    response = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(
-        prompt_instruction_title, chunk
-    )
+    response = ResponseGenerator(
+        deployment_name=azure_oai_deployment_name
+    ).generate_response(prompt_instruction_title, chunk)
     return response
 
 
@@ -63,9 +67,9 @@ def generate_summary(chunk, azure_oai_deployment_name):
     Returns:
         str: The generated summary.
     """
-    response = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(
-        prompt_instruction_summary, chunk
-    )
+    response = ResponseGenerator(
+        deployment_name=azure_oai_deployment_name
+    ).generate_response(prompt_instruction_summary, chunk)
     return response
 
 
@@ -100,9 +104,11 @@ def upload_data(
     documents = []
     for i, chunk in enumerate(chunks):
         title = generate_title(
-            str(chunk["content"]), azure_oai_deployment_name)
+            str(chunk["content"]), azure_oai_deployment_name
+        )
         summary = generate_summary(
-            str(chunk["content"]), azure_oai_deployment_name)
+            str(chunk["content"]), azure_oai_deployment_name
+        )
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,
@@ -135,7 +141,7 @@ def generate_qna(docs, azure_oai_deployment_name):
 
     Args:
         docs (list): A list of documents to generate questions and answers from.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment 
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment
 
     Returns:
         pandas.DataFrame: A DataFrame containing the generated questions, answers, and context for each document.
@@ -145,11 +151,13 @@ def generate_qna(docs, azure_oai_deployment_name):
 
     for i, chunk in enumerate(docs):
         if len(chunk.page_content) > 50:
-            response = ResponseGenerator(deployment_name=azure_oai_deployment_name).generate_response(
+            response = ResponseGenerator(
+                deployment_name=azure_oai_deployment_name
+            ).generate_response(
                 generate_qna_instruction_system_prompt,
                 generate_qna_instruction_user_prompt
                 + chunk.page_content
-                + "\nEND OF CONTEXT"
+                + "\nEND OF CONTEXT",
             )
             try:
                 response_dict = json.loads(response)
@@ -168,7 +176,8 @@ def generate_qna(docs, azure_oai_deployment_name):
                 logger.info(f"Generated QnA for document {i}")
             except Exception as e:
                 logger.error(
-                    "could not generate a valid json so moving over to next question!"
+                    "could not generate a valid json so moving over to next"
+                    " question!"
                 )
                 logger.debug(e)
                 logger.debug(f"LLM Response: {response}")
@@ -182,7 +191,7 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
 
     Args:
         question (str): The question to generate a response for.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment 
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment
 
     Returns:
         str: The generated response.
@@ -191,7 +200,8 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
     response1 = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
+        deployment_name=azure_oai_deployment_name
+    ).generate_response(full_prompt_instruction, "")
     return response1
 
 
@@ -201,14 +211,19 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
 
     Args:
         question (str): The question to ask.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment. 
+        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment.
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
     full_prompt_instruction = (
-        do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
+        do_need_multiple_prompt_instruction
+        + "\n"
+        + "question: "
+        + question
+        + "\n"
     )
     response1 = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name).generate_response(full_prompt_instruction, "")
+        deployment_name=azure_oai_deployment_name
+    ).generate_response(full_prompt_instruction, "")
     return re.search(r"\bHIGH\b", response1.upper())

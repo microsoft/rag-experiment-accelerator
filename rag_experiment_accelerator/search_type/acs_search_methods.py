@@ -1,16 +1,16 @@
 import azure
-
-from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import (
-    VectorQuery,
-    RawVectorQuery,
-    VectorQueryKind,
-    QueryType,
-    QueryLanguage,
-    QueryCaptionType,
     QueryAnswerType,
+    QueryCaptionType,
+    QueryLanguage,
+    QueryType,
+    RawVectorQuery,
+)
+
+from rag_experiment_accelerator.embedding.gen_embeddings import (
+    generate_embedding,
 )
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -80,7 +80,9 @@ def search_for_match_semantic(
         list: A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size,
+        chunk=str(pre_process.preprocess(query)),
+        model_name=model_name,
     )
 
     vector1 = RawVectorQuery(
@@ -140,7 +142,9 @@ def search_for_match_Hybrid_multi(
         list: A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size,
+        chunk=str(pre_process.preprocess(query)),
+        model_name=model_name,
     )
 
     vector1 = RawVectorQuery(
@@ -196,7 +200,9 @@ def search_for_match_Hybrid_cross(
         A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size,
+        chunk=str(pre_process.preprocess(query)),
+        model_name=model_name,
     )
 
     vector1 = RawVectorQuery(
@@ -284,7 +290,9 @@ def search_for_match_pure_vector(
     """
     # function body here
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size,
+        chunk=str(pre_process.preprocess(query)),
+        model_name=model_name,
     )
 
     vector1 = RawVectorQuery(
@@ -328,7 +336,9 @@ def search_for_match_pure_vector_multi(
         A list of formatted search results.
     """
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size,
+        chunk=str(pre_process.preprocess(query)),
+        model_name=model_name,
     )
 
     vector1 = RawVectorQuery(
@@ -384,7 +394,9 @@ def search_for_match_pure_vector_cross(
     """
     # Function code here
     res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+        size=size,
+        chunk=str(pre_process.preprocess(query)),
+        model_name=model_name,
     )
 
     vector1 = RawVectorQuery(

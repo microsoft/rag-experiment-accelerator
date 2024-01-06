@@ -1,5 +1,6 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import PyPDFDirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -41,7 +42,8 @@ def load_pdf_files(
     )
 
     logger.debug(
-        f"Splitting PDF pages into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
+        f"Splitting PDF pages into chunks of {chunk_size} characters with an"
+        f" overlap of {overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
 

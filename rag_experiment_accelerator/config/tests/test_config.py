@@ -1,17 +1,17 @@
-import httpx
-import pytest
 import json
 import os
+from unittest.mock import patch
+
+import pytest
+
 from rag_experiment_accelerator.config.config import (
-    AzureSearchCredentials,
     AzureMLCredentials,
-    OpenAICredentials,
+    AzureSearchCredentials,
     Config,
-    _mask_string,
+    OpenAICredentials,
     _get_env_var,
+    _mask_string,
 )
-from openai import NotFoundError
-from unittest.mock import patch, call
 
 
 def get_test_config_dir():
@@ -79,7 +79,7 @@ def test_init_openai_credentials():
 def test_raises_when_openai_endpoint_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
-            openai_api_type='azure',
+            openai_api_type="azure",
             openai_api_key="somekey",
             openai_api_version="v1",
             openai_endpoint=None,
@@ -89,7 +89,7 @@ def test_raises_when_openai_endpoint_is_none_for_azure_openai():
 def test_raises_when_openai_api_version_is_none_for_azure_openai():
     with pytest.raises(ValueError):
         OpenAICredentials(
-            openai_api_type='azure',
+            openai_api_type="azure",
             openai_api_key="somekey",
             openai_api_version=None,
             openai_endpoint="http://example.com",
@@ -99,7 +99,11 @@ def test_raises_when_openai_api_version_is_none_for_azure_openai():
 @patch("rag_experiment_accelerator.config.config._get_env_var")
 def test_from_env_openai_credentials(mock_get_env_var):
     mock_get_env_var.side_effect = [
-        "azure", "envkey", "v1", "http://envexample.com"]
+        "azure",
+        "envkey",
+        "v1",
+        "http://envexample.com",
+    ]
 
     creds = OpenAICredentials.from_env()
 
@@ -130,31 +134,41 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
         return "azure"
 
 
-@patch("rag_experiment_accelerator.config.config._get_env_var", new=mock_get_env_var)
+@patch(
+    "rag_experiment_accelerator.config.config._get_env_var",
+    new=mock_get_env_var,
+)
 def test_config_init():
     # Load mock config data from a YAML file
-    with open(
-        f"{get_test_config_dir()}/config.json", "r"
-    ) as file:
+    with open(f"{get_test_config_dir()}/config.json", "r") as file:
         mock_config_data = json.load(file)
 
     config = Config(get_test_config_dir())
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
-    assert config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
+    assert (
+        config.EMBEDDING_DIMENSIONS == mock_config_data["embedding_dimension"]
+    )
     assert config.EF_CONSTRUCTIONS == mock_config_data["ef_construction"]
     assert config.EF_SEARCHES == mock_config_data["ef_search"]
     assert config.RERANK == mock_config_data["rerank"]
     assert config.RERANK_TYPE == mock_config_data["rerank_type"]
-    assert config.LLM_RERANK_THRESHOLD == mock_config_data["llm_re_rank_threshold"]
+    assert (
+        config.LLM_RERANK_THRESHOLD
+        == mock_config_data["llm_re_rank_threshold"]
+    )
     assert config.CROSSENCODER_AT_K == mock_config_data["cross_encoder_at_k"]
     assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
-    assert config.AZURE_OAI_CHAT_DEPLOYMENT_NAME == mock_config_data[
-        "azure_oai_chat_deployment_name"]
-    assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
+    assert (
+        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        == mock_config_data["azure_oai_chat_deployment_name"]
+    )
+    assert (
+        config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
+    )
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (
         config.SEARCH_RELEVANCY_THRESHOLD
@@ -189,9 +203,18 @@ def test_mask_string(input_string, start, end, mask_char, expected):
 )  # Replace with the actual import path to logger
 @patch("os.getenv")
 @pytest.mark.parametrize(
-    "var_name, critical, mask, env_value, expected_value, expected_exception, expected_log",
+    "var_name, critical, mask, env_value, expected_value, expected_exception,"
+    " expected_log",
     [
-        ("TEST_VAR", True, False, "value", "value", None, "TEST_VAR set to value"),
+        (
+            "TEST_VAR",
+            True,
+            False,
+            "value",
+            "value",
+            None,
+            "TEST_VAR set to value",
+        ),
         (
             "TEST_VAR",
             True,
@@ -201,7 +224,15 @@ def test_mask_string(input_string, start, end, mask_char, expected):
             ValueError,
             "TEST_VAR environment variable not set.",
         ),
-        ("TEST_VAR", True, True, "value", "value", None, "TEST_VAR set to va*ue"),
+        (
+            "TEST_VAR",
+            True,
+            True,
+            "value",
+            "value",
+            None,
+            "TEST_VAR set to va*ue",
+        ),
     ],
 )
 def test_get_env_var(

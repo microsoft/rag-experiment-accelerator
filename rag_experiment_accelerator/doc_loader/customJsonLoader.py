@@ -32,16 +32,16 @@ class CustomJSONLoader(BaseLoader):
             page_content = []
 
             for entry in data:
-                page_content.append({
-                    'content': entry['content'],
-                    'title': entry['title']
-                })
+                page_content.append(
+                    {"content": entry["content"], "title": entry["title"]}
+                )
 
             metadata = {
-                'source': str(self.file_path),
+                "source": str(self.file_path),
                 # seq_num exists to be consistent with the langchain document metadata
-                'seq_num': 1
+                "seq_num": 1,
             }
-            docs.append(Document(page_content=str(
-                page_content), metadata=metadata))
+            docs.append(
+                Document(page_content=str(page_content), metadata=metadata)
+            )
         return docs

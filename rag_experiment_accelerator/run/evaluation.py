@@ -1,11 +1,11 @@
 import mlflow
 from azure.ai.ml import MLClient
-from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.evaluation import eval
-from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from dotenv import load_dotenv
-from rag_experiment_accelerator.run.args import get_directory_arg
+
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.evaluation import eval
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.utils.logging import get_logger
 
 load_dotenv(override=True)
 
