@@ -1,8 +1,6 @@
 import json
 import os
 
-from openai import AzureOpenAI, NotFoundError, OpenAI
-
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -234,18 +232,14 @@ class OpenAICredentials:
 
         if openai_api_version is None:
             raise ValueError(
-                f"An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to"
-                f" be set."
+                "An OPENAI_API_TYPE of 'azure' requires OPENAI_API_VERSION to be set."
             )
 
         if openai_endpoint is None:
-            raise ValueError(
-                f"An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be"
-                f" set."
-            )
+            raise ValueError("An OPENAI_API_TYPE of 'azure' requires OPENAI_ENDPOINT to be set.")
 
         if openai_api_key is None:
-            raise ValueError(f"It is required OPENAI_API_KEY to be set.")
+            raise ValueError("It is required OPENAI_API_KEY to be set.")
 
         self.OPENAI_API_KEY = openai_api_key
         self.OPENAI_API_VERSION = openai_api_version

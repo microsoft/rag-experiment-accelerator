@@ -7,8 +7,6 @@ from azure.search.documents.models import (
     QueryLanguage,
     QueryType,
     RawVectorQuery,
-    VectorQuery,
-    VectorQueryKind,
 )
 
 from rag_experiment_accelerator.embedding.gen_embeddings import (

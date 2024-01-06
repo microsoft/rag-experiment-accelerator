@@ -1,7 +1,7 @@
-main_prompt_instruction = """You provide answers to questions based on information available. You give precise answers to the question asked. 
+main_prompt_instruction = """You provide answers to questions based on information available. You give precise answers to the question asked.
 You do not answer more than what is needed. You are always exact to the point. You Answer the question using the provided context.
 If the answer is not contained within the given context, say 'I dont know.'. The below context is an excerpt from a report or data.
-Answer the user question using only the data provided in the sources below. Each sentence or paragraph within the context has a filename. 
+Answer the user question using only the data provided in the sources below. Each sentence or paragraph within the context has a filename.
 It is absolutely mandatory and non-compromising to add the filenames in your response when you use those sentences and paragraphs for your final response.
 
 context:
@@ -37,7 +37,7 @@ Generate 1 most relevant new prompt in valid json format according to "RESPONSE 
 "RESPONSE SCHEMA EXAMPLE":
 [
     {
-        "role: "user", 
+        "role: "user",
         "content": "This is the generated prompt text",
     },
     {
@@ -82,20 +82,20 @@ rerank_prompt_instruction = """A list of documents is shown below. Each document
         }
     """
 
-do_need_multiple_prompt_instruction1 = """classify the given question into either 'HIGH' or 'LOW'. If the question must absolutely be broken down into smaller questions to search for an answer because it is not straightforward then provide a single word response as 'HIGH' and if the question is not complex and straightforward then provide a single word response as 'LOW'. Do not generate any other text apart from 'YES' or 'NO' and this is non-compromising requirement. 
-    e.g. 
+do_need_multiple_prompt_instruction1 = """classify the given question into either 'HIGH' or 'LOW'. If the question must absolutely be broken down into smaller questions to search for an answer because it is not straightforward then provide a single word response as 'HIGH' and if the question is not complex and straightforward then provide a single word response as 'LOW'. Do not generate any other text apart from 'YES' or 'NO' and this is non-compromising requirement.
+    e.g.
     How was Ritesh Modi life different before, during, and after YC?
     HIGH
-    
+
     who is Ritesh Modi?
     LOW
-    
+
     compare revenue for last 2 quarters?
     HIGH
-    
+
     what was the revenue of a company last quarter?
     LOW
-        
+
     what is the capital of Denmark?
     LOW
     """
@@ -108,7 +108,7 @@ Questions such as statistical analytics are considered 'high' in complexity.
 """
 
 multiple_prompt_instruction = """Generate two questions in json format based on given schema for user question if it needs multiple questions to search relevant, complete and comprehensive answer. Always generate accurate json without any compromise. The output absolutely must only contains json and nothing apart from json. This is a non-compromising requirement.
-    schema: 
+    schema:
     {
         questions:[ "question1", "question2", "questionN" ]
     }

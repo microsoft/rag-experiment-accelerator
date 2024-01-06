@@ -1,7 +1,6 @@
 import json
 import re
 
-import numpy as np
 from sentence_transformers import CrossEncoder
 
 from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
@@ -35,7 +34,6 @@ def cross_encoder_rerank_documents(
     )
 
     top_indices_ques = cross_scores_ques.argsort()[-k:][::-1]
-    top_values_ques = cross_scores_ques[top_indices_ques]
     sub_context = []
     for idx in list(top_indices_ques):
         sub_context.append(documents[idx])
@@ -85,7 +83,7 @@ def llm_rerank_documents(
             if int(value) > rerank_threshold:
                 new_docs.append(int(numeric_data[0]))
             result = [documents[i] for i in new_docs]
-    except:
+    except BaseException:
         logger.error(
             "Unable to parse the rerank documents LLM response. Returning all"
             " documents."

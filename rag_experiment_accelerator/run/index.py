@@ -11,7 +11,6 @@ from rag_experiment_accelerator.embedding.gen_embeddings import (
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
-from rag_experiment_accelerator.run.args import get_directory_arg
 from rag_experiment_accelerator.utils.logging import get_logger
 
 load_dotenv(override=True)
