@@ -20,6 +20,7 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
     we_need_multiple_questions,
 )
+from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
@@ -298,23 +299,30 @@ def run(config_dir: str):
                                         user_prompt,
                                         config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                     )
+
                                     if is_multi_question:
-                                        responses = json.loads(
-                                            we_need_multiple_questions(
+                                        try:
+                                            llm_response = we_need_multiple_questions(
                                                 user_prompt,
                                                 config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                             )
-                                        )
-                                        new_questions = []
-                                        if isinstance(responses, dict):
-                                            new_questions = responses["questions"]
-                                        else:
-                                            for response in responses:
-                                                if "question" in response:
-                                                    new_questions.append(
-                                                        response["question"]
-                                                    )
-                                        new_questions.append(user_prompt)
+                                            responses = json.loads(llm_response)
+                                            new_questions = []
+                                            if isinstance(responses, dict):
+                                                new_questions = responses["questions"]
+                                            else:
+                                                for response in responses:
+                                                    if "question" in response:
+                                                        new_questions.append(
+                                                            response["question"]
+                                                        )
+                                            new_questions.append(user_prompt)
+                                        except ContentFilteredException as e:
+                                            logger.error(
+                                                f"Content Filtered. Unable to generate multiple questions for: {user_prompt}",
+                                                exc_info=e,
+                                            )
+                                            is_multi_question = False
 
                                     evaluation_content = user_prompt + qna_context
                                     try:
