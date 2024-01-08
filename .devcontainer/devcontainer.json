@@ -9,7 +9,7 @@
 			"version": "latest"
 		}
 	},
-	"postCreateCommand": "pip install -e .",
+	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [

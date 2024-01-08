@@ -1,16 +1,18 @@
+import mlflow
+from azure.ai.ml import MLClient
 from dotenv import load_dotenv
+
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.evaluation import eval
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.utils import get_index_name
 
 load_dotenv(override=True)
 
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
-from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.evaluation import eval
-from rag_experiment_accelerator.utils.logging import get_logger
-from azure.ai.ml import MLClient
-import mlflow
 
 logger = get_logger(__name__)
+
 
 def run(config_dir: str):
     """
@@ -41,7 +43,14 @@ def run(config_dir: str):
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
-                        index_name = get_index_name(config.NAME_PREFIX, chunk_size, overlap, embedding_model.name, ef_construction, ef_search)
+                        index_name = get_index_name(
+                            config.NAME_PREFIX,
+                            chunk_size,
+                            overlap,
+                            embedding_model.name,
+                            ef_construction,
+                            ef_search,
+                        )
                         logger.info(f"Evaluating Index: {index_name}")
                         config.artifacts_dir
                         write_path = f"{config.artifacts_dir}/outputs/eval_output_{index_name}.jsonl"

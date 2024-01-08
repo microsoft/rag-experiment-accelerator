@@ -1,15 +1,14 @@
-from azure.search.documents import SearchClient
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
-
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import (
-    RawVectorQuery,
-    QueryType,
-    QueryLanguage,
-    QueryCaptionType,
     QueryAnswerType,
+    QueryCaptionType,
+    QueryLanguage,
+    QueryType,
+    RawVectorQuery,
 )
+
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 

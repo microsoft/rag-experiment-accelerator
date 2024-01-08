@@ -30,7 +30,8 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
 
 
 @patch(
-    "rag_experiment_accelerator.config.credentials._get_env_var", new=mock_get_env_var
+    "rag_experiment_accelerator.config.credentials._get_env_var",
+    new=mock_get_env_var,
 )
 def test_config_init():
     # Load mock config data from a YAML file
@@ -51,7 +52,10 @@ def test_config_init():
     assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
     assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
-    assert config.AZURE_OAI_CHAT_DEPLOYMENT_NAME == mock_config_data["azure_oai_chat_deployment_name"]
+    assert (
+        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        == mock_config_data["azure_oai_chat_deployment_name"]
+    )
     assert config.EMBEDDING_MODEL_NAME == mock_config_data["embedding_model_name"]
     assert config.TEMPERATURE == mock_config_data["openai_temperature"]
     assert (

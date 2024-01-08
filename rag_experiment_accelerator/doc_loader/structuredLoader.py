@@ -1,7 +1,9 @@
-import os
 import glob
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+import os
+
 from langchain.document_loaders.base import BaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -37,7 +39,8 @@ def load_structured_files(
     logger.info(f"Loading {file_format} files from {folder_path}")
     matching_files = []
     for pattern in glob_patterns:
-        glob_pattern = f"**/[!.~]*.{pattern}" # "." is used for hidden files, "~" is used for Word temporary files
+        # "." is used for hidden files, "~" is used for Word temporary files
+        glob_pattern = f"**/[!.~]*.{pattern}"
         full_glob_pattern = os.path.join(folder_path, glob_pattern)
         matching_files += glob.glob(full_glob_pattern, recursive=True)
 
@@ -60,11 +63,14 @@ def load_structured_files(
         )
     else:
         text_splitter = RecursiveCharacterTextSplitter().from_language(
-            language=language, chunk_size=chunk_size, chunk_overlap=overlap_size
+            language=language,
+            chunk_size=chunk_size,
+            chunk_overlap=overlap_size,
         )
 
     logger.debug(
-        f"Splitting {file_format} files into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
+        f"Splitting {file_format} files into chunks of {chunk_size} characters"
+        f" with an overlap of {overlap_size} characters"
     )
 
     docs = text_splitter.split_documents(documents)

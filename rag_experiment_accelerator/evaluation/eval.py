@@ -1,13 +1,13 @@
+import ast
 import json
 import os
 import warnings
 from datetime import datetime
-from typing import List
 
-import openai
 import evaluate
 import mlflow
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import spacy
@@ -15,23 +15,16 @@ import textdistance
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
 from numpy import mean
-
-import ast
-import plotly.express as px
-
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-
-from rag_experiment_accelerator.llm.prompts import (
-    llm_context_precision_instruction,
-    llm_answer_relevance_instruction,
-)
-from rag_experiment_accelerator.config import Config
-
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.llm.prompts import (
+    llm_answer_relevance_instruction,
+    llm_context_precision_instruction,
+)
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -169,58 +162,11 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     return int(sum(differences) / len(differences))
 
 
-from sentence_transformers import SentenceTransformer
-
-
 def semantic_compare_values(
-    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
-) -> None:
-    """
-    Computes the semantic similarity score between two values using a pre-trained SentenceTransformer model.
-
-    Args:
-        value1 (str): The first value to compare.
-        value2 (str): The second value to compare.
-        differences (list[float]): A list to store the similarity score between the two values.
-        model_type (SentenceTransformer): A pre-trained SentenceTransformer model to encode the values.
-
-    Returns:
-        None
-    """
-    embedding1 = model_type.encode([str(value1)])
-    embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1, embedding2)
-
-    differences.append(similarity_score * 100)
-
-
-from sentence_transformers import SentenceTransformer
-
-
-def semantic_compare_values(
-    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
-) -> None:
-    """
-    Computes the semantic similarity score between two values using the provided SentenceTransformer model.
-
-    Args:
-        value1 (str): The first value to compare.
-        value2 (str): The second value to compare.
-        differences (list[float]): A list to append the similarity score to.
-        model_type (SentenceTransformer): The SentenceTransformer model to use for encoding the values.
-
-    Returns:
-        None
-    """
-    embedding1 = model_type.encode([str(value1)])
-    embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1, embedding2)
-
-    differences.append(similarity_score * 100)
-
-
-def semantic_compare_values(
-    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
+    value1: str,
+    value2: str,
+    differences: list[float],
+    model_type: SentenceTransformer,
 ) -> None:
     """
     Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
@@ -361,7 +307,9 @@ def llm_answer_relevance(question, answer):
 
     """
     config = Config()
-    result = ResponseGenerator(deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
+    result = ResponseGenerator(
+        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -385,7 +333,9 @@ def llm_context_precision(question, context):
     """
     config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = ResponseGenerator(deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
+    result = ResponseGenerator(
+        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    ).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
@@ -630,7 +580,10 @@ def evaluate_prompts(
         eval_score_folder = f"{config.artifacts_dir}/eval_score"
         os.makedirs(eval_score_folder, exist_ok=True)
     except Exception as e:
-        logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
+        logger.error(
+            f"Unable to create the '{eval_score_folder}' directory. Please"
+            " ensure you have the proper permissions and try again"
+        )
         raise e
 
     metric_types = config.METRIC_TYPES
@@ -694,7 +647,10 @@ def evaluate_prompts(
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
-    for search_type, scores_at_k in total_precision_scores_by_search_type.items():
+    for (
+        search_type,
+        scores_at_k,
+    ) in total_precision_scores_by_search_type.items():
         for k, scores in scores_at_k.items():
             avg_at_k = mean(scores)
             # not sure if this would be problematic or not.
@@ -743,7 +699,8 @@ def evaluate_prompts(
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        f"{eval_score_folder}/{formatted_datetime}_map_scores_test.csv", index=False
+        f"{eval_score_folder}/{formatted_datetime}_map_scores_test.csv",
+        index=False,
     )
     plot_map_scores(map_scores_df, run_id, client)
 

@@ -1,45 +1,50 @@
-import os
 import json
+import os
+
 import azure
 from azure.search.documents import SearchClient
-from openai import BadRequestError
-from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
-from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
-from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
-from rag_experiment_accelerator.run.args import get_directory_arg
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
-
 from dotenv import load_dotenv
+from openai import BadRequestError
 
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.evaluation.search_eval import (
+    evaluate_search_result,
+)
+from rag_experiment_accelerator.evaluation.spacy_evaluator import (
+    SpacyEvaluator,
+)
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.evaluation.spacy_evaluator import (
+    SpacyEvaluator,
+)
+from rag_experiment_accelerator.ingest_data.acs_ingest import (
+    do_we_need_multiple_questions,
+    we_need_multiple_questions,
+)
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.reranking.reranker import (
+    cross_encoder_rerank_documents,
+    llm_rerank_documents,
+)
+from rag_experiment_accelerator.search_type.acs_search_methods import (
+    create_client,
+    search_for_manual_hybrid,
+    search_for_match_Hybrid_cross,
+    search_for_match_Hybrid_multi,
+    search_for_match_pure_vector,
+    search_for_match_pure_vector_cross,
+    search_for_match_pure_vector_multi,
+    search_for_match_semantic,
+    search_for_match_text,
+)
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.utils import get_index_name
 
 load_dotenv(override=True)
 
-from rag_experiment_accelerator.ingest_data.acs_ingest import (
-    we_need_multiple_questions,
-    do_we_need_multiple_questions,
-)
-from rag_experiment_accelerator.search_type.acs_search_methods import (
-    search_for_match_pure_vector_multi,
-    search_for_match_semantic,
-    search_for_match_Hybrid_multi,
-    search_for_match_Hybrid_cross,
-    search_for_match_text,
-    search_for_match_pure_vector,
-    search_for_match_pure_vector_cross,
-    search_for_manual_hybrid,
-)
-from rag_experiment_accelerator.search_type.acs_search_methods import create_client
-from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
-from rag_experiment_accelerator.reranking.reranker import (
-    llm_rerank_documents,
-    cross_encoder_rerank_documents,
-)
-
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -220,7 +225,9 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME).generate_response(
+        openai_response = ResponseGenerator(
+            deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        ).generate_response(
             full_prompt_instruction,
             original_prompt,
         )
@@ -252,7 +259,10 @@ def run(config_dir: str):
             output_dir = f"{config.artifacts_dir}/outputs"
             os.makedirs(output_dir, exist_ok=True)
         except Exception as e:
-            logger.error(f"Unable to create the '{output_dir}' directory. Please ensure you have the proper permissions and try again")
+            logger.error(
+                f"Unable to create the '{output_dir}' directory. Please ensure"
+                " you have the proper permissions and try again"
+            )
             raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
@@ -262,12 +272,17 @@ def run(config_dir: str):
                 for embedding_model in config.embedding_models:
                     for ef_construction in config.EF_CONSTRUCTIONS:
                         for ef_search in config.EF_SEARCHES:
-                            index_name = get_index_name(config.NAME_PREFIX, chunk_size, overlap, embedding_model.name, ef_construction, ef_search)
+                            index_name = get_index_name(
+                                config.NAME_PREFIX,
+                                chunk_size,
+                                overlap,
+                                embedding_model.name,
+                                ef_construction,
+                                ef_search,
+                            )
                             logger.info(f"Index: {index_name}")
 
-                            write_path = (
-                                f"{output_dir}/eval_output_{index_name}.jsonl"
-                            )
+                            write_path = f"{output_dir}/eval_output_{index_name}.jsonl"
                             if os.path.exists(write_path):
                                 continue
 
@@ -291,7 +306,6 @@ def run(config_dir: str):
                                             we_need_multiple_questions(
                                                 user_prompt,
                                                 config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
-
                                             )
                                         )
                                         new_questions = []
@@ -326,7 +340,10 @@ def run(config_dir: str):
                                                     main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
                                                 )
                                             else:
-                                                docs, evaluation = query_and_eval_acs(
+                                                (
+                                                    docs,
+                                                    evaluation,
+                                                ) = query_and_eval_acs(
                                                     search_client=search_client,
                                                     embedding_model=embedding_model,
                                                     query=user_prompt,
@@ -354,7 +371,9 @@ def run(config_dir: str):
                                                 + "\n"
                                                 + "\n".join(prompt_instruction_context)
                                             )
-                                            openai_response = ResponseGenerator(deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,).generate_response(
+                                            openai_response = ResponseGenerator(
+                                                deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+                                            ).generate_response(
                                                 full_prompt_instruction,
                                                 user_prompt,
                                             )
@@ -362,12 +381,20 @@ def run(config_dir: str):
 
                                             output = {
                                                 "rerank": config.RERANK,
-                                                "rerank_type": config.RERANK_TYPE,
-                                                "crossencoder_model": config.CROSSENCODER_MODEL,
-                                                "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
-                                                "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                "cross_encoder_at_k": config.CROSSENCODER_AT_K,
-                                                "question_count": question_count,
+                                                "rerank_type": (config.RERANK_TYPE),
+                                                "crossencoder_model": (
+                                                    config.CROSSENCODER_MODEL
+                                                ),
+                                                "llm_re_rank_threshold": (
+                                                    config.LLM_RERANK_THRESHOLD
+                                                ),
+                                                "retrieve_num_of_documents": (
+                                                    config.RETRIEVE_NUM_OF_DOCUMENTS
+                                                ),
+                                                "cross_encoder_at_k": (
+                                                    config.CROSSENCODER_AT_K
+                                                ),
+                                                "question_count": (question_count),
                                                 "actual": openai_response,
                                                 "expected": output_prompt,
                                                 "search_type": s_v,
@@ -380,14 +407,18 @@ def run(config_dir: str):
                                                 out.write(json_string + "\n")
                                     except BadRequestError as e:
                                         logger.error(
-                                            f"Invalid request. Skipping question: {user_prompt}",
+                                            "Invalid request. Skipping"
+                                            f" question: {user_prompt}",
                                             exc_info=e,
                                         )
                                         continue
 
                             search_client.close()
                             create_data_asset(
-                                write_path, index_name, azure_cred, config.AzureMLCredentials
+                                write_path,
+                                index_name,
+                                azure_cred,
+                                config.AzureMLCredentials,
                             )
     except FileNotFoundError:
         logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)

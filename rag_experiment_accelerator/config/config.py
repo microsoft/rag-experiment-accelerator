@@ -1,5 +1,6 @@
 import json
 import os
+
 from rag_experiment_accelerator.config.credentials import (
     AzureMLCredentials,
     AzureSearchCredentials,
@@ -8,8 +9,8 @@ from rag_experiment_accelerator.config.credentials import (
 )
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import EmbeddingModelFactory
-from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
+from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -79,9 +80,13 @@ class Config:
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
         self.SEARCH_VARIANTS = data["search_types"]
-        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get("azure_oai_chat_deployment_name", None)
+        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get(
+            "azure_oai_chat_deployment_name", None
+        )
         self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
-        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get("azure_oai_eval_deployment_name", None)
+        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get(
+            "azure_oai_eval_deployment_name", None
+        )
         self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = data["crossencoder_model"]
         self.RERANK_TYPE = data["rerank_type"]
@@ -111,7 +116,8 @@ class Config:
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
                 logger.warn(
-                    "prompt_config.json found but main_prompt_instruction is not set. Using default prompts"
+                    "prompt_config.json found but main_prompt_instruction is"
+                    " not set. Using default prompts"
                 )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
