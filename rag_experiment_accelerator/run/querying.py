@@ -8,9 +8,14 @@ from openai import BadRequestError
 
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.evaluation.search_eval import (
     evaluate_search_result,
 )
+from rag_experiment_accelerator.evaluation.spacy_evaluator import (
+    SpacyEvaluator,
+)
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.evaluation.spacy_evaluator import (
     SpacyEvaluator,
 )
@@ -36,6 +41,7 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 )
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.utils import get_index_name
 
 load_dotenv(override=True)
 
@@ -56,22 +62,20 @@ search_mapping = {
 
 def query_acs(
     search_client: azure.search.documents.SearchClient,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
-    model_name: str = None,
 ):
     """
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
 
     Args:
         search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension to search within.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the model to use for searching.
 
     Returns:
         list: A list of documents matching the search query.
@@ -81,10 +85,9 @@ def query_acs(
 
     return search_mapping[s_v](
         client=search_client,
-        size=dimension,
+        embedding_model=embedding_model,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        model_name=model_name,
     )
 
 
@@ -128,13 +131,12 @@ def rerank_documents(
 
 def query_and_eval_acs(
     search_client: SearchClient,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     query: str,
     search_type: str,
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
-    model_name: str = None,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
@@ -143,24 +145,22 @@ def query_and_eval_acs(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension of the search index to query.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query to execute.
         search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
-        model_name (str): The name of the model to use for searching.
 
     Returns:
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
     search_result = query_acs(
         search_client=search_client,
-        dimension=dimension,
+        embedding_model=embedding_model,
         user_prompt=query,
         s_v=search_type,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        model_name=model_name,
     )
     docs, evaluation = evaluate_search_result(
         search_result, evaluation_content, evaluator
@@ -171,7 +171,7 @@ def query_and_eval_acs(
 
 def query_and_eval_acs_multi(
     search_client: SearchClient,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     questions: list[str],
     original_prompt: str,
     output_prompt: str,
@@ -187,7 +187,7 @@ def query_and_eval_acs_multi(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client.
-        dimension (int): The number of dimensions in the embedding space.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         questions (list[str]): A list of questions to query the search service with.
         original_prompt (str): The original prompt to generate the response from.
         output_prompt (str): The output prompt to use for reranking the search results.
@@ -206,13 +206,12 @@ def query_and_eval_acs_multi(
     for question in questions:
         docs, evaluation = query_and_eval_acs(
             search_client=search_client,
-            dimension=dimension,
+            embedding_model=embedding_model,
             query=question,
             search_type=search_type,
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
-            model_name=config.EMBEDDING_MODEL_NAME,
         )
         evals.append(evaluation)
 
@@ -224,9 +223,7 @@ def query_and_eval_acs_multi(
             prompt_instruction_context = docs
 
         full_prompt_instruction = (
-            main_prompt_instruction
-            + "\n"
-            + "\n".join(prompt_instruction_context)
+            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
         openai_response = ResponseGenerator(
             deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
@@ -248,9 +245,7 @@ def run(config_dir: str):
         None
     """
     config = Config(config_dir)
-    service_endpoint = (
-        config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
-    )
+    service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     question_count = 0
     # ensure we have a valid Azure credential before going throught the loop.
@@ -272,17 +267,22 @@ def run(config_dir: str):
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
-        for config_item in config.CHUNK_SIZES:
+        for chunk_size in config.CHUNK_SIZES:
             for overlap in config.OVERLAP_SIZES:
-                for dimension in config.EMBEDDING_DIMENSIONS:
+                for embedding_model in config.embedding_models:
                     for ef_construction in config.EF_CONSTRUCTIONS:
                         for ef_search in config.EF_SEARCHES:
-                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                            index_name = get_index_name(
+                                config.NAME_PREFIX,
+                                chunk_size,
+                                overlap,
+                                embedding_model.name,
+                                ef_construction,
+                                ef_search,
+                            )
                             logger.info(f"Index: {index_name}")
 
-                            write_path = (
-                                f"{output_dir}/eval_output_{index_name}.jsonl"
-                            )
+                            write_path = f"{output_dir}/eval_output_{index_name}.jsonl"
                             if os.path.exists(write_path):
                                 continue
 
@@ -290,9 +290,7 @@ def run(config_dir: str):
                                 service_endpoint, index_name, search_admin_key
                             )
 
-                            with open(
-                                config.EVAL_DATA_JSONL_FILE_PATH, "r"
-                            ) as file:
+                            with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
                                 for line in file:
                                     data = json.loads(line)
                                     user_prompt = data.get("user_prompt")
@@ -312,9 +310,7 @@ def run(config_dir: str):
                                         )
                                         new_questions = []
                                         if isinstance(responses, dict):
-                                            new_questions = responses[
-                                                "questions"
-                                            ]
+                                            new_questions = responses["questions"]
                                         else:
                                             for response in responses:
                                                 if "question" in response:
@@ -323,9 +319,7 @@ def run(config_dir: str):
                                                     )
                                         new_questions.append(user_prompt)
 
-                                    evaluation_content = (
-                                        user_prompt + qna_context
-                                    )
+                                    evaluation_content = user_prompt + qna_context
                                     try:
                                         for s_v in config.SEARCH_VARIANTS:
                                             search_evals = []
@@ -334,29 +328,29 @@ def run(config_dir: str):
                                                     docs,
                                                     search_evals,
                                                 ) = query_and_eval_acs_multi(
-                                                    search_client,
-                                                    dimension,
-                                                    new_questions,
-                                                    user_prompt,
-                                                    output_prompt,
-                                                    s_v,
-                                                    evaluation_content,
-                                                    config,
-                                                    evaluator,
-                                                    config.MAIN_PROMPT_INSTRUCTION,
+                                                    search_client=search_client,
+                                                    embedding_model=embedding_model,
+                                                    questions=new_questions,
+                                                    original_prompt=user_prompt,
+                                                    output_prompt=output_prompt,
+                                                    search_type=s_v,
+                                                    evaluation_content=evaluation_content,
+                                                    config=config,
+                                                    evaluator=evaluator,
+                                                    main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
                                                 )
                                             else:
-                                                docs, evaluation = (
-                                                    query_and_eval_acs(
-                                                        search_client=search_client,
-                                                        dimension=dimension,
-                                                        query=user_prompt,
-                                                        search_type=s_v,
-                                                        evaluation_content=evaluation_content,
-                                                        retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                        evaluator=evaluator,
-                                                        model_name=config.EMBEDDING_MODEL_NAME,
-                                                    )
+                                                (
+                                                    docs,
+                                                    evaluation,
+                                                ) = query_and_eval_acs(
+                                                    search_client=search_client,
+                                                    embedding_model=embedding_model,
+                                                    query=user_prompt,
+                                                    search_type=s_v,
+                                                    evaluation_content=evaluation_content,
+                                                    retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                    evaluator=evaluator,
                                                 )
                                                 search_evals.append(evaluation)
 
@@ -370,16 +364,12 @@ def run(config_dir: str):
                                                     )
                                                 )
                                             else:
-                                                prompt_instruction_context = (
-                                                    docs
-                                                )
+                                                prompt_instruction_context = docs
 
                                             full_prompt_instruction = (
                                                 config.MAIN_PROMPT_INSTRUCTION
                                                 + "\n"
-                                                + "\n".join(
-                                                    prompt_instruction_context
-                                                )
+                                                + "\n".join(prompt_instruction_context)
                                             )
                                             openai_response = ResponseGenerator(
                                                 deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
@@ -391,9 +381,7 @@ def run(config_dir: str):
 
                                             output = {
                                                 "rerank": config.RERANK,
-                                                "rerank_type": (
-                                                    config.RERANK_TYPE
-                                                ),
+                                                "rerank_type": (config.RERANK_TYPE),
                                                 "crossencoder_model": (
                                                     config.CROSSENCODER_MODEL
                                                 ),
@@ -406,9 +394,7 @@ def run(config_dir: str):
                                                 "cross_encoder_at_k": (
                                                     config.CROSSENCODER_AT_K
                                                 ),
-                                                "question_count": (
-                                                    question_count
-                                                ),
+                                                "question_count": (question_count),
                                                 "actual": openai_response,
                                                 "expected": output_prompt,
                                                 "search_type": s_v,
@@ -417,9 +403,7 @@ def run(config_dir: str):
                                             }
 
                                             with open(write_path, "a") as out:
-                                                json_string = json.dumps(
-                                                    output
-                                                )
+                                                json_string = json.dumps(output)
                                                 out.write(json_string + "\n")
                                     except BadRequestError as e:
                                         logger.error(
@@ -437,6 +421,4 @@ def run(config_dir: str):
                                 config.AzureMLCredentials,
                             )
     except FileNotFoundError:
-        logger.error(
-            "The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH
-        )
+        logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)

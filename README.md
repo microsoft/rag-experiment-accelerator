@@ -98,6 +98,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
     },
+    "embedding_models": "see 'Description of embedding models config' below",
     "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
     "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,
     "ef_search":  "ef_search value determines the value of Azure Cognitive Search vector configuration.",
@@ -121,6 +122,29 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 }
 ```
 
+## Description of embedding models config
+
+`embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence trasnformer models.
+
+### Azure OpenAI embedding model conifg
+
+```json
+    {
+        "type": "azure", 
+        "deployment_name": "the deployment name of the model",
+        "dimension": "the dimesion of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
+    },
+```
+
+### Sentence Transformer embedding model
+
+```json
+        {
+            "type": "sentence-transformer",
+            "model_name": "the name of the sentence transformer model",
+            "dimension": "the dimension of the model. This field is not required if model name is one of ['all-MiniLM-L6-v2', 'all-mpnet-base-v2', 'bert-large-nli-mean-tokens]"
+        }
+```
 ## Reports
 
 The solution integrates with Azure Machine Learning and uses MLFlow to manage experiments, jobs, and artifacts. You can view the following reports as part of the evaluation process:
