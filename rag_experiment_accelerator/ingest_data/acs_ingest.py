@@ -1,5 +1,4 @@
 import hashlib
-from contextlib import suppress
 import json
 import re
 
