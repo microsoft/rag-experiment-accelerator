@@ -38,7 +38,7 @@ def cross_encoder_rerank_documents(
     for idx in list(top_indices_ques):
         sub_context.append(documents[idx])
 
-    return sub_context 
+    return sub_context
 
 
 def llm_rerank_documents(
