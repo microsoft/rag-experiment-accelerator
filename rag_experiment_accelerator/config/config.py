@@ -31,7 +31,6 @@ class Config:
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
-        EMBEDDING_MODEL_NAME (str): The name of the Azure deployment to use for embeddings.
         AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.
         RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
@@ -44,6 +43,7 @@ class Config:
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
+        embedding_models: The embedding models used to generate embeddings
     """
 
     _instance = None
@@ -83,7 +83,6 @@ class Config:
         self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get(
             "azure_oai_chat_deployment_name", None
         )
-        self.EMBEDDING_MODEL_NAME = data.get("embedding_model_name", None)
         self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get(
             "azure_oai_eval_deployment_name", None
         )

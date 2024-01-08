@@ -32,7 +32,6 @@
     ],
     "azure_oai_chat_deployment_name": "test_chat_deployment_name",
     "azure_oai_eval_deployment_name": "test_eval_deployment_name",
-    "embedding_model_name": "test_embedding_model_name",
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
     "data_formats": "test_data_format",

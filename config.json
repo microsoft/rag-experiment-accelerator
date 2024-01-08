@@ -43,7 +43,6 @@
         "llm_context_precision"
     ],
     "azure_oai_chat_deployment_name": "gpt-35-turbo",
-    "embedding_model_name": "text-embedding-ada-002",
     "azure_oai_eval_deployment_name": "gpt-35-turbo",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
