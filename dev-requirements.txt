@@ -1,2 +1,5 @@
 promptflow==1.1.1
 promptflow-tools==1.0.0
+pytest==7.4.3
+pytest-cov==4.1.0
+flake8==6.1.0
