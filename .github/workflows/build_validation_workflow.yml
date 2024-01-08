@@ -34,7 +34,9 @@ jobs:
       - name: Execute Unit Tests
         shell: bash
         run: |
-          pytest . --cov=. --cov-report=html --cov-config=.coveragerc
+          pytest . --cov=. --cov-report=html --cov-config=.coveragerc-1
+        env:
+          COVERAGE_FILE: ${{ github.workspace }}/.coveragerc
 
       - name: Publish Unit Test Results
         uses: actions/upload-artifact@v3
