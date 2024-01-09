@@ -29,8 +29,11 @@ jobs:
       - name: Execute Unit Tests
         shell: bash
         run: |
-          pytest . --cov=. --cov-report=html
+          pytest . --cov=. --cov-report=html --cov-config=.coveragerc > pytest-coverage.txt
 
+      - name: Comment coverage
+        uses: coroo/pytest-coverage-commentator@v1.0.2
+        
       - name: Publish Unit Test Results
         uses: actions/upload-artifact@v3
         with:
