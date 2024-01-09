@@ -143,6 +143,8 @@ def generate_qna(docs, azure_oai_deployment_name):
     new_df = pd.DataFrame(columns=column_names)
 
     for i, chunk in enumerate(docs):
+        # what happens with < 50 ? Currently we are skipping them
+        # But we aren't explicitly saying that stating that, should we?
         if len(chunk.page_content) > 50:
             response = ""
             try:
