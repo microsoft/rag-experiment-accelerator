@@ -32,5 +32,5 @@ def test_sentence_transformer_embedding_model_raises_unsupported_model():
 def test_sentence_transformer_embedding_model_succeeds():
     try:
         STEmbeddingModel("all-mpnet-base-v2")
-    except:
+    except BaseException:
         assert False, "Should not have thrown an exception"
