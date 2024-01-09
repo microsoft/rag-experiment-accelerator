@@ -191,9 +191,6 @@ def test_generate_qna(mock_generate_response):
     # )
     # mock_response_generator.generate_response.assert_called_once()
     # mock_json_loads.assert_called_once_with(mock_response)
-    # mock_logger.info.assert_called_once_with("Generated QnA for document 0")
-    # mock_logger.error.assert_not_called()
-    # mock_logger.debug.assert_not_called()
 
 
 @patch(
@@ -229,8 +226,9 @@ def test_generate_qna_with_invalid_json(mock_json_loads, mock_generate_response)
     # mock_logger.debug.assert_called()
 
 
-# def test_we_need_multiple_questions(self):
-#     pass
+def test_we_need_multiple_questions():
+    assert False
 
-# def test_do_we_need_multiple_questions(self):
-#     pass
+
+def test_do_we_need_multiple_questions():
+    assert False
