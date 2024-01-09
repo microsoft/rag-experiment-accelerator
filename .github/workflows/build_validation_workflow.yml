@@ -34,16 +34,10 @@ jobs:
       - name: Execute Unit Tests
         shell: bash
         run: |
-          pytest . --cov=. --cov-report=html --cov-config=.coveragerc > pytest-coverage.txt
-        env:
-          COVERAGE_FILE: ${{ github.workspace }}/.coveragerc
+          pytest . --cov=. --cov-report=html --cov-config=.coveragerc
 
       - name: Publish Unit Test Results
         uses: actions/upload-artifact@v3
         with:
           name: unit-test-results
           path: "htmlcov/**"
-
-
-      - name: Comment coverage
-        uses: coroo/pytest-coverage-commentator@v1.0.2
