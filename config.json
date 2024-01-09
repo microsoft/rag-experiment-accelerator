@@ -4,7 +4,12 @@
         "chunk_size": [1000],
         "overlap_size": [200]
     },
-    "embedding_dimension": [768],
+    "embedding_models": [
+        {
+            "type": "sentence-transformer",
+            "model_name": "all-mpnet-base-v2"
+        }
+    ],
     "ef_construction": [400],
     "ef_search": [400],
     "language":{
@@ -38,7 +43,6 @@
         "llm_context_precision"
     ],
     "azure_oai_chat_deployment_name": "gpt-35-turbo",
-    "embedding_model_name": "text-embedding-ada-002",
     "azure_oai_eval_deployment_name": "gpt-35-turbo",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,

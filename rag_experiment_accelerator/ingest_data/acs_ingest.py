@@ -5,10 +5,7 @@ import re
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-
-from rag_experiment_accelerator.embedding.gen_embeddings import (
-    generate_embedding,
-)
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.llm.prompts import (
     do_need_multiple_prompt_instruction,
     generate_qna_instruction_system_prompt,
@@ -78,9 +75,8 @@ def upload_data(
     service_endpoint: str,
     index_name: str,
     search_key: str,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     azure_oai_deployment_name: str,
-    embedding_model_name: str,
 ):
     """
     Uploads data to an Azure Cognitive Search index.
@@ -90,9 +86,8 @@ def upload_data(
         service_endpoint (str): The endpoint URL for the Azure Cognitive Search service.
         index_name (str): The name of the index to upload data to.
         search_key (str): The search key for the Azure Cognitive Search service.
-        dimension (int): The dimensionality of the embeddings to generate.
+        embedding_model (EmbeddingModel): The embedding model to generate the embedding.
         azure_oai_deployment_name (str): The name of the Azure Opan AI deployment to use for generating titles and summaries.
-        embedding_model_name (str): The name of the embedding model to use for generating embeddings.
 
     Returns:
         None
@@ -103,29 +98,21 @@ def upload_data(
     )
     documents = []
     for i, chunk in enumerate(chunks):
-        title = generate_title(
-            str(chunk["content"]), azure_oai_deployment_name
-        )
-        summary = generate_summary(
-            str(chunk["content"]), azure_oai_deployment_name
-        )
+        title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
+        summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,
             "summary": summary,
             "content": str(chunk["content"]),
             "filename": "test",
-            "contentVector": chunk["content_vector"][0],
-            "contentSummary": generate_embedding(
-                size=dimension,
-                chunk=str(pre_process.preprocess(summary)),
-                model_name=embedding_model_name,
-            )[0],
-            "contentTitle": generate_embedding(
-                size=dimension,
-                chunk=str(pre_process.preprocess(title)),
-                model_name=embedding_model_name,
-            )[0],
+            "contentVector": chunk["content_vector"],
+            "contentSummary": embedding_model.generate_embedding(
+                chunk=str(pre_process.preprocess(summary))
+            ),
+            "contentTitle": embedding_model.generate_embedding(
+                chunk=str(pre_process.preprocess(title))
+            ),
         }
 
         documents.append(input_data)
@@ -217,11 +204,7 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
         bool: True if we need to ask multiple questions, False otherwise.
     """
     full_prompt_instruction = (
-        do_need_multiple_prompt_instruction
-        + "\n"
-        + "question: "
-        + question
-        + "\n"
+        do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
     response1 = ResponseGenerator(
         deployment_name=azure_oai_deployment_name

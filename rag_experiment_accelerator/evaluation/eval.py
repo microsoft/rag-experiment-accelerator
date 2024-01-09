@@ -106,9 +106,7 @@ def remove_spaces(text):
 def bleu(predictions, references):
     bleu = evaluate.load("bleu")
 
-    results = bleu.compute(
-        predictions=predictions, references=references, max_order=2
-    )
+    results = bleu.compute(predictions=predictions, references=references, max_order=2)
     # multiplying by 100 to maintain consistency with previous implementation
     return results["bleu"] * 100
 
@@ -311,9 +309,7 @@ def llm_answer_relevance(question, answer):
     config = Config()
     result = ResponseGenerator(
         deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-    ).generate_response(
-        sys_message=llm_answer_relevance_instruction, prompt=answer
-    )
+    ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -339,9 +335,7 @@ def llm_context_precision(question, context):
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
     result = ResponseGenerator(
         deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-    ).generate_response(
-        sys_message=llm_context_precision_instruction, prompt=prompt
-    )
+    ).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
@@ -407,9 +401,7 @@ def generate_metrics(experiment_name, run_id, client):
 
         label = key
         px.line(x_axis, y_axis)
-        fig.add_trace(
-            go.Scatter(x=x_axis, y=y_axis, mode="lines+markers", name=label)
-        )
+        fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode="lines+markers", name=label))
 
         fig.update_layout(
             xaxis_title="run name", yaxis_title=metric, font=dict(size=15)
@@ -448,26 +440,20 @@ def draw_hist_df(df, run_id, client):
 
 
 def plot_apk_scores(df, run_id, client):
-    fig = px.line(
-        df, x="k", y="score", title="AP@k scores", color="search_type"
-    )
+    fig = px.line(df, x="k", y="score", title="AP@k scores", color="search_type")
     plot_name = "average_precision_at_k.html"
     client.log_figure(run_id, fig, plot_name)
 
 
 # maybe pull these 2 above and below functions into a single one
 def plot_mapk_scores(df, run_id, client):
-    fig = px.line(
-        df, x="k", y="map_at_k", title="MAP@k scores", color="search_type"
-    )
+    fig = px.line(df, x="k", y="map_at_k", title="MAP@k scores", color="search_type")
     plot_name = "mean_average_precision_at_k.html"
     client.log_figure(run_id, fig, plot_name)
 
 
 def plot_map_scores(df, run_id, client):
-    fig = px.bar(
-        df, x="search_type", y="mean", title="MAP scores", color="search_type"
-    )
+    fig = px.bar(df, x="search_type", y="mean", title="MAP scores", color="search_type")
     plot_name = "mean_average_precision_scores.html"
     client.log_figure(run_id, fig, plot_name)
 
@@ -517,19 +503,13 @@ def compute_metrics(actual, expected, context, metric_type):
     elif metric_type == "fuzzy":
         score = fuzzy(actual, expected)
     elif metric_type == "bert_all_MiniLM_L6_v2":
-        all_MiniLM_L6_v2 = SentenceTransformer(
-            "sentence-transformers/all-MiniLM-L6-v2"
-        )
-        score = compare_semantic_document_values(
-            actual, expected, all_MiniLM_L6_v2
-        )
+        all_MiniLM_L6_v2 = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        score = compare_semantic_document_values(actual, expected, all_MiniLM_L6_v2)
     elif metric_type == "bert_base_nli_mean_tokens":
         base_nli_mean_tokens = SentenceTransformer(
             "sentence-transformers/bert-base-nli-mean-tokens"
         )
-        score = compare_semantic_document_values(
-            actual, expected, base_nli_mean_tokens
-        )
+        score = compare_semantic_document_values(actual, expected, base_nli_mean_tokens)
     elif metric_type == "bert_large_nli_mean_tokens":
         large_nli_mean_tokens = SentenceTransformer(
             "sentence-transformers/bert-large-nli-mean-tokens"
@@ -575,7 +555,7 @@ def evaluate_prompts(
     client,
     chunk_size,
     chunk_overlap,
-    embedding_dimension,
+    embedding_model,
     ef_construction,
     ef_search,
 ):
@@ -654,20 +634,16 @@ def evaluate_prompts(
             for eval in search_evals:
                 scores = eval.get("precision_scores")
                 if scores:
-                    average_precision_for_search_type[search_type].append(
-                        mean(scores)
-                    )
+                    average_precision_for_search_type[search_type].append(mean(scores))
                 for i, score in enumerate(scores):
-                    if total_precision_scores_by_search_type[search_type].get(
-                        i + 1
-                    ):
+                    if total_precision_scores_by_search_type[search_type].get(i + 1):
                         total_precision_scores_by_search_type[search_type][
                             i + 1
                         ].append(score)
                     else:
-                        total_precision_scores_by_search_type[search_type][
-                            i + 1
-                        ] = [score]
+                        total_precision_scores_by_search_type[search_type][i + 1] = [
+                            score
+                        ]
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
@@ -711,9 +687,7 @@ def evaluate_prompts(
     for col_name in sum_df.columns:
         sum_dict[col_name] = float(sum_df[col_name].values)
 
-    sum_df.to_csv(
-        f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False
-    )
+    sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
@@ -739,7 +713,8 @@ def evaluate_prompts(
     mlflow.log_param("retrieve_num_of_documents", retrieve_num_of_documents)
     mlflow.log_param("cross_encoder_at_k", cross_encoder_at_k)
     mlflow.log_param("chunk_overlap", chunk_overlap)
-    mlflow.log_param("embedding_dimension", embedding_dimension)
+    mlflow.log_param("embedding_dimension", embedding_model.dimension)
+    mlflow.log_param("embedding_model_name", embedding_model.name)
     mlflow.log_param("ef_construction", ef_construction)
     mlflow.log_param("ef_search", ef_search)
     mlflow.log_param("run_metrics", sum_dict)
