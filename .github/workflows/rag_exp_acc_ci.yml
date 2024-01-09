@@ -45,7 +45,7 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_index.py  
+          python 01_index.py --data-directory-name='data-ci'
       - name: execute qna step
         shell: bash
         run: |
