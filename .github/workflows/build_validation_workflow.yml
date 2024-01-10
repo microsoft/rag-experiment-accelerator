@@ -41,16 +41,16 @@ jobs:
         with:
           name: unit-test-results
           path: "htmlcov/**"
-          
-    - name: Extract coverage percentage
-      id: extract_coverage
-      run: |
-        coverage=$(cat htmlcov/index.html | grep -oP 'Total</span></td><td class="right" data-ratio="(\d+\.\d+)%">' | grep -oP '(\d+\.\d+)')
-        echo "::set-output name=coverage::$coverage"
 
-    - name: Publish coverage as comment
-      run: |
-        comment="## Test Coverage\nCoverage: ${{ steps.extract_coverage.outputs.coverage }}%"
-        gh pr comment ${{ github.event.number }} --body "$comment"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract coverage percentage
+        id: extract_coverage
+        run: |
+          coverage=$(cat htmlcov/index.html | grep -oP 'Total</span></td><td class="right" data-ratio="(\d+\.\d+)%">' | grep -oP '(\d+\.\d+)')
+          echo "::set-output name=coverage::$coverage"
+
+      - name: Publish coverage as comment
+        run: |
+          comment="## Test Coverage\nCoverage: ${{ steps.extract_coverage.outputs.coverage }}%"
+          gh pr comment ${{ github.event.number }} --body "$comment"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
