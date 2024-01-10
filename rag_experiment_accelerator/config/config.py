@@ -48,7 +48,7 @@ class Config:
 
     _instance = None
 
-    def __new__(cls, config_dir: str = os.getcwd()):
+    def __new__(cls, config_dir: str = os.getcwd(), data_dir: str = "data"):
         """
         Creates a new instance of Config only if it doesn't already exist.
 
@@ -61,16 +61,16 @@ class Config:
 
         if cls._instance is None:
             cls._instance = super(Config, cls).__new__(cls)
-            cls._instance._initialize(config_dir)
+            cls._instance._initialize(config_dir, data_dir)
         return cls._instance
 
-    def _initialize(self, config_dir: str) -> None:
+    def _initialize(self, config_dir: str, data_dir: str) -> None:
         with open(f"{config_dir}/config.json", "r") as json_file:
             data = json.load(json_file)
 
         self.config_dir = config_dir
         self.artifacts_dir = f"{config_dir}/artifacts"
-        self.data_dir = f"{config_dir}/data"
+        self.data_dir = f"{config_dir}/" + f"{data_dir}"
         self.EVAL_DATA_JSONL_FILE_PATH = (
             f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
         )
