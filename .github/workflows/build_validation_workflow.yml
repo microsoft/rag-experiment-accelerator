@@ -24,12 +24,17 @@ jobs:
         run: |
           set -e # fail on error
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -e . -r requirements.txt -r dev-requirements.txt
+          
+      - name: Run flake
+        shell: bash
+        run: |
+          flake8 --extend-ignore=E501
 
       - name: Execute Unit Tests
         shell: bash
         run: |
-          pytest . --cov=. --cov-report=html
+          pytest . --cov=. --cov-report=html --cov-config=.coveragerc
 
       - name: Publish Unit Test Results
         uses: actions/upload-artifact@v3
