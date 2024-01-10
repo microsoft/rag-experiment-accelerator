@@ -41,9 +41,7 @@ def cross_encoder_rerank_documents(
     return sub_context
 
 
-def llm_rerank_documents(
-    documents, question, deployment_name, rerank_threshold
-):
+def llm_rerank_documents(documents, question, deployment_name, rerank_threshold):
     """
     Reranks a list of documents based on a given question using the LLM model.
 
@@ -67,9 +65,9 @@ def llm_rerank_documents(
         Question: {question}
     """
 
-    response = ResponseGenerator(
-        deployment_name=deployment_name
-    ).generate_response(rerank_prompt_instruction, prompt)
+    response = ResponseGenerator(deployment_name=deployment_name).generate_response(
+        rerank_prompt_instruction, prompt
+    )
     logger.debug("Response", response)
     pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
     try:

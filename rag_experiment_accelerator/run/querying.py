@@ -15,10 +15,7 @@ from rag_experiment_accelerator.evaluation.search_eval import (
 from rag_experiment_accelerator.evaluation.spacy_evaluator import (
     SpacyEvaluator,
 )
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
-from rag_experiment_accelerator.evaluation.spacy_evaluator import (
-    SpacyEvaluator,
-)
+
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
     we_need_multiple_questions,
