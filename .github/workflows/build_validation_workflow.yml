@@ -50,6 +50,6 @@ jobs:
 
       - name: Publish coverage as comment
         run: |
-          gh pr comment ${{ github.event.number }} --body "${{ steps.read_coverage_report.outputs.coverage_report }}"
+          gh pr comment ${{ github.event.number }} --body "${{ $steps.read_coverage_report.outputs.coverage_report }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
