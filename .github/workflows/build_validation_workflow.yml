@@ -42,8 +42,14 @@ jobs:
           name: unit-test-results
           path: "htmlcov/**"
 
+      - name: Read coverage report
+        id: read_coverage_report
+        run: |
+          coverage_report=$(cat htmlcov/index.html)
+          echo $coverage_report
+
       - name: Publish coverage as comment
         run: |
-          gh pr comment ${{ github.event.number }} --body $(cat htmlcov/index.html)
+          gh pr comment ${{ github.event.number }} --body "${{ steps.read_coverage_report.outputs.coverage_report }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
