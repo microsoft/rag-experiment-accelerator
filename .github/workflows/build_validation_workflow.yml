@@ -45,7 +45,7 @@ jobs:
       - name: Publish coverage as comment
         run: |
           coverage_report=$(cat htmlcov/index.html)
-          comment_id=$(gh pr list -q "commenter:app/github-actions" --json id -L 1)
+          comment_id=$(gh pr list -L 1 | jq -r '.[] | select(.user.login == "app/github-actions").id' || echo "")
           if [ -z "$comment_id" ]; then
             gh pr comment ${{ github.event.number }} --body "$coverage_report"
           else
