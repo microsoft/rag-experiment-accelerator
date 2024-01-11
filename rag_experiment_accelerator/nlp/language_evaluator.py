@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 class LanguageEvaluator:
     """
-    A class for detecting language on text using the built-in Language Detection skill in Azure Cognitive Services.
+    A class for detecting language on text using the built-in Language Detection skill in Azure AI Services.
 
     Args:
         query_language: The language of the query. Possible values include: "none", "en-us",
@@ -48,9 +48,7 @@ class LanguageEvaluator:
         try:
             self.query_language = query_language
             self.default_language = (
-                default_language
-                if default_language
-                else query_language.split("-")[0]
+                default_language if default_language else query_language.split("-")[0]
             )
             self.country_hint = (
                 country_hint if country_hint else query_language.split("-")[1]
@@ -87,9 +85,7 @@ class LanguageEvaluator:
                 if not doc.is_error:
                     logger.info(f"Detected language: {doc.primary_language}")
                 else:
-                    logger.error(
-                        f"Unable to detect language: {doc.id} {doc.error}"
-                    )
+                    logger.error(f"Unable to detect language: {doc.id} {doc.error}")
             client.close()
             return {
                 "name": doc.primary_language.name,
@@ -104,9 +100,7 @@ class LanguageEvaluator:
         primary_language = self.detect_language(text)
         confidence_score = primary_language.get("confidence_score")
         language = primary_language.get("name")
-        logger.info(
-            f"Language: {language} Confidence Score: {confidence_score}"
-        )
+        logger.info(f"Language: {language} Confidence Score: {confidence_score}")
 
         return confidence_score >= self.confidence_threshold
 
@@ -114,9 +108,7 @@ class LanguageEvaluator:
         primary_language = self.detect_language(text)
         confidence_score = primary_language.get("confidence_score")
         language = primary_language.get("name")
-        logger.info(
-            f"Language: {language} Confidence Score: {confidence_score}"
-        )
+        logger.info(f"Language: {language} Confidence Score: {confidence_score}")
 
         return (
             language_code == primary_language.get("iso6391_name")

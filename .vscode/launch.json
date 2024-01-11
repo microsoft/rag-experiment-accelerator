@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "1. Index",
+            "type": "python",
+            "request": "launch",
+            "module": "01_index",
+            "justMyCode": true
+        },
+        {
+            "name": "2. Generate QA",
+            "type": "python",
+            "request": "launch",
+            "module": "02_qa_generation",
+            "justMyCode": true
+        },
+        {
+            "name": "3. Querying",
+            "type": "python",
+            "request": "launch",
+            "module": "03_querying",
+            "justMyCode": true
+        },
+        {
+            "name": "4. Evaluate",
+            "type": "python",
+            "request": "launch",
+            "module": "04_evaluation",
+            "justMyCode": true
+        }
+    ]
+}
