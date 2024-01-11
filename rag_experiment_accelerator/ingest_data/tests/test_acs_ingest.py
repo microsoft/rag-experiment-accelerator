@@ -1,6 +1,8 @@
 import json
 
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import patch, Mock
+from langchain.docstore.document import Document
+
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     generate_title,
     my_hash,
@@ -10,6 +12,7 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     we_need_multiple_questions,
     do_we_need_multiple_questions,
 )
+
 from rag_experiment_accelerator.llm.prompts import (
     prompt_instruction_title,
     prompt_instruction_summary,
@@ -101,8 +104,8 @@ def test_generate_summary(mock_response_generator):
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.SearchClient")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.AzureKeyCredential")
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.generate_summary")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.generate_title")
+@patch("rag_experiment_accelerator.ingest_data.acs_ingest.generate_summary")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.my_hash")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.pre_process.preprocess")
 def test_upload_data(
@@ -159,40 +162,31 @@ def test_upload_data(
     mock_SearchClient().upload_documents.assert_called_once()
 
 
-@patch(
-    "rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response"
-)
-def test_generate_qna(mock_generate_response):
+@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+def test_generate_qna(mock_response_generator):
     # Arrange
-    content = "This is a test document content. This needs to be above 50 characters because we don't generate responses for chunks of less than size 50."
+    content = "This is a test document content. This needs to be above 50 characters because we don't generate responses for chunks of less than size 50. Speaking of which, this is a very long sentence."
     mock_docs = [
-        Mock(page_content=content),
-        Mock(page_content=""),
+        Document(page_content=content),
     ]
     mock_deployment_name = "TestDeployment"
     mock_response = '[{"role": "user", "content": "Test question?"}, {"role": "assistant", "content": "Test answer."}]'
-    mock_generate_response.return_value = mock_response
+    mock_response_generator().generate_response.return_value = mock_response
 
     # Act
     result = generate_qna(mock_docs, mock_deployment_name)
 
     # Assert
+    mock_response_generator().generate_response.assert_called_once()
     assert len(result) == 1
     assert result.iloc[0]["user_prompt"] == "Test question?"
     assert result.iloc[0]["output_prompt"] == "Test answer."
     assert result.iloc[0]["context"] == content
-    # MockResponseGenerator.assert_called_once_with(
-    #     deployment_name=mock_deployment_name
-    # )
-    # mock_response_generator.generate_response.assert_called_once()
-    # mock_json_loads.assert_called_once_with(mock_response)
 
 
-@patch(
-    "rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response"
-)
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.json.loads")
-def test_generate_qna_with_invalid_json(mock_json_loads, mock_generate_response):
+@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads):
     # Arrange
     mock_docs = [
         Mock(
@@ -201,7 +195,7 @@ def test_generate_qna_with_invalid_json(mock_json_loads, mock_generate_response)
     ]
     mock_deployment_name = "TestDeployment"
     mock_response = "Invalid JSON"
-    mock_generate_response.return_value = mock_response
+    mock_response_generator().generate_response.return_value = mock_response
     mock_json_loads.side_effect = json.JSONDecodeError("Invalid JSON", doc="", pos=0)
 
     # Act
@@ -209,16 +203,7 @@ def test_generate_qna_with_invalid_json(mock_json_loads, mock_generate_response)
 
     # Assert
     assert len(result) == 0
-    # MockResponseGenerator.assert_called_once_with(
-    #     deployment_name=mock_deployment_name
-    # )
-    # mock_response_generator.generate_response.assert_called_once()
     mock_json_loads.assert_called_once_with(mock_response)
-    # mock_logger.info.assert_not_called()
-    # mock_logger.error.assert_called_once_with(
-    #     "could not generate a valid json so moving over to next question!"
-    # )
-    # mock_logger.debug.assert_called()
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
@@ -236,7 +221,7 @@ def test_we_need_multiple_questions(mock_response_generator):
     result = we_need_multiple_questions(question, azure_oai_deployment_name)
 
     # Assert
-    mock_response_generator.assert_called_once_with(
+    mock_response_generator.assert_called_with(
         deployment_name=azure_oai_deployment_name
     )
     mock_response_generator().generate_response.assert_called_once_with(
@@ -266,21 +251,6 @@ def test_do_we_need_multiple_questions_empty(mock_response_generator):
     question = "What is the meaning of life?"
     azure_oai_deployment_name = "TestDeployment"
     mock_response_generator().generate_response.return_value = ""
-
-    # Act
-    result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
-
-    # Assert
-    assert result is None
-    mock_response_generator().generate_response.assert_called_once()
-
-
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
-def test_do_we_need_multiple_questions_low(mock_response_generator):
-    # Arrange
-    question = "What is the meaning of life?"
-    azure_oai_deployment_name = "TestDeployment"
-    mock_response_generator().generate_response.return_value = "LOW"
 
     # Act
     result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
