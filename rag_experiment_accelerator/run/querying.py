@@ -255,16 +255,6 @@ def run(config_dir: str):
             for line in file:
                 question_count += 1
 
-        # try:
-        #     output_dir = f"{config.artifacts_dir}/outputs"
-        #     os.makedirs(output_dir, exist_ok=True)
-        # except Exception as e:
-        #     logger.error(
-        #         f"Unable to create the '{output_dir}' directory. Please ensure"
-        #         " you have the proper permissions and try again"
-        #     )
-        #     raise e
-
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
         query_data_writer = QueryOutputWriter(config.QUERY_DATA_DIR)
 
