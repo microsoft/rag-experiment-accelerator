@@ -2,6 +2,24 @@ from rag_experiment_accelerator.artifact.models.artifact import Artifact
 
 
 class QueryOutput(Artifact):
+    """
+    Represents the output of a query.
+
+    Attributes:
+        rerank (bool): Indicates whether reranking was performed.
+        rerank_type (str): The type of reranking performed.
+        crossencoder_model (str): The model used for cross-encoding.
+        llm_re_rank_threshold (int): The threshold for reranking using LLM.
+        retrieve_num_of_documents (int): The number of documents to retrieve.
+        crossencoder_at_k (int): The value of 'k' for cross-encoder.
+        question_count (int): The count of questions.
+        actual (str): The actual output.
+        expected (str): The expected output.
+        search_type (str): The type of search performed.
+        search_evals (list): The evaluations performed during search.
+        context (str): The context of the query.
+    """
+
     def __init__(
         self,
         rerank: bool,

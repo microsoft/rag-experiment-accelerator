@@ -25,13 +25,13 @@ class LocalWriter(Writer):
         self._try_make_dir(dir)
 
     @abstractmethod
-    def _write():
+    def write_file():
         pass
 
     def write(self, path: str, data, **kwargs):
         dir = pathlib.Path(path).parent
         self._prepare_write(dir)
-        self._write(path, data, **kwargs)
+        self.write_file(path, data, **kwargs)
 
     def copy(self, src: str, dest: str, **kwargs):
         dest_dir = pathlib.Path(dest).parent
