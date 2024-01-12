@@ -3,7 +3,7 @@ import os
 import pathlib
 import shutil
 
-from rag_experiment_accelerator.io.local.local_io_base import LocalIOBase
+from rag_experiment_accelerator.io.local.base import LocalIOBase
 from rag_experiment_accelerator.io.writer import Writer
 from rag_experiment_accelerator.utils.logging import get_logger
 

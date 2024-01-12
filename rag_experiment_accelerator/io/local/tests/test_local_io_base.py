@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from rag_experiment_accelerator.io.local.local_io_base import LocalIOBase
+from rag_experiment_accelerator.io.local.base import LocalIOBase
 
 
 @pytest.fixture()

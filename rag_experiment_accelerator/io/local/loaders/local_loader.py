@@ -2,7 +2,7 @@ from abc import abstractmethod
 import pathlib
 
 from rag_experiment_accelerator.io.loader import Loader
-from rag_experiment_accelerator.io.local.local_io_base import LocalIOBase
+from rag_experiment_accelerator.io.local.base import LocalIOBase
 
 
 class LocalLoader(LocalIOBase, Loader):
