@@ -199,6 +199,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any questio
         - `feature/22-short-description`
 - **Merging Changes**: 
     - When merging, squash your commits to have up to 3 incremental commits for Pull Requests (PRs) and merges.
+    - Project maintainers can merge accepted code changes from contributors or contributors can request Write Permissions to the repo to merge a pull request once it has been reviewed by project maintainers.
+    - Project Maintainers can be contacted via [email](ISE_AI_PLATFORM_TD@microsoft.com).
 - **Branch Hygiene**: 
     - Delete the branch after it has been merged.
 - **Testing Changes Locally**: 
