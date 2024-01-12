@@ -18,7 +18,7 @@ def temp_dirname():
 def writer_impl():
     # create a class that inherits from LocalWriter and implements the abstract method write
     class TestLocalWriter(LocalWriter):
-        def _write(self, path: str, data, **kwargs):
+        def write_file(self, path: str, data, **kwargs):
             pass
 
     yield TestLocalWriter()
