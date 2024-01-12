@@ -60,6 +60,7 @@ class ArtifactHandler:
             raise LoaderException(
                 f"No data loaded from path: {path}. Please ensure the file is not empty."
             )
+        logger.info(f"Loaded {len(loaded_data)} artifacts from path: {path}")
         return loaded_data
 
     def handle_archive(self, name: str) -> str | None:
