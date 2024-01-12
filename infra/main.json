@@ -1,0 +1,187 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.24.24.22086",
+      "templateHash": "4093458777020549965"
+    }
+  },
+  "parameters": {
+    "ResourcePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Provide a 2-13 character prefix for all resources."
+      }
+    },
+    "Location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "OpenAIName": {
+      "type": "string",
+      "defaultValue": "[format('{0}oai', parameters('ResourcePrefix'))]",
+      "metadata": {
+        "description": "Name of Azure OpenAI Resource"
+      }
+    },
+    "OpenAIGPTModel": {
+      "type": "string",
+      "defaultValue": "gpt-35-turbo",
+      "metadata": {
+        "description": "Azure OpenAI GPT Model Deployment Name"
+      }
+    },
+    "OpenAIGPTModelName": {
+      "type": "string",
+      "defaultValue": "gpt-35-turbo",
+      "metadata": {
+        "description": "Azure OpenAI GPT Model Name"
+      }
+    },
+    "OpenAIGPTModelVersion": {
+      "type": "string",
+      "defaultValue": "0613",
+      "metadata": {
+        "description": "Azure OpenAI GPT Model Version"
+      }
+    },
+    "AISearchName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ais', parameters('ResourcePrefix'))]",
+      "metadata": {
+        "description": "Name of Azure AI Search Resource"
+      }
+    },
+    "StorageAccountName": {
+      "type": "string",
+      "defaultValue": "[format('{0}sa', parameters('ResourcePrefix'))]",
+      "metadata": {
+        "description": "Name of Azure Storage Account Resource"
+      }
+    },
+    "KeyVaultName": {
+      "type": "string",
+      "defaultValue": "[format('{0}kv', parameters('ResourcePrefix'))]",
+      "metadata": {
+        "description": "Name of Azure Key Vault Resource"
+      }
+    },
+    "ApplicationInsightsName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ai', parameters('ResourcePrefix'))]",
+      "metadata": {
+        "description": "Name of Azure Application Insights Resource"
+      }
+    },
+    "MachineLearningName": {
+      "type": "string",
+      "defaultValue": "[format('{0}aml', parameters('ResourcePrefix'))]",
+      "metadata": {
+        "description": "Name of Azure Machine Learning Workspace"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.CognitiveServices/accounts/deployments",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}', parameters('OpenAIName'), parameters('OpenAIGPTModelName'))]",
+      "properties": {
+        "model": {
+          "format": "OpenAI",
+          "name": "[parameters('OpenAIGPTModel')]",
+          "version": "[parameters('OpenAIGPTModelVersion')]"
+        }
+      },
+      "sku": {
+        "name": "Standard",
+        "capacity": 30
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', parameters('OpenAIName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('OpenAIName')]",
+      "location": "[parameters('Location')]",
+      "kind": "OpenAI",
+      "sku": {
+        "name": "S0"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('AISearchName')]",
+      "location": "[parameters('Location')]",
+      "sku": {
+        "name": "standard"
+      },
+      "properties": {
+        "replicaCount": 1,
+        "partitionCount": 1
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-08-01",
+      "name": "[parameters('StorageAccountName')]",
+      "location": "[parameters('Location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_GRS"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[parameters('KeyVaultName')]",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "sku": {
+          "name": "standard",
+          "family": "A"
+        },
+        "tenantId": "[subscription().tenantId]",
+        "accessPolicies": []
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02-preview",
+      "name": "[parameters('ApplicationInsightsName')]",
+      "location": "[parameters('Location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces",
+      "apiVersion": "2023-06-01-preview",
+      "name": "[parameters('MachineLearningName')]",
+      "location": "[parameters('Location')]",
+      "identity": {
+        "type": "systemAssigned"
+      },
+      "properties": {
+        "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
+        "keyVault": "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]",
+        "applicationInsights": "[resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ]
+    }
+  ]
+}
