@@ -58,7 +58,7 @@ resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
-resource AISearch 'Microsoft.Search/searchServices@2022-09-01' = {
+resource AISearch 'Microsoft.Search/searchServices@2023-11-01' = {
   name: AISearchName
   location: Location
   sku: {
@@ -67,6 +67,7 @@ resource AISearch 'Microsoft.Search/searchServices@2022-09-01' = {
   properties: {
     replicaCount: 1
     partitionCount: 1
+    semanticSearch: 'free'
   }
 }
 
