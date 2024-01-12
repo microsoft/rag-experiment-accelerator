@@ -1,10 +1,13 @@
 import json
-import os
 
-import azure
 from azure.search.documents import SearchClient
 from dotenv import load_dotenv
 from openai import BadRequestError
+
+from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
+from rag_experiment_accelerator.artifact.writers.query_output_writer import (
+    QueryOutputWriter,
+)
 
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
@@ -58,7 +61,7 @@ search_mapping = {
 
 
 def query_acs(
-    search_client: azure.search.documents.SearchClient,
+    search_client: SearchClient,
     embedding_model: EmbeddingModel,
     user_prompt: str,
     s_v: str,
@@ -68,7 +71,7 @@ def query_acs(
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
 
     Args:
-        search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
+        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
@@ -252,17 +255,18 @@ def run(config_dir: str):
             for line in file:
                 question_count += 1
 
-        try:
-            output_dir = f"{config.artifacts_dir}/outputs"
-            os.makedirs(output_dir, exist_ok=True)
-        except Exception as e:
-            logger.error(
-                f"Unable to create the '{output_dir}' directory. Please ensure"
-                " you have the proper permissions and try again"
-            )
-            raise e
+        # try:
+        #     output_dir = f"{config.artifacts_dir}/outputs"
+        #     os.makedirs(output_dir, exist_ok=True)
+        # except Exception as e:
+        #     logger.error(
+        #         f"Unable to create the '{output_dir}' directory. Please ensure"
+        #         " you have the proper permissions and try again"
+        #     )
+        #     raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
+        query_data_writer = QueryOutputWriter(config.QUERY_DATA_DIR)
 
         for chunk_size in config.CHUNK_SIZES:
             for overlap in config.OVERLAP_SIZES:
@@ -279,9 +283,7 @@ def run(config_dir: str):
                             )
                             logger.info(f"Index: {index_name}")
 
-                            write_path = f"{output_dir}/eval_output_{index_name}.jsonl"
-                            if os.path.exists(write_path):
-                                continue
+                            query_data_writer.handle_archive(index_name)
 
                             search_client = create_client(
                                 service_endpoint, index_name, search_admin_key
@@ -376,32 +378,24 @@ def run(config_dir: str):
                                             )
                                             logger.debug(openai_response)
 
-                                            output = {
-                                                "rerank": config.RERANK,
-                                                "rerank_type": (config.RERANK_TYPE),
-                                                "crossencoder_model": (
-                                                    config.CROSSENCODER_MODEL
-                                                ),
-                                                "llm_re_rank_threshold": (
-                                                    config.LLM_RERANK_THRESHOLD
-                                                ),
-                                                "retrieve_num_of_documents": (
-                                                    config.RETRIEVE_NUM_OF_DOCUMENTS
-                                                ),
-                                                "cross_encoder_at_k": (
-                                                    config.CROSSENCODER_AT_K
-                                                ),
-                                                "question_count": (question_count),
-                                                "actual": openai_response,
-                                                "expected": output_prompt,
-                                                "search_type": s_v,
-                                                "search_evals": search_evals,
-                                                "context": qna_context,
-                                            }
+                                            output = QueryOutput(
+                                                rerank=config.RERANK,
+                                                rerank_type=config.RERANK_TYPE,
+                                                crossencoder_model=config.CROSSENCODER_MODEL,
+                                                llm_re_rank_threshold=config.LLM_RERANK_THRESHOLD,
+                                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                crossencoder_at_k=config.CROSSENCODER_AT_K,
+                                                question_count=question_count,
+                                                actual=openai_response,
+                                                expected=output_prompt,
+                                                search_type=s_v,
+                                                search_evals=search_evals,
+                                                context=qna_context,
+                                            )
+                                            query_data_writer.save(
+                                                index_name=index_name, data=output
+                                            )
 
-                                            with open(write_path, "a") as out:
-                                                json_string = json.dumps(output)
-                                                out.write(json_string + "\n")
                                     except BadRequestError as e:
                                         logger.error(
                                             "Invalid request. Skipping"
@@ -412,7 +406,7 @@ def run(config_dir: str):
 
                             search_client.close()
                             create_data_asset(
-                                write_path,
+                                query_data_writer.get_output_filepath(index_name),
                                 index_name,
                                 azure_cred,
                                 config.AzureMLCredentials,

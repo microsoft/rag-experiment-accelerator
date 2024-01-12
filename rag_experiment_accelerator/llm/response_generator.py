@@ -46,8 +46,6 @@ class ResponseGenerator:
             {"role": "user", "content": prompt},
         ]
 
-        print(self.deployment_name, self.temperature)
-
         response = self._create_chat_completion_with_retry(
             model=self.deployment_name,
             messages=messages,
