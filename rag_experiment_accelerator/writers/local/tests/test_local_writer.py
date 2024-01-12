@@ -3,7 +3,7 @@ import shutil
 import uuid
 import pytest
 
-from rag_experiment_accelerator.writers.local.local_writer import FileWriter
+from rag_experiment_accelerator.writers.local.local_writer import LocalWriter
 
 
 @pytest.fixture()
@@ -16,25 +16,20 @@ def temp_dirname():
 
 @pytest.fixture()
 def writer_impl():
-    # create a class that inherits from FileWriter and implements the abstract method write
-    class TestFileWriter(FileWriter):
+    # create a class that inherits from LocalWriter and implements the abstract method write
+    class TestLocalWriter(LocalWriter):
         def _write(self, path: str, data, **kwargs):
             pass
 
-    yield TestFileWriter()
+    yield TestLocalWriter()
 
 
-def test__try_make_dir(temp_dirname: str, writer_impl: FileWriter):
+def test__try_make_dir(temp_dirname: str, writer_impl: LocalWriter):
     writer_impl._try_make_dir(temp_dirname)
     assert os.path.exists(temp_dirname)
 
 
-def test_prepare_write(temp_dirname: str, writer_impl: FileWriter):
-    writer_impl.prepare_write(temp_dirname)
-    assert os.path.exists(temp_dirname)
-
-
-def test_copy(temp_dirname: str, writer_impl: FileWriter):
+def test_copy(temp_dirname: str, writer_impl: LocalWriter):
     # create a file to copy
     src = temp_dirname + "/src.txt"
     os.makedirs(temp_dirname)
@@ -47,7 +42,7 @@ def test_copy(temp_dirname: str, writer_impl: FileWriter):
     assert os.path.exists(dest)
 
 
-def test_delete(temp_dirname: str, writer_impl: FileWriter):
+def test_delete(temp_dirname: str, writer_impl: LocalWriter):
     # create a file to delete
     src = temp_dirname + "/src.txt"
     os.makedirs(temp_dirname)
@@ -59,7 +54,7 @@ def test_delete(temp_dirname: str, writer_impl: FileWriter):
     assert not os.path.exists(src)
 
 
-def test_list_filenames(temp_dirname: str, writer_impl: FileWriter):
+def test_list_filenames(temp_dirname: str, writer_impl: LocalWriter):
     # create a file to delete
     src = temp_dirname + "/src.txt"
     os.makedirs(temp_dirname)
