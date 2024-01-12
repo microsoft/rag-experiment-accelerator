@@ -4,11 +4,10 @@ from azure.search.documents import SearchClient
 from dotenv import load_dotenv
 from openai import BadRequestError
 
-from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
-from rag_experiment_accelerator.artifact.writers.query_output_writer import (
-    QueryOutputWriter,
+from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
+    QueryOutputHandler,
 )
-
+from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
@@ -256,7 +255,7 @@ def run(config_dir: str):
                 question_count += 1
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
-        query_data_writer = QueryOutputWriter(config.QUERY_DATA_DIR)
+        handler = QueryOutputHandler(config.QUERY_DATA_DIR)
 
         for chunk_size in config.CHUNK_SIZES:
             for overlap in config.OVERLAP_SIZES:
@@ -273,7 +272,7 @@ def run(config_dir: str):
                             )
                             logger.info(f"Index: {index_name}")
 
-                            query_data_writer.handle_archive(index_name)
+                            handler.archive(index_name)
 
                             search_client = create_client(
                                 service_endpoint, index_name, search_admin_key
@@ -382,7 +381,7 @@ def run(config_dir: str):
                                                 search_evals=search_evals,
                                                 context=qna_context,
                                             )
-                                            query_data_writer.save(
+                                            handler.save(
                                                 index_name=index_name, data=output
                                             )
 
@@ -396,7 +395,7 @@ def run(config_dir: str):
 
                             search_client.close()
                             create_data_asset(
-                                query_data_writer.get_output_filepath(index_name),
+                                handler.get_output_filepath(index_name),
                                 index_name,
                                 azure_cred,
                                 config.AzureMLCredentials,

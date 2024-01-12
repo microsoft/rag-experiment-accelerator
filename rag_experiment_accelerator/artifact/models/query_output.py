@@ -1,7 +1,4 @@
-from rag_experiment_accelerator.artifact.models.artifact import Artifact
-
-
-class QueryOutput(Artifact):
+class QueryOutput:
     """
     Represents the output of a query.
 

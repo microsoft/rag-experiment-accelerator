@@ -16,10 +16,10 @@ from fuzzywuzzy import fuzz
 from numpy import mean
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from rag_experiment_accelerator.artifact.loaders.query_output_loader import (
-    QueryOutputLoader,
-)
 
+from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
+    QueryOutputHandler,
+)
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.llm.prompts import (
@@ -602,24 +602,11 @@ def evaluate_prompts(
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
     # with open(data_path, "r") as file:
-    loader = QueryOutputLoader(config.QUERY_DATA_DIR)
-    query_data_load = loader.load_all(index_name)
+    handler = QueryOutputHandler(config.QUERY_DATA_DIR)
+    query_data_load = handler.load(index_name)
     for data in query_data_load:
         actual = remove_spaces(lower(data.actual))
         expected = remove_spaces(lower(data.expected))
-
-        metric_dic = {}
-
-        for metric_type in metric_types:
-            score = compute_metrics(actual, expected, data.context, metric_type)
-            metric_dic[metric_type] = score
-        metric_dic["actual"] = actual
-        metric_dic["expected"] = expected
-        metric_dic["search_type"] = data.search_type
-        data_list.append(metric_dic)
-
-        actual = remove_spaces(lower(actual))
-        expected = remove_spaces(lower(expected))
 
         metric_dic = {}
 
