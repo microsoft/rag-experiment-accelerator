@@ -1,11 +1,16 @@
 import time
+from typing import TypeVar
 
 from rag_experiment_accelerator.artifact.handlers.exceptions import LoaderException
-from rag_experiment_accelerator.io.typing import U, V
+from rag_experiment_accelerator.io.loader import Loader
+from rag_experiment_accelerator.io.writer import Writer
 from rag_experiment_accelerator.utils.logging import get_logger
 
 
 logger = get_logger(__name__)
+
+T = TypeVar("T", bound=Writer)
+U = TypeVar("U", bound=Loader)
 
 
 class ArtifactHandler:
@@ -24,7 +29,7 @@ class ArtifactHandler:
         _loader (U): The loader object used for loading data.
     """
 
-    def __init__(self, data_location: str, writer: V, loader: U) -> None:
+    def __init__(self, data_location: str, writer: T, loader: U) -> None:
         self.data_location = data_location
         self.archive_location = f"{self.data_location}/archive"
         self._writer = writer
