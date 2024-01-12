@@ -7,13 +7,17 @@
 	"features": {
 		"ghcr.io/devcontainers/features/azure-cli:1": {
 			"version": "latest"
-		}
+		},
+		"ghcr.io/azure/azure-dev/azd:latest": {},
+		"rchaganti/vsc-devcontainer-features/azurebicep": {}
+
 	},
 	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"prompt-flow.prompt-flow"
+				"ms-azuretools.vscode-bicep",
+				"prompt-flow.prompt-flow",
 			]
 		}
 	}
