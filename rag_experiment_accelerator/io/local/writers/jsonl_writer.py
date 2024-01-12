@@ -8,23 +8,29 @@ logger = get_logger(__name__)
 
 class JsonlWriter(LocalWriter):
     """
-    A class for writing data to a file in JSONL format.
+    A class for writing data to a JSONL file.
 
     Inherits from the LocalWriter class.
 
+    Attributes:
+        None
+
     Methods:
-        write_file(path: str, data, **kwargs): Writes the given data to a file in JSONL format.
+        write_file: Writes data to a JSONL file.
 
     """
 
     def write_file(self, path: str, data, **kwargs):
         """
-        Writes the given data to a file in JSONL format.
+        Writes the given data to a JSONL file.
 
         Args:
-            path (str): The path to the file.
+            path (str): The path to the JSONL file.
             data: The data to be written to the file.
-            **kwargs: Additional keyword arguments to be passed to the json.dumps function.
+            **kwargs: Additional keyword arguments to be passed to the json.dumps() function.
+
+        Returns:
+            None
 
         """
         with open(path, "a") as file:
