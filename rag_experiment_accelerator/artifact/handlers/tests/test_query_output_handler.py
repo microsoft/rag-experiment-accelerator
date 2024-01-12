@@ -165,6 +165,7 @@ def test_load(temp_dir):
     loaded_data = handler.load(index_name)
 
     # assertions
+    assert len(loaded_data) == len(test_data)
     for i, d in enumerate(loaded_data):
         assert d.rerank == test_data[i].rerank
         assert d.rerank_type == test_data[i].rerank_type

@@ -20,7 +20,7 @@ class QueryOutputHandler(ArtifactHandler):
 
     def load(self, index_name: str) -> list[QueryOutput]:
         query_outputs = []
-        path = self.get_output_filename(index_name)
+        path = self.get_output_filepath(index_name)
         data_load = self._loader.load(path)
         for d in data_load:
             d = QueryOutput(**d)
