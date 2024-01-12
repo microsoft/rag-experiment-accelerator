@@ -1,4 +1,6 @@
 from azure.ai.ml import MLClient
+from azure.ai.ml.entities import Data
+from azure.ai.ml.constants import AssetTypes
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -27,9 +29,16 @@ def create_data_asset(
         azure_ml_credentials.WORKSPACE_NAME,
     )
 
-    aml_dataset_unlabeled = ml_client.data.get(
-        name=data_asset_name, label="latest"
+    aml_dataset = Data(
+        path=data_path,
+        type=AssetTypes.URI_FILE,
+        description="rag data",
+        name=data_asset_name,
     )
+
+    ml_client.data.create_or_update(aml_dataset)
+
+    aml_dataset_unlabeled = ml_client.data.get(name=data_asset_name, label="latest")
 
     logger.info(f"Dataset version: {aml_dataset_unlabeled.version}")
     logger.info(f"Dataset ID: {aml_dataset_unlabeled.id}")
