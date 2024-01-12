@@ -1,0 +1,2 @@
+class LoaderException(Exception):
+    pass

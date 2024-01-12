@@ -2,9 +2,9 @@ import json
 import os
 import shutil
 import tempfile
-
 import pytest
-from rag_experiment_accelerator.loaders.local.jsonl_loader import JsonlLoader
+
+from rag_experiment_accelerator.io.local.loaders.jsonl_loader import JsonlLoader
 
 
 @pytest.fixture()
@@ -27,6 +27,13 @@ def test_loads(temp_dir: str):
     loaded_data = loader.load(path)
 
     assert loaded_data == [test_data]
+
+
+def test_loads_raises_file_not_found(temp_dir: str):
+    path = f"{temp_dir}/non-existsing-file.jsonl"
+    loader = JsonlLoader()
+    with pytest.raises(FileNotFoundError):
+        loader.load(path)
 
 
 def test_can_handle_true():

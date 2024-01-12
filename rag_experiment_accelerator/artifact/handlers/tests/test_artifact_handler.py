@@ -7,9 +7,8 @@ import pytest
 from rag_experiment_accelerator.artifact.handlers.artifact_handler import (
     ArtifactHandler,
 )
-
-from rag_experiment_accelerator.loaders.local.jsonl_loader import JsonlLoader
-from rag_experiment_accelerator.writers.local.jsonl_writer import (
+from rag_experiment_accelerator.io.local.loaders.jsonl_loader import JsonlLoader
+from rag_experiment_accelerator.io.local.writers.jsonl_writer import (
     JsonlWriter,
 )
 
@@ -26,11 +25,11 @@ def test_loads(temp_dirname: str):
     # # write artifacts to a file
     data = "This is test data"
     handler = ArtifactHandler(temp_dirname, writer=JsonlWriter(), loader=JsonlLoader())
-    filename = "test.jsonl"
-    filepath = f"{temp_dirname}/test.jsonl"
-    handler._writer.write(filepath, data)
+    name = "test.jsonl"
+    path = f"{temp_dirname}/test.jsonl"
+    handler._writer.write(path, data)
 
-    loaded_data = handler.load(filename)
+    loaded_data = handler.load(name)
 
     assert loaded_data == [data]
 
@@ -39,14 +38,14 @@ def test_archive(temp_dirname: str):
     data = "This is test data"
     handler = ArtifactHandler(temp_dirname, writer=JsonlWriter(), loader=JsonlLoader())
     filename = "test.jsonl"
-    original_filepath = f"{temp_dirname}/test.jsonl"
-    handler._writer.write(original_filepath, data)
+    original_path = f"{temp_dirname}/test.jsonl"
+    handler._writer.write(original_path, data)
 
-    archive_filepath = handler.archive(filename)
+    archive_path = handler.handle_archive(filename)
 
     # archive dir exists
-    assert pathlib.Path(handler.archive_dir).exists()
+    assert pathlib.Path(handler.data_location).exists()
     # archive file existså
-    assert pathlib.Path(archive_filepath).exists()
+    assert pathlib.Path(archive_path).exists()
     # original file does not exist
-    assert not pathlib.Path(original_filepath).exists()
+    assert not pathlib.Path(original_path).exists()

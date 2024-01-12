@@ -62,11 +62,28 @@ def test_archive(temp_dirname: str):
     for d in test_data:
         handler.save(d, index_name)
 
-    dest = handler.archive(index_name)
+    dest = handler.handle_archive_by_index(index_name)
 
-    assert os.path.exists(handler.archive_dir)
+    assert os.path.exists(handler.archive_location)
     assert os.path.exists(dest)
-    assert not os.path.exists(handler.get_output_filepath(index_name))
+    assert not os.path.exists(handler.get_output_path(index_name))
+
+
+def test_get_output_path():
+    index_name = "index_name"
+    dir = "/tmp"
+    handler = QueryOutputHandler(dir)
+    dest = handler.get_output_path(index_name)
+    name = handler._get_output_name(index_name)
+    assert dest == f"{dir}/{name}"
+
+
+def test__get_output_name():
+    index_name = "index_name"
+    dir = "/tmp"
+    handler = QueryOutputHandler(dir)
+    name = handler._get_output_name(index_name)
+    assert name == f"eval_output_{index_name}.jsonl"
 
 
 def test_save(temp_dirname: str):
@@ -153,15 +170,13 @@ def test_load(temp_dir):
         ),
     ]
     index_name = "index_name"
-    filename = "test.jsonl"
-    path = f"{temp_dir}/{filename}"
     # write the data
-    handler = QueryOutputHandler(path)
+    handler = QueryOutputHandler(temp_dir)
     for d in test_data:
         handler.save(d, index_name)
 
     # load the data
-    handler = QueryOutputHandler(path)
+    handler = QueryOutputHandler(temp_dir)
     loaded_data = handler.load(index_name)
 
     # assertions

@@ -1,6 +1,9 @@
 import json
 
-from rag_experiment_accelerator.writers.local.local_writer import LocalWriter
+from rag_experiment_accelerator.io.local.writers.local_writer import LocalWriter
+from rag_experiment_accelerator.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class JsonlWriter(LocalWriter):

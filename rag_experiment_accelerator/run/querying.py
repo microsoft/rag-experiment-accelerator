@@ -253,152 +253,151 @@ def run(config_dir: str):
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
             for line in file:
                 question_count += 1
-
-        evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
-        handler = QueryOutputHandler(config.QUERY_DATA_DIR)
-
-        for chunk_size in config.CHUNK_SIZES:
-            for overlap in config.OVERLAP_SIZES:
-                for embedding_model in config.embedding_models:
-                    for ef_construction in config.EF_CONSTRUCTIONS:
-                        for ef_search in config.EF_SEARCHES:
-                            index_name = get_index_name(
-                                config.NAME_PREFIX,
-                                chunk_size,
-                                overlap,
-                                embedding_model.name,
-                                ef_construction,
-                                ef_search,
-                            )
-                            logger.info(f"Index: {index_name}")
-
-                            handler.archive(index_name)
-
-                            search_client = create_client(
-                                service_endpoint, index_name, search_admin_key
-                            )
-
-                            with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
-                                for line in file:
-                                    data = json.loads(line)
-                                    user_prompt = data.get("user_prompt")
-                                    output_prompt = data.get("output_prompt")
-                                    qna_context = data.get("context", "")
-
-                                    is_multi_question = do_we_need_multiple_questions(
-                                        user_prompt,
-                                        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
-                                    )
-                                    if is_multi_question:
-                                        responses = json.loads(
-                                            we_need_multiple_questions(
-                                                user_prompt,
-                                                config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
-                                            )
-                                        )
-                                        new_questions = []
-                                        if isinstance(responses, dict):
-                                            new_questions = responses["questions"]
-                                        else:
-                                            for response in responses:
-                                                if "question" in response:
-                                                    new_questions.append(
-                                                        response["question"]
-                                                    )
-                                        new_questions.append(user_prompt)
-
-                                    evaluation_content = user_prompt + qna_context
-                                    try:
-                                        for s_v in config.SEARCH_VARIANTS:
-                                            search_evals = []
-                                            if is_multi_question:
-                                                (
-                                                    docs,
-                                                    search_evals,
-                                                ) = query_and_eval_acs_multi(
-                                                    search_client=search_client,
-                                                    embedding_model=embedding_model,
-                                                    questions=new_questions,
-                                                    original_prompt=user_prompt,
-                                                    output_prompt=output_prompt,
-                                                    search_type=s_v,
-                                                    evaluation_content=evaluation_content,
-                                                    config=config,
-                                                    evaluator=evaluator,
-                                                    main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
-                                                )
-                                            else:
-                                                (
-                                                    docs,
-                                                    evaluation,
-                                                ) = query_and_eval_acs(
-                                                    search_client=search_client,
-                                                    embedding_model=embedding_model,
-                                                    query=user_prompt,
-                                                    search_type=s_v,
-                                                    evaluation_content=evaluation_content,
-                                                    retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                    evaluator=evaluator,
-                                                )
-                                                search_evals.append(evaluation)
-
-                                            if config.RERANK:
-                                                prompt_instruction_context = (
-                                                    rerank_documents(
-                                                        docs,
-                                                        user_prompt,
-                                                        output_prompt,
-                                                        config,
-                                                    )
-                                                )
-                                            else:
-                                                prompt_instruction_context = docs
-
-                                            full_prompt_instruction = (
-                                                config.MAIN_PROMPT_INSTRUCTION
-                                                + "\n"
-                                                + "\n".join(prompt_instruction_context)
-                                            )
-                                            openai_response = ResponseGenerator(
-                                                deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
-                                            ).generate_response(
-                                                full_prompt_instruction,
-                                                user_prompt,
-                                            )
-                                            logger.debug(openai_response)
-
-                                            output = QueryOutput(
-                                                rerank=config.RERANK,
-                                                rerank_type=config.RERANK_TYPE,
-                                                crossencoder_model=config.CROSSENCODER_MODEL,
-                                                llm_re_rank_threshold=config.LLM_RERANK_THRESHOLD,
-                                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                crossencoder_at_k=config.CROSSENCODER_AT_K,
-                                                question_count=question_count,
-                                                actual=openai_response,
-                                                expected=output_prompt,
-                                                search_type=s_v,
-                                                search_evals=search_evals,
-                                                context=qna_context,
-                                            )
-                                            handler.save(
-                                                index_name=index_name, data=output
-                                            )
-
-                                    except BadRequestError as e:
-                                        logger.error(
-                                            "Invalid request. Skipping"
-                                            f" question: {user_prompt}",
-                                            exc_info=e,
-                                        )
-                                        continue
-
-                            search_client.close()
-                            create_data_asset(
-                                handler.get_output_filepath(index_name),
-                                index_name,
-                                azure_cred,
-                                config.AzureMLCredentials,
-                            )
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)
+        raise e
+
+    evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
+    handler = QueryOutputHandler(config.QUERY_DATA_DIR)
+
+    for chunk_size in config.CHUNK_SIZES:
+        for overlap in config.OVERLAP_SIZES:
+            for embedding_model in config.embedding_models:
+                for ef_construction in config.EF_CONSTRUCTIONS:
+                    for ef_search in config.EF_SEARCHES:
+                        index_name = get_index_name(
+                            config.NAME_PREFIX,
+                            chunk_size,
+                            overlap,
+                            embedding_model.name,
+                            ef_construction,
+                            ef_search,
+                        )
+                        logger.info(f"Index: {index_name}")
+
+                        handler.handle_archive_by_index(index_name)
+
+                        search_client = create_client(
+                            service_endpoint, index_name, search_admin_key
+                        )
+
+                        with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
+                            for line in file:
+                                data = json.loads(line)
+                                user_prompt = data.get("user_prompt")
+                                output_prompt = data.get("output_prompt")
+                                qna_context = data.get("context", "")
+
+                                is_multi_question = do_we_need_multiple_questions(
+                                    user_prompt,
+                                    config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+                                )
+                                if is_multi_question:
+                                    responses = json.loads(
+                                        we_need_multiple_questions(
+                                            user_prompt,
+                                            config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+                                        )
+                                    )
+                                    new_questions = []
+                                    if isinstance(responses, dict):
+                                        new_questions = responses["questions"]
+                                    else:
+                                        for response in responses:
+                                            if "question" in response:
+                                                new_questions.append(
+                                                    response["question"]
+                                                )
+                                    new_questions.append(user_prompt)
+
+                                evaluation_content = user_prompt + qna_context
+                                try:
+                                    for s_v in config.SEARCH_VARIANTS:
+                                        search_evals = []
+                                        if is_multi_question:
+                                            (
+                                                docs,
+                                                search_evals,
+                                            ) = query_and_eval_acs_multi(
+                                                search_client=search_client,
+                                                embedding_model=embedding_model,
+                                                questions=new_questions,
+                                                original_prompt=user_prompt,
+                                                output_prompt=output_prompt,
+                                                search_type=s_v,
+                                                evaluation_content=evaluation_content,
+                                                config=config,
+                                                evaluator=evaluator,
+                                                main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
+                                            )
+                                        else:
+                                            (
+                                                docs,
+                                                evaluation,
+                                            ) = query_and_eval_acs(
+                                                search_client=search_client,
+                                                embedding_model=embedding_model,
+                                                query=user_prompt,
+                                                search_type=s_v,
+                                                evaluation_content=evaluation_content,
+                                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                                evaluator=evaluator,
+                                            )
+                                            search_evals.append(evaluation)
+
+                                        if config.RERANK:
+                                            prompt_instruction_context = (
+                                                rerank_documents(
+                                                    docs,
+                                                    user_prompt,
+                                                    output_prompt,
+                                                    config,
+                                                )
+                                            )
+                                        else:
+                                            prompt_instruction_context = docs
+
+                                        full_prompt_instruction = (
+                                            config.MAIN_PROMPT_INSTRUCTION
+                                            + "\n"
+                                            + "\n".join(prompt_instruction_context)
+                                        )
+                                        openai_response = ResponseGenerator(
+                                            deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+                                        ).generate_response(
+                                            full_prompt_instruction,
+                                            user_prompt,
+                                        )
+                                        logger.debug(openai_response)
+
+                                        output = QueryOutput(
+                                            rerank=config.RERANK,
+                                            rerank_type=config.RERANK_TYPE,
+                                            crossencoder_model=config.CROSSENCODER_MODEL,
+                                            llm_re_rank_threshold=config.LLM_RERANK_THRESHOLD,
+                                            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                                            crossencoder_at_k=config.CROSSENCODER_AT_K,
+                                            question_count=question_count,
+                                            actual=openai_response,
+                                            expected=output_prompt,
+                                            search_type=s_v,
+                                            search_evals=search_evals,
+                                            context=qna_context,
+                                        )
+                                        handler.save(index_name=index_name, data=output)
+
+                                except BadRequestError as e:
+                                    logger.error(
+                                        "Invalid request. Skipping"
+                                        f" question: {user_prompt}",
+                                        exc_info=e,
+                                    )
+                                    continue
+
+                        search_client.close()
+                        create_data_asset(
+                            handler.get_output_path(index_name),
+                            index_name,
+                            azure_cred,
+                            config.AzureMLCredentials,
+                        )

@@ -601,7 +601,7 @@ def evaluate_prompts(
     total_precision_scores_by_search_type = {}
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
-    # with open(data_path, "r") as file:
+
     handler = QueryOutputHandler(config.QUERY_DATA_DIR)
     query_data_load = handler.load(index_name)
     for data in query_data_load:

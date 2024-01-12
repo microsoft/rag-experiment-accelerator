@@ -3,7 +3,7 @@ import shutil
 import uuid
 import pytest
 
-from rag_experiment_accelerator.writers.local.jsonl_writer import (
+from rag_experiment_accelerator.io.local.writers.jsonl_writer import (
     JsonlWriter,
 )
 
