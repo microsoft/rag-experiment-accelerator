@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Self
 
 
 class Artifact(ABC):
@@ -17,7 +16,7 @@ class Artifact(ABC):
         return self.__dict__
 
     @classmethod
-    def create(cls, data: dict | str) -> Self:
+    def create(cls, data: dict | str):
         """
         Create an instance of the artifact.
 
