@@ -258,7 +258,7 @@ def run(config_dir: str):
         raise e
 
     evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
-    handler = QueryOutputHandler(config.QUERY_DATA_DIR)
+    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
 
     for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:

@@ -602,7 +602,7 @@ def evaluate_prompts(
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
 
-    handler = QueryOutputHandler(config.QUERY_DATA_DIR)
+    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
     query_data_load = handler.load(index_name)
     for data in query_data_load:
         actual = remove_spaces(lower(data.actual))
