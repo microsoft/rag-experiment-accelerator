@@ -9,13 +9,14 @@ from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 @patch(
     "rag_experiment_accelerator.artifact.handlers.query_output_handler.ArtifactHandler.handle_archive"
 )
-def test_archive(mock_artifact_handler_handle_archive):
+def test_handle_archive_by_index(mock_artifact_handler_handle_archive):
     index_name = "index_name"
     data_location = "data_location"
     handler = QueryOutputHandler(data_location=data_location)
 
-    output_filename = handler._get_output_name(index_name)
+    handler.handle_archive_by_index(index_name)
 
+    output_filename = handler._get_output_name(index_name)
     mock_artifact_handler_handle_archive.assert_called_once_with(output_filename)
 
 
