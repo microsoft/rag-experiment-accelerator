@@ -9,15 +9,7 @@ from rag_experiment_accelerator.io.local.writers.jsonl_writer import JsonlWriter
 
 class QueryOutputHandler(ArtifactHandler):
     """
-    A class that handles query output artifacts.
-
-    Args:
-        data_location (str): The location where the data is stored.
-
-    Attributes:
-        data_location (str): The location where the data is stored.
-        writer (JsonlWriter): The writer used for writing data.
-        loader (JsonlLoader): The loader used for loading data.
+    A class that handles query outputs for a given index name.
     """
 
     def __init__(
@@ -28,6 +20,8 @@ class QueryOutputHandler(ArtifactHandler):
 
         Args:
             data_location (str): The location where the data is stored.
+            writer (T, optional): The writer to use for saving data. Defaults to JsonlWriter().
+            loader (U, optional): The loader to use for loading data. Defaults to JsonlLoader().
         """
         super().__init__(data_location=data_location, writer=writer, loader=loader)
 
@@ -65,13 +59,16 @@ class QueryOutputHandler(ArtifactHandler):
         Returns:
             list[QueryOutput]: The loaded query outputs.
         """
-        filename = self._get_output_name(index_name)
+        output_name = self._get_output_name(index_name)
 
         query_outputs = []
-        data_load = super().load(filename)
+        data_load = super().load(output_name)
         for d in data_load:
-            d = QueryOutput(**d)
-            query_outputs.append(d)
+            if not isinstance(d, dict):
+                raise TypeError(
+                    f"Query output data loaded is not of type dict. Name: {output_name}"
+                )
+            query_outputs.append(QueryOutput(**d))
 
         return query_outputs
 

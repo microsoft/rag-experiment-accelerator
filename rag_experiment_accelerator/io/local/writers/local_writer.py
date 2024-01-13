@@ -80,11 +80,6 @@ class LocalWriter(LocalIOBase, Writer):
             self._write_file(path, data, **kwargs)
         except Exception as e:
             raise WriteException(path, e)
-            # logger.error(
-            #     f"Unable to write to file to path: {path}. Please ensure"
-            #     " you have the proper permissions to write to the file."
-            # )
-            # raise e
 
     def copy(self, src: str, dest: str, **kwargs):
         """

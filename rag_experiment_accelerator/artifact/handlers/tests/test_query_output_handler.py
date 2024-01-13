@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
@@ -103,3 +105,16 @@ def test_load(mock_artifact_handler_load):
         assert d.search_type == data.search_type
         assert d.search_evals == data.search_evals
         assert d.context == data.context
+
+
+@patch(
+    "rag_experiment_accelerator.artifact.handlers.query_output_handler.ArtifactHandler.load"
+)
+def test_load_raises_when_loaded_data_not_dict(mock_artifact_handler_load):
+    mock_artifact_handler_load.return_value = ["this is not a dict"]
+    index_name = "index_name"
+
+    handler = QueryOutputHandler(data_location="data_location")
+
+    with pytest.raises(TypeError):
+        handler.load(index_name)

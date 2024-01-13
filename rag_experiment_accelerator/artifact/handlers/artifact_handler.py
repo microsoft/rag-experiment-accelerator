@@ -20,7 +20,7 @@ class ArtifactHandler:
     Attributes:
         data_location (str): The location of the data.
         archive_location (str): The location where archived artifacts are stored.
-        _writer (V): The writer object used for writing data.
+        _writer (T): The writer object used for writing data.
         _loader (U): The loader object used for loading data.
     """
 
@@ -56,6 +56,7 @@ class ArtifactHandler:
         # raise if no data loaded
         if len(loaded_data) == 0:
             raise LoadException(path=path)
+
         logger.info(f"Loaded {len(loaded_data)} artifacts from path: {path}")
         return loaded_data
 
@@ -73,7 +74,7 @@ class ArtifactHandler:
             None
         """
         src = f"{self.data_location}/{name}"
-        logger.debug(f"Attemping to archive at path: {src}")
+
         # archive if exists, else no-op
         if self._writer.exists(src):
             # timestamp filename in archive location
@@ -88,6 +89,7 @@ class ArtifactHandler:
             logger.info(f"Archived previous artifacts to {dest}")
 
             return dest
+
         logger.debug(f"No file to archive at path: {src}")
 
     def save_dict(self, data: dict, name: str, **kwargs):
@@ -107,4 +109,5 @@ class ArtifactHandler:
         """
         path = f"{self.data_location}/{name}"
         logger.info(f"Saving artifacts to path: {path}")
+
         self._writer.write(path, data, **kwargs)
