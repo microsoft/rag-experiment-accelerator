@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import patch
 
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
@@ -6,20 +6,17 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 
 
-def test_archive():
-    mock_writer = Mock()
-    mock_loader = Mock()
-    mock_writer.exists.return_value = True
+@patch(
+    "rag_experiment_accelerator.artifact.handlers.query_output_handler.ArtifactHandler.handle_archive"
+)
+def test_archive(mock_artifact_handler_handle_archive):
     index_name = "index_name"
     data_location = "data_location"
-    handler = QueryOutputHandler(
-        data_location=data_location, writer=mock_writer, loader=mock_loader
-    )
-    dest = handler.handle_archive_by_index(index_name)
+    handler = QueryOutputHandler(data_location=data_location)
 
-    src = f"{data_location}/eval_output_{index_name}.jsonl"
-    mock_writer.copy.assert_called_once_with(src, dest)
-    mock_writer.delete.assert_called_once_with(src)
+    output_filename = handler._get_output_name(index_name)
+
+    mock_artifact_handler_handle_archive.assert_called_once_with(output_filename)
 
 
 def test_get_output_path():
@@ -39,8 +36,10 @@ def test__get_output_name():
     assert name == f"eval_output_{index_name}.jsonl"
 
 
-def test_save():
-    mock_writer = Mock()
+@patch(
+    "rag_experiment_accelerator.artifact.handlers.query_output_handler.ArtifactHandler.save_dict"
+)
+def test_save(mock_artifact_handler_save_dict):
     index_name = "index_name"
     test_data = QueryOutput(
         rerank="rerank1",
@@ -57,14 +56,17 @@ def test_save():
         context="context1",
     )
 
-    handler = QueryOutputHandler(data_location="data_location", writer=mock_writer)
+    handler = QueryOutputHandler(data_location="data_location")
     handler.save(test_data, index_name)
 
-    path = handler.get_output_path(index_name)
-    mock_writer.write.assert_called_once_with(path, test_data.__dict__)
+    name = handler._get_output_name(index_name)
+    handler.save_dict.assert_called_once_with(test_data.__dict__, name)
 
 
-def test_load():
+@patch(
+    "rag_experiment_accelerator.artifact.handlers.query_output_handler.ArtifactHandler.load"
+)
+def test_load(mock_artifact_handler_load):
     data = QueryOutput(
         rerank="rerank1",
         rerank_type="rerank_type1",
@@ -80,13 +82,13 @@ def test_load():
         context="context1",
     )
 
-    mock_loader = Mock()
-    mock_loader.load.return_value = [data.__dict__]
+    mock_artifact_handler_load.return_value = [data.__dict__, data.__dict__]
     index_name = "index_name"
 
-    handler = QueryOutputHandler(data_location="data_location", loader=mock_loader)
+    handler = QueryOutputHandler(data_location="data_location")
     loaded_data = handler.load(index_name)
-    assert len(loaded_data) == 1
+
+    assert len(loaded_data) == 2
     for d in loaded_data:
         assert d.rerank == data.rerank
         assert d.rerank_type == data.rerank_type

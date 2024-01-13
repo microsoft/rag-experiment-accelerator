@@ -86,7 +86,7 @@ class QueryOutputHandler(ArtifactHandler):
             str | None: The output filename if successful, None otherwise.
         """
         output_filename = self._get_output_name(index_name)
-        return super().handle_archive(output_filename)
+        return self.handle_archive(output_filename)
 
     def save(self, data: QueryOutput, index_name: str):
         """
