@@ -1,21 +1,15 @@
 import os
 import shutil
-import uuid
-
+import tempfile
 import pytest
 
 from rag_experiment_accelerator.io.local.base import LocalIOBase
 
 
 @pytest.fixture()
-def temp_file():
-    dir = "/tmp/" + uuid.uuid4().__str__()
-    os.makedirs(dir)
-    filename = "test.txt"
-    path = dir + "/" + filename
-    with open(path, "w") as f:
-        f.write("test")
-    yield path
+def temp_dir():
+    dir = tempfile.mkdtemp()
+    yield dir
     if os.path.exists(dir):
         shutil.rmtree(dir)
 

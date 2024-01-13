@@ -19,14 +19,15 @@ class JsonlLoader(LocalLoader):
         Raises:
             FileNotFoundError: If the file is not found at the specified path.
         """
-        data_load = []
-        if self.exists(path):
-            with open(path, "r") as file:
-                for line in file:
-                    data = json.loads(line, **kwargs)
-                    data_load.append(data)
-        else:
+        if not self.exists(path):
             raise FileNotFoundError(f"File not found at path: {path}")
+
+        data_load = []
+        with open(path, "r") as file:
+            for line in file:
+                data = json.loads(line, **kwargs)
+                data_load.append(data)
+
         return data_load
 
     def can_handle(self, path: str) -> bool:
