@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 from pandas import DataFrame
 from rag_experiment_accelerator.run.qa_generation import run
+from unittest import TestCase
 
 # @patch('rag_experiment_accelerator.run.qa_generation.get_default_az_cred')
 # @patch('rag_experiment_accelerator.run.qa_generation.load_documents')
@@ -35,7 +36,6 @@ def test_run_success(
     mock_load_documents,
     mock_makedirs,
     mock_generate_qna,
-    mock_to_json,
     mock_create_data_asset,
 ):
     # Arrange
@@ -80,9 +80,10 @@ def test_run_makedirs_exception(
     mock_config.return_value = MagicMock()
     mock_get_default_az_cred.return_value = "test_cred"
     mock_load_documents.return_value = MagicMock()
-    mock_makedirs.side_effect = Exception("test exception")
+    mock_makedirs.side_effect = Exception("Unable to create the ")
+    tc = TestCase()
 
-    # # Act and Assert
-    # with assertRaises(Exception) as context:
-    #     run('test_dir')
-    # assertTrue('Unable to create the' in str(context.exception))
+    # Act and Assert
+    with tc.assertRaises(Exception) as context:
+        run("test_dir")
+    tc.assertTrue("Unable to create the " in str(context.exception))
