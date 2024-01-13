@@ -1,6 +1,7 @@
 from rag_experiment_accelerator.artifact.handlers.artifact_handler import (
     ArtifactHandler,
 )
+from rag_experiment_accelerator.artifact.handlers.typing import T, U
 from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 from rag_experiment_accelerator.io.local.loaders.jsonl_loader import JsonlLoader
 from rag_experiment_accelerator.io.local.writers.jsonl_writer import JsonlWriter
@@ -19,16 +20,16 @@ class QueryOutputHandler(ArtifactHandler):
         loader (JsonlLoader): The loader used for loading data.
     """
 
-    def __init__(self, data_location: str) -> None:
+    def __init__(
+        self, data_location: str, writer: T = JsonlWriter(), loader: U = JsonlLoader()
+    ) -> None:
         """
         Initializes a QueryOutputHandler instance.
 
         Args:
             data_location (str): The location where the data is stored.
         """
-        super().__init__(
-            data_location=data_location, writer=JsonlWriter(), loader=JsonlLoader()
-        )
+        super().__init__(data_location=data_location, writer=writer, loader=loader)
 
     def _get_output_name(self, index_name: str) -> str:
         """

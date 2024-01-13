@@ -1,72 +1,25 @@
-import os
-import shutil
-import tempfile
-import uuid
-import pytest
+from unittest.mock import Mock
+
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
-
 from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 
 
-@pytest.fixture()
-def temp_dirname():
-    dir = "/tmp/" + uuid.uuid4().__str__()
-    yield dir
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
-
-
-@pytest.fixture()
-def temp_dir():
-    dir = tempfile.mkdtemp()
-    yield dir
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
-
-
-def test_archive(temp_dirname: str):
+def test_archive():
+    mock_writer = Mock()
+    mock_loader = Mock()
+    mock_writer.exists.return_value = True
     index_name = "index_name"
-    test_data = [
-        QueryOutput(
-            rerank="rerank1",
-            rerank_type="rerank_type1",
-            crossencoder_model="cross_encoder_model1",
-            llm_re_rank_threshold=1,
-            retrieve_num_of_documents=1,
-            crossencoder_at_k=2,
-            question_count=1,
-            actual="actual1",
-            expected="expected1",
-            search_type="search_type1",
-            search_evals=[],
-            context="context1",
-        ),
-        QueryOutput(
-            rerank="rerank2",
-            rerank_type="rerank_type2",
-            crossencoder_model="cross_encoder_model2",
-            llm_re_rank_threshold=2,
-            retrieve_num_of_documents=2,
-            crossencoder_at_k=2,
-            question_count=2,
-            actual="actual2",
-            expected="expected2",
-            search_type="search_type2",
-            search_evals=[],
-            context="context2",
-        ),
-    ]
-    handler = QueryOutputHandler(temp_dirname)
-    for d in test_data:
-        handler.save(d, index_name)
-
+    data_location = "data_location"
+    handler = QueryOutputHandler(
+        data_location=data_location, writer=mock_writer, loader=mock_loader
+    )
     dest = handler.handle_archive_by_index(index_name)
 
-    assert os.path.exists(handler.archive_location)
-    assert os.path.exists(dest)
-    assert not os.path.exists(handler.get_output_path(index_name))
+    src = f"{data_location}/eval_output_{index_name}.jsonl"
+    mock_writer.copy.assert_called_once_with(src, dest)
+    mock_writer.delete.assert_called_once_with(src)
 
 
 def test_get_output_path():
@@ -86,111 +39,64 @@ def test__get_output_name():
     assert name == f"eval_output_{index_name}.jsonl"
 
 
-def test_save(temp_dirname: str):
-    test_data = [
-        QueryOutput(
-            rerank="rerank1",
-            rerank_type="rerank_type1",
-            crossencoder_model="cross_encoder_model1",
-            llm_re_rank_threshold=1,
-            retrieve_num_of_documents=1,
-            crossencoder_at_k=2,
-            question_count=1,
-            actual="actual1",
-            expected="expected1",
-            search_type="search_type1",
-            search_evals=[],
-            context="context1",
-        ),
-        QueryOutput(
-            rerank="rerank2",
-            rerank_type="rerank_type2",
-            crossencoder_model="cross_encoder_model2",
-            llm_re_rank_threshold=2,
-            retrieve_num_of_documents=2,
-            crossencoder_at_k=2,
-            question_count=2,
-            actual="actual2",
-            expected="expected2",
-            search_type="search_type2",
-            search_evals=[],
-            context="context2",
-        ),
-    ]
+def test_save():
+    mock_writer = Mock()
     index_name = "index_name"
-    handler = QueryOutputHandler(temp_dirname)
-    for d in test_data:
-        handler.save(d, index_name)
+    test_data = QueryOutput(
+        rerank="rerank1",
+        rerank_type="rerank_type1",
+        crossencoder_model="cross_encoder_model1",
+        llm_re_rank_threshold=1,
+        retrieve_num_of_documents=1,
+        crossencoder_at_k=2,
+        question_count=1,
+        actual="actual1",
+        expected="expected1",
+        search_type="search_type1",
+        search_evals=[],
+        context="context1",
+    )
 
-    loaded_data = handler.load(index_name)
-    for i, d in enumerate(loaded_data):
-        assert d.rerank == test_data[i].rerank
-        assert d.rerank_type == test_data[i].rerank_type
-        assert d.crossencoder_model == test_data[i].crossencoder_model
-        assert d.llm_re_rank_threshold == test_data[i].llm_re_rank_threshold
-        assert d.retrieve_num_of_documents == test_data[i].retrieve_num_of_documents
-        assert d.crossencoder_at_k == test_data[i].crossencoder_at_k
-        assert d.question_count == test_data[i].question_count
-        assert d.actual == test_data[i].actual
-        assert d.expected == test_data[i].expected
-        assert d.search_type == test_data[i].search_type
-        assert d.search_evals == test_data[i].search_evals
-        assert d.context == test_data[i].context
+    handler = QueryOutputHandler(data_location="data_location", writer=mock_writer)
+    handler.save(test_data, index_name)
+
+    path = handler.get_output_path(index_name)
+    mock_writer.write.assert_called_once_with(path, test_data.__dict__)
 
 
-def test_load(temp_dir):
-    test_data = [
-        QueryOutput(
-            rerank="rerank1",
-            rerank_type="rerank_type1",
-            crossencoder_model="cross_encoder_model1",
-            llm_re_rank_threshold=1,
-            retrieve_num_of_documents=1,
-            crossencoder_at_k=1,
-            question_count=1,
-            actual="actual1",
-            expected="expected1",
-            search_type="search_type1",
-            search_evals=[],
-            context="context1",
-        ),
-        QueryOutput(
-            rerank="rerank2",
-            rerank_type="rerank_type2",
-            crossencoder_model="cross_encoder_model2",
-            llm_re_rank_threshold=2,
-            retrieve_num_of_documents=2,
-            crossencoder_at_k=2,
-            question_count=2,
-            actual="actual2",
-            expected="expected2",
-            search_type="search_type2",
-            search_evals=[],
-            context="context2",
-        ),
-    ]
+def test_load():
+    data = QueryOutput(
+        rerank="rerank1",
+        rerank_type="rerank_type1",
+        crossencoder_model="cross_encoder_model1",
+        llm_re_rank_threshold=1,
+        retrieve_num_of_documents=1,
+        crossencoder_at_k=1,
+        question_count=1,
+        actual="actual1",
+        expected="expected1",
+        search_type="search_type1",
+        search_evals=[],
+        context="context1",
+    )
+
+    mock_loader = Mock()
+    mock_loader.load.return_value = [data.__dict__]
     index_name = "index_name"
-    # write the data
-    handler = QueryOutputHandler(temp_dir)
-    for d in test_data:
-        handler.save(d, index_name)
 
-    # load the data
-    handler = QueryOutputHandler(temp_dir)
+    handler = QueryOutputHandler(data_location="data_location", loader=mock_loader)
     loaded_data = handler.load(index_name)
-
-    # assertions
-    assert len(loaded_data) == len(test_data)
-    for i, d in enumerate(loaded_data):
-        assert d.rerank == test_data[i].rerank
-        assert d.rerank_type == test_data[i].rerank_type
-        assert d.crossencoder_model == test_data[i].crossencoder_model
-        assert d.llm_re_rank_threshold == test_data[i].llm_re_rank_threshold
-        assert d.retrieve_num_of_documents == test_data[i].retrieve_num_of_documents
-        assert d.crossencoder_at_k == test_data[i].crossencoder_at_k
-        assert d.question_count == test_data[i].question_count
-        assert d.actual == test_data[i].actual
-        assert d.expected == test_data[i].expected
-        assert d.search_type == test_data[i].search_type
-        assert d.search_evals == test_data[i].search_evals
-        assert d.context == test_data[i].context
+    assert len(loaded_data) == 1
+    for d in loaded_data:
+        assert d.rerank == data.rerank
+        assert d.rerank_type == data.rerank_type
+        assert d.crossencoder_model == data.crossencoder_model
+        assert d.llm_re_rank_threshold == data.llm_re_rank_threshold
+        assert d.retrieve_num_of_documents == data.retrieve_num_of_documents
+        assert d.crossencoder_at_k == data.crossencoder_at_k
+        assert d.question_count == data.question_count
+        assert d.actual == data.actual
+        assert d.expected == data.expected
+        assert d.search_type == data.search_type
+        assert d.search_evals == data.search_evals
+        assert d.context == data.context

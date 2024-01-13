@@ -1,16 +1,11 @@
 import time
-from typing import TypeVar
 
-from rag_experiment_accelerator.artifact.handlers.exceptions import LoaderException
-from rag_experiment_accelerator.io.loader import Loader
-from rag_experiment_accelerator.io.writer import Writer
+from rag_experiment_accelerator.artifact.handlers.exceptions import LoadException
+from rag_experiment_accelerator.artifact.handlers.typing import T, U
 from rag_experiment_accelerator.utils.logging import get_logger
 
 
 logger = get_logger(__name__)
-
-T = TypeVar("T", bound=Writer)
-U = TypeVar("U", bound=Loader)
 
 
 class ArtifactHandler:
@@ -52,9 +47,7 @@ class ArtifactHandler:
         path = f"{self.data_location}/{name}"
         # ensure loader can handle path
         if not self._loader.can_handle(path):
-            raise LoaderException(
-                f"Cannot load at path: {path}. Please ensure it is supported by the loader."
-            )
+            raise LoadException(path=path)
 
         # load the data
         logger.info(f"Loading artifacts from path: {path}")
@@ -62,9 +55,7 @@ class ArtifactHandler:
 
         # raise if no data loaded
         if len(loaded_data) == 0:
-            raise LoaderException(
-                f"No data loaded from path: {path}. Please ensure the file is not empty."
-            )
+            raise LoadException(path=path)
         logger.info(f"Loaded {len(loaded_data)} artifacts from path: {path}")
         return loaded_data
 
