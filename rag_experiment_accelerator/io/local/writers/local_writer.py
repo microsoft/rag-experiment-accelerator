@@ -2,6 +2,7 @@ from abc import abstractmethod
 import os
 import pathlib
 import shutil
+from rag_experiment_accelerator.io.exceptions import CopyException, WriteException
 
 from rag_experiment_accelerator.io.local.base import LocalIOBase
 from rag_experiment_accelerator.io.writer import Writer
@@ -47,7 +48,7 @@ class LocalWriter(LocalIOBase, Writer):
         return pathlib.Path(path).parent
 
     @abstractmethod
-    def write_file(path: str, data, **kwargs):
+    def _write_file(path: str, data, **kwargs):
         """
         Abstract method for writing a file.
 
@@ -76,13 +77,14 @@ class LocalWriter(LocalIOBase, Writer):
         dir = self._get_dirname(path)
         self._make_dir(dir)
         try:
-            self.write_file(path, data, **kwargs)
+            self._write_file(path, data, **kwargs)
         except Exception as e:
-            logger.error(
-                f"Unable to write to file to path: {path}. Please ensure"
-                " you have the proper permissions to write to the file."
-            )
-            raise e
+            raise WriteException(path, e)
+            # logger.error(
+            #     f"Unable to write to file to path: {path}. Please ensure"
+            #     " you have the proper permissions to write to the file."
+            # )
+            # raise e
 
     def copy(self, src: str, dest: str, **kwargs):
         """
@@ -106,11 +108,7 @@ class LocalWriter(LocalIOBase, Writer):
         try:
             shutil.copyfile(src, dest, **kwargs)
         except Exception as e:
-            logger.error(
-                f"Unable to copy file from {src} to {dest}. Please ensure"
-                " you have the proper permissions to copy the file."
-            )
-            raise e
+            raise CopyException(src, dest, e)
 
     def delete(self, src: str):
         """

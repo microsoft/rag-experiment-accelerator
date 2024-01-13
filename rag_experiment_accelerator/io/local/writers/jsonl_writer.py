@@ -20,7 +20,7 @@ class JsonlWriter(LocalWriter):
 
     """
 
-    def write_file(self, path: str, data, **kwargs):
+    def _write_file(self, path: str, data, **kwargs):
         """
         Writes the given data to a JSONL file.
 
