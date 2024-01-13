@@ -14,9 +14,9 @@ def temp_dir():
         shutil.rmtree(dir)
 
 
-def test_exists_true(temp_file: str) -> bool:
+def test_exists_true(temp_dir: str) -> bool:
     loader = LocalIOBase()
-    assert loader.exists(temp_file) is True
+    assert loader.exists(temp_dir) is True
 
 
 def test_exists_false() -> bool:
