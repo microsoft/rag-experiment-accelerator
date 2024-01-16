@@ -347,11 +347,11 @@ def llm_context_precision(question, context):
 
 def llm_context_recall(question, groundtruth_answer, context):
     """
-    Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context. 
+    Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
     Context_recall values range between 0 and 1, with higher values indicating better performance.
-    To estimate context recall from the ground truth answer, each sentence in the ground truth answer is analyzed to determine 
-    whether it can be attributed to the retrieved context or not. In an ideal scenario, all sentences in the ground truth answer 
-    should be attributable to the retrieved context. The formula for calculating context recall is as follows: 
+    To estimate context recall from the ground truth answer, each sentence in the ground truth answer is analyzed to determine
+    whether it can be attributed to the retrieved context or not. In an ideal scenario, all sentences in the ground truth answer
+    should be attributable to the retrieved context. The formula for calculating context recall is as follows:
     context_recall = GT sentences that can be attributed to context / nr sentences in GT
 
     Args:
@@ -364,13 +364,30 @@ def llm_context_recall(question, groundtruth_answer, context):
     """
     config = Config()
 
-    prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: " + groundtruth_answer
-    result = generate_response(sys_message=llm_context_recall_instruction, prompt=prompt, engine_model=config.EVAL_MODEL_NAME, temperature=config.TEMPERATURE)
+    prompt = (
+        "\nquestion: "
+        + question
+        + "\ncontext: "
+        + context
+        + "\nanswer: "
+        + groundtruth_answer
+    )
+    result = ResponseGenerator(
+        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    ).generate_response(
+        sys_message=llm_context_recall_instruction,
+        prompt=prompt,
+        engine_model=config.EVAL_MODEL_NAME,
+        temperature=config.TEMPERATURE,
+    )
     print(result)
-    good_response = "\"Attributed\": \"1\""
-    bad_response = "\"Attributed\": \"0\""
-    
-    return (result.count(good_response) / (result.count(good_response) + result.count(bad_response))) * 100
+    good_response = '"Attributed": "1"'
+    bad_response = '"Attributed": "0"'
+
+    return (
+        result.count(good_response)
+        / (result.count(good_response) + result.count(bad_response))
+    ) * 100
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -511,7 +528,7 @@ def compute_metrics(question, actual, expected, context, metric_type):
             - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
-            - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context. 
+            - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -653,7 +670,9 @@ def evaluate_prompts(
             metric_dic = {}
 
             for metric_type in metric_types:
-                score = compute_metrics(question, actual, expected, context, metric_type)
+                score = compute_metrics(
+                    question, actual, expected, context, metric_type
+                )
                 metric_dic[metric_type] = score
             metric_dic["question"] = question
             metric_dic["context"] = context
@@ -702,7 +721,7 @@ def evaluate_prompts(
         mean_scores["mean"].append(mean(scores))
 
     run_id = mlflow.active_run().info.run_id
-    columns_to_remove = ["question", "context","actual", "expected"]
+    columns_to_remove = ["question", "context", "actual", "expected"]
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
