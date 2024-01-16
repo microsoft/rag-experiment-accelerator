@@ -211,5 +211,3 @@ def create_acs_index(
 
     except Exception as e:
         raise ValueError("An error occurred while creating index: " + str(e))
-
-
