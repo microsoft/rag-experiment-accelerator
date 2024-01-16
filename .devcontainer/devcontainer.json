@@ -10,7 +10,6 @@
 		},
 		"ghcr.io/azure/azure-dev/azd:latest": {},
 		"rchaganti/vsc-devcontainer-features/azurebicep": {}
-
 	},
 	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"customizations": {
