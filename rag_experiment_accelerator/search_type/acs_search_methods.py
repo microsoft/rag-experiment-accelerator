@@ -23,7 +23,7 @@ def create_client(service_endpoint, index_name, key):
     using the provided service endpoint, index name, and API key.
 
     Args:
-        service_endpoint (str): The URL of the Azure Cognitive Search service.
+        service_endpoint (str): The URL of the Azure AI Search service.
         index_name (str): The name of the search index.
         key (str): The API key for the search service.
 
@@ -64,10 +64,10 @@ def search_for_match_semantic(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for documents in the Azure Cognitive Search index that match the given query using semantic search.
+    Searches for documents in the Azure AI Search index that match the given query using semantic search.
 
     Args:
-        client (SearchClient): The Azure Cognitive Search client.
+        client (SearchClient): The Azure AI Search client.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
@@ -120,12 +120,12 @@ def search_for_match_Hybrid_multi(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for matching documents in Azure Cognitive Search using a hybrid approach that combines
+    Searches for matching documents in Azure AI Search using a hybrid approach that combines
     multiple vectors (contentVector, contentTitle, and contentSummary) to retrieve the most relevant
     results.
 
     Args:
-        client (SearchClient): The Azure Cognitive Search client.
+        client (SearchClient): The Azure AI Search client.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query.
         retrieve_num_of_documents (int): The number of documents to retrieve.
@@ -179,7 +179,7 @@ def search_for_match_Hybrid_cross(
     Searches for matching documents using a hybrid cross search method.
 
     Args:
-        client: An instance of the Azure Cognitive Search client.
+        client: An instance of the Azure AI Search client.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
