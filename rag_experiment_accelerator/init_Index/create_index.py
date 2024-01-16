@@ -206,7 +206,6 @@ def create_acs_index(
             token_filters=token_filters,
             char_filters=char_filters,
         )
-        index_client.delete_index(index_name)
         result = index_client.create_or_update_index(index)
         logger.info(f"{result.name} created")
 
