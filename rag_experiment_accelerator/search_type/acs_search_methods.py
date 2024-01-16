@@ -1,17 +1,14 @@
-import azure
-
-from rag_experiment_accelerator.embedding.gen_embeddings import generate_embedding
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import (
-    VectorQuery,
-    RawVectorQuery,
-    VectorQueryKind,
-    QueryType,
-    QueryLanguage,
-    QueryCaptionType,
     QueryAnswerType,
+    QueryCaptionType,
+    QueryLanguage,
+    QueryType,
+    RawVectorQuery,
 )
+
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -61,37 +58,36 @@ def format_results(results):
 
 
 def search_for_match_semantic(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
+    embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
 ):
     """
     Searches for documents in the Azure Cognitive Search index that match the given query using semantic search.
 
     Args:
-        client (azure.search.documents.SearchClient): The Azure Cognitive Search client.
-        size (int): The size of the embedding vector.
+        client (SearchClient): The Azure Cognitive Search client.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
+
     Returns:
         list: A list of formatted search results.
     """
-    res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+    embedding = embedding_model.generate_embedding(
+        chunk=str(pre_process.preprocess(query))
     )
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentVector",
-        vector=res[0],
+        vector=embedding,
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentTitle, contentSummary",
-        vector=res[0],
+        vector=embedding,
     )
 
     formatted_search_results = []
@@ -118,11 +114,10 @@ def search_for_match_semantic(
 # TODO: Figure out what is going on here. For some of these search functions, I cannot itterate over the results after it leaves this python file, so calling format_results on search_results which enables me to do so
 # This also will provide the same format that somes back from search_for_manual_hybrid
 def search_for_match_Hybrid_multi(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
+    embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
 ):
     """
     Searches for matching documents in Azure Cognitive Search using a hybrid approach that combines
@@ -130,33 +125,32 @@ def search_for_match_Hybrid_multi(
     results.
 
     Args:
-        client (azure.search.documents.SearchClient): The Azure Cognitive Search client.
-        size (int): The size of the embedding vector.
+        client (SearchClient): The Azure Cognitive Search client.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         list: A list of formatted search results.
     """
-    res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+    embedding = embedding_model.generate_embedding(
+        chunk=str(pre_process.preprocess(query))
     )
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentVector",
-        vector=res[0],
+        vector=embedding,
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentTitle",
-        vector=res[0],
+        vector=embedding,
     )
     vector3 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentSummary",
-        vector=res[0],
+        vector=embedding,
     )
 
     formatted_search_results = []
@@ -176,38 +170,36 @@ def search_for_match_Hybrid_multi(
 
 
 def search_for_match_Hybrid_cross(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
+    embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
 ):
     """
     Searches for matching documents using a hybrid cross search method.
 
     Args:
         client: An instance of the Azure Cognitive Search client.
-        size (int): The size of the embedding.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         A list of formatted search results.
     """
-    res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+    embedding = embedding_model.generate_embedding(
+        chunk=str(pre_process.preprocess(query))
     )
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentVector",
-        vector=res[0],
+        vector=embedding,
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentTitle, contentSummary",
-        vector=res[0],
+        vector=embedding,
     )
 
     formatted_search_results = []
@@ -227,21 +219,19 @@ def search_for_match_Hybrid_cross(
 
 
 def search_for_match_text(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
+    **kwargs,
 ):
     """
     Searches for matching text in the given client using the specified query.
 
     Args:
         client: The client to search in.
-        size: Not used.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        model_name: Not used.
+        **kwargs: Additional keyword arguments.
 
     Returns:
         A list of formatted search results.
@@ -262,35 +252,33 @@ def search_for_match_text(
 
 
 def search_for_match_pure_vector(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
+    embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
 ):
     """
     Searches for documents in the client's database that match the given query using pure vector search.
 
     Args:
         client (Client): The client object used to connect to the database.
-        size (int): The size of the embedding vectors.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         A list of dictionaries containing the search results, where each dictionary represents a single document and
         contains the following keys: 'title', 'content', and 'summary'.
     """
     # function body here
-    res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+    embedding = embedding_model.generate_embedding(
+        chunk=str(pre_process.preprocess(query))
     )
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentVector",
-        vector=res[0],
+        vector=embedding,
     )
     formatted_search_results = []
     try:
@@ -308,43 +296,41 @@ def search_for_match_pure_vector(
 
 
 def search_for_match_pure_vector_multi(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
+    embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
 ):
     """
     Searches for matching documents in the given client using the provided query and retrieves the specified number of documents.
 
     Args:
         client: The client to search in.
-        size: The size of the embedding.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         A list of formatted search results.
     """
-    res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+    embedding = embedding_model.generate_embedding(
+        chunk=str(pre_process.preprocess(query))
     )
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentVector",
-        vector=res[0],
+        vector=embedding,
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentTitle",
-        vector=res[0],
+        vector=embedding,
     )
     vector3 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentSummary",
-        vector=res[0],
+        vector=embedding,
     )
 
     formatted_search_results = []
@@ -363,34 +349,32 @@ def search_for_match_pure_vector_multi(
 
 
 def search_for_match_pure_vector_cross(
-    client: azure.search.documents.SearchClient,
-    size: int,
+    client: SearchClient,
+    embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
-    model_name: str = None,
 ):
     """
     Searches for documents that match the given query using pure vector cross search method.
 
     Args:
         client: An instance of the search client.
-        size: The size of the embedding.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
-        model_name (str): The name of the Azure deployment to use for embeddings.
 
     Returns:
         A list of dictionaries containing the formatted search results.
     """
     # Function code here
-    res = generate_embedding(
-        size=size, chunk=str(pre_process.preprocess(query)), model_name=model_name
+    embedding = embedding_model.generate_embedding(
+        chunk=str(pre_process.preprocess(query))
     )
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
         fields="contentVector, contentTitle, contentSummary",
-        vector=res[0],
+        vector=embedding,
     )
 
     formatted_search_results = []
@@ -409,13 +393,7 @@ def search_for_match_pure_vector_cross(
     return formatted_search_results
 
 
-def search_for_manual_hybrid(
-    client: azure.search.documents.SearchClient,
-    size: int,
-    query: str,
-    retrieve_num_of_documents: int,
-    model_name: str = None,
-):
+def search_for_manual_hybrid(**kwargs):
     """
     Searches for documents using a combination of text, vector, and semantic matching.
 
@@ -429,15 +407,9 @@ def search_for_manual_hybrid(
         A list of documents matching the search query.
     """
     context = []
-    text_context = search_for_match_text(
-        client, size, query, retrieve_num_of_documents, model_name
-    )
-    vector_context = search_for_match_pure_vector_cross(
-        client, size, query, retrieve_num_of_documents, model_name
-    )
-    semantic_context = search_for_match_semantic(
-        client, size, query, retrieve_num_of_documents, model_name
-    )
+    text_context = search_for_match_text(**kwargs)
+    vector_context = search_for_match_pure_vector_cross(**kwargs)
+    semantic_context = search_for_match_semantic(**kwargs)
 
     context.extend(text_context)
     context.extend(vector_context)

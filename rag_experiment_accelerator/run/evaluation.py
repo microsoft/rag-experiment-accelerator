@@ -1,16 +1,18 @@
+import mlflow
+from azure.ai.ml import MLClient
 from dotenv import load_dotenv
-from rag_experiment_accelerator.run.args import get_directory_arg
+
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.evaluation import eval
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.utils import get_index_name
 
 load_dotenv(override=True)
 
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
-from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.evaluation import eval
-from rag_experiment_accelerator.utils.logging import get_logger
-from azure.ai.ml import MLClient
-import mlflow
 
 logger = get_logger(__name__)
+
 
 def run(config_dir: str):
     """
@@ -36,15 +38,20 @@ def run(config_dir: str):
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     client = mlflow.MlflowClient(mlflow_tracking_uri)
 
-    for config_item in config.CHUNK_SIZES:
+    for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
-            for dimension in config.EMBEDDING_DIMENSIONS:
+            for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
-                        index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
-                        logger.info(
-                            f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                        index_name = get_index_name(
+                            config.NAME_PREFIX,
+                            chunk_size,
+                            overlap,
+                            embedding_model.name,
+                            ef_construction,
+                            ef_search,
                         )
+                        logger.info(f"Evaluating Index: {index_name}")
                         config.artifacts_dir
                         write_path = f"{config.artifacts_dir}/outputs/eval_output_{index_name}.jsonl"
                         eval.evaluate_prompts(
@@ -52,9 +59,9 @@ def run(config_dir: str):
                             data_path=write_path,
                             config=config,
                             client=client,
-                            chunk_size=config_item,
+                            chunk_size=chunk_size,
                             chunk_overlap=overlap,
-                            embedding_dimension=dimension,
+                            embedding_model=embedding_model,
                             ef_construction=ef_construction,
                             ef_search=ef_search,
                         )

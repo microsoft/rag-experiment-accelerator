@@ -1,7 +1,6 @@
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 
 
-
 def test_sentence_tokenize():
     preprocessor = Preprocess()
     text = "This is a sentence. This is another sentence."

@@ -52,7 +52,6 @@ git clone https://github.com/microsoft/rag-experiment-accelerator.git
 2. **setup env file**: Copy `.env.template` and save as `.env` file. Provide values for all the keys
 
 LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
-OPENAI_API_TYPE should be either `azure` if you are planning to use Azure, `open_ai` if you want to use OpenAI.
 
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
@@ -99,6 +98,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
     },
+    "embedding_models": "see 'Description of embedding models config' below",
     "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
     "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,
     "ef_search":  "ef_search value determines the value of Azure Cognitive Search vector configuration.",
@@ -115,13 +115,36 @@ To use the **RAG Experiment Accelerator**, follow these steps:
     "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
     "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
     "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2, llm_answer_relevance, llm_context_precision. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
-    "chat_model_name":  "determines the OpenAI model",
+    "azure_oai_chat_deployment_name":  "determines the Azure OpenAI deployment name",
     "embedding_model_name": "embedding model name",
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0"
 }
 ```
 
+## Description of embedding models config
+
+`embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence trasnformer models.
+
+### Azure OpenAI embedding model conifg
+
+```json
+    {
+        "type": "azure", 
+        "deployment_name": "the deployment name of the model",
+        "dimension": "the dimesion of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
+    },
+```
+
+### Sentence Transformer embedding model
+
+```json
+        {
+            "type": "sentence-transformer",
+            "model_name": "the name of the sentence transformer model",
+            "dimension": "the dimension of the model. This field is not required if model name is one of ['all-MiniLM-L6-v2', 'all-mpnet-base-v2', 'bert-large-nli-mean-tokens]"
+        }
+```
 ## Reports
 
 The solution integrates with Azure Machine Learning and uses MLFlow to manage experiments, jobs, and artifacts. You can view the following reports as part of the evaluation process:
@@ -176,6 +199,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any questio
         - `feature/22-short-description`
 - **Merging Changes**: 
     - When merging, squash your commits to have up to 3 incremental commits for Pull Requests (PRs) and merges.
+    - Project maintainers can merge accepted code changes from contributors or contributors can request Write Permissions to the repo to merge a pull request once it has been reviewed by project maintainers.
+    - Project Maintainers can be contacted via [email](ISE_AI_PLATFORM_TD@microsoft.com).
 - **Branch Hygiene**: 
     - Delete the branch after it has been merged.
 - **Testing Changes Locally**: 

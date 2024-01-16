@@ -1,42 +1,47 @@
-import os
 import json
+import os
+
 import azure
 from azure.search.documents import SearchClient
-from openai import BadRequestError
-from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.evaluation.search_eval import evaluate_search_result
-from rag_experiment_accelerator.evaluation.spacy_evaluator import SpacyEvaluator
-from rag_experiment_accelerator.run.args import get_directory_arg
-from rag_experiment_accelerator.utils.auth import get_default_az_cred
-
 from dotenv import load_dotenv
+from openai import BadRequestError
+
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.evaluation.search_eval import (
+    evaluate_search_result,
+)
+from rag_experiment_accelerator.evaluation.spacy_evaluator import (
+    SpacyEvaluator,
+)
+
+from rag_experiment_accelerator.ingest_data.acs_ingest import (
+    do_we_need_multiple_questions,
+    we_need_multiple_questions,
+)
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.reranking.reranker import (
+    cross_encoder_rerank_documents,
+    llm_rerank_documents,
+)
+from rag_experiment_accelerator.search_type.acs_search_methods import (
+    create_client,
+    search_for_manual_hybrid,
+    search_for_match_Hybrid_cross,
+    search_for_match_Hybrid_multi,
+    search_for_match_pure_vector,
+    search_for_match_pure_vector_cross,
+    search_for_match_pure_vector_multi,
+    search_for_match_semantic,
+    search_for_match_text,
+)
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.utils import get_index_name
 
 load_dotenv(override=True)
 
-from rag_experiment_accelerator.ingest_data.acs_ingest import (
-    we_need_multiple_questions,
-    do_we_need_multiple_questions,
-)
-from rag_experiment_accelerator.search_type.acs_search_methods import (
-    search_for_match_pure_vector_multi,
-    search_for_match_semantic,
-    search_for_match_Hybrid_multi,
-    search_for_match_Hybrid_cross,
-    search_for_match_text,
-    search_for_match_pure_vector,
-    search_for_match_pure_vector_cross,
-    search_for_manual_hybrid,
-)
-from rag_experiment_accelerator.search_type.acs_search_methods import create_client
-from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
-from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
-from rag_experiment_accelerator.reranking.reranker import (
-    llm_rerank_documents,
-    cross_encoder_rerank_documents,
-)
-
-from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -54,22 +59,20 @@ search_mapping = {
 
 def query_acs(
     search_client: azure.search.documents.SearchClient,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
-    model_name: str = None,
 ):
     """
     Queries the Azure Cognitive Search service using the specified search client and search parameters.
 
     Args:
         search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension to search within.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
         retrieve_num_of_documents (int): The number of documents to retrieve.
-        model_name (str): The name of the model to use for searching.
 
     Returns:
         list: A list of documents matching the search query.
@@ -79,10 +82,9 @@ def query_acs(
 
     return search_mapping[s_v](
         client=search_client,
-        size=dimension,
+        embedding_model=embedding_model,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        model_name=model_name,
     )
 
 
@@ -109,8 +111,7 @@ def rerank_documents(
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
+            config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
             config.LLM_RERANK_THRESHOLD,
         )
     elif config.RERANK_TYPE == "crossencoder":
@@ -127,13 +128,12 @@ def rerank_documents(
 
 def query_and_eval_acs(
     search_client: SearchClient,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     query: str,
     search_type: str,
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
-    model_name: str = None,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
@@ -142,24 +142,22 @@ def query_and_eval_acs(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
-        dimension (int): The dimension of the search index to query.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query to execute.
         search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
-        model_name (str): The name of the model to use for searching.
 
     Returns:
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
     search_result = query_acs(
         search_client=search_client,
-        dimension=dimension,
+        embedding_model=embedding_model,
         user_prompt=query,
         s_v=search_type,
         retrieve_num_of_documents=retrieve_num_of_documents,
-        model_name=model_name,
     )
     docs, evaluation = evaluate_search_result(
         search_result, evaluation_content, evaluator
@@ -170,7 +168,7 @@ def query_and_eval_acs(
 
 def query_and_eval_acs_multi(
     search_client: SearchClient,
-    dimension: int,
+    embedding_model: EmbeddingModel,
     questions: list[str],
     original_prompt: str,
     output_prompt: str,
@@ -186,7 +184,7 @@ def query_and_eval_acs_multi(
 
     Args:
         search_client (SearchClient): The Azure Cognitive Search client.
-        dimension (int): The number of dimensions in the embedding space.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         questions (list[str]): A list of questions to query the search service with.
         original_prompt (str): The original prompt to generate the response from.
         output_prompt (str): The output prompt to use for reranking the search results.
@@ -205,13 +203,12 @@ def query_and_eval_acs_multi(
     for question in questions:
         docs, evaluation = query_and_eval_acs(
             search_client=search_client,
-            dimension=dimension,
+            embedding_model=embedding_model,
             query=question,
             search_type=search_type,
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
-            model_name=config.EMBEDDING_MODEL_NAME,
         )
         evals.append(evaluation)
 
@@ -225,11 +222,11 @@ def query_and_eval_acs_multi(
         full_prompt_instruction = (
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
         )
-        openai_response = generate_response(
+        openai_response = ResponseGenerator(
+            deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        ).generate_response(
             full_prompt_instruction,
             original_prompt,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
         )
         context.append(openai_response)
         logger.debug(openai_response)
@@ -259,22 +256,30 @@ def run(config_dir: str):
             output_dir = f"{config.artifacts_dir}/outputs"
             os.makedirs(output_dir, exist_ok=True)
         except Exception as e:
-            logger.error(f"Unable to create the '{output_dir}' directory. Please ensure you have the proper permissions and try again")
+            logger.error(
+                f"Unable to create the '{output_dir}' directory. Please ensure"
+                " you have the proper permissions and try again"
+            )
             raise e
 
         evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
 
-        for config_item in config.CHUNK_SIZES:
+        for chunk_size in config.CHUNK_SIZES:
             for overlap in config.OVERLAP_SIZES:
-                for dimension in config.EMBEDDING_DIMENSIONS:
+                for embedding_model in config.embedding_models:
                     for ef_construction in config.EF_CONSTRUCTIONS:
                         for ef_search in config.EF_SEARCHES:
-                            index_name = f"{config.NAME_PREFIX}-{config_item}-{overlap}-{dimension}-{ef_construction}-{ef_search}"
+                            index_name = get_index_name(
+                                config.NAME_PREFIX,
+                                chunk_size,
+                                overlap,
+                                embedding_model.name,
+                                ef_construction,
+                                ef_search,
+                            )
                             logger.info(f"Index: {index_name}")
 
-                            write_path = (
-                                f"{output_dir}/eval_output_{index_name}.jsonl"
-                            )
+                            write_path = f"{output_dir}/eval_output_{index_name}.jsonl"
                             if os.path.exists(write_path):
                                 continue
 
@@ -291,15 +296,13 @@ def run(config_dir: str):
 
                                     is_multi_question = do_we_need_multiple_questions(
                                         user_prompt,
-                                        config.CHAT_MODEL_NAME,
-                                        config.TEMPERATURE,
+                                        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                     )
                                     if is_multi_question:
                                         responses = json.loads(
                                             we_need_multiple_questions(
                                                 user_prompt,
-                                                config.CHAT_MODEL_NAME,
-                                                config.TEMPERATURE,
+                                                config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                             )
                                         )
                                         new_questions = []
@@ -322,27 +325,29 @@ def run(config_dir: str):
                                                     docs,
                                                     search_evals,
                                                 ) = query_and_eval_acs_multi(
-                                                    search_client,
-                                                    dimension,
-                                                    new_questions,
-                                                    user_prompt,
-                                                    output_prompt,
-                                                    s_v,
-                                                    evaluation_content,
-                                                    config,
-                                                    evaluator,
-                                                    config.MAIN_PROMPT_INSTRUCTION,
+                                                    search_client=search_client,
+                                                    embedding_model=embedding_model,
+                                                    questions=new_questions,
+                                                    original_prompt=user_prompt,
+                                                    output_prompt=output_prompt,
+                                                    search_type=s_v,
+                                                    evaluation_content=evaluation_content,
+                                                    config=config,
+                                                    evaluator=evaluator,
+                                                    main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
                                                 )
                                             else:
-                                                docs, evaluation = query_and_eval_acs(
+                                                (
+                                                    docs,
+                                                    evaluation,
+                                                ) = query_and_eval_acs(
                                                     search_client=search_client,
-                                                    dimension=dimension,
+                                                    embedding_model=embedding_model,
                                                     query=user_prompt,
                                                     search_type=s_v,
                                                     evaluation_content=evaluation_content,
                                                     retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                                                     evaluator=evaluator,
-                                                    model_name=config.EMBEDDING_MODEL_NAME
                                                 )
                                                 search_evals.append(evaluation)
 
@@ -363,22 +368,30 @@ def run(config_dir: str):
                                                 + "\n"
                                                 + "\n".join(prompt_instruction_context)
                                             )
-                                            openai_response = generate_response(
+                                            openai_response = ResponseGenerator(
+                                                deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+                                            ).generate_response(
                                                 full_prompt_instruction,
                                                 user_prompt,
-                                                config.CHAT_MODEL_NAME,
-                                                config.TEMPERATURE,
                                             )
                                             logger.debug(openai_response)
 
                                             output = {
                                                 "rerank": config.RERANK,
-                                                "rerank_type": config.RERANK_TYPE,
-                                                "crossencoder_model": config.CROSSENCODER_MODEL,
-                                                "llm_re_rank_threshold": config.LLM_RERANK_THRESHOLD,
-                                                "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                                "cross_encoder_at_k": config.CROSSENCODER_AT_K,
-                                                "question_count": question_count,
+                                                "rerank_type": (config.RERANK_TYPE),
+                                                "crossencoder_model": (
+                                                    config.CROSSENCODER_MODEL
+                                                ),
+                                                "llm_re_rank_threshold": (
+                                                    config.LLM_RERANK_THRESHOLD
+                                                ),
+                                                "retrieve_num_of_documents": (
+                                                    config.RETRIEVE_NUM_OF_DOCUMENTS
+                                                ),
+                                                "cross_encoder_at_k": (
+                                                    config.CROSSENCODER_AT_K
+                                                ),
+                                                "question_count": (question_count),
                                                 "actual": openai_response,
                                                 "expected": output_prompt,
                                                 "search_type": s_v,
@@ -392,14 +405,18 @@ def run(config_dir: str):
                                                 out.write(json_string + "\n")
                                     except BadRequestError as e:
                                         logger.error(
-                                            f"Invalid request. Skipping question: {user_prompt}",
+                                            "Invalid request. Skipping"
+                                            f" question: {user_prompt}",
                                             exc_info=e,
                                         )
                                         continue
 
                             search_client.close()
                             create_data_asset(
-                                write_path, index_name, azure_cred, config.AzureMLCredentials
+                                write_path,
+                                index_name,
+                                azure_cred,
+                                config.AzureMLCredentials,
                             )
     except FileNotFoundError:
         logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)

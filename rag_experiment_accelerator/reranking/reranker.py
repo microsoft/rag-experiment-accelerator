@@ -1,9 +1,10 @@
 import json
 import re
-from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
-from rag_experiment_accelerator.llm.prompt_execution import generate_response
-import numpy as np
+
 from sentence_transformers import CrossEncoder
+
+from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -33,7 +34,6 @@ def cross_encoder_rerank_documents(
     )
 
     top_indices_ques = cross_scores_ques.argsort()[-k:][::-1]
-    top_values_ques = cross_scores_ques[top_indices_ques]
     sub_context = []
     for idx in list(top_indices_ques):
         sub_context.append(documents[idx])
@@ -41,9 +41,7 @@ def cross_encoder_rerank_documents(
     return sub_context
 
 
-def llm_rerank_documents(
-    documents, question, deployment_name, temperature, rerank_threshold
-):
+def llm_rerank_documents(documents, question, deployment_name, rerank_threshold):
     """
     Reranks a list of documents based on a given question using the LLM model.
 
@@ -51,7 +49,6 @@ def llm_rerank_documents(
         documents (list): A list of documents to be reranked.
         question (str): The question to be used for reranking.
         deployment_name (str): The name of the LLM deployment to be used.
-        temperature (float): The temperature to be used for generating responses.
         rerank_threshold (int): The threshold for reranking documents.
 
     Returns:
@@ -68,8 +65,8 @@ def llm_rerank_documents(
         Question: {question}
     """
 
-    response = generate_response(
-        rerank_prompt_instruction, prompt, deployment_name, temperature
+    response = ResponseGenerator(deployment_name=deployment_name).generate_response(
+        rerank_prompt_instruction, prompt
     )
     logger.debug("Response", response)
     pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
@@ -84,9 +81,10 @@ def llm_rerank_documents(
             if int(value) > rerank_threshold:
                 new_docs.append(int(numeric_data[0]))
             result = [documents[i] for i in new_docs]
-    except:
+    except BaseException:
         logger.error(
-            "Unable to parse the rerank documents LLM response. Returning all documents."
+            "Unable to parse the rerank documents LLM response. Returning all"
+            " documents."
         )
         result = documents
     return result
