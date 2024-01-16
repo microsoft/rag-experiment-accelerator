@@ -204,4 +204,10 @@ def create_acs_index(
         logger.info(f"{result.name} created")
         
     except Exception as e:
-        raise ValueError("An error occurred while creating index: " + str(e))        
+        raise ValueError("An error occurred while creating index: " + str(e))       
+    
+def delete_index(index_client, index_name):
+    try:
+        index_client.delete_index(index_name)
+    except Exception as e:
+        print(f"An error occurred while deleting index: {e}")     
