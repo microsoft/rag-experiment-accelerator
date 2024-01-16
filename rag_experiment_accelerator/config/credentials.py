@@ -147,7 +147,7 @@ class AzureSearchCredentials:
 
 class AzureSkillsCredentials:
     """
-    A class representing the credentials required to access the skills provided with Azure Cognitive Search.
+    A class representing the credentials required to access the skills provided with Azure AI Search.
 
     Attributes:
         AZURE_LANGUAGE_SERVICE_ENDPOINT (str): The endpoint URL of the Azure Language Detection service.

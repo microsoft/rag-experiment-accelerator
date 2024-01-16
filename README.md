@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **RAG Experiment Accelerator** is a versatile tool that helps you conduct experiments and evaluations using Azure Cognitive Search and RAG pattern. This document provides a comprehensive guide that covers everything you need to know about this tool, such as its purpose, features, installation, usage, and more.
+The **RAG Experiment Accelerator** is a versatile tool that helps you conduct experiments and evaluations using Azure AI Search and RAG pattern. This document provides a comprehensive guide that covers everything you need to know about this tool, such as its purpose, features, installation, usage, and more.
 
 ## Purpose
 
@@ -20,7 +20,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 1. **Experiment Setup**: You can define and configure experiments by specifying a range of search engine parameters, search types, query sets, and evaluation metrics.
 
-2. **Integration**: It integrates seamlessly with Azure Cognitive Search, Azure Machine Learning, MLFlow and Azure OpenAI.
+2. **Integration**: It integrates seamlessly with Azure AI Search, Azure Machine Learning, MLFlow and Azure OpenAI.
 
 3. **Rich Search Index**: It creates multiple search indexes based on hyperparameter configurations available in the config file.
 
@@ -30,7 +30,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 6. **Sub-Querying**: The pattern evaluates the user query and if it finds it complex enough, it breaks it down into smaller sub-queries to generate relevant context.
 
-7. **Re-Ranking**: The query responses from Azure Cognitive Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
+7. **Re-Ranking**: The query responses from Azure AI Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
 
 8. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
 
@@ -73,7 +73,7 @@ az account show
 
 ## Pre-requisites
 
-- [Azure Cognitive Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure Cognitive Search, at Basic tier or higher.)
+- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
 - [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
 - [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
 
@@ -83,9 +83,9 @@ az account show
 To use the **RAG Experiment Accelerator**, follow these steps:
 
 1. Modify the `config.json` file with the hyperparameters for your experiment.
-2. Run `01_index.py` (python 01_index.py) to create Azure Cognitive Search indexes and load data into them.
+2. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
 3. Run `02_qa_generation.py` (python 02_qa_generation.py) to generate question-answer pairs using Azure OpenAI.
-4. Run `03_querying.py` (python 03_querying.py) to query Azure Cognitive Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context. 
+4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context. 
 5. Run `04_evaluation.py` (python 04_evaluation.py) to calculate metrics using various methods and generate charts and reports in Azure Machine Learning using MLFlow integration.
 
 
@@ -100,8 +100,8 @@ To use the **RAG Experiment Accelerator**, follow these steps:
     },
     "embedding_models": "see 'Description of embedding models config' below",
     "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
-    "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,
-    "ef_search":  "ef_search value determines the value of Azure Cognitive Search vector configuration.",
+    "ef_construction" : "ef_construction value determines the value of Azure AI Search vector configuration." ,
+    "ef_search":  "ef_search value determines the value of Azure AI Search vector configuration.",
     "language": {
         "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
