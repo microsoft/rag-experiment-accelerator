@@ -66,10 +66,10 @@ def query_acs(
     retrieve_num_of_documents: str,
 ):
     """
-    Queries the Azure Cognitive Search service using the specified search client and search parameters.
+    Queries the Azure AI Search service using the specified search client and search parameters.
 
     Args:
-        search_client (azure.search.documents.SearchClient): The Azure Cognitive Search client to use for querying the service.
+        search_client (azure.search.documents.SearchClient): The Azure AI Search client to use for querying the service.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
@@ -137,12 +137,12 @@ def query_and_eval_acs(
     evaluator: SpacyEvaluator,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
-    Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
+    Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
     results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
     the evaluation results.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        search_client (SearchClient): The Azure AI Search client to use for querying the service.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query to execute.
         search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
@@ -180,11 +180,11 @@ def query_and_eval_acs_multi(
     main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
-    Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
+    Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
     using OpenAI's GPT-3 model.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client.
+        search_client (SearchClient): The Azure AI Search client.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         questions (list[str]): A list of questions to query the search service with.
         original_prompt (str): The original prompt to generate the response from.

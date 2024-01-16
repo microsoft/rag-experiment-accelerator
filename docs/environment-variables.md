@@ -3,8 +3,8 @@
 ## Required Resources
 
 To use the rag-experiment-accelerator, create the following resources:
-- [Azure Search Service](https://azure.microsoft.com/en-us/products/ai-services/cognitive-search)
-    - Turning on [Semantic Search](https://learn.microsoft.com/en-us/azure/search/semantic-search-overview) is optional
+- [Azure AI Search Service](https://azure.microsoft.com/en-us/products/ai-services/ai-search/)
+    - Turning on [Semantic Ranking](https://learn.microsoft.com/en-us/azure/search/semantic-search-overview) is optional
 - [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)
     - Create new deployments using models `gpt-35-turbo` and `text-embedding-ada-002`
 - [Azure ML Workspace](https://learn.microsoft.com/en-us/azure/machine-learning/concept-workspace?view=azureml-api-2)
@@ -17,8 +17,8 @@ To use the rag-experiment-accelerator, create the following resources:
 Below are the required environment variables, to be added to a local .env file at the root of the repo.
 | Variable                      | Value                                      | Note                                                                     |
 |-------------------------------|--------------------------------------------|--------------------------------------------------------------------------|
-| AZURE_SEARCH_SERVICE_ENDPOINT |                                            | Azure Cognitive Search API Endpoint                                      |
-| AZURE_SEARCH_ADMIN_KEY        |                                            | Azure Cognitive Search Key                                               |
+| AZURE_SEARCH_SERVICE_ENDPOINT |                                            | Azure AI Search API Endpoint                                      |
+| AZURE_SEARCH_ADMIN_KEY        |                                            | Azure AI Search Key                                               |
 | OPENAI_API_KEY                |                                            | OpenAI API key                                                           |
 | OPENAI_API_TYPE               | azure, open_ai                             | Must be `azure` for Azure OpenAI or `open_ai` for OpenAI.                |
 | OPENAI_ENDPOINT               |                                            | Azure OpenAI API endpoint.                                               |

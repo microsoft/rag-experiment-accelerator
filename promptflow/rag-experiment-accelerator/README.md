@@ -102,8 +102,8 @@ az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
     },
     "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
-    "ef_construction" : "ef_construction value determines the value of Azure Cognitive Search vector configuration." ,
-    "ef_search":  "ef_search value determines the value of Azure Cognitive Search vector configuration.",
+    "ef_construction" : "ef_construction value determines the value of Azure AI Search vector configuration." ,
+    "ef_search":  "ef_search value determines the value of Azure AI Search vector configuration.",
     "language": {
         "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",

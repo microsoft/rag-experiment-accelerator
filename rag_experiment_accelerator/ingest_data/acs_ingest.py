@@ -80,13 +80,13 @@ def upload_data(
     azure_oai_deployment_name: str,
 ):
     """
-    Uploads data to an Azure Cognitive Search index.
+    Uploads data to an Azure AI Search index.
 
     Args:
         chunks (list): A list of data chunks to upload.
-        service_endpoint (str): The endpoint URL for the Azure Cognitive Search service.
+        service_endpoint (str): The endpoint URL for the Azure AI Search service.
         index_name (str): The name of the index to upload data to.
-        search_key (str): The search key for the Azure Cognitive Search service.
+        search_key (str): The search key for the Azure AI Search service.
         embedding_model (EmbeddingModel): The embedding model to generate the embedding.
         azure_oai_deployment_name (str): The name of the Azure Opan AI deployment to use for generating titles and summaries.
 
