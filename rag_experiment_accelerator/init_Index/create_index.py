@@ -35,8 +35,8 @@ def create_acs_index(
     analyzers,
 ):
     try:
-            
-        credential = AzureKeyCredential(key)    
+
+        credential = AzureKeyCredential(key)
 
         # Apply checks on analyzer settings. Search analyzer and index analyzer must be set together
         index_analyzer = (
@@ -51,9 +51,10 @@ def create_acs_index(
         )
         # Analyzer can only be used if neither search analyzer or index analyzer are set
         if analyzers.get("analyzer_name") and (analyzers.get("search_analyzer_name") or analyzers.get("index_analyzer_name")):
-            raise ValueError("analyzer_name should be empty if either search_analyzer_name or index_analyzer_name is not empty")               
+            raise ValueError(
+                "analyzer_name should be empty if either search_analyzer_name or index_analyzer_name is not empty")
         analyzer = analyzers.get("analyzer_name") or ""
-             
+
         # Create a search index
         index_client = SearchIndexClient(
             endpoint=service_endpoint, credential=credential
@@ -99,21 +100,24 @@ def create_acs_index(
             ),
             SearchField(
                 name="contentVector",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                type=SearchFieldDataType.Collection(
+                    SearchFieldDataType.Single),
                 searchable=True,
                 vector_search_dimensions=int(dimension),
                 vector_search_profile="my-vector-search-profile",
             ),
             SearchField(
                 name="contentTitle",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                type=SearchFieldDataType.Collection(
+                    SearchFieldDataType.Single),
                 searchable=True,
                 vector_search_dimensions=int(dimension),
                 vector_search_profile="my-vector-search-profile",
             ),
             SearchField(
                 name="contentSummary",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                type=SearchFieldDataType.Collection(
+                    SearchFieldDataType.Single),
                 searchable=True,
                 vector_search_dimensions=int(dimension),
                 vector_search_profile="my-vector-search-profile",
@@ -150,7 +154,8 @@ def create_acs_index(
         semantic_config = SemanticConfiguration(
             name="my-semantic-config",
             prioritized_fields=PrioritizedFields(
-                prioritized_content_fields=[SemanticField(field_name="content")]
+                prioritized_content_fields=[
+                    SemanticField(field_name="content")]
             ),
         )
 
@@ -185,7 +190,8 @@ def create_acs_index(
                 for char_filter in analyzers["char_filters"]
             ]
 
-        cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
+        cors_options = CorsOptions(
+            allowed_origins=["*"], max_age_in_seconds=60)
         scoring_profiles = []
 
         # Create the search index with the semantic, tokenizer, and filter settings
@@ -202,12 +208,13 @@ def create_acs_index(
         )
         result = index_client.create_or_update_index(index)
         logger.info(f"{result.name} created")
-        
+
     except Exception as e:
-        raise ValueError("An error occurred while creating index: " + str(e))       
-    
+        raise ValueError("An error occurred while creating index: " + str(e))
+
+
 def delete_index(index_client, index_name):
     try:
         index_client.delete_index(index_name)
     except Exception as e:
-        print(f"An error occurred while deleting index: {e}")     
+        print(f"An error occurred while deleting index: {e}")

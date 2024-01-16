@@ -91,7 +91,8 @@ def run(config_dir: str, data_dir: str = "data") -> None:
                             chunk_dict = {
                                 "content": docs.page_content,
                                 "content_vector": embedding_model.generate_embedding(
-                                    chunk=str(pre_process.preprocess(docs.page_content))
+                                    chunk=str(pre_process.preprocess(
+                                        docs.page_content))
                                 ),
                             }
                             data_load.append(chunk_dict)
