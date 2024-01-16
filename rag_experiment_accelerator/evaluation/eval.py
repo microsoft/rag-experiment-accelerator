@@ -377,7 +377,6 @@ def llm_context_recall(question, groundtruth_answer, context):
     ).generate_response(
         sys_message=llm_context_recall_instruction,
         prompt=prompt,
-        engine_model=config.EVAL_MODEL_NAME,
         temperature=config.TEMPERATURE,
     )
     print(result)
