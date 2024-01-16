@@ -5,6 +5,10 @@ on:
   workflow_dispatch:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/development' && github.ref != 'refs/heads/main' }}
+
 jobs:
   validate-code:
     name: job for validating code and structure
@@ -14,18 +18,23 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Load all build validation related dependencies
         shell: bash
         run: |
           set -e # fail on error
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -e . -r requirements.txt -r dev-requirements.txt
+          
+      - name: Run flake
+        shell: bash
+        run: |
+          flake8 --extend-ignore=E501
 
       - name: Execute Unit Tests
         shell: bash
         run: |
-          pytest . --cov=. --cov-report=html
+          pytest . --cov=. --cov-report=html --cov-config=.coveragerc
 
       - name: Publish Unit Test Results
         uses: actions/upload-artifact@v3

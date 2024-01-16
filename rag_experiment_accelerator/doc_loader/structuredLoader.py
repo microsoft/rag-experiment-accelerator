@@ -1,13 +1,16 @@
-import os
 import glob
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+import os
+
 from langchain.document_loaders.base import BaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
 def load_structured_files(
+    file_format: str,
     language: str,
     loader: BaseLoader,
     folder_path: str,
@@ -20,6 +23,7 @@ def load_structured_files(
     Load and process structured files from a given folder path.
 
     Args:
+        file_format (str): The file_format of the documents to be loaded.
         language (str): The language of the documents to be loaded.
         loader (BaseLoader): The document loader object that reads the files.
         folder_path (str): The path of the folder where files are located.
@@ -32,14 +36,15 @@ def load_structured_files(
         list[Document]: A list of processed and split document chunks.
     """
 
-    logger.info(f"Loading {language.upper()} files from {folder_path}")
+    logger.info(f"Loading {file_format} files from {folder_path}")
     matching_files = []
     for pattern in glob_patterns:
-        glob_pattern = f"**/[!.]*.{pattern}"
+        # "." is used for hidden files, "~" is used for Word temporary files
+        glob_pattern = f"**/[!.~]*.{pattern}"
         full_glob_pattern = os.path.join(folder_path, glob_pattern)
         matching_files += glob.glob(full_glob_pattern, recursive=True)
 
-    logger.debug(f"Found {len(matching_files)} {language.upper()} files")
+    logger.debug(f"Found {len(matching_files)} {file_format} files")
 
     documents = []
     if loader_kwargs is None:
@@ -49,8 +54,8 @@ def load_structured_files(
         document = loader(file, **loader_kwargs).load()
         documents += document
 
-    logger.debug(f"Loaded {len(documents)} {language.upper()} files")
-    if language == "json":
+    logger.debug(f"Loaded {len(documents)} {file_format} files")
+    if language is None:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=overlap_size,
@@ -58,17 +63,20 @@ def load_structured_files(
         )
     else:
         text_splitter = RecursiveCharacterTextSplitter().from_language(
-            language=language, chunk_size=chunk_size, chunk_overlap=overlap_size
+            language=language,
+            chunk_size=chunk_size,
+            chunk_overlap=overlap_size,
         )
 
     logger.debug(
-        f"Splitting {language.upper()} files into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
+        f"Splitting {file_format} files into chunks of {chunk_size} characters"
+        f" with an overlap of {overlap_size} characters"
     )
 
     docs = text_splitter.split_documents(documents)
 
     logger.info(
-        f"Split {len(documents)} {language.upper()} files into {len(docs)} chunks"
+        f"Split {len(documents)} {file_format} files into {len(docs)} chunks"
     )
 
     return docs

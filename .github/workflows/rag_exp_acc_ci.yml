@@ -13,6 +13,10 @@ on:
       - main
       - development
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/development' && github.ref != 'refs/heads/main' }}
+
 jobs:
   execute-code-and-check:
     env:
@@ -41,7 +45,7 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_index.py  
+          python 01_index.py --data-directory-name='data-ci'
       - name: execute qna step
         shell: bash
         run: |
@@ -53,4 +57,4 @@ jobs:
       - name: execute evaluation step
         shell: bash
         run: |
-          python 04_evaluation.py        
+          python 04_evaluation.py

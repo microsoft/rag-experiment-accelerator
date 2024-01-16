@@ -1,11 +1,14 @@
 import os
 from typing import Union
-from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
-from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
-from rag_experiment_accelerator.doc_loader.markdownLoader import load_markdown_files
-from rag_experiment_accelerator.doc_loader.textLoader import load_text_files
-from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
 
+from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
+from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
+from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
+from rag_experiment_accelerator.doc_loader.markdownLoader import (
+    load_markdown_files,
+)
+from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
+from rag_experiment_accelerator.doc_loader.textLoader import load_text_files
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -16,6 +19,7 @@ _FORMAT_VERSIONS = {
     "markdown": ["md", "markdown"],
     "json": ["json"],
     "text": ["txt", "rtf"],
+    "docx": ["docx"],
 }
 _FORMAT_PROCESSORS = {
     "pdf": load_pdf_files,
@@ -23,6 +27,7 @@ _FORMAT_PROCESSORS = {
     "markdown": load_markdown_files,
     "json": load_json_files,
     "text": load_text_files,
+    "docx": load_docx_files,
 }
 
 
@@ -56,7 +61,8 @@ def load_documents(
         allowed_formats = _FORMAT_VERSIONS.keys()
 
     logger.debug(
-        f"Loading documents from {folder_path} with allowed formats {', '.join(allowed_formats)}"
+        f"Loading documents from {folder_path} with allowed formats"
+        f" {', '.join(allowed_formats)}"
     )
 
     documents = {}

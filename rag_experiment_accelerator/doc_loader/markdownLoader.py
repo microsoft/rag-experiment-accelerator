@@ -1,5 +1,8 @@
-from rag_experiment_accelerator.doc_loader.structuredLoader import load_structured_files
 from langchain.document_loaders import UnstructuredMarkdownLoader
+
+from rag_experiment_accelerator.doc_loader.structuredLoader import (
+    load_structured_files,
+)
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -27,6 +30,7 @@ def load_markdown_files(
     logger.debug("Loading markdown files")
 
     return load_structured_files(
+        file_format="MARKDOWN",
         language="markdown",
         loader=UnstructuredMarkdownLoader,
         folder_path=folder_path,

@@ -6,20 +6,20 @@ This document provides an overview of the scripts that are used to run the RAG E
 Before running the scripts, you need to:
 
 - Install the required packages and dependencies by following the instructions in the installation guide.
-- Set up the required resources, such as Azure Cognitive Search, Azure ML Studio, and Azure OpenAI by following the steps in the [required resources guide](/docs/environment-variables.md#required-resources).
+- Set up the required resources, such as Azure AI Search, Azure ML Studio, and Azure OpenAI by following the steps in the [required resources guide](/docs/environment-variables.md#required-resources).
 - Create a `.env` file that contains the environment variables for the resources, such as subscription ID, resource group name, and service credentials. For more information on the `.env` file, see the [environment variables guide](/docs/environment-variables.md#environment-variables).
 
 ## 01_Index.py
-This script creates and populates a search index in your Azure Cognitive Search resource.
+This script creates and populates a search index in your Azure AI Search resource.
 
 Inputs:
 
-- A `/data` folder that contains the documents that you want to index. The `/data` folder can have four subfolders for different document formats: pdf, html, markdown, and text. For more information on how the documents are loaded, see the [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py) file.
+- A `/data` folder that contains the documents that you want to index. The `/data` folder (and its subfolders) can have documents in the following formats: PDF, HTML, Markdown, Text, JSON and Word (DOCX). For more information on how the documents are loaded, see the [documentLoader.py](/rag_experiment_accelerator/doc_loader/documentLoader.py) file.
 
 Outputs:
 
 - A `artifacts/generated_index_names.jsonl` file that contains the names of the generated search indexes.
-- A populated search index in your Azure Cognitive Search resource that contains the indexed documents and their metadata.
+- A populated search index in your Azure AI Search resource that contains the indexed documents and their metadata.
 
 ## 02_qa_generation.py
 This script generates question-answer pairs from the indexed documents using the RAG model.
@@ -38,7 +38,7 @@ This script queries the search index using the generated question-answer pairs a
 Inputs:
 
 - The `artifacts/eval_data.jsonl` file from the previous step.
-- You can choose to provide your own `.jsonl` file (with same format as the one generated in the previous step) as input and update `search_config.json` with the full path of your file in the `eval_data_jsonl_file_path` field.
+- You can choose to provide your own `.jsonl` file (with same format as the one generated in the previous step) as input and update `config.json` with the full path of your file in the `eval_data_jsonl_file_path` field.
 - `prompts_config.json` (optional)
   - You can provide a custom prompt to be used as the main prompt for the questions generated to search the data. The custom prompt can be provided as a string as follows:
 
@@ -50,7 +50,7 @@ Inputs:
 
 Outputs:
 
-- A `artifacts/outputs/<CONFIG_VALUES>.jsonl` file that contains a list of JSON objects. Each JSON object has eleven fields: `actual`, `expected`, and nine fields relating to configuration information. The name of the output file is based on the values in the `search_config.json` file.
+- A `artifacts/outputs/<CONFIG_VALUES>.jsonl` file that contains a list of JSON objects. Each JSON object has eleven fields: `actual`, `expected`, and nine fields relating to configuration information. The name of the output file is based on the values in the `config.json` file.
 - The same output file is also uploaded to Azure Machine Learning Studio under `Assets -> Data`.
 
 ## 04_evaluation.py

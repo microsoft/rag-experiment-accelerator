@@ -1,13 +1,13 @@
+import ast
 import json
 import os
 import warnings
 from datetime import datetime
-from typing import List
 
-import openai
 import evaluate
 import mlflow
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 import spacy
@@ -15,25 +15,16 @@ import textdistance
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
 from numpy import mean
-
-import ast
-import plotly.express as px
-
-from langchain.prompts import ChatPromptTemplate
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
-from langchain.schema.messages import BaseMessage
-
-from rag_experiment_accelerator.llm.prompts import (
-    context_precision_instruction,
-    answer_relevance_instruction,
-)
-from rag_experiment_accelerator.config import Config
-
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.llm.prompts import (
+    llm_answer_relevance_instruction,
+    llm_context_precision_instruction,
+)
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -171,58 +162,11 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     return int(sum(differences) / len(differences))
 
 
-from sentence_transformers import SentenceTransformer
-
-
 def semantic_compare_values(
-    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
-) -> None:
-    """
-    Computes the semantic similarity score between two values using a pre-trained SentenceTransformer model.
-
-    Args:
-        value1 (str): The first value to compare.
-        value2 (str): The second value to compare.
-        differences (list[float]): A list to store the similarity score between the two values.
-        model_type (SentenceTransformer): A pre-trained SentenceTransformer model to encode the values.
-
-    Returns:
-        None
-    """
-    embedding1 = model_type.encode([str(value1)])
-    embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1, embedding2)
-
-    differences.append(similarity_score * 100)
-
-
-from sentence_transformers import SentenceTransformer
-
-
-def semantic_compare_values(
-    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
-) -> None:
-    """
-    Computes the semantic similarity score between two values using the provided SentenceTransformer model.
-
-    Args:
-        value1 (str): The first value to compare.
-        value2 (str): The second value to compare.
-        differences (list[float]): A list to append the similarity score to.
-        model_type (SentenceTransformer): The SentenceTransformer model to use for encoding the values.
-
-    Returns:
-        None
-    """
-    embedding1 = model_type.encode([str(value1)])
-    embedding2 = model_type.encode([str(value2)])
-    similarity_score = cosine_similarity(embedding1, embedding2)
-
-    differences.append(similarity_score * 100)
-
-
-def semantic_compare_values(
-    value1: str, value2: str, differences: list[float], model_type: SentenceTransformer
+    value1: str,
+    value2: str,
+    differences: list[float],
+    model_type: SentenceTransformer,
 ) -> None:
     """
     Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
@@ -348,29 +292,7 @@ def lcsstr(value1, value2):
     return score
 
 
-# Takes in BaseMessage as prompt
-def get_result_from_model(prompt: list[List[BaseMessage]]):
-    config = Config()
-    chat_model = None
-
-    if config.OpenAICredentials.OPENAI_API_TYPE == "azure":
-        chat_model = AzureChatOpenAI(
-            deployment_name=config.EVAL_MODEL_NAME,
-            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
-        )
-    else:
-        chat_model = ChatOpenAI(
-            model=config.EVAL_MODEL_NAME,
-            openai_api_base=config.OpenAICredentials.OPENAI_ENDPOINT,
-        )
-
-    result = chat_model.generate(prompt)
-    result = result.generations
-    # list of 1 because we're only getting 1 generation with 1 input
-    return result[0][0].text
-
-
-def answer_relevance(question, answer):
+def llm_answer_relevance(question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -384,23 +306,21 @@ def answer_relevance(question, answer):
         double: The relevancy score generated between the question and answer.
 
     """
+    config = Config()
+    result = ResponseGenerator(
+        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
 
-    human_prompt = answer_relevance_instruction.format(answer=answer)
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
-
-    logger.info(f"Generating results")
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
     embedding2 = model.encode([str(result)])
     similarity_score = cosine_similarity(embedding1, embedding2)
 
-    return similarity_score[0][0]
+    return int(similarity_score[0][0] * 100)
 
 
-def context_precision(question, context):
+def llm_context_precision(question, context):
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -411,16 +331,15 @@ def context_precision(question, context):
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
-    human_prompt = context_precision_instruction.format(
-        question=question, context=context
-    )
-    prompt = [ChatPromptTemplate.from_messages([human_prompt]).format_messages()]
-
-    result = get_result_from_model(prompt)
+    config = Config()
+    prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
+    result = ResponseGenerator(
+        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    ).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
 
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
-        return 1
+        return 100
 
     return 0
 
@@ -561,8 +480,8 @@ def compute_metrics(actual, expected, context, metric_type):
             - "bert_large_nli_stsb_mean_tokens": BERT-based semantic similarity (large model, STS-B, mean tokens)
             - "bert_distilbert_base_nli_stsb_mean_tokens": BERT-based semantic similarity (DistilBERT base model, STS-B, mean tokens)
             - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
-            - "answer_relevance": How relevant the answer is to the question
-            - "context_precision": How relevant the provided context is to the question
+            - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
+            - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -619,10 +538,10 @@ def compute_metrics(actual, expected, context, metric_type):
         score = compare_semantic_document_values(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
-    elif metric_type == "answer_relevance":
-        score = answer_relevance(actual, expected)
-    elif metric_type == "context_precision":
-        score = context_precision(actual, context)
+    elif metric_type == "llm_answer_relevance":
+        score = llm_answer_relevance(actual, expected)
+    elif metric_type == "llm_context_precision":
+        score = llm_context_precision(actual, context)
     else:
         pass
 
@@ -636,7 +555,7 @@ def evaluate_prompts(
     client,
     chunk_size,
     chunk_overlap,
-    embedding_dimension,
+    embedding_model,
     ef_construction,
     ef_search,
 ):
@@ -658,10 +577,13 @@ def evaluate_prompts(
         None
     """
     try:
-        eval_score_folder = "./artifacts/eval_score"
+        eval_score_folder = f"{config.artifacts_dir}/eval_score"
         os.makedirs(eval_score_folder, exist_ok=True)
     except Exception as e:
-        logger.error(f"Unable to create the '{eval_score_folder}' directory. Please ensure you have the proper permissions and try again")
+        logger.error(
+            f"Unable to create the '{eval_score_folder}' directory. Please"
+            " ensure you have the proper permissions and try again"
+        )
         raise e
 
     metric_types = config.METRIC_TYPES
@@ -725,7 +647,10 @@ def evaluate_prompts(
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
-    for search_type, scores_at_k in total_precision_scores_by_search_type.items():
+    for (
+        search_type,
+        scores_at_k,
+    ) in total_precision_scores_by_search_type.items():
         for k, scores in scores_at_k.items():
             avg_at_k = mean(scores)
             # not sure if this would be problematic or not.
@@ -766,7 +691,7 @@ def evaluate_prompts(
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
-        f"artifacts/eval_score/{formatted_datetime}_ap_scores_at_k_test.csv",
+        f"{eval_score_folder}/{formatted_datetime}_ap_scores_at_k_test.csv",
         index=False,
     )
     plot_apk_scores(ap_scores_df, run_id, client)
@@ -774,7 +699,8 @@ def evaluate_prompts(
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        f"artifacts/eval_score/{formatted_datetime}_map_scores_test.csv", index=False
+        f"{eval_score_folder}/{formatted_datetime}_map_scores_test.csv",
+        index=False,
     )
     plot_map_scores(map_scores_df, run_id, client)
 
@@ -787,7 +713,8 @@ def evaluate_prompts(
     mlflow.log_param("retrieve_num_of_documents", retrieve_num_of_documents)
     mlflow.log_param("cross_encoder_at_k", cross_encoder_at_k)
     mlflow.log_param("chunk_overlap", chunk_overlap)
-    mlflow.log_param("embedding_dimension", embedding_dimension)
+    mlflow.log_param("embedding_dimension", embedding_model.dimension)
+    mlflow.log_param("embedding_model_name", embedding_model.name)
     mlflow.log_param("ef_construction", ef_construction)
     mlflow.log_param("ef_search", ef_search)
     mlflow.log_param("run_metrics", sum_dict)
