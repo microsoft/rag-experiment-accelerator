@@ -107,20 +107,6 @@ Question: When is the scheduled launch date and time for the PSLV-C56 mission, a
 
 llm_context_precision_instruction = "Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer."
 
-llm_answer_correctness_instruction = """Extract statements following from a given question and ground truth answer:
-Question:What powers the sun and what is its primary function?
-Answer: The sun is powered by nuclear fission, similar to nuclear reactors on Earth, and its primary function is to provide light to the solar system.
-Ground truth: The sun is actually powered by nuclear fusion, not fission. In its core, hydrogen atoms fuse to form helium, releasing a tremendous amount of energy. This energy is what lights up the sun and provides heat and light, essential for life on Earth. The sun's light also plays a critical role in Earth's climate system and helps to drive the weather and ocean currents.
-Extracted statements:
-[
-{{
-  "statements that are present in both the answer and the ground truth": ["The sun's primary function is to provide light"],
-  "statements present in the answer but not found in the ground truth": ["The sun is powered by nuclear fission", "similar to nuclear reactors on Earth"],
-  "relevant statements found in the ground truth but omitted in the answer": ["The sun is powered by nuclear fusion, not fission", "In its core, hydrogen atoms fuse to form helium, releasing a tremendous amount of energy", "This energy provides heat and light, essential for life on Earth", "The sun's light plays a critical role in Earth's climate system", "The sun helps to drive the weather and ocean currents"]
-}}
-]
-"""
-
 llm_context_recall_instruction =  """ Given a context, and an answer, analyze each sentence in the answer and classify if the sentence can be 
 attributed to the given context or not. 
 
