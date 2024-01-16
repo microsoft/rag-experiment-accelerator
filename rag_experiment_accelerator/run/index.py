@@ -54,7 +54,6 @@ def run(config_dir: str, data_dir: str = "data") -> None:
                             ef_search,
                         )
                         logger.info(f"Creating Index with name: {index_name}")
-                        delete_index(index_client, index_name)
                         create_acs_index(
                             service_endpoint,
                             index_name,
