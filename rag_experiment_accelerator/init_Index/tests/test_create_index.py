@@ -6,7 +6,10 @@ from rag_experiment_accelerator.init_Index.create_index import create_acs_index
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
+    HnswParameters,
+    HnswVectorSearchAlgorithmConfiguration,
     SearchField,
+    SearchIndex,
 )
 
 class TestCreateIndex(unittest.TestCase):
@@ -63,10 +66,10 @@ class TestCreateIndex(unittest.TestCase):
         create_acs_index(service_endpoint, index_name, key, dimension, ef_construction, ef_search, analyzers)                
         mock_create_or_update_index.assert_called()
         args, kwargs = mock_create_or_update_index.call_args 
-        searchable_fields = mock_seearch_field.call_args_list
+        index_parameters = mock_seearch_field.call_args_list
         content_description_call = None
 
-        for call in searchable_fields:
+        for call in index_parameters:
             if call.kwargs['name'] == 'contentDescription':
                 content_description_call = call
                 break
@@ -93,10 +96,10 @@ class TestCreateIndex(unittest.TestCase):
         }
         create_acs_index(service_endpoint, index_name, key, dimension, ef_construction, ef_search, analyzers)
         args, kwargs = mock_create_or_update_index.call_args 
-        searchable_fields = mock_seearch_field.call_args_list
+        index_parameters = mock_seearch_field.call_args_list
         description_call = None
 
-        for call in searchable_fields:
+        for call in index_parameters:
             if call.kwargs['name'] == 'description':
                 description_call = call
                 break
@@ -190,7 +193,64 @@ class TestCreateIndex(unittest.TestCase):
         try:
             create_acs_index("test_endpoint", "test_index", "test_key", 128, 100, 100, {})
         except Exception:
-            self.fail("create_acs_index raised Exception unexpectedly!")                
+            self.fail("create_acs_index raised Exception unexpectedly!")  
+        
+    # Test that create_acs_index calls create_or_update_index with the correct parameters             
+    @patch.object(AzureKeyCredential, '__init__', return_value=None)
+    @patch.object(HnswParameters,'__init__', return_value=None)
+    @patch.object(HnswVectorSearchAlgorithmConfiguration, '__init__', return_value=None)
+    @patch.object(SearchIndex, '__init__', return_value=None)
+    @patch.object(SearchField, '__init__', return_value=None)
+    @patch.object(SearchIndexClient, 'create_or_update_index', return_value=mock_result)
+    def test_dimension_setting(self, 
+                               mock_create_or_update_index, 
+                               mock_search_field, mock_search_index, 
+                               mock_hnsw_vector_search_algorithm_configuration,
+                               mock_hnsw_parameters,
+                               mock_azure_key_credential):
+        # Test parameters
+        service_endpoint = "test_endpoint"
+        index_name = "test_index"
+        key = "test_key"
+        dimension = 128
+        ef_construction = 100
+        ef_search = 100
+        analyzers = {
+            "index_analyzer_name": None,
+            "search_analyzer_name": None,
+            "analyzer_name": None,
+            "tokenizers": None,
+            "token_filters": None,
+            "char_filters": None
+        }           
+        # Call the function with the test parameters
+        create_acs_index(service_endpoint, index_name, key, dimension, ef_construction, ef_search, analyzers)
+        # Assert that the 'create_or_update_index' method was called with the correct dimension
+        args, kwargs = mock_create_or_update_index.call_args 
+        searchable_fields = mock_search_field.call_args_list
+        index_parameters = mock_search_index.call_args_list
+        vector_search_dimensions = None
+        index_name_parameter = None
 
+        for call in searchable_fields:
+            if call.kwargs['name'] == 'contentVector':
+                vector_search_dimensions = call
+                break   
+
+        for call in index_parameters:
+            if 'name' in call.kwargs:
+                index_name_parameter = call.kwargs['name']
+                break    
+                        
+        for call in mock_search_index.call_args_list:
+            if 'vector_search' in call.kwargs:
+                vector_search = call.kwargs['vector_search']
+                break      
+        self.assertIsNotNone(index_name_parameter)            
+        self.assertIsNotNone(vector_search)        
+        algorithms = vector_search.algorithms
+        mock_hnsw_parameters.assert_called_with(m=4, ef_construction=ef_construction, ef_search=ef_search, metric='cosine') 
+        self.assertIsNotNone(vector_search_dimensions)                    
+                
 if __name__ == '__main__':
     unittest.main()
