@@ -18,22 +18,20 @@ def test_load_json_files():
         folder_path="rag_experiment_accelerator/doc_loader/tests/test_data/json",
         chunk_size=1000,
         overlap_size=200,
-        glob_patterns=["good.json"],
+        glob_patterns=["valid.json"],
         loader_kwargs={
             "keys_to_load": keys_to_load,
         },
+    )
+
+    file_path = os.path.abspath(
+        "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
     )
     assert (
         docs[0].page_content
         == "[{'content': 'This is the content for item 1.', 'title': 'Title TEST 1'}, {'content': 'This is the content for item 2.', 'title': 'Title 2'}, {'content': 'This is the content for item 3.', 'title': 'Title 3'}, {'content': 'This is the content for item 4.', 'title': 'Title 4'}, {'content': 'This is the content for item 5.', 'title': 'Title 5'}, {'content': 'This is the content for item 6.', 'title': 'Title 6'}]"
     )
-    assert (
-        docs[0]
-        .metadata["source"]
-        .endswith(
-            "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.good.json"
-        )
-    )
+    assert docs[0].metadata["source"] == file_path
 
 
 def test_load_json_files_raises_invalid_keys():
