@@ -39,16 +39,15 @@ def create_acs_index(
         credential = AzureKeyCredential(key)
 
         # Apply checks on analyzer settings. Search analyzer and index analyzer must be set together
-        index_analyzer = (
-            analyzers["index_analyzer_name"]
-            if analyzers.get("index_analyzer_name")
-            else ""
-        )
-        search_analyzer = (
-            analyzers["search_analyzer_name"]
-            if analyzers.get("search_analyzer_name")
-            else ""
-        )
+        index_analyzer_name = analyzers.get("index_analyzer_name")
+        search_analyzer_name = analyzers.get("search_analyzer_name")
+
+        if bool(index_analyzer_name) != bool(search_analyzer_name):
+            raise ValueError("Both 'index_analyzer_name' and 'search_analyzer_name' must be set together")
+
+        index_analyzer = index_analyzer_name if index_analyzer_name else ""
+        search_analyzer = search_analyzer_name if search_analyzer_name else ""
+        
         # Analyzer can only be used if neither search analyzer or index analyzer are set
         if analyzers.get("analyzer_name") and (analyzers.get("search_analyzer_name") or analyzers.get("index_analyzer_name")):
             raise ValueError(

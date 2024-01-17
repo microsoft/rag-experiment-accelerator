@@ -98,36 +98,59 @@ class TestCreateIndex(unittest.TestCase):
                   return_value=mock_result)
     def test_analyzer_with_index_and_search_analyzer(
             self, mock_create_or_update_index, mock_seearch_field, mock_azure_key_credential):
-        service_endpoint = "test_endpoint"
-        index_name = "test_index"
-        key = "test_key"
-        dimension = 128
-        ef_construction = 100
-        ef_search = 100
-        analyzers = {
-            "analyzer_name": None,
-            "index_analyzer_name": "test_index_analyzer",
-            "search_analyzer_name": "test_search_analyzer",
-        }
-        create_acs_index(service_endpoint, index_name, key,
-                         dimension, ef_construction, ef_search, analyzers)
-        args, kwargs = mock_create_or_update_index.call_args
-        index_parameters = mock_seearch_field.call_args_list
-        description_call = None
+        with self.assertRaises(ValueError):
+            service_endpoint = "test_endpoint"
+            index_name = "test_index"
+            key = "test_key"
+            dimension = 128
+            ef_construction = 100
+            ef_search = 100
+            analyzers = {
+                "analyzer_name": None,
+                "index_analyzer_name": "test_index_analyzer",
+                "search_analyzer_name": "test_search_analyzer",
+            }
+            create_acs_index(service_endpoint, index_name, key,
+                            dimension, ef_construction, ef_search, analyzers)
+            args, kwargs = mock_create_or_update_index.call_args
+            index_parameters = mock_seearch_field.call_args_list
+            description_call = None
 
-        for call in index_parameters:
-            if call.kwargs['name'] == 'description':
-                description_call = call
-                break
+            for call in index_parameters:
+                if call.kwargs['name'] == 'description':
+                    description_call = call
+                    break
 
-        self.assertIsNotNone(description_call)
-        # Access the analyzer attributes of the call
-        search_analyzer_name = description_call.kwargs.get(
-            'search_analyzer_name')
-        index_analyzer_name = description_call.kwargs.get(
-            'index_analyzer_name')
-        self.assertEqual(index_analyzer_name, "test_index_analyzer")
-        self.assertEqual(search_analyzer_name, "test_search_analyzer")
+            self.assertIsNotNone(description_call)
+            # Access the analyzer attributes of the call
+            search_analyzer_name = description_call.kwargs.get(
+                'search_analyzer_name')
+            index_analyzer_name = description_call.kwargs.get(
+                'index_analyzer_name')
+            self.assertEqual(index_analyzer_name, "test_index_analyzer")
+            self.assertEqual(search_analyzer_name, "test_search_analyzer")
+            
+            # Test if only one of index_analyzer_name or search_analyzer_name is set.
+            analyzers = {
+                    "analyzer_name": None,
+                    "index_analyzer_name": None,
+                    "search_analyzer_name": "test_search_analyzer",
+                }
+            create_acs_index(service_endpoint, index_name, key,
+                                dimension, ef_construction, ef_search, analyzers)
+            self.assertRaises(Exception, create_acs_index, service_endpoint,
+                                index_name, key, dimension, ef_construction, ef_search, analyzers)     
+             
+            analyzers = {
+                    "analyzer_name": None,
+                    "index_analyzer_name": "test_index_analyzer",
+                    "search_analyzer_name": None,
+                }
+            create_acs_index(service_endpoint, index_name, key,
+                                dimension, ef_construction, ef_search, analyzers)
+            self.assertRaises(Exception, create_acs_index, service_endpoint,
+                                index_name, key, dimension, ef_construction, ef_search, analyzers)                   
+
 
     # Test that create_acs_index raiser error when analyzer is set together
     # with either searchAnalyzer or indexAnalyzer
