@@ -318,6 +318,7 @@ def run(config_dir: str):
                                         is_multi_question = False
 
                                 evaluation_content = user_prompt + qna_context
+
                                 try:
                                     for s_v in config.SEARCH_VARIANTS:
                                         search_evals = []
