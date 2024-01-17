@@ -6,11 +6,11 @@ This document provides an overview of the scripts that are used to run the RAG E
 Before running the scripts, you need to:
 
 - Install the required packages and dependencies by following the instructions in the installation guide.
-- Set up the required resources, such as Azure Cognitive Search, Azure ML Studio, and Azure OpenAI by following the steps in the [required resources guide](/docs/environment-variables.md#required-resources).
+- Set up the required resources, such as Azure AI Search, Azure ML Studio, and Azure OpenAI by following the steps in the [required resources guide](/docs/environment-variables.md#required-resources).
 - Create a `.env` file that contains the environment variables for the resources, such as subscription ID, resource group name, and service credentials. For more information on the `.env` file, see the [environment variables guide](/docs/environment-variables.md#environment-variables).
 
 ## 01_Index.py
-This script creates and populates a search index in your Azure Cognitive Search resource.
+This script creates and populates a search index in your Azure AI Search resource.
 
 Inputs:
 
@@ -19,7 +19,7 @@ Inputs:
 Outputs:
 
 - A `artifacts/generated_index_names.jsonl` file that contains the names of the generated search indexes.
-- A populated search index in your Azure Cognitive Search resource that contains the indexed documents and their metadata.
+- A populated search index in your Azure AI Search resource that contains the indexed documents and their metadata.
 
 ## 02_qa_generation.py
 This script generates question-answer pairs from the indexed documents using the RAG model.
