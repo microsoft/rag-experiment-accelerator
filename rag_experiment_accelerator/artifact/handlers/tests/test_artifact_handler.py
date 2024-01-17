@@ -22,6 +22,21 @@ def test_loads():
     assert loaded_data == [data]
 
 
+def test_save_dict():
+    mock_writer = Mock()
+    mock_loader = Mock()
+
+    handler = ArtifactHandler("data_location", writer=mock_writer, loader=mock_loader)
+
+    dict_to_save = {"testing": 123, "mic": "check"}
+    artifact_name = "test.jsonl"
+    handler.save_dict(dict_to_save, "test.jsonl")
+    path = f"{handler.data_location}/{artifact_name}"
+
+    assert mock_writer.write.call_count == 1
+    assert mock_writer.write.called_with(dict_to_save, path)
+
+
 def test_loads_raises_no_data_returned():
     mock_writer = Mock()
     mock_loader = Mock()
