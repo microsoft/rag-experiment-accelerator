@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 def run(config_dir: str, data_dir: str = "data") -> None:
     """
-    Runs the main experiment loop, which chunks and uploads data to Azure Cognitive Search indexes based on the configuration specified in the Config class.
+    Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
 
     Returns:
         None
