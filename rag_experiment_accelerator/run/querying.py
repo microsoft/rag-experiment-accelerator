@@ -22,6 +22,7 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
     we_need_multiple_questions,
 )
+from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
@@ -67,10 +68,10 @@ def query_acs(
     retrieve_num_of_documents: str,
 ):
     """
-    Queries the Azure Cognitive Search service using the specified search client and search parameters.
+    Queries the Azure AI Search service using the specified search client and search parameters.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        search_client (SearchClient): The Azure AI Search client to use for querying the service.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         user_prompt (str): The user's search query.
         s_v (str): The version of the search service to use.
@@ -138,12 +139,12 @@ def query_and_eval_acs(
     evaluator: SpacyEvaluator,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
-    Queries the Azure Cognitive Search service using the provided search client and parameters, and evaluates the search
+    Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
     results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
     the evaluation results.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client to use for querying the service.
+        search_client (SearchClient): The Azure AI Search client to use for querying the service.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query to execute.
         search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
@@ -181,11 +182,11 @@ def query_and_eval_acs_multi(
     main_prompt_instruction: str,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
-    Queries the Azure Cognitive Search service with multiple questions, evaluates the results, and generates a response
+    Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
     using OpenAI's GPT-3 model.
 
     Args:
-        search_client (SearchClient): The Azure Cognitive Search client.
+        search_client (SearchClient): The Azure AI Search client.
         embedding_model (EmbeddingModel): The model used to generate the embeddings.
         questions (list[str]): A list of questions to query the search service with.
         original_prompt (str): The original prompt to generate the response from.
@@ -293,22 +294,28 @@ def run(config_dir: str):
                                     config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                 )
                                 if is_multi_question:
-                                    responses = json.loads(
-                                        we_need_multiple_questions(
+                                    try:
+                                        llm_response = we_need_multiple_questions(
                                             user_prompt,
                                             config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                         )
-                                    )
-                                    new_questions = []
-                                    if isinstance(responses, dict):
-                                        new_questions = responses["questions"]
-                                    else:
-                                        for response in responses:
-                                            if "question" in response:
-                                                new_questions.append(
-                                                    response["question"]
-                                                )
-                                    new_questions.append(user_prompt)
+                                        responses = json.loads(llm_response)
+                                        new_questions = []
+                                        if isinstance(responses, dict):
+                                            new_questions = responses["questions"]
+                                        else:
+                                            for response in responses:
+                                                if "question" in response:
+                                                    new_questions.append(
+                                                        response["question"]
+                                                    )
+                                        new_questions.append(user_prompt)
+                                    except ContentFilteredException as e:
+                                        logger.error(
+                                            f"Content Filtered. Unable to generate multiple questions for: {user_prompt}",
+                                            exc_info=e,
+                                        )
+                                        is_multi_question = False
 
                                 evaluation_content = user_prompt + qna_context
                                 try:
