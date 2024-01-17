@@ -111,7 +111,7 @@ class TestCreateIndex(unittest.TestCase):
                 "search_analyzer_name": "test_search_analyzer",
             }
             create_acs_index(service_endpoint, index_name, key,
-                            dimension, ef_construction, ef_search, analyzers)
+                             dimension, ef_construction, ef_search, analyzers)
             args, kwargs = mock_create_or_update_index.call_args
             index_parameters = mock_seearch_field.call_args_list
             description_call = None
@@ -129,31 +129,31 @@ class TestCreateIndex(unittest.TestCase):
                 'index_analyzer_name')
             self.assertEqual(index_analyzer_name, "test_index_analyzer")
             self.assertEqual(search_analyzer_name, "test_search_analyzer")
-            
+
             # Test if only one of index_analyzer_name or search_analyzer_name is set.
             analyzers = {
-                    "analyzer_name": None,
-                    "index_analyzer_name": None,
-                    "search_analyzer_name": "test_search_analyzer",
-                }
+                "analyzer_name": None,
+                "index_analyzer_name": None,
+                "search_analyzer_name": "test_search_analyzer",
+            }
             create_acs_index(service_endpoint, index_name, key,
-                                dimension, ef_construction, ef_search, analyzers)
+                             dimension, ef_construction, ef_search, analyzers)
             self.assertRaises(Exception, create_acs_index, service_endpoint,
-                                index_name, key, dimension, ef_construction, ef_search, analyzers)     
-             
-            analyzers = {
-                    "analyzer_name": None,
-                    "index_analyzer_name": "test_index_analyzer",
-                    "search_analyzer_name": None,
-                }
-            create_acs_index(service_endpoint, index_name, key,
-                                dimension, ef_construction, ef_search, analyzers)
-            self.assertRaises(Exception, create_acs_index, service_endpoint,
-                                index_name, key, dimension, ef_construction, ef_search, analyzers)                   
+                              index_name, key, dimension, ef_construction, ef_search, analyzers)
 
+            analyzers = {
+                "analyzer_name": None,
+                "index_analyzer_name": "test_index_analyzer",
+                "search_analyzer_name": None,
+            }
+            create_acs_index(service_endpoint, index_name, key,
+                             dimension, ef_construction, ef_search, analyzers)
+            self.assertRaises(Exception, create_acs_index, service_endpoint,
+                              index_name, key, dimension, ef_construction, ef_search, analyzers)
 
     # Test that create_acs_index raiser error when analyzer is set together
     # with either searchAnalyzer or indexAnalyzer
+
     @patch.object(AzureKeyCredential, '__init__', return_value=None)
     @patch.object(SearchIndexClient, 'create_or_update_index',
                   return_value=mock_result)
