@@ -57,6 +57,7 @@ def test_save(mock_artifact_handler_save_dict):
         search_type="search_type1",
         search_evals=[],
         context="context1",
+        question="question1",
     )
 
     handler = QueryOutputHandler(data_location="data_location")
@@ -83,6 +84,7 @@ def test_load(mock_artifact_handler_load):
         search_type="search_type1",
         search_evals=[],
         context="context1",
+        question="question1",
     )
 
     mock_artifact_handler_load.return_value = [data.__dict__, data.__dict__]
