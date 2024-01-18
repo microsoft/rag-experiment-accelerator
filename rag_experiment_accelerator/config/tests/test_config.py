@@ -74,3 +74,82 @@ def test_config_init():
     aoai_embedding_model = config.embedding_models[1]
     assert aoai_embedding_model.name == "text-embedding-ada-002"
     assert aoai_embedding_model.dimension == 1536
+
+
+# validation tests for configuration parameters
+def test_maximum_chunk_limit():
+    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+        mock_config_data = json.load(file)
+
+    mock_config_data["chunking"]["chunk_size"] = 1000
+    mock_config_data["chunking"]["overlap_size"] = 1000
+
+    with open(f"{get_test_config_dir()}/config.json", "w") as file:
+        json.dump(mock_config_data, file)
+
+    config = Config(get_test_config_dir())
+
+    assert config.CHUNK_SIZES == [512]
+    assert config.OVERLAP_SIZES == [128]
+
+
+def test_chunk_size_greater_than_overlap_size():
+    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+        mock_config_data = json.load(file)
+
+    mock_config_data["chunking"]["chunk_size"] = 128
+    mock_config_data["chunking"]["overlap_size"] = 512
+
+    with open(f"{get_test_config_dir()}/config.json", "w") as file:
+        json.dump(mock_config_data, file)
+
+    config = Config(get_test_config_dir())
+
+    assert config.CHUNK_SIZES == [128]
+    assert config.OVERLAP_SIZES == [128]
+
+
+def test_chunk_size_less_than_overlap_size():
+    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+        mock_config_data = json.load(file)
+
+    mock_config_data["chunking"]["chunk_size"] = 128
+    mock_config_data["chunking"]["overlap_size"] = 64
+
+    with open(f"{get_test_config_dir()}/config.json", "w") as file:
+        json.dump(mock_config_data, file)
+
+    config = Config(get_test_config_dir())
+
+    assert config.CHUNK_SIZES == [128]
+    assert config.OVERLAP_SIZES == [64]
+
+
+# efConstruction must be between 100 and 1000
+def test_validate_efConstruction():
+    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+        mock_config_data = json.load(file)
+
+    mock_config_data["ef_construction"] = 10000
+
+    with open(f"{get_test_config_dir()}/config.json", "w") as file:
+        json.dump(mock_config_data, file)
+
+    config = Config(get_test_config_dir())
+
+    assert config.EF_CONSTRUCTIONS == [10000]
+
+
+# efSearch must be between 100 and 1000
+def test_validate_efSearch():
+    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+        mock_config_data = json.load(file)
+
+    mock_config_data["ef_search"] = 10000
+
+    with open(f"{get_test_config_dir()}/config.json", "w") as file:
+        json.dump(mock_config_data, file)
+
+    config = Config(get_test_config_dir())
+
+    assert config.EF_SEARCHES == [10000]
