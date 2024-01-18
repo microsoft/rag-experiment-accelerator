@@ -15,6 +15,7 @@ class QueryOutput:
         search_type (str): The type of search.
         search_evals (list): The evaluations for search.
         context (str): The context of the query.
+        question (str): The question of the query.
     """
 
     def __init__(
@@ -31,6 +32,7 @@ class QueryOutput:
         search_type: str,
         search_evals: list,
         context: str,
+        question: str,
     ):
         self.rerank = rerank
         self.rerank_type = rerank_type
@@ -44,3 +46,4 @@ class QueryOutput:
         self.search_type = search_type
         self.search_evals = search_evals
         self.context = context
+        self.question = question
