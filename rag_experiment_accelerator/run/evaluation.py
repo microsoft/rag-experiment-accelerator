@@ -52,11 +52,10 @@ def run(config_dir: str):
                             ef_search,
                         )
                         logger.info(f"Evaluating Index: {index_name}")
-                        config.artifacts_dir
-                        write_path = f"{config.artifacts_dir}/outputs/eval_output_{index_name}.jsonl"
+
                         eval.evaluate_prompts(
                             exp_name=config.NAME_PREFIX,
-                            data_path=write_path,
+                            index_name=index_name,
                             config=config,
                             client=client,
                             chunk_size=chunk_size,
