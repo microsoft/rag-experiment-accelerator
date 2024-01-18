@@ -74,6 +74,8 @@ class Config:
         self.EVAL_DATA_JSONL_FILE_PATH = (
             f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
         )
+        self.QUERY_DATA_LOCATION = f"{self.artifacts_dir}/query_data"
+
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EF_CONSTRUCTIONS = data["ef_construction"]
