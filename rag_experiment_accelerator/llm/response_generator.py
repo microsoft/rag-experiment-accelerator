@@ -10,6 +10,7 @@ from tenacity import (
 )
 
 from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -46,8 +47,6 @@ class ResponseGenerator:
             {"role": "user", "content": prompt},
         ]
 
-        print(self.deployment_name, self.temperature)
-
         response = self._create_chat_completion_with_retry(
             model=self.deployment_name,
             messages=messages,
@@ -56,6 +55,9 @@ class ResponseGenerator:
 
         # TODO: It is possible that this will return None.
         #       We need to ensure that this is handled properly in the places where this function gets called.
+        if response.choices[0].finish_reason == "content_filter":
+            logger.error(f"response not ideal {response.choices[0].finish_reason}")
+            raise ContentFilteredException("Content was filtered.")
         return response.choices[0].message.content
 
     @retry(

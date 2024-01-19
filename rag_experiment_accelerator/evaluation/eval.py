@@ -1,5 +1,4 @@
 import ast
-import json
 import os
 import warnings
 from datetime import datetime
@@ -18,9 +17,14 @@ from numpy import mean
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
+    QueryOutputHandler,
+)
 from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.llm.prompts import (
     llm_answer_relevance_instruction,
+    llm_context_recall_instruction,
     llm_context_precision_instruction,
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
@@ -307,10 +311,13 @@ def llm_answer_relevance(question, answer):
 
     """
     config = Config()
-    result = ResponseGenerator(
-        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-    ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
-
+    try:
+        result = ResponseGenerator(
+            deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+        ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
+    except Exception as e:
+        logger.error(f"Unable to generate answer relevance score: {e}")
+        return 0
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
@@ -333,15 +340,64 @@ def llm_context_precision(question, context):
     """
     config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    result = ResponseGenerator(
-        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-    ).generate_response(sys_message=llm_context_precision_instruction, prompt=prompt)
-
+    try:
+        result = ResponseGenerator(
+            deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+        ).generate_response(
+            sys_message=llm_context_precision_instruction, prompt=prompt
+        )
+    except Exception as e:
+        logger.error(f"Unable to generate context precision score: {e}")
+        return 0
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if "Yes" in result:
         return 100
 
     return 0
+
+
+def llm_context_recall(question, groundtruth_answer, context):
+    """
+    Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+    Context_recall values range between 0 and 1, with higher values indicating better performance.
+    To estimate context recall from the ground truth answer, each sentence in the ground truth answer is analyzed to determine
+    whether it can be attributed to the retrieved context or not. In an ideal scenario, all sentences in the ground truth answer
+    should be attributable to the retrieved context. The formula for calculating context recall is as follows:
+    context_recall = GT sentences that can be attributed to context / nr sentences in GT
+
+    Args:
+        question (str): The question being asked
+        groundtruth_answer (str): The ground truth ("output_prompt")
+        context (str): The given context.
+
+    Returns:
+        double: The context recall score generated between the ground truth (expected) and context.
+    """
+    config = Config()
+
+    prompt = (
+        "\nquestion: "
+        + question
+        + "\ncontext: "
+        + context
+        + "\nanswer: "
+        + groundtruth_answer
+    )
+    result = ResponseGenerator(
+        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    ).generate_response(
+        sys_message=llm_context_recall_instruction,
+        prompt=prompt,
+        temperature=config.TEMPERATURE,
+    )
+    print(result)
+    good_response = '"Attributed": "1"'
+    bad_response = '"Attributed": "0"'
+
+    return (
+        result.count(good_response)
+        / (result.count(good_response) + result.count(bad_response))
+    ) * 100
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -458,7 +514,7 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(actual, expected, context, metric_type):
+def compute_metrics(question, actual, expected, context, metric_type):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -482,6 +538,7 @@ def compute_metrics(actual, expected, context, metric_type):
             - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
+            - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -542,6 +599,8 @@ def compute_metrics(actual, expected, context, metric_type):
         score = llm_answer_relevance(actual, expected)
     elif metric_type == "llm_context_precision":
         score = llm_context_precision(actual, context)
+    elif metric_type == "llm_context_recall":
+        score = llm_context_recall(question, expected, context)
     else:
         pass
 
@@ -549,22 +608,22 @@ def compute_metrics(actual, expected, context, metric_type):
 
 
 def evaluate_prompts(
-    exp_name,
-    data_path,
-    config,
-    client,
-    chunk_size,
-    chunk_overlap,
-    embedding_model,
-    ef_construction,
-    ef_search,
+    exp_name: str,
+    index_name: str,
+    config: Config,
+    client: mlflow.MlflowClient,
+    chunk_size: int,
+    chunk_overlap: int,
+    embedding_model: EmbeddingModel,
+    ef_construction: int,
+    ef_search: int,
 ):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
     Args:
         exp_name (str): Name of the experiment to log the results to.
-        data_path (str): Path to the file containing the prompts to evaluate.
+        index_name (str): The name of the index to use for evaluation.
         config (Config): The configuration settings to use for evaluation.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
@@ -598,52 +657,44 @@ def evaluate_prompts(
     total_precision_scores_by_search_type = {}
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
-    with open(data_path, "r") as file:
-        for line in file:
-            data = json.loads(line)
-            actual = data.get("actual")
-            expected = data.get("expected")
-            search_type = data.get("search_type")
-            rerank = data.get("rerank")
-            rerank_type = data.get("rerank_type")
-            crossencoder_model = data.get("crossencoder_model")
-            llm_re_rank_threshold = data.get("llm_re_rank_threshold")
-            retrieve_num_of_documents = data.get("retrieve_num_of_documents")
-            cross_encoder_at_k = data.get("cross_encoder_at_k")
-            question_count = data.get("question_count")
-            search_evals = data.get("search_evals")
-            context = data.get("context")
 
-            actual = remove_spaces(lower(actual))
-            expected = remove_spaces(lower(expected))
+    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
+    query_data_load = handler.load(index_name)
+    for data in query_data_load:
+        actual = remove_spaces(lower(data.actual))
+        expected = remove_spaces(lower(data.expected))
 
-            metric_dic = {}
+        metric_dic = {}
 
-            for metric_type in metric_types:
-                score = compute_metrics(actual, expected, context, metric_type)
-                metric_dic[metric_type] = score
-            metric_dic["actual"] = actual
-            metric_dic["expected"] = expected
-            metric_dic["search_type"] = search_type
-            data_list.append(metric_dic)
+        for metric_type in metric_types:
+            score = compute_metrics(
+                data.question, actual, expected, data.context, metric_type
+            )
+            metric_dic[metric_type] = score
+        metric_dic["question"] = data.question
+        metric_dic["context"] = data.context
+        metric_dic["actual"] = actual
+        metric_dic["expected"] = expected
+        metric_dic["search_type"] = data.search_type
+        data_list.append(metric_dic)
 
-            if not total_precision_scores_by_search_type.get(search_type):
-                total_precision_scores_by_search_type[search_type] = {}
-                map_scores_by_search_type[search_type] = []
-                average_precision_for_search_type[search_type] = []
-            for eval in search_evals:
-                scores = eval.get("precision_scores")
-                if scores:
-                    average_precision_for_search_type[search_type].append(mean(scores))
-                for i, score in enumerate(scores):
-                    if total_precision_scores_by_search_type[search_type].get(i + 1):
-                        total_precision_scores_by_search_type[search_type][
-                            i + 1
-                        ].append(score)
-                    else:
-                        total_precision_scores_by_search_type[search_type][i + 1] = [
-                            score
-                        ]
+        if not total_precision_scores_by_search_type.get(data.search_type):
+            total_precision_scores_by_search_type[data.search_type] = {}
+            map_scores_by_search_type[data.search_type] = []
+            average_precision_for_search_type[data.search_type] = []
+        for eval in data.search_evals:
+            scores = eval.get("precision_scores")
+            if scores:
+                average_precision_for_search_type[data.search_type].append(mean(scores))
+            for i, score in enumerate(scores):
+                if total_precision_scores_by_search_type[data.search_type].get(i + 1):
+                    total_precision_scores_by_search_type[data.search_type][
+                        i + 1
+                    ].append(score)
+                else:
+                    total_precision_scores_by_search_type[data.search_type][i + 1] = [
+                        score
+                    ]
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
@@ -667,7 +718,7 @@ def evaluate_prompts(
         mean_scores["mean"].append(mean(scores))
 
     run_id = mlflow.active_run().info.run_id
-    columns_to_remove = ["actual", "expected"]
+    columns_to_remove = ["question", "context", "actual", "expected"]
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
@@ -680,7 +731,7 @@ def evaluate_prompts(
 
     if isinstance(num_search_type, str):
         num_search_type = [num_search_type]
-    sum_all_columns = temp_df.sum() / (question_count * len(num_search_type))
+    sum_all_columns = temp_df.sum() / (data.question_count * len(num_search_type))
     sum_df = pd.DataFrame([sum_all_columns], columns=temp_df.columns)
 
     sum_dict = {}
@@ -704,14 +755,15 @@ def evaluate_prompts(
     )
     plot_map_scores(map_scores_df, run_id, client)
 
+    common_data = query_data_load[0]
     mlflow.log_param("chunk_size", chunk_size)
-    mlflow.log_param("question_count", question_count)
-    mlflow.log_param("rerank", rerank)
-    mlflow.log_param("rerank_type", rerank_type)
-    mlflow.log_param("crossencoder_model", crossencoder_model)
-    mlflow.log_param("llm_re_rank_threshold", llm_re_rank_threshold)
-    mlflow.log_param("retrieve_num_of_documents", retrieve_num_of_documents)
-    mlflow.log_param("cross_encoder_at_k", cross_encoder_at_k)
+    mlflow.log_param("question_count", common_data.question_count)
+    mlflow.log_param("rerank", common_data.rerank)
+    mlflow.log_param("rerank_type", common_data.rerank_type)
+    mlflow.log_param("crossencoder_model", common_data.crossencoder_model)
+    mlflow.log_param("llm_re_rank_threshold", common_data.llm_re_rank_threshold)
+    mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
+    mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
     mlflow.log_param("chunk_overlap", chunk_overlap)
     mlflow.log_param("embedding_dimension", embedding_model.dimension)
     mlflow.log_param("embedding_model_name", embedding_model.name)

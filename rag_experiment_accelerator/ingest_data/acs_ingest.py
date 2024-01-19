@@ -6,6 +6,7 @@ import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.prompts import (
     do_need_multiple_prompt_instruction,
     generate_qna_instruction_system_prompt,
@@ -98,8 +99,13 @@ def upload_data(
     )
     documents = []
     for i, chunk in enumerate(chunks):
-        title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
-        summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
+        try:
+            title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
+            summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
+        except Exception as e:
+            logger.info(f"Could not generate title or summary for chunk {i}")
+            logger.info(e)
+            continue
         input_data = {
             "id": str(my_hash(chunk["content"])),
             "title": title,
@@ -137,16 +143,19 @@ def generate_qna(docs, azure_oai_deployment_name):
     new_df = pd.DataFrame(columns=column_names)
 
     for i, chunk in enumerate(docs):
+        # what happens with < 50 ? Currently we are skipping them
+        # But we aren't explicitly saying that stating that, should we?
         if len(chunk.page_content) > 50:
-            response = ResponseGenerator(
-                deployment_name=azure_oai_deployment_name
-            ).generate_response(
-                generate_qna_instruction_system_prompt,
-                generate_qna_instruction_user_prompt
-                + chunk.page_content
-                + "\nEND OF CONTEXT",
-            )
+            response = ""
             try:
+                response = ResponseGenerator(
+                    deployment_name=azure_oai_deployment_name
+                ).generate_response(
+                    generate_qna_instruction_system_prompt,
+                    generate_qna_instruction_user_prompt
+                    + chunk.page_content
+                    + "\nEND OF CONTEXT",
+                )
                 response_dict = json.loads(response)
                 for item in response_dict:
                     if item["role"] == "user":
@@ -186,10 +195,10 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = ResponseGenerator(
+    response = ResponseGenerator(
         deployment_name=azure_oai_deployment_name
     ).generate_response(full_prompt_instruction, "")
-    return response1
+    return response
 
 
 def do_we_need_multiple_questions(question, azure_oai_deployment_name):
@@ -206,7 +215,11 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response1 = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(full_prompt_instruction, "")
-    return re.search(r"\bHIGH\b", response1.upper())
+    try:
+        response = ResponseGenerator(
+            deployment_name=azure_oai_deployment_name
+        ).generate_response(full_prompt_instruction, "")
+    except ContentFilteredException as e:
+        logger.error(e)
+        return False
+    return re.search(r"\bHIGH\b", response.upper())
