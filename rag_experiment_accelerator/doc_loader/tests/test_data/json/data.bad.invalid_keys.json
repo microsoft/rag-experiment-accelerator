@@ -1,0 +1,6 @@
+[
+    {
+        "title": "Contains 'contents' key instead of 'content'",
+        "contents": "This is the content for item 1."
+    }
+]
