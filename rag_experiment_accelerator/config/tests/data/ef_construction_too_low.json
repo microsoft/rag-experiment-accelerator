@@ -1,8 +1,8 @@
 {
     "name_prefix": "test_prefix",
     "chunking": {
-        "chunk_size": [512],
-        "overlap_size": [128]
+        "chunk_size": [100],
+        "overlap_size": [2]
     },
     "embedding_models": [
         {
@@ -14,12 +14,8 @@
             "deployment_name": "text-embedding-ada-002"
         }
     ],
-    "ef_construction": [
-        300
-    ],
-    "ef_search": [
-        400
-    ],
+    "ef_construction": [99],
+    "ef_search": [400],
     "rerank": "test_rerank",
     "rerank_type": "test_rerank_type",
     "llm_re_rank_threshold": 6,

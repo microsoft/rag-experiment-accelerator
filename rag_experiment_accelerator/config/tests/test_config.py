@@ -1,3 +1,4 @@
+import pytest
 import json
 import os
 from rag_experiment_accelerator.config.config import Config
@@ -76,80 +77,40 @@ def test_config_init():
     assert aoai_embedding_model.dimension == 1536
 
 
-# validation tests for configuration parameters
-def test_maximum_chunk_limit():
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
-        mock_config_data = json.load(file)
+# chunk size must be less than 6000
+def test_chunk_size_too_large():
+    with pytest.raises(ValueError) as info:
+        Config(f"{get_test_config_dir()}", filename="chunk_size_too_high.json")
 
-    mock_config_data["chunking"]["chunk_size"] = 1000
-    mock_config_data["chunking"]["overlap_size"] = 1000
-
-    with open(f"{get_test_config_dir()}/config.json", "w") as file:
-        json.dump(mock_config_data, file)
-
-    config = Config(get_test_config_dir())
-
-    assert config.CHUNK_SIZES == [512]
-    assert config.OVERLAP_SIZES == [128]
+    assert str(info.value) == "chunk_size must be less than 6000"
 
 
 def test_chunk_size_greater_than_overlap_size():
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
-        mock_config_data = json.load(file)
+    with pytest.raises(ValueError) as info:
+        Config(f"{get_test_config_dir()}", filename="overlap_larger_than_chunk.json")
 
-    mock_config_data["chunking"]["chunk_size"] = 128
-    mock_config_data["chunking"]["overlap_size"] = 512
-
-    with open(f"{get_test_config_dir()}/config.json", "w") as file:
-        json.dump(mock_config_data, file)
-
-    config = Config(get_test_config_dir())
-
-    assert config.CHUNK_SIZES == [128]
-    assert config.OVERLAP_SIZES == [128]
-
-
-def test_chunk_size_less_than_overlap_size():
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
-        mock_config_data = json.load(file)
-
-    mock_config_data["chunking"]["chunk_size"] = 128
-    mock_config_data["chunking"]["overlap_size"] = 64
-
-    with open(f"{get_test_config_dir()}/config.json", "w") as file:
-        json.dump(mock_config_data, file)
-
-    config = Config(get_test_config_dir())
-
-    assert config.CHUNK_SIZES == [128]
-    assert config.OVERLAP_SIZES == [64]
+    assert str(info.value) == "overlap_size must be less than chunk_size"
 
 
 # efConstruction must be between 100 and 1000
 def test_validate_efConstruction():
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
-        mock_config_data = json.load(file)
+    with pytest.raises(ValueError) as highinfo:
+        Config(f"{get_test_config_dir()}", filename="ef_construction_too_high.json")
 
-    mock_config_data["ef_construction"] = 10000
+    with pytest.raises(ValueError) as lowinfo:
+        Config(f"{get_test_config_dir()}", filename="ef_construction_too_low.json")
 
-    with open(f"{get_test_config_dir()}/config.json", "w") as file:
-        json.dump(mock_config_data, file)
-
-    config = Config(get_test_config_dir())
-
-    assert config.EF_CONSTRUCTIONS == [10000]
+    assert str(lowinfo.value) == "efConstruction must be between 100 and 1000"
+    assert str(highinfo.value) == "efConstruction must be between 100 and 1000"
 
 
 # efSearch must be between 100 and 1000
 def test_validate_efSearch():
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
-        mock_config_data = json.load(file)
+    with pytest.raises(ValueError) as highinfo:
+        Config(f"{get_test_config_dir()}", filename="ef_search_too_high.json")
 
-    mock_config_data["ef_search"] = 10000
+    with pytest.raises(ValueError) as lowinfo:
+        Config(f"{get_test_config_dir()}", filename="ef_search_too_low.json")
 
-    with open(f"{get_test_config_dir()}/config.json", "w") as file:
-        json.dump(mock_config_data, file)
-
-    config = Config(get_test_config_dir())
-
-    assert config.EF_SEARCHES == [10000]
+    assert str(lowinfo.value) == "efSearch must be between 100 and 1000"
+    assert str(highinfo.value) == "efSearch must be between 100 and 1000"
