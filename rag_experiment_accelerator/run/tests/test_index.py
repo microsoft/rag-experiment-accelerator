@@ -22,7 +22,6 @@ class TestIndex(unittest.TestCase):
         mock_embedding_model.side_effect = [
             MagicMock(dimension=100 * i) for i in range(1, 3)]
 
-        # Rest of your test code...
         self.run_test(['chunk_size1'], ['overlap_size1'], embedding_models, ['ef_construction1'], ['ef_search1'], mock_get_index_name,
                       mock_Preprocess, mock_create_acs_index, mock_upload_data, mock_load_documents, mock_Config, mock_get_logger, mock_load_dotenv)
 
