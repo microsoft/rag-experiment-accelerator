@@ -30,6 +30,7 @@ def load_json_files(
 
     logger.debug("Loading text files")
 
+    keys_to_load = ["content", "title"]
     return load_structured_files(
         file_format="JSON",
         language=None,
@@ -39,7 +40,6 @@ def load_json_files(
         overlap_size=overlap_size,
         glob_patterns=glob_patterns,
         loader_kwargs={
-            "jq_schema": "[.[] | {content: .content, title: .title}]",
-            "text_content": False,
+            "keys_to_load": keys_to_load,
         },
     )
