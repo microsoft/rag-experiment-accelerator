@@ -81,14 +81,20 @@ def test_chunk_size_too_large():
     with pytest.raises(ValueError) as info:
         Config.validate_inputs(Config, [6001], [128], [400], [400])
 
-    assert str(info.value) == "chunk_size must be less than 6000"
+    assert (
+        str(info.value)
+        == "Config param validation error: chunk_size must be less than 6000"
+    )
 
 
 def test_chunk_size_greater_than_overlap_size():
     with pytest.raises(ValueError) as info:
         Config.validate_inputs(Config, [128], [512], [400], [400])
 
-    assert str(info.value) == "overlap_size must be less than chunk_size"
+    assert (
+        str(info.value)
+        == "Config param validation error: overlap_size must be less than chunk_size"
+    )
 
 
 def test_validate_ef_search():
@@ -98,8 +104,14 @@ def test_validate_ef_search():
     with pytest.raises(ValueError) as low_info:
         Config.validate_inputs(Config, [512], [128], [400], [99])
 
-    assert str(high_info.value) == "ef_search must be between 100 and 1000 (inclusive)"
-    assert str(low_info.value) == "ef_search must be between 100 and 1000 (inclusive)"
+    assert (
+        str(high_info.value)
+        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+    )
+    assert (
+        str(low_info.value)
+        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+    )
 
 
 def test_validate_ef_construction():
@@ -111,9 +123,9 @@ def test_validate_ef_construction():
 
     assert (
         str(high_info.value)
-        == "ef_construction must be between 100 and 1000 (inclusive)"
+        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
     )
     assert (
         str(low_info.value)
-        == "ef_construction must be between 100 and 1000 (inclusive)"
+        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
     )

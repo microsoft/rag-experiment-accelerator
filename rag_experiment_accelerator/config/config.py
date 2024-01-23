@@ -69,19 +69,27 @@ class Config:
             cls._instance._initialize(config_dir, data_dir, filename)
         return cls._instance
 
-    def validate_inputs(self, CHUNK_SIZE, OVERLAP_SIZE, EF_CONSTRUCTIONS, EF_SEARCHES):
-        if any(val < 100 or val > 1000 for val in EF_CONSTRUCTIONS):
-            raise ValueError("ef_construction must be between 100 and 1000 (inclusive)")
-        if any(val < 100 or val > 1000 for val in EF_SEARCHES):
-            raise ValueError("ef_search must be between 100 and 1000 (inclusive)")
+    def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
+        if any(val < 100 or val > 1000 for val in ef_constructions):
+            raise ValueError(
+                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+            )
+        if any(val < 100 or val > 1000 for val in ef_searches):
+            raise ValueError(
+                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+            )
 
         # The max input length for AOAI is 8191 tokens, which is equivalent to about 6000 words
         # This is subject to change depending on the loader used
-        if any(val > 6000 for val in CHUNK_SIZE):
-            raise ValueError("chunk_size must be less than 6000")
+        if any(val > 6000 for val in chunk_size):
+            raise ValueError(
+                "Config param validation error: chunk_size must be less than 6000"
+            )
 
-        if max(OVERLAP_SIZE) > min(CHUNK_SIZE):
-            raise ValueError("overlap_size must be less than chunk_size")
+        if max(overlap_size) > min(chunk_size):
+            raise ValueError(
+                "Config param validation error: overlap_size must be less than chunk_size"
+            )
 
     def _initialize(self, config_dir: str, data_dir: str, filename: str) -> None:
         with open(f"{config_dir}/{filename}", "r") as json_file:
