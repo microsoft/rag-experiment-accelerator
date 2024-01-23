@@ -773,3 +773,6 @@ def test_search_for_manual_hybrid(
         {"content": "some content 2", "@search.score": 1.2},
         {"content": "some content 3", "@search.score": 1.3},
     ]
+
+
+# test change, to be removed
