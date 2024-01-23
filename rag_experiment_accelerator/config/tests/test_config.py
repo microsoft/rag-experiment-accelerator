@@ -52,10 +52,6 @@ def test_config_init(mock_embedding_model_factory):
     config = Config(get_test_config_dir())
 
     config.embedding_models = [embedding_model_1, embedding_model_2]
-    # config.embedding_models[0].name = "all-MiniLM-L6-v2"
-    # config.embedding_models[0].dimension = 384
-    # config.embedding_models[1].name = "text-embedding-ada-002"
-    # config.embedding_models[1].dimension = 1536
 
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]

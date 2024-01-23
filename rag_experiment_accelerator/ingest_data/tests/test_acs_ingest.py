@@ -74,13 +74,10 @@ def test_generate_title(mock_response_generator):
     result = generate_title(mock_chunk, mock_deployment_name)
 
     # Assert
-    assert result == mock_response
-    # MockResponseGenerator.assert_called_once_with(
-    #     deployment_name=mock_deployment_name
-    # )
     mock_response_generator().generate_response.assert_called_once_with(
         prompt_instruction_title, mock_chunk
     )
+    assert result == mock_response
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
@@ -95,11 +92,10 @@ def test_generate_summary(mock_response_generator):
     result = generate_summary(mock_chunk, mock_deployment_name)
 
     # Assert
-    assert result == mock_summary
-
     mock_response_generator().generate_response.assert_called_once_with(
         prompt_instruction_summary, mock_chunk
     )
+    assert result == mock_summary
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.SearchClient")
@@ -158,8 +154,8 @@ def test_upload_data(
     mock_embedding_model.generate_embedding.assert_any_call(
         chunk="test_preprocessed_content"
     )
-    assert mock_embedding_model.generate_embedding.call_count == 2
     mock_SearchClient().upload_documents.assert_called_once()
+    assert mock_embedding_model.generate_embedding.call_count == 2
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
@@ -241,8 +237,8 @@ def test_do_we_need_multiple_questions_high(mock_response_generator):
     result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
 
     # Assert
-    assert result is not None
     mock_response_generator().generate_response.assert_called_once()
+    assert result is not None
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
@@ -256,5 +252,5 @@ def test_do_we_need_multiple_questions_empty(mock_response_generator):
     result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
 
     # Assert
-    assert result is None
     mock_response_generator().generate_response.assert_called_once()
+    assert result is None
