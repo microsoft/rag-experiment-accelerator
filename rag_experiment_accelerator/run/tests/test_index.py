@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock, call
 from rag_experiment_accelerator.run.index import run
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 
 
 class TestIndex(unittest.TestCase):
@@ -92,7 +91,6 @@ class TestIndex(unittest.TestCase):
         @patch('rag_experiment_accelerator.run.index.Config')
         def test_run_makedirs_exception(self, mock_config, mock_preprocess, mock_upload_data, mock_load_documents, mock_get_index_name, mock_create_acs_index, mock_makedirs):
             # Arrange
-            mock_config_instance = mock_config.return_value
             mock_makedirs.side_effect = Exception('Test exception')
 
             # Act
@@ -111,7 +109,6 @@ class TestIndex(unittest.TestCase):
         @patch('rag_experiment_accelerator.run.index.Config')
         def test_run_upload_data_exception(self, mock_config, mock_preprocess, mock_upload_data, mock_load_documents, mock_get_index_name, mock_create_acs_index):
             # Arrange
-            mock_config_instance = mock_config.return_value
             mock_upload_data.side_effect = Exception('Test exception')
 
             # Act
