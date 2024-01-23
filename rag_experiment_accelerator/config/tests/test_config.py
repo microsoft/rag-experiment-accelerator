@@ -93,24 +93,34 @@ def test_chunk_size_greater_than_overlap_size():
 
 
 # efConstruction must be between 100 and 1000
-def test_validate_efConstruction():
+def test_ef_construction_too_high():
     with pytest.raises(ValueError) as highinfo:
         Config(f"{get_test_config_dir()}", filename="ef_construction_too_high.json")
 
+    assert (
+        str(highinfo.value)
+        == "ef_construction must be between 100 and 1000 (inclusive)"
+    )
+
+
+def test_ef_construction_too_low():
     with pytest.raises(ValueError) as lowinfo:
         Config(f"{get_test_config_dir()}", filename="ef_construction_too_low.json")
 
-    assert str(lowinfo.value) == "efConstruction must be between 100 and 1000"
-    assert str(highinfo.value) == "efConstruction must be between 100 and 1000"
+    assert (
+        str(lowinfo.value) == "ef_construction must be between 100 and 1000 (inclusive)"
+    )
 
 
-# efSearch must be between 100 and 1000
-def test_validate_efSearch():
+def test_ef_search_too_high():
     with pytest.raises(ValueError) as highinfo:
         Config(f"{get_test_config_dir()}", filename="ef_search_too_high.json")
 
+    assert str(highinfo.value) == "ef_search must be between 100 and 1000 (inclusive)"
+
+
+def test_ef_search_too_low():
     with pytest.raises(ValueError) as lowinfo:
         Config(f"{get_test_config_dir()}", filename="ef_search_too_low.json")
 
-    assert str(lowinfo.value) == "efSearch must be between 100 and 1000"
-    assert str(highinfo.value) == "efSearch must be between 100 and 1000"
+    assert str(lowinfo.value) == "ef_search must be between 100 and 1000 (inclusive)"

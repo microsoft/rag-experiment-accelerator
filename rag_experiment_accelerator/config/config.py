@@ -77,10 +77,10 @@ class Config:
 
         # The max input length for AOAI is 8191 tokens, which is equivalent to about 6000 words
         # This is subject to change depending on the loader used
-        if CHUNK_SIZE > 6000:
+        if any(val > 6000 for val in CHUNK_SIZE):
             raise ValueError("chunk_size must be less than 6000")
 
-        if OVERLAP_SIZE > CHUNK_SIZE:
+        if max(OVERLAP_SIZE) > min(CHUNK_SIZE):
             raise ValueError("overlap_size must be less than chunk_size")
 
     def _initialize(self, config_dir: str, data_dir: str, filename: str) -> None:
