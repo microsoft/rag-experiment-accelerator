@@ -20,11 +20,6 @@ jobs:
     name: job for validating code and structure
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Actions
-        uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
       - name: Load all build validation related dependencies
         shell: bash
         run: |
