@@ -32,7 +32,7 @@ def test_run_success(
 
     # Assert
     mock_makedirs.assert_called_once()
-    mock_config.assert_called_once_with("test_dir")
+    mock_config.assert_called_once_with("test_dir", filename="config.json")
     mock_get_default_az_cred.assert_called_once()
     mock_load_documents.assert_called_once()
     mock_generate_qna.assert_called_once()

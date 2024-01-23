@@ -237,14 +237,14 @@ def query_and_eval_acs_multi(
     return context, evals
 
 
-def run(config_dir: str):
+def run(config_dir: str, filename: str = "config.json"):
     """
     Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
 
     Returns:
         None
     """
-    config = Config(config_dir)
+    config = Config(config_dir, filename=filename)
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     question_count = 0

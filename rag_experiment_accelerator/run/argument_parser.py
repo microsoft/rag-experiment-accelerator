@@ -33,7 +33,7 @@ class ArgumentParser:
         self.parser.add_argument(
             "-cf",
             "--config-file-name",
-            help=("JSON config file that. Defaults to 'config.json'"),
+            help=("JSON config filename. Defaults to 'config.json'"),
             type=str,
             default="config.json",
         )
@@ -44,5 +44,5 @@ class ArgumentParser:
     def get_data_directory_arg(self):
         return self.parser.parse_args().data_directory_name
 
-    def get_config_directory_arg(self):
+    def get_config_filename_arg(self):
         return self.parser.parse_args().config_file_name
