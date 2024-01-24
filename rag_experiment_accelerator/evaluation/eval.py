@@ -324,7 +324,7 @@ def llm_answer_relevance(question, answer):
     embedding2 = model.encode([str(result)])
     similarity_score = cosine_similarity(embedding1, embedding2)
 
-    return int(similarity_score[0][0] * 100)
+    return float(similarity_score[0][0] * 100)
 
 
 def llm_context_precision(question, context):
