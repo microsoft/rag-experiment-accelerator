@@ -29,11 +29,9 @@ def test_bleu():
     assert round(score) == 50
 
 
-@patch(
-    "rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response"
-)
+@patch("rag_experiment_accelerator.evaluation.eval.ResponseGenerator")
 def test_llm_answer_relevance(mock_generate_response):
-    mock_generate_response.return_value = (
+    mock_generate_response.return_value.generate_response.return_value = (
         "What is the name of the largest bone in the human body?"
     )
 
@@ -50,11 +48,9 @@ def test_llm_answer_relevance(mock_generate_response):
     assert round(score) == 100
 
 
-@patch(
-    "rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response"
-)
+@patch("rag_experiment_accelerator.evaluation.eval.ResponseGenerator")
 def test_llm_context_precision(mock_generate_response):
-    mock_generate_response.return_value = "Yes"
+    mock_generate_response.return_value.generate_response.return_value = "Yes"
     question = "What is the name of the largest bone in the human body?"
     context = (
         'According to the Cleveland Clinic, "The femur is the largest and'
@@ -70,11 +66,9 @@ def test_llm_context_precision(mock_generate_response):
     assert score == 100
 
 
-@patch(
-    "rag_experiment_accelerator.llm.response_generator.ResponseGenerator.generate_response"
-)
+@patch("rag_experiment_accelerator.evaluation.eval.ResponseGenerator")
 def test_llm_context_recall(mock_generate_response):
-    mock_generate_response.return_value = (
+    mock_generate_response.return_value.generate_response.return_value = (
         '"Attributed": "1"   "Attributed": "1"   "Attributed": "1"   "Attributed": "0"'
     )
     question = "What is the name of the largest bone in the human body?"
