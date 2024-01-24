@@ -26,7 +26,7 @@ class TestIndex(unittest.TestCase):
 
     def run_test(self, chunk_sizes, overlap_sizes, embedding_models, ef_constructions, ef_searches, mock_get_index_name, mock_Preprocess, mock_create_acs_index, mock_upload_data, mock_load_documents, mock_Config, mock_get_logger, mock_load_dotenv):
         # Arrange
-        mock_get_index_name.return_value = 'test_index'
+        mock_get_index_name.return_value = 'test_index_name'
         mock_Config.return_value.CHUNK_SIZES = chunk_sizes
         mock_Config.return_value.OVERLAP_SIZES = overlap_sizes
         mock_Config.return_value.embedding_models = embedding_models
@@ -65,7 +65,7 @@ class TestIndex(unittest.TestCase):
         expected_calls = [call('test_format', 'data_dir', chunk_size, overlap_size)
                           for chunk_size, overlap_size in zip(chunk_sizes, overlap_sizes)]
         mock_load_documents.assert_has_calls(expected_calls, any_order=True)
-        expected_first_call_args = [chunks, 'test_endpoint', 'test_index',
+        expected_first_call_args = [chunks, 'test_endpoint', 'test_index_name',
                                     'test_key', embedding_models[0], 'test_deployment_name']
         args, kwargs = mock_upload_data.call_args
         # Assert that the call arguments of the first call are as expected
@@ -81,6 +81,7 @@ class TestIndex(unittest.TestCase):
         mock_create_acs_index.assert_called()
         mock_Preprocess.assert_called_once()
         mock_get_index_name.assert_called()
+        mock_create_acs_index.assert_called()
 
         @patch('rag_experiment_accelerator.run.index.os.makedirs')
         @patch('rag_experiment_accelerator.run.index.create_acs_index')
@@ -112,7 +113,6 @@ class TestIndex(unittest.TestCase):
             mock_upload_data.side_effect = Exception('Test exception')
 
             # Act
-            from index import run
             with self.assertRaises(Exception) as context:
                 run('config_dir', 'data_dir')
 
