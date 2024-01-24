@@ -43,21 +43,19 @@ def test_config_init(mock_embedding_model_factory):
 
     embedding_model_1 = MagicMock()
     embedding_model_2 = MagicMock()
-
-    mock_embedding_model_factory.side_effect = [embedding_model_1, embedding_model_2]
-
     embedding_model_1.name.return_value = "all-MiniLM-L6-v2"
     embedding_model_1.dimension.return_value = 384
     embedding_model_2.name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
+    mock_embedding_model_factory.side_effect = [embedding_model_1, embedding_model_2]
 
     config = Config(get_test_config_dir())
 
-    config.embedding_models = [MagicMock(), MagicMock()]
-    config.embedding_models[0].name = "all-MiniLM-L6-v2"
-    config.embedding_models[0].dimension = 384
-    config.embedding_models[1].name = "text-embedding-ada-002"
-    config.embedding_models[1].dimension = 1536
+    config.embedding_models = [embedding_model_1, embedding_model_2]
+    # config.embedding_models[0].name = "all-MiniLM-L6-v2"
+    # config.embedding_models[0].dimension = 384
+    # config.embedding_models[1].name = "text-embedding-ada-002"
+    # config.embedding_models[1].dimension = 1536
 
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
@@ -86,10 +84,8 @@ def test_config_init(mock_embedding_model_factory):
         == f"{get_test_config_dir()}/{mock_config_data['eval_data_jsonl_file_path']}"
     )
 
-    st_embedding_model = config.embedding_models[0]
-    assert st_embedding_model.name == "all-MiniLM-L6-v2"
-    assert st_embedding_model.dimension == 384
+    assert config.embedding_models[0].name.return_value == "all-MiniLM-L6-v2"
+    assert config.embedding_models[0].dimension.return_value == 384
 
-    aoai_embedding_model = config.embedding_models[1]
-    assert aoai_embedding_model.name == "text-embedding-ada-002"
-    assert aoai_embedding_model.dimension == 1536
+    assert config.embedding_models[1].name.return_value == "text-embedding-ada-002"
+    assert config.embedding_models[1].dimension.return_value == 1536
