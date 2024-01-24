@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import pytest
 
 from rag_experiment_accelerator.config.credentials import OpenAICredentials
@@ -20,7 +21,8 @@ def test_create_aoai_embedding_model():
     assert isinstance(model, AOAIEmbeddingModel)
 
 
-def test_create_st_embedding_model():
+@patch("rag_experiment_accelerator.embedding.st_embedding_model.SentenceTransformer")
+def test_create_st_embedding_model(mock_sentence_transformer):
     embedding_type = "sentence-transformer"
     model_name = "all-mpnet-base-v2"
     dimension = 768

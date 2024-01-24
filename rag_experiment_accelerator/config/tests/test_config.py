@@ -1,7 +1,7 @@
 import json
 import os
 from rag_experiment_accelerator.config.config import Config
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 def get_test_config_dir():
@@ -33,12 +33,31 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
     "rag_experiment_accelerator.config.credentials._get_env_var",
     new=mock_get_env_var,
 )
-def test_config_init():
+@patch(
+    "rag_experiment_accelerator.config.config.EmbeddingModelFactory.create",
+)
+def test_config_init(mock_embedding_model_factory):
     # Load mock config data from a YAML file
     with open(f"{get_test_config_dir()}/config.json", "r") as file:
         mock_config_data = json.load(file)
 
+    embedding_model_1 = MagicMock()
+    embedding_model_2 = MagicMock()
+
+    mock_embedding_model_factory.side_effect = [embedding_model_1, embedding_model_2]
+
+    embedding_model_1.name.return_value = "all-MiniLM-L6-v2"
+    embedding_model_1.dimension.return_value = 384
+    embedding_model_2.name.return_value = "text-embedding-ada-002"
+    embedding_model_2.dimension.return_value = 1536
+
     config = Config(get_test_config_dir())
+
+    config.embedding_models = [MagicMock(), MagicMock()]
+    config.embedding_models[0].name = "all-MiniLM-L6-v2"
+    config.embedding_models[0].dimension = 384
+    config.embedding_models[1].name = "text-embedding-ada-002"
+    config.embedding_models[1].dimension = 1536
 
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
