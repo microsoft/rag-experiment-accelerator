@@ -1,3 +1,4 @@
+import pytest
 import json
 import os
 from rag_experiment_accelerator.config.config import Config
@@ -85,3 +86,47 @@ def test_config_init(mock_embedding_model_factory):
 
     assert config.embedding_models[1].name.return_value == "text-embedding-ada-002"
     assert config.embedding_models[1].dimension.return_value == 1536
+
+
+def test_chunk_size_greater_than_overlap_size():
+    with pytest.raises(ValueError) as info:
+        Config.validate_inputs(Config, [128], [512], [400], [400])
+
+    assert (
+        str(info.value)
+        == "Config param validation error: overlap_size must be less than chunk_size"
+    )
+
+
+def test_validate_ef_search():
+    with pytest.raises(ValueError) as high_info:
+        Config.validate_inputs(Config, [512], [128], [400], [1001])
+
+    with pytest.raises(ValueError) as low_info:
+        Config.validate_inputs(Config, [512], [128], [400], [99])
+
+    assert (
+        str(high_info.value)
+        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+    )
+    assert (
+        str(low_info.value)
+        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+    )
+
+
+def test_validate_ef_construction():
+    with pytest.raises(ValueError) as high_info:
+        Config.validate_inputs(Config, [512], [128], [1001], [400])
+
+    with pytest.raises(ValueError) as low_info:
+        Config.validate_inputs(Config, [512], [128], [99], [400])
+
+    assert (
+        str(high_info.value)
+        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+    )
+    assert (
+        str(low_info.value)
+        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+    )

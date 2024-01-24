@@ -15,14 +15,14 @@ load_dotenv(override=True)
 logger = get_logger(__name__)
 
 
-def run(config_dir: str):
+def run(config_dir: str, filename: str = "config.json"):
     """
     Runs the main experiment loop for the QA generation process using the provided configuration and data.
 
     Returns:
         None
     """
-    config = Config(config_dir)
+    config = Config(config_dir, filename=filename)
     azure_cred = get_default_az_cred()
     all_docs = load_documents(config.DATA_FORMATS, config.data_dir, 2000, 0)
 
