@@ -78,14 +78,6 @@ class Config:
             raise ValueError(
                 "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
             )
-
-        # The max input length for AOAI is 8191 tokens, which is equivalent to about 6000 words
-        # This is subject to change depending on the loader used
-        if any(val > 6000 for val in chunk_size):
-            raise ValueError(
-                "Config param validation error: chunk_size must be less than 6000"
-            )
-
         if max(overlap_size) > min(chunk_size):
             raise ValueError(
                 "Config param validation error: overlap_size must be less than chunk_size"

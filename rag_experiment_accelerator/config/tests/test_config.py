@@ -88,16 +88,6 @@ def test_config_init(mock_embedding_model_factory):
     assert config.embedding_models[1].dimension.return_value == 1536
 
 
-def test_chunk_size_too_large():
-    with pytest.raises(ValueError) as info:
-        Config.validate_inputs(Config, [6001], [128], [400], [400])
-
-    assert (
-        str(info.value)
-        == "Config param validation error: chunk_size must be less than 6000"
-    )
-
-
 def test_chunk_size_greater_than_overlap_size():
     with pytest.raises(ValueError) as info:
         Config.validate_inputs(Config, [128], [512], [400], [400])
