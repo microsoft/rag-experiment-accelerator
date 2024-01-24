@@ -156,5 +156,5 @@ def test_list_filenames(temp_dirname: str, writer_impl: LocalWriter):
 
     # check all filenames are returned
     assert len(filenames) == 2
-    assert filenames[0] == "src1.txt"
-    assert filenames[1] == "src2.txt"
+    assert "src1.txt" in filenames
+    assert "src2.txt" in filenames
