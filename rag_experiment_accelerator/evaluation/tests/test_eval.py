@@ -1,11 +1,107 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import numpy as np
 
 from rag_experiment_accelerator.evaluation.eval import (
+    lower,
+    remove_spaces,
     bleu,
+    fuzzy,
+    compare_semantic_document_values,
+    levenshtein,
+    jaccard,
+    hamming,
+    jaro_winkler,
+    cosine,
+    lcsseq,
+    lcsstr,
     llm_answer_relevance,
     llm_context_precision,
     llm_context_recall,
 )
+
+
+def test_lower():
+    text = "UPPER CASE input text"
+    expected = "upper case input text"
+
+    assert lower(text) == expected
+
+
+def test_remove_spaces():
+    text = "  leading and trailing spaces   "
+    expected = "leading and trailing spaces"
+
+    assert remove_spaces(text) == expected
+
+
+def test_fuzzy():
+    value1 = "Room, 2 Double Beds (19th to 25th Floors)"
+    value2 = "Two Double Beds - Location Room (19th to 25th Floors)"
+
+    assert fuzzy(value1, value2) == 97
+
+
+def test_compare_semantic_document_values():
+    mock_st = MagicMock()
+    embeddings1 = np.array([[0.1, 0.2, 0.3, 0.4, 0.7]])
+    embeddings2 = np.array([[0.1, 0.3, 0.4, 0.5, 0.6]])
+
+    mock_st.encode.side_effect = [embeddings1, embeddings2]
+
+    value1 = "value1"
+    value2 = "value2"
+
+    assert compare_semantic_document_values(value1, value2, mock_st) == 97
+
+
+def test_levenshtein():
+    value1 = "party"
+    value2 = "park"
+
+    assert levenshtein(value1, value2) == 60
+
+
+def test_jaccard():
+    value1 = ["cat", "dog", "hippo", "monkey"]
+    value2 = ["monkey", "rhino", "ostrich", "salmon"]
+
+    assert jaccard(value1, value2) == 14
+
+
+def test_hamming():
+    value1 = "1011101"
+    value2 = "1011011"
+
+    assert hamming(value1, value2) == 71
+
+
+def test_jaro_winkler():
+    value1 = "crate"
+    value2 = "trace"
+
+    assert jaro_winkler(value1, value2) == 73
+
+
+def test_cosine():
+    value1 = "Soup is a primarily liquid food, generally served warm or hot (but may be cool or cold), that is made by combining ingredients of meat or vegetables with stock, juice, water, or another liquid. "
+    value2 = "Noodles are a staple food in many cultures. They are made from unleavened dough which is stretched, extruded, or rolled flat and cut into one of a variety of shapes."
+
+    assert cosine(value1, value2) == 81
+
+
+def test_lcsseq():
+    value1 = "The fox jumped over the high fence"
+    value2 = "The quick brown fox jumped over the fence."
+
+    assert lcsseq(value1, value2) == 69
+
+
+def test_lcsstr():
+    value1 = "The fox jumped over the high fence"
+    value2 = "The quick brown fox jumped over the fence."
+
+    assert lcsstr(value1, value2) == 50
 
 
 @patch("rag_experiment_accelerator.evaluation.eval.evaluate.load")

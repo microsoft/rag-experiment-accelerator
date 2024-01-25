@@ -51,29 +51,6 @@ algs = textdistance.algorithms
 pd.set_option("display.max_columns", None)
 
 
-def process_text(text):
-    """
-    Processes the given text by removing stop words, punctuation, and lemmatizing the remaining words.
-
-    Args:
-        text (str): The text to process.
-
-    Returns:
-        str: The processed text.
-    """
-    doc = nlp(str(text))
-    result = []
-    for token in doc:
-        if token.text in nlp.Defaults.stop_words:
-            continue
-        if token.is_punct:
-            continue
-        if token.lemma_ == "-PRON-":
-            continue
-        result.append(token.lemma_)
-    return " ".join(result)
-
-
 def lower(text):
     """
     Converts the input text to lowercase.
@@ -98,12 +75,6 @@ def remove_spaces(text):
         str: The input string with leading and trailing spaces removed.
     """
     return text.strip()
-
-
-# def compare_rouge(value1, value2):
-#    scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
-#    scores = scorer.score(value1, value2)
-#    return scores
 
 
 # https://huggingface.co/spaces/evaluate-metric/bleu
