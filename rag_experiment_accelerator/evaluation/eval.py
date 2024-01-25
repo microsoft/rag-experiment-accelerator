@@ -9,7 +9,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
-import spacy
 import textdistance
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
@@ -35,20 +34,7 @@ logger = get_logger(__name__)
 load_dotenv()
 warnings.filterwarnings("ignore")
 
-try:
-    nlp = spacy.load("en_core_web_lg")
-except OSError:
-    logger.info("Downloading spacy language model: en_core_web_lg")
-    from spacy.cli import download
-
-    download("en_core_web_lg")
-    nlp = spacy.load("en_core_web_lg")
-
-current_datetime = datetime.now()
-formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
-
-pd.set_option("display.max_columns", None)
 
 
 def lower(text):
@@ -615,6 +601,8 @@ def evaluate_prompts(
             " ensure you have the proper permissions and try again"
         )
         raise e
+    current_datetime = datetime.now()
+    formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
@@ -622,6 +610,7 @@ def evaluate_prompts(
     run_name = f"{exp_name}_{formatted_datetime}"
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
+    pd.set_option("display.max_columns", None)
 
     run_id = mlflow.active_run().info.run_id
 
