@@ -17,14 +17,14 @@ load_dotenv(override=True)
 logger = get_logger(__name__)
 
 
-def run(config_dir: str, data_dir: str = "data") -> None:
+def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") -> None:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
 
     Returns:
         None
     """
-    config = Config(config_dir, data_dir)
+    config = Config(config_dir, data_dir, filename)
     pre_process = Preprocess()
 
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
@@ -90,8 +90,7 @@ def run(config_dir: str, data_dir: str = "data") -> None:
                             chunk_dict = {
                                 "content": docs.page_content,
                                 "content_vector": embedding_model.generate_embedding(
-                                    chunk=str(pre_process.preprocess(
-                                        docs.page_content))
+                                    chunk=str(pre_process.preprocess(docs.page_content))
                                 ),
                             }
                             data_load.append(chunk_dict)
