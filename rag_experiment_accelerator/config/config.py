@@ -48,7 +48,12 @@ class Config:
 
     _instance = None
 
-    def __new__(cls, config_dir: str = os.getcwd(), data_dir: str = "data"):
+    def __new__(
+        cls,
+        config_dir: str = os.getcwd(),
+        data_dir: str = "data",
+        filename: str = "config.json",
+    ):
         """
         Creates a new instance of Config only if it doesn't already exist.
 
@@ -61,11 +66,25 @@ class Config:
 
         if cls._instance is None:
             cls._instance = super(Config, cls).__new__(cls)
-            cls._instance._initialize(config_dir, data_dir)
+            cls._instance._initialize(config_dir, data_dir, filename)
         return cls._instance
 
-    def _initialize(self, config_dir: str, data_dir: str) -> None:
-        with open(f"{config_dir}/config.json", "r") as json_file:
+    def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
+        if any(val < 100 or val > 1000 for val in ef_constructions):
+            raise ValueError(
+                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+            )
+        if any(val < 100 or val > 1000 for val in ef_searches):
+            raise ValueError(
+                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+            )
+        if max(overlap_size) > min(chunk_size):
+            raise ValueError(
+                "Config param validation error: overlap_size must be less than chunk_size"
+            )
+
+    def _initialize(self, config_dir: str, data_dir: str, filename: str) -> None:
+        with open(f"{config_dir}/{filename}", "r") as json_file:
             data = json.load(json_file)
 
         self.config_dir = config_dir
@@ -106,9 +125,17 @@ class Config:
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
+
         for model_config in embedding_model_config:
             kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
             self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
+
+        self.validate_inputs(
+            self.CHUNK_SIZES,
+            self.OVERLAP_SIZES,
+            self.EF_CONSTRUCTIONS,
+            self.EF_SEARCHES,
+        )
 
         try:
             with open(f"{config_dir}/prompt_config.json", "r") as json_file:

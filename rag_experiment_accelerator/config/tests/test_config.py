@@ -1,7 +1,8 @@
+import pytest
 import json
 import os
 from rag_experiment_accelerator.config.config import Config
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 def get_test_config_dir():
@@ -33,12 +34,25 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
     "rag_experiment_accelerator.config.credentials._get_env_var",
     new=mock_get_env_var,
 )
-def test_config_init():
+@patch(
+    "rag_experiment_accelerator.config.config.EmbeddingModelFactory.create",
+)
+def test_config_init(mock_embedding_model_factory):
     # Load mock config data from a YAML file
     with open(f"{get_test_config_dir()}/config.json", "r") as file:
         mock_config_data = json.load(file)
 
+    embedding_model_1 = MagicMock()
+    embedding_model_2 = MagicMock()
+    embedding_model_1.name.return_value = "all-MiniLM-L6-v2"
+    embedding_model_1.dimension.return_value = 384
+    embedding_model_2.name.return_value = "text-embedding-ada-002"
+    embedding_model_2.dimension.return_value = 1536
+    mock_embedding_model_factory.side_effect = [embedding_model_1, embedding_model_2]
+
     config = Config(get_test_config_dir())
+
+    config.embedding_models = [embedding_model_1, embedding_model_2]
 
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
@@ -67,10 +81,52 @@ def test_config_init():
         == f"{get_test_config_dir()}/{mock_config_data['eval_data_jsonl_file_path']}"
     )
 
-    st_embedding_model = config.embedding_models[0]
-    assert st_embedding_model.name == "all-MiniLM-L6-v2"
-    assert st_embedding_model.dimension == 384
+    assert config.embedding_models[0].name.return_value == "all-MiniLM-L6-v2"
+    assert config.embedding_models[0].dimension.return_value == 384
 
-    aoai_embedding_model = config.embedding_models[1]
-    assert aoai_embedding_model.name == "text-embedding-ada-002"
-    assert aoai_embedding_model.dimension == 1536
+    assert config.embedding_models[1].name.return_value == "text-embedding-ada-002"
+    assert config.embedding_models[1].dimension.return_value == 1536
+
+
+def test_chunk_size_greater_than_overlap_size():
+    with pytest.raises(ValueError) as info:
+        Config.validate_inputs(Config, [128], [512], [400], [400])
+
+    assert (
+        str(info.value)
+        == "Config param validation error: overlap_size must be less than chunk_size"
+    )
+
+
+def test_validate_ef_search():
+    with pytest.raises(ValueError) as high_info:
+        Config.validate_inputs(Config, [512], [128], [400], [1001])
+
+    with pytest.raises(ValueError) as low_info:
+        Config.validate_inputs(Config, [512], [128], [400], [99])
+
+    assert (
+        str(high_info.value)
+        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+    )
+    assert (
+        str(low_info.value)
+        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+    )
+
+
+def test_validate_ef_construction():
+    with pytest.raises(ValueError) as high_info:
+        Config.validate_inputs(Config, [512], [128], [1001], [400])
+
+    with pytest.raises(ValueError) as low_info:
+        Config.validate_inputs(Config, [512], [128], [99], [400])
+
+    assert (
+        str(high_info.value)
+        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+    )
+    assert (
+        str(low_info.value)
+        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+    )

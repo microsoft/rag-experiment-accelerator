@@ -14,7 +14,7 @@ load_dotenv(override=True)
 logger = get_logger(__name__)
 
 
-def run(config_dir: str):
+def run(config_dir: str, filename: str = "config.json"):
     """
     Runs the evaluation process for the RAG experiment accelerator.
 
@@ -24,7 +24,7 @@ def run(config_dir: str):
     Returns:
         None
     """
-    config = Config(config_dir)
+    config = Config(config_dir, filename=filename)
 
     ml_client = MLClient(
         get_default_az_cred(),
