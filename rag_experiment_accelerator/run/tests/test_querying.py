@@ -1,4 +1,5 @@
 import unittest
+import os
 from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
@@ -54,33 +55,36 @@ class TestQuerying(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
     @patch("rag_experiment_accelerator.run.querying.create_data_asset")
+    @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")
     def test_run_output(
         self,
-        mock_config,
-        mock_get_default_az_cred,
-        mock_spacy_evaluator,
-        mock_query_output_handler,
-        mock_create_client,
-        mock_response_generator,
-        mock_query_output,
+        mock_do_we_need_multiple_questions,
         mock_create_data_asset,
+        mock_query_output,
+        mock_response_generator,
+        mock_create_client,
+        mock_query_output_handler,
+        mock_spacy_evaluator,
+        mock_get_default_az_cred,
+        mock_config,
     ):
         # Arrange
         mock_query_output_handler.return_value.load.return_value = [mock_query_output]
         mock_query_output_handler.return_value.save.side_effect = None
         mock_config.return_value.CHUNK_SIZES = [1]
-        mock_config.return_value.OVERLAP_SIZES.return_value = [1]
-        mock_config.return_value.RERANK_TYPE.return_value = "llm"
-        mock_config.return_value.RETRIEVE_NUM_OF_DOCUMENTS.return_value = 1
-        mock_config.return_value.EVAL_DATA_JSONL_FILE_PATH = ".data/test_data.jsonl"
-        mock_config.return_value.EMBEDDING_MODELS.return_value = [
-            MagicMock(spec=EmbeddingModel)
-        ]
-        mock_config.return_value.EF_CONSTRUCTIONS.return_value = [400]
-        mock_config.return_value.EF_SEARCHES.return_value = [400]
-        mock_config.return_value.SEARCH_VARIANTS.return_value = [
-            "search_for_match_semantic"
-        ]
+        mock_config.return_value.OVERLAP_SIZES = [1]
+        mock_config.return_value.RERANK_TYPE = "llm"
+        mock_config.return_value.RETRIEVE_NUM_OF_DOCUMENTS = 1
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        data_file_path = test_dir + "/data/test_data.jsonl"
+        mock_config.return_value.EVAL_DATA_JSONL_FILE_PATH = data_file_path
+        mock_embedding_model = MagicMock(spec=EmbeddingModel)
+        mock_embedding_model.name = "test-embedding-model"
+        mock_config.return_value.embedding_models = [mock_embedding_model]
+        mock_config.return_value.EF_CONSTRUCTIONS = [400]
+        mock_config.return_value.EF_SEARCHES = [400]
+        mock_config.return_value.SEARCH_VARIANTS = ["search_for_match_semantic"]
+        mock_config.return_value.NAME_PREFIX = "prefix"
         # Act
         run("config_dir")
 
