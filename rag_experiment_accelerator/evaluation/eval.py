@@ -112,7 +112,7 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     Args:
         doc1 (str): The first document to compare.
         doc2 (str): The second document to compare.
-        model_type (str): The type of model to use for comparison.
+        model_type (SentenceTransformer): The SentenceTransformer model to use for comparison.
 
     Returns:
         int: The percentage of differences between the two documents.
