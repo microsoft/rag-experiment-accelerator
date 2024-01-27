@@ -99,7 +99,7 @@ class TestQuerying(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
     @patch("rag_experiment_accelerator.run.querying.rerank_documents")
     @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
-    def test_query_and_eval_acs_multi(
+    def test_query_and_eval_acs_multi_rerank(
         self,
         mock_response_generator,
         mock_rerank_documents,
@@ -115,7 +115,7 @@ class TestQuerying(unittest.TestCase):
         evaluation_content = "evaluation content"
         config = MagicMock(spec=Config)
         config.RETRIEVE_NUM_OF_DOCUMENTS = 10
-        config.RERANK = False
+        config.RERANK = True
         config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "test-deployment"
         evaluator = MagicMock()
         main_prompt_instruction = "main prompt instruction"
@@ -152,20 +152,88 @@ class TestQuerying(unittest.TestCase):
         mock_query_and_eval_acs.assert_called_with(
             search_client=mock_search_client,
             embedding_model=mock_embedding_model,
-            query=questions[0],
+            query=questions[1] or questions[0],
             search_type=search_type,
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
         )
+        # mock_rerank_documents.assert_not_called()
         mock_rerank_documents.assert_called_with(
-            docs=mock_docs,
-            user_prompt=questions[0],
-            output_prompt=output_prompt,
-            config=config,
+            mock_docs,
+            questions[1] or questions[0],
+            output_prompt,
+            config,
         )
         mock_response_generator.return_value.generate_response.assert_called_with(
             main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context),
+            original_prompt,
+        )
+        self.assertEqual(result_context, ["openai response", "openai response"])
+        self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
+
+    @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
+    @patch("rag_experiment_accelerator.run.querying.rerank_documents")
+    @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
+    def test_query_and_eval_acs_multi_no_rerank(
+        self,
+        mock_response_generator,
+        mock_rerank_documents,
+        mock_query_and_eval_acs,
+    ):
+        # Arrange
+        mock_search_client = MagicMock(spec=SearchClient)
+        mock_embedding_model = MagicMock(spec=EmbeddingModel)
+        questions = ["question1", "question2"]
+        original_prompt = "original prompt"
+        output_prompt = "output prompt"
+        search_type = "search type"
+        evaluation_content = "evaluation content"
+        config = MagicMock(spec=Config)
+        config.RETRIEVE_NUM_OF_DOCUMENTS = 10
+        config.RERANK = False
+        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "test-deployment"
+        evaluator = MagicMock()
+        main_prompt_instruction = "main prompt instruction"
+        mock_docs = ["doc1", "doc2"]
+        mock_evaluation = {"score": 0.8}
+
+        mock_query_and_eval_acs.side_effect = [
+            (mock_docs, mock_evaluation),
+            (mock_docs, mock_evaluation),
+        ]
+
+        mock_response_generator.return_value.generate_response.return_value = (
+            "openai response"
+        )
+
+        # Act
+        result_context, result_evals = query_and_eval_acs_multi(
+            mock_search_client,
+            mock_embedding_model,
+            questions,
+            original_prompt,
+            output_prompt,
+            search_type,
+            evaluation_content,
+            config,
+            evaluator,
+            main_prompt_instruction,
+        )
+
+        # Assert
+        mock_query_and_eval_acs.assert_called_with(
+            search_client=mock_search_client,
+            embedding_model=mock_embedding_model,
+            query=questions[1] or questions[0],
+            search_type=search_type,
+            evaluation_content=evaluation_content,
+            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+            evaluator=evaluator,
+        )
+        mock_rerank_documents.assert_not_called()
+        mock_response_generator.return_value.generate_response.assert_called_with(
+            main_prompt_instruction + "\n" + "\n".join(mock_docs),
             original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
