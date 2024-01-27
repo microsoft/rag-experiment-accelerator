@@ -9,7 +9,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
-import spacy
 import textdistance
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz
@@ -35,43 +34,7 @@ logger = get_logger(__name__)
 load_dotenv()
 warnings.filterwarnings("ignore")
 
-try:
-    nlp = spacy.load("en_core_web_lg")
-except OSError:
-    logger.info("Downloading spacy language model: en_core_web_lg")
-    from spacy.cli import download
-
-    download("en_core_web_lg")
-    nlp = spacy.load("en_core_web_lg")
-
-current_datetime = datetime.now()
-formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 algs = textdistance.algorithms
-
-pd.set_option("display.max_columns", None)
-
-
-def process_text(text):
-    """
-    Processes the given text by removing stop words, punctuation, and lemmatizing the remaining words.
-
-    Args:
-        text (str): The text to process.
-
-    Returns:
-        str: The processed text.
-    """
-    doc = nlp(str(text))
-    result = []
-    for token in doc:
-        if token.text in nlp.Defaults.stop_words:
-            continue
-        if token.is_punct:
-            continue
-        if token.lemma_ == "-PRON-":
-            continue
-        result.append(token.lemma_)
-    return " ".join(result)
 
 
 def lower(text):
@@ -98,12 +61,6 @@ def remove_spaces(text):
         str: The input string with leading and trailing spaces removed.
     """
     return text.strip()
-
-
-# def compare_rouge(value1, value2):
-#    scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
-#    scores = scorer.score(value1, value2)
-#    return scores
 
 
 # https://huggingface.co/spaces/evaluate-metric/bleu
@@ -155,7 +112,7 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     Args:
         doc1 (str): The first document to compare.
         doc2 (str): The second document to compare.
-        model_type (str): The type of model to use for comparison.
+        model_type (SentenceTransformer): The SentenceTransformer model to use for comparison.
 
     Returns:
         int: The percentage of differences between the two documents.
@@ -644,6 +601,8 @@ def evaluate_prompts(
             " ensure you have the proper permissions and try again"
         )
         raise e
+    current_datetime = datetime.now()
+    formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
 
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
@@ -651,6 +610,7 @@ def evaluate_prompts(
     run_name = f"{exp_name}_{formatted_datetime}"
     mlflow.set_experiment(exp_name)
     mlflow.start_run(run_name=run_name)
+    pd.set_option("display.max_columns", None)
 
     run_id = mlflow.active_run().info.run_id
 
