@@ -72,7 +72,7 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             all_docs = load_documents(
-                config.DATA_FORMATS, config.data_dir, chunk_size, overlap
+                config.chunking_strategy, config.AzureDocumentIntelligenceCredentials, config.DATA_FORMATS, config.data_dir, chunk_size, overlap
             )
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:

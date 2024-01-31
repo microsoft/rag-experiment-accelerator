@@ -5,6 +5,7 @@ from rag_experiment_accelerator.config.credentials import (
     AzureMLCredentials,
     AzureSearchCredentials,
     AzureSkillsCredentials,
+    AzureDocumentIntelligenceCredentials,
     OpenAICredentials,
 )
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
@@ -122,10 +123,13 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
+        self.AzureDocumentIntelligenceCredentials = AzureDocumentIntelligenceCredentials.from_env()
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
-
+        self.chunking_strategy = data.get(
+            "chunking-strategy", "azure-document-intelligence"
+        )
         for model_config in embedding_model_config:
             kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
             self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
