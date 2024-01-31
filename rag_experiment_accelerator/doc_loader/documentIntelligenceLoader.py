@@ -1,5 +1,3 @@
-import os
-
 from rag_experiment_accelerator.utils.logging import get_logger
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
 from pathlib import Path
@@ -29,7 +27,7 @@ def azure_document_intelligence_loader(pattern, folder_path, endpoint, key):
         if i.is_file():
             try:
                 print("file name ", i)
-                loader = AzureAIDocumentIntelligenceLoader(file_path=i, api_key = key, api_endpoint = endpoint, api_model="prebuilt-read")
+                loader = AzureAIDocumentIntelligenceLoader(file_path=i, api_key=key, api_endpoint=endpoint, api_model="prebuilt-read")
                 documents += loader.load()
             except Exception as e:
                 logger.warning(f"Failed to load {pattern} file {i}: {e}")

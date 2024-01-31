@@ -1,6 +1,5 @@
 from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
 
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_loader
