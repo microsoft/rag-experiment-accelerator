@@ -12,6 +12,8 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
 def test_load_json_files():
     keys_to_load = ["content", "title"]
     docs = load_structured_files(
+        chunking_strategy="langchain",
+        AzureDocumentIntelligenceCredentials=None,
         file_format="JSON",
         language=None,
         loader=CustomJSONLoader,
@@ -38,6 +40,8 @@ def test_load_json_files_raises_invalid_keys():
     keys_to_load = ["content", "title"]
     with pytest.raises(ValueError) as exec_info:
         load_structured_files(
+            chunking_strategy="langchain",
+            AzureDocumentIntelligenceCredentials=None,
             file_format="JSON",
             language=None,
             loader=CustomJSONLoader,
@@ -66,6 +70,8 @@ def test_load_json_files_raises_not_a_list():
     loader = CustomJSONLoader
     with pytest.raises(ValueError) as exec_info:
         load_structured_files(
+            chunking_strategy="langchain",
+            AzureDocumentIntelligenceCredentials=None,
             file_format="JSON",
             language=None,
             loader=loader,

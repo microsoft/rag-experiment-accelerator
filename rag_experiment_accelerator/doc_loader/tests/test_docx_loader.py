@@ -7,6 +7,8 @@ def test_load_docx_files():
     overlap_size = 400
 
     original_doc = load_docx_files(
+        chunking_strategy="langchain",
+        AzureDocumentIntelligenceCredentials=None,
         folder_path=folder_path,
         chunk_size=chunk_size,
         overlap_size=overlap_size,
