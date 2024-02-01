@@ -2,7 +2,7 @@ from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_loader
+from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_directory_loader
 from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
 
 logger = get_logger(__name__)
@@ -22,6 +22,8 @@ def load_pdf_files(
     Args:
         chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
         AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
+        AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         folder_path (str): The path to the folder containing the PDF files.
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
@@ -34,7 +36,7 @@ def load_pdf_files(
     documents = []
     for pattern in glob_patterns:
         if chunking_strategy == "azure-document-intelligence":
-            documents += azure_document_intelligence_loader(pattern, folder_path, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY)
+            documents += azure_document_intelligence_directory_loader(pattern, folder_path, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY)
         else:
             # using langchain
             loader = PyPDFDirectoryLoader(
