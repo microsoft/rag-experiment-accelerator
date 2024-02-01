@@ -128,7 +128,7 @@ class Config:
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         self.chunking_strategy = data.get(
-            "chunking-strategy", "azure-document-intelligence"
+            "chunking-strategy", "langchain"
         )
         for model_config in embedding_model_config:
             kwargs = {"openai_creds": self.OpenAICredentials, **model_config}

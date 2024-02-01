@@ -49,12 +49,6 @@ def azure_document_intelligence_directory_loader(pattern, folder_path, endpoint,
     items = p.glob(glob)
     for i in items:
         if i.is_file():
-            try:
-                print("file name ", i)
-                loader = AzureAIDocumentIntelligenceLoader(file_path=i, api_key=key, api_endpoint=endpoint, api_model="prebuilt-read")
-                documents += loader.load()
-            except Exception as e:
-                logger.warning(f"Failed to load {pattern} file {i}: {e}")
-                continue
+            documents += azure_document_intelligence_loader(i, endpoint, key)
 
     return documents
