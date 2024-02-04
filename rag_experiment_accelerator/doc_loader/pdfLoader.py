@@ -4,6 +4,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_directory_loader
 from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
+import uuid
 
 logger = get_logger(__name__)
 
@@ -20,9 +21,7 @@ def load_pdf_files(
     Load PDF files from a folder and split them into chunks of text.
 
     Args:
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
-        AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
         AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         folder_path (str): The path to the folder containing the PDF files.
         chunk_size (int): The size of each text chunk in characters.
@@ -57,7 +56,10 @@ def load_pdf_files(
         f" overlap of {overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
+    docsDict = {}
+    for doc in docs:
+        docsDict[str(uuid.uuid4())] = doc.page_content
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 
-    return docs
+    return docsDict

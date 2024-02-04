@@ -7,6 +7,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
 from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_loader
+import uuid
 
 logger = get_logger(__name__)
 
@@ -27,7 +28,7 @@ def load_structured_files(
     Load and process structured files from a given folder path.
 
     Args:
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
         AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         file_format (str): The file_format of the documents to be loaded.
         language (str): The language of the documents to be loaded.
@@ -84,9 +85,12 @@ def load_structured_files(
     )
 
     docs = text_splitter.split_documents(documents)
+    docsDict = {}
+    for doc in docs:
+        docsDict[str(uuid.uuid4())] = doc.page_content
 
     logger.info(
         f"Split {len(documents)} {file_format} files into {len(docs)} chunks"
     )
 
-    return docs
+    return docsDict

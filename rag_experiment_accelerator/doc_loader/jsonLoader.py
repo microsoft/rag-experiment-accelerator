@@ -22,7 +22,7 @@ def load_json_files(
     Load and process Json files from a given folder path.
 
     Args:
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
         AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         folder_path (str): The path of the folder where files are located.
         chunk_size (str): The size of the chunks to split the documents into.

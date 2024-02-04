@@ -43,7 +43,7 @@ def load_documents(
     Load documents from a folder and process them into chunks.
 
     Args:
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "langchain".
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
         AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         allowed_formats (Union[list[str], str]): List of formats or 'all' to allow any supported format.
         folder_path (str): Path to the folder containing the documents.
@@ -84,7 +84,9 @@ def load_documents(
             glob_patterns=_FORMAT_VERSIONS[format],
         )
 
-    all_documents = sum(documents.values(), [])
+    all_documents = {}
+    for inner_dict in documents.values():
+        all_documents.update(inner_dict)
 
     logger.info(f"Loaded {len(all_documents)} chunks from {folder_path}")
 

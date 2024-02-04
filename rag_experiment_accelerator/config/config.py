@@ -98,6 +98,7 @@ class Config:
 
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
+        self.CHUNKING_STRATEGY = data["chunking"]["strategy"]
         self.EF_CONSTRUCTIONS = data["ef_construction"]
         self.EF_SEARCHES = data["ef_search"]
         self.NAME_PREFIX = data["name_prefix"]
@@ -127,9 +128,6 @@ class Config:
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
-        self.chunking_strategy = data.get(
-            "chunking-strategy", "langchain"
-        )
         for model_config in embedding_model_config:
             kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
             self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))

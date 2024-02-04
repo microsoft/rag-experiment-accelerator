@@ -2,7 +2,8 @@
     "name_prefix": "surface",
     "chunking": {
         "chunk_size": [1000],
-        "overlap_size": [200]
+        "overlap_size": [200],
+        "strategy": "azure-document-intelligence"
     },
     "embedding_models": [
         {
@@ -42,11 +43,10 @@
         "llm_answer_relevance",
         "llm_context_precision"
     ],
-    "azure_oai_chat_deployment_name": "gpt-35-turbo",
-    "azure_oai_eval_deployment_name": "gpt-35-turbo",
+    "azure_oai_chat_deployment_name": "gpt-35",
+    "azure_oai_eval_deployment_name": "gpt-35",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
-    "chunking-strategy": "langchain"
+    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
 }
