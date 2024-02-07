@@ -12,7 +12,7 @@ The `setup` node runs first and loads the required environment variables from a 
 
 ### Index
 The `index` node will:
-- Create indexes based on the paramters set in `config.json`. Each index name will be in the following format: `{name_prefix}-{chunk_size}-{overlap}-{dimension}-{ef_construction}-{ef_search}`
+- Create indexes based on the parameters set in `config.json`. Each index name will be in the following format: `{name_prefix}-{chunk_size}-{overlap}-{dimension}-{ef_construction}-{ef_search}`
 - Chunk documents based on the chunking parameters in `config.json`
 - Generate a summary and title for each chunk
 - Create embeddings for each chunk's content, generated title, and generated summary

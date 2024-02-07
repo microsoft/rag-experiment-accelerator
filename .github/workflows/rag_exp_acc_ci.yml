@@ -1,4 +1,4 @@
-name: rag_exp_acc_ci.yml
+name: rag_exp_acc_ci
 
 on:
   workflow_call:
