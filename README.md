@@ -56,7 +56,7 @@ LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
-conda create -n rag-test python=3.10
+conda create -n rag-test python=3.11
 conda activate rag-test
 pip install .
 ```
@@ -136,24 +136,24 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 
 `embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence trasnformer models.
 
-### Azure OpenAI embedding model conifg
+### Azure OpenAI embedding model config
 
 ```json
-    {
-        "type": "azure", 
-        "deployment_name": "the deployment name of the model",
-        "dimension": "the dimesion of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
-    },
+{
+    "type": "azure", 
+    "deployment_name": "the deployment name of the model",
+    "dimension": "the dimesion of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
+}
 ```
 
 ### Sentence Transformer embedding model
 
 ```json
-        {
-            "type": "sentence-transformer",
-            "model_name": "the name of the sentence transformer model",
-            "dimension": "the dimension of the model. This field is not required if model name is one of ['all-MiniLM-L6-v2', 'all-mpnet-base-v2', 'bert-large-nli-mean-tokens]"
-        }
+{
+    "type": "sentence-transformer",
+    "model_name": "the name of the sentence transformer model",
+    "dimension": "the dimension of the model. This field is not required if model name is one of ['all-MiniLM-L6-v2', 'all-mpnet-base-v2', 'bert-large-nli-mean-tokens]"
+}
 ```
 ## Reports
 
