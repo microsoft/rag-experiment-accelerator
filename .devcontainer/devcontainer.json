@@ -15,8 +15,11 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"github.vscode-pull-request-github",
+				"ms-vscode.azure-account",
+				"ms-python.python",
 				"ms-azuretools.vscode-bicep",
-				"prompt-flow.prompt-flow",
+				"prompt-flow.prompt-flow"
 			]
 		}
 	}

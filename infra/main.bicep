@@ -4,6 +4,9 @@ param ResourcePrefix string
 @description('Location for all resources.')
 param Location string = resourceGroup().location
 
+@description('Location for all resources.')
+param AISearchLocation string = resourceGroup().location
+
 @description('Name of Azure OpenAI Resource')
 param OpenAIName string = '${ResourcePrefix}oai'
 
@@ -58,9 +61,10 @@ resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
+// https://aka.ms/semanticsearchavailability for list of available regions.
 resource AISearch 'Microsoft.Search/searchServices@2023-11-01' = {
   name: AISearchName
-  location: Location
+  location: AISearchLocation
   sku: {
     name: 'standard'
   }
@@ -93,12 +97,12 @@ resource KeyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   }
 }
 
-resource ApplicationInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
-  name: ApplicationInsightsName
-  location: Location
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
+module monitoring 'monitor/appInsights.bicep' = {
+  name: 'appInsights'
+  params: {
+    ApplicationInsightsName: ApplicationInsightsName
+    Location: Location
+    LogWorkspaceName: '${ResourcePrefix}lw'
   }
 }
 
@@ -111,7 +115,6 @@ resource MachineLearningWorkspace 'Microsoft.MachineLearningServices/workspaces@
   properties: {
     storageAccount: StorageAccount.id
     keyVault: KeyVault.id
-    applicationInsights: ApplicationInsights.id
+    applicationInsights: monitoring.outputs.ApplicationInsightsId
   }
 }
-
