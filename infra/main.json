@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.24.24.22086",
-      "templateHash": "473622363600498874"
+      "templateHash": "15931511998801336232"
     }
   },
   "parameters": {
@@ -16,6 +16,13 @@
       }
     },
     "Location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "AISearchLocation": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
@@ -121,7 +128,7 @@
       "type": "Microsoft.Search/searchServices",
       "apiVersion": "2023-11-01",
       "name": "[parameters('AISearchName')]",
-      "location": "[parameters('Location')]",
+      "location": "[parameters('AISearchLocation')]",
       "sku": {
         "name": "standard"
       },
@@ -156,16 +163,6 @@
       }
     },
     {
-      "type": "Microsoft.Insights/components",
-      "apiVersion": "2020-02-02-preview",
-      "name": "[parameters('ApplicationInsightsName')]",
-      "location": "[parameters('Location')]",
-      "kind": "web",
-      "properties": {
-        "Application_Type": "web"
-      }
-    },
-    {
       "type": "Microsoft.MachineLearningServices/workspaces",
       "apiVersion": "2023-06-01-preview",
       "name": "[parameters('MachineLearningName')]",
@@ -176,13 +173,95 @@
       "properties": {
         "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]",
-        "applicationInsights": "[resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName'))]"
+        "applicationInsights": "[reference(resourceId('Microsoft.Resources/deployments', 'appInsights'), '2022-09-01').outputs.ApplicationInsightsId.value]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName'))]",
         "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]",
+        "[resourceId('Microsoft.Resources/deployments', 'appInsights')]",
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
       ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "appInsights",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "ApplicationInsightsName": {
+            "value": "[parameters('ApplicationInsightsName')]"
+          },
+          "Location": {
+            "value": "[parameters('Location')]"
+          },
+          "LogWorkspaceName": {
+            "value": "[format('{0}lw', parameters('ResourcePrefix'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.24.24.22086",
+              "templateHash": "8432787997070921516"
+            }
+          },
+          "parameters": {
+            "Location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "LogWorkspaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Log Analytics workspace."
+              }
+            },
+            "ApplicationInsightsName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Insights."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2022-10-01",
+              "name": "[parameters('LogWorkspaceName')]",
+              "location": "[parameters('Location')]",
+              "properties": {}
+            },
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('ApplicationInsightsName')]",
+              "location": "[parameters('Location')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('LogWorkspaceName'))]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('LogWorkspaceName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "ApplicationInsightsId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName'))]"
+            }
+          }
+        }
+      }
     }
   ]
 }
