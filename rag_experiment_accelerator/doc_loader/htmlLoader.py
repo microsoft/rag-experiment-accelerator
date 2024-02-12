@@ -89,8 +89,8 @@ def load_html_files_semantic(
             doc = nlp(chunk.text)
             embeddings_dict[chunk.id] = doc.vector
         high_similarity, low_similarity = get_semantic_similarity(embeddings_dict, unique_dict, 0.95)
-        all_chunks.append(high_similarity)
-        all_chunks.append(low_similarity)
+        all_chunks.update(high_similarity)
+        all_chunks.update(low_similarity)
     return(all_chunks)
 
 
