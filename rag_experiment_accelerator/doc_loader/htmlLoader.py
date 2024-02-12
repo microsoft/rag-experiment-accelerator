@@ -1,5 +1,19 @@
+from glob import glob
+import os
+import json
+import hashlib
+import random
+import string
+import uuid
 from langchain.document_loaders import BSHTMLLoader
+from unstructured.partition.html import partition_html
+from unstructured.chunking.title import chunk_by_title
+from unstructured.staging.base import elements_to_json
+import spacy
 
+from rag_experiment_accelerator.doc_loader.utils.semantic_chunking import (
+    get_semantic_similarity
+)
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files,
 )
@@ -39,3 +53,44 @@ def load_html_files(
         glob_patterns=glob_patterns,
         loader_kwargs={"open_encoding": "utf-8"},
     )
+
+
+def load_html_files_semantic(    
+    folder_path: str,
+    glob_patterns: list[str] = ["html", "htm", "xhtml", "html5"],
+    chunk_size: int = 0,
+    overlap_size: int = 0,
+):
+    nlp = spacy.load("en_core_web_md")
+    unique_dict = {}
+    all_chunks = {}
+    matching_files = []
+    for pattern in glob_patterns:
+        # "." is used for hidden files, "~" is used for Word temporary files
+        glob_pattern = f"**/[!.~]*.{pattern}"
+        full_glob_pattern = os.path.join(folder_path, glob_pattern)
+        matching_files += glob(full_glob_pattern, recursive=True)
+
+    for filename in matching_files:
+        elements = partition_html(
+            filename=filename
+        )
+
+        chunks = chunk_by_title(
+            elements=elements,
+            new_after_n_chars=chunk_size,
+            overlap=overlap_size
+        )
+
+        embeddings_dict = {}
+        for chunk in chunks:
+            if chunk.id not in unique_dict:
+                unique_dict[chunk.id] = chunk.text
+            doc = nlp(chunk.text)
+            embeddings_dict[chunk.id] = doc.vector
+        high_similarity, low_similarity = get_semantic_similarity(embeddings_dict, unique_dict, 0.95)
+        all_chunks.append(high_similarity)
+        all_chunks.append(low_similarity)
+    return(all_chunks)
+
+
