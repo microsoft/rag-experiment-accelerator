@@ -25,7 +25,7 @@ def run(config_dir: str, filename: str = "config.json"):
     config = Config(config_dir, filename=filename)
     azure_cred = get_default_az_cred()
     all_docs = load_documents(
-                config.chunking_strategy, config.AzureDocumentIntelligenceCredentials, config.DATA_FORMATS, config.data_dir, 2000, 0)
+                config.CHUNKING_STRATEGY, config.AzureDocumentIntelligenceCredentials, config.DATA_FORMATS, config.data_dir, 2000, 0)
 
     try:
         os.makedirs(config.artifacts_dir, exist_ok=True)
