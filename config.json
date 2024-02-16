@@ -1,9 +1,8 @@
 {
-    "name_prefix": "surface",
+    "name_prefix": "surface-test-with-basic-v3",
     "chunking": {
         "chunk_size": [1000],
-        "overlap_size": [200],
-        "strategy": "azure-document-intelligence"
+        "overlap_size": [200]
     },
     "embedding_models": [
         {
@@ -48,5 +47,6 @@
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
+    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
+    "chunking_strategy": "basic"
 }
