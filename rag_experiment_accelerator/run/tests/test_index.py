@@ -41,9 +41,9 @@ class TestIndex(unittest.TestCase):
         mock_Config.return_value.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY = 'test_key'
         mock_Config.return_value.AZURE_OAI_CHAT_DEPLOYMENT_NAME = 'test_deployment_name'
         doc1 = MagicMock()
-        doc1.page_content = 'content1'
+        doc1 = {'key1': 'content1'}
         doc2 = MagicMock()
-        doc2.page_content = 'content2'
+        doc2 = {'key2': 'content2'}
         mock_load_documents.return_value = [doc1, doc2]
 
         # Mock the generate_embedding method for each embedding model

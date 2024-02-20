@@ -170,7 +170,6 @@ def generate_qna(docs, azure_oai_deployment_name):
                     "context": chunk,
                 }
                 new_df = new_df._append(data, ignore_index=True)
-                logger.info(f"Generated QnA for document {i}")
             except Exception as e:
                 logger.error(
                     "could not generate a valid json so moving over to next"
