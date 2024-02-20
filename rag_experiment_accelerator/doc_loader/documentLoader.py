@@ -86,8 +86,8 @@ def load_documents(
 
     all_documents = []
     for inner_dict in documents.keys():
-        for key in documents[inner_dict].keys():
-            all_documents.append({key: documents[inner_dict][key]})
+        for value in documents[inner_dict]:
+            all_documents.append(value)
 
     logger.info(f"Loaded {len(all_documents)} chunks from {folder_path}")
 

@@ -56,10 +56,10 @@ def load_pdf_files(
         f" overlap of {overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
-    docsDict = {}
+    docsList = []
     for doc in docs:
-        docsDict[str(uuid.uuid4())] = doc.page_content
+        docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 
-    return docsDict
+    return docsList
