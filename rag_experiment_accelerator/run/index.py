@@ -86,14 +86,15 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
                             ef_search,
                         )
                         data_load = []
-                        for docs in all_docs.values():
-                            chunk_dict = {
-                                "content": docs,
-                                "content_vector": embedding_model.generate_embedding(
-                                    chunk=str(pre_process.preprocess(docs))
-                                ),
-                            }
-                            data_load.append(chunk_dict)
+                        for doc in all_docs:
+                            for value in doc.values():
+                                chunk_dict = {
+                                    "content": value,
+                                    "content_vector": embedding_model.generate_embedding(
+                                        chunk=str(pre_process.preprocess(value))
+                                    ),
+                                }
+                                data_load.append(chunk_dict)
                         upload_data(
                             chunks=data_load,
                             service_endpoint=service_endpoint,

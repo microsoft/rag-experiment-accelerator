@@ -51,7 +51,7 @@ def load_documents(
         overlap_size (int): Size of overlap between adjacent chunks.
 
     Returns:
-        list: A list containing processed document chunks.
+        list: A list of dictionaries containing the processed chunks.
 
     Raises:
         FileNotFoundError: When the specified folder does not exist.
@@ -84,9 +84,10 @@ def load_documents(
             glob_patterns=_FORMAT_VERSIONS[format],
         )
 
-    all_documents = {}
-    for inner_dict in documents.values():
-        all_documents.update(inner_dict)
+    all_documents = []
+    for inner_dict in documents.keys():
+        for key in documents[inner_dict].keys():
+            all_documents.append({key: documents[inner_dict][key]})
 
     logger.info(f"Loaded {len(all_documents)} chunks from {folder_path}")
 

@@ -1,5 +1,5 @@
 {
-    "name_prefix": "surface-test-with-basic-v3",
+    "name_prefix": "surface-test-with-basic-v4",
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200]
@@ -42,8 +42,8 @@
         "llm_answer_relevance",
         "llm_context_precision"
     ],
-    "azure_oai_chat_deployment_name": "gpt-35",
-    "azure_oai_eval_deployment_name": "gpt-35",
+    "azure_oai_chat_deployment_name": "gpt-35-turbo",
+    "azure_oai_eval_deployment_name": "gpt-35-turbo",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
