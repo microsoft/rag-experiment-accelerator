@@ -142,10 +142,10 @@ def generate_qna(docs, azure_oai_deployment_name):
     column_names = ["user_prompt", "output_prompt", "context"]
     new_df = pd.DataFrame(columns=column_names)
 
-    for i, key in enumerate(docs):
+    for doc in docs:
         # what happens with < 50 ? Currently we are skipping them
         # But we aren't explicitly saying that stating that, should we?
-        chunk = docs[key]
+        chunk = list(doc.values())[0]
         if len(chunk) > 50:
             response = ""
             try:
