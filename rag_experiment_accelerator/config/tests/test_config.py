@@ -1,12 +1,12 @@
+from rag_experiment_accelerator.config.config import Config
+from unittest.mock import MagicMock, patch
+
 import pytest
 import json
 import os
 
 import sys
 sys.path.insert(0, '/Users/shivamsingh/Documents/MS/rag-experiment-accelerator')
-
-from rag_experiment_accelerator.config.config import Config
-from unittest.mock import MagicMock, patch
 
 
 def get_test_config_dir():
