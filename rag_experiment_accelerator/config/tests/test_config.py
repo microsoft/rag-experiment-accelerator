@@ -5,9 +5,6 @@ import pytest
 import json
 import os
 
-import sys
-sys.path.insert(0, '/Users/shivamsingh/Documents/MS/rag-experiment-accelerator')
-
 
 def get_test_config_dir():
     return os.path.join(os.path.dirname(__file__), "data")
