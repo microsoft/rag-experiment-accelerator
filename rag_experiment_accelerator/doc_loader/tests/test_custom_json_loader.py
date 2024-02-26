@@ -12,6 +12,8 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
 def test_load_json_files():
     keys_to_load = ["content", "title"]
     docs = load_structured_files(
+        chunking_strategy="basic",
+        AzureDocumentIntelligenceCredentials=None,
         file_format="JSON",
         language=None,
         loader=CustomJSONLoader,
@@ -24,20 +26,18 @@ def test_load_json_files():
         },
     )
 
-    file_path = os.path.abspath(
-        "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
-    )
     assert (
-        docs[0].page_content
+        list(docs[0].values())[0]
         == "[{'content': 'This is the content for item 1.', 'title': 'Title TEST 1'}, {'content': 'This is the content for item 2.', 'title': 'Title 2'}, {'content': 'This is the content for item 3.', 'title': 'Title 3'}, {'content': 'This is the content for item 4.', 'title': 'Title 4'}, {'content': 'This is the content for item 5.', 'title': 'Title 5'}, {'content': 'This is the content for item 6.', 'title': 'Title 6'}]"
     )
-    assert docs[0].metadata["source"] == file_path
 
 
 def test_load_json_files_raises_invalid_keys():
     keys_to_load = ["content", "title"]
     with pytest.raises(ValueError) as exec_info:
         load_structured_files(
+            chunking_strategy="basic",
+            AzureDocumentIntelligenceCredentials=None,
             file_format="JSON",
             language=None,
             loader=CustomJSONLoader,
@@ -66,6 +66,8 @@ def test_load_json_files_raises_not_a_list():
     loader = CustomJSONLoader
     with pytest.raises(ValueError) as exec_info:
         load_structured_files(
+            chunking_strategy="basic",
+            AzureDocumentIntelligenceCredentials=None,
             file_format="JSON",
             language=None,
             loader=loader,

@@ -5,11 +5,14 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files,
 )
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
 
 logger = get_logger(__name__)
 
 
 def load_json_files(
+    chunking_strategy,
+    AzureDocumentIntelligenceCredentials: AzureDocumentIntelligenceCredentials,
     folder_path: str,
     chunk_size: str,
     overlap_size: str,
@@ -19,6 +22,8 @@ def load_json_files(
     Load and process Json files from a given folder path.
 
     Args:
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
+        AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         folder_path (str): The path of the folder where files are located.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
@@ -32,6 +37,8 @@ def load_json_files(
 
     keys_to_load = ["content", "title"]
     return load_structured_files(
+        chunking_strategy,
+        AzureDocumentIntelligenceCredentials,
         file_format="JSON",
         language=None,
         loader=CustomJSONLoader,

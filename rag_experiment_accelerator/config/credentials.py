@@ -145,6 +145,45 @@ class AzureSearchCredentials:
         )
 
 
+class AzureDocumentIntelligenceCredentials:
+    """
+    A class representing the credentials required to access an Azure Document Intelligence service.
+
+    Attributes:
+        AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT (str): The endpoint URL of the Azure Document Intelligence service.
+        AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY (str): The admin key required to access the Azure Document Intelligence service.
+    """
+
+    def __init__(
+        self,
+        azure_document_intelligence_endpoint: str,
+        azure_document_intelligence_admin_key: str,
+    ) -> None:
+        self.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT = azure_document_intelligence_endpoint
+        self.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY = azure_document_intelligence_admin_key
+
+    @classmethod
+    def from_env(cls) -> "AzureDocumentIntelligenceCredentials":
+        """
+        Creates an instance of AzureDocumentIntelligenceCredentials using environment variables.
+
+        Returns:
+            AzureDocumentIntelligenceCredentials: An instance of AzureDocumentIntelligenceCredentials.
+        """
+        return cls(
+            azure_document_intelligence_endpoint=_get_env_var(
+                var_name="AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT",
+                critical=False,
+                mask=False,
+            ),
+            azure_document_intelligence_admin_key=_get_env_var(
+                var_name="AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY",
+                critical=False,
+                mask=True,
+            ),
+        )
+
+
 class AzureSkillsCredentials:
     """
     A class representing the credentials required to access the skills provided with Azure AI Search.

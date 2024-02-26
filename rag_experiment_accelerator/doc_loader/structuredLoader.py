@@ -5,11 +5,16 @@ from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
+from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_loader
+import uuid
 
 logger = get_logger(__name__)
 
 
 def load_structured_files(
+    chunking_strategy,
+    AzureDocumentIntelligenceCredentials: AzureDocumentIntelligenceCredentials,
     file_format: str,
     language: str,
     loader: BaseLoader,
@@ -23,6 +28,8 @@ def load_structured_files(
     Load and process structured files from a given folder path.
 
     Args:
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
+        AzureDocumentIntelligenceCredentials (AzureDocumentIntelligenceCredentials): The credentials for Azure Document Intelligence resource.
         file_format (str): The file_format of the documents to be loaded.
         language (str): The language of the documents to be loaded.
         loader (BaseLoader): The document loader object that reads the files.
@@ -51,7 +58,11 @@ def load_structured_files(
         loader_kwargs = {}
 
     for file in matching_files:
-        document = loader(file, **loader_kwargs).load()
+        if chunking_strategy == "azure-document-intelligence":
+            document = azure_document_intelligence_loader(file, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY)
+        else:
+            # Use the loader defined in function call.
+            document = loader(file, **loader_kwargs).load()
         documents += document
 
     logger.debug(f"Loaded {len(documents)} {file_format} files")
@@ -74,9 +85,12 @@ def load_structured_files(
     )
 
     docs = text_splitter.split_documents(documents)
+    docsList = []
+    for doc in docs:
+        docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
 
     logger.info(
         f"Split {len(documents)} {file_format} files into {len(docs)} chunks"
     )
 
-    return docs
+    return docsList

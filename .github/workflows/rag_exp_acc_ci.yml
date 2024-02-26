@@ -31,6 +31,8 @@ jobs:
       AML_RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
       AML_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
       AML_WORKSPACE_NAME: ${{ secrets.WORKSPACE_NAME }}
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: ""
+      AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY: ""
     name: code validation through execution
     runs-on: ubuntu-latest
     steps:

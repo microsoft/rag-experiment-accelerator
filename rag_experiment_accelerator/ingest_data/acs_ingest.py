@@ -142,10 +142,11 @@ def generate_qna(docs, azure_oai_deployment_name):
     column_names = ["user_prompt", "output_prompt", "context"]
     new_df = pd.DataFrame(columns=column_names)
 
-    for i, chunk in enumerate(docs):
+    for doc in docs:
         # what happens with < 50 ? Currently we are skipping them
         # But we aren't explicitly saying that stating that, should we?
-        if len(chunk.page_content) > 50:
+        chunk = list(doc.values())[0]
+        if len(chunk) > 50:
             response = ""
             try:
                 response = ResponseGenerator(
@@ -153,7 +154,7 @@ def generate_qna(docs, azure_oai_deployment_name):
                 ).generate_response(
                     generate_qna_instruction_system_prompt,
                     generate_qna_instruction_user_prompt
-                    + chunk.page_content
+                    + chunk
                     + "\nEND OF CONTEXT",
                 )
                 response_dict = json.loads(response)
@@ -166,10 +167,9 @@ def generate_qna(docs, azure_oai_deployment_name):
                 data = {
                     "user_prompt": user_prompt,
                     "output_prompt": output_prompt,
-                    "context": chunk.page_content,
+                    "context": chunk,
                 }
                 new_df = new_df._append(data, ignore_index=True)
-                logger.info(f"Generated QnA for document {i}")
             except Exception as e:
                 logger.error(
                     "could not generate a valid json so moving over to next"

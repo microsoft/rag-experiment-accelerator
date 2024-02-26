@@ -33,15 +33,17 @@ class TestIndex(unittest.TestCase):
         mock_Config.return_value.EF_CONSTRUCTIONS = ef_constructions
         mock_Config.return_value.EF_SEARCHES = ef_searches
         mock_Config.return_value.DATA_FORMATS = 'test_format'
+        mock_Config.return_value.CHUNKING_STRATEGY = 'basic'
+        mock_Config.return_value.AzureDocumentIntelligenceCredentials = None
         mock_Config.return_value.artifacts_dir = 'test_artifacts_dir'
         mock_Config.return_value.data_dir = 'data_dir'
         mock_Config.return_value.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT = 'test_endpoint'
         mock_Config.return_value.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY = 'test_key'
         mock_Config.return_value.AZURE_OAI_CHAT_DEPLOYMENT_NAME = 'test_deployment_name'
         doc1 = MagicMock()
-        doc1.page_content = 'content1'
+        doc1 = {'key1': 'content1'}
         doc2 = MagicMock()
-        doc2.page_content = 'content2'
+        doc2 = {'key2': 'content2'}
         mock_load_documents.return_value = [doc1, doc2]
 
         # Mock the generate_embedding method for each embedding model
@@ -62,7 +64,7 @@ class TestIndex(unittest.TestCase):
         # Assert
         mock_Config.assert_called_once()
         mock_load_documents.assert_called()
-        expected_calls = [call('test_format', 'data_dir', chunk_size, overlap_size)
+        expected_calls = [call('basic', None, 'test_format', 'data_dir', chunk_size, overlap_size)
                           for chunk_size, overlap_size in zip(chunk_sizes, overlap_sizes)]
         mock_load_documents.assert_has_calls(expected_calls, any_order=True)
         expected_first_call_args = [chunks, 'test_endpoint', 'test_index_name',

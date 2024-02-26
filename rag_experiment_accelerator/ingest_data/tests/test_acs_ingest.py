@@ -1,7 +1,7 @@
 import json
+import uuid
 
 from unittest.mock import patch, Mock
-from langchain.docstore.document import Document
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     generate_title,
@@ -163,7 +163,7 @@ def test_generate_qna(mock_response_generator):
     # Arrange
     content = "This is a test document content. This needs to be above 50 characters because we don't generate responses for chunks of less than size 50. Speaking of which, this is a very long sentence."
     mock_docs = [
-        Document(page_content=content),
+        dict({str(uuid.uuid4()): content})
     ]
     mock_deployment_name = "TestDeployment"
     mock_response = '[{"role": "user", "content": "Test question?"}, {"role": "assistant", "content": "Test answer."}]'
@@ -185,9 +185,7 @@ def test_generate_qna(mock_response_generator):
 def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads):
     # Arrange
     mock_docs = [
-        Mock(
-            page_content="This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50"
-        )
+        dict({str(uuid.uuid4()): "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50"})
     ]
     mock_deployment_name = "TestDeployment"
     mock_response = "Invalid JSON"

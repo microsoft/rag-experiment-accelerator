@@ -24,19 +24,21 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 3. **Rich Search Index**: It creates multiple search indexes based on hyperparameter configurations available in the config file.
 
-4. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
+4. **Multiple Document Chunking Strategies**: The tool supports multiple chunking strategies, including using Azure Document Intelligence and basic chunking using langchain. This gives you the flexibility to experiment with different chunking strategies and evaluate their effectiveness.
 
-5. **Multiple Search Types**: It supports multiple search types, including pure text, pure vector, cross-vector, multi-vector, hybrid, and more. This gives you the ability to conduct comprehensive analysis on search capabilities and results.
+5. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
 
-6. **Sub-Querying**: The pattern evaluates the user query and if it finds it complex enough, it breaks it down into smaller sub-queries to generate relevant context.
+6. **Multiple Search Types**: It supports multiple search types, including pure text, pure vector, cross-vector, multi-vector, hybrid, and more. This gives you the ability to conduct comprehensive analysis on search capabilities and results.
 
-7. **Re-Ranking**: The query responses from Azure AI Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
+7. **Sub-Querying**: The pattern evaluates the user query and if it finds it complex enough, it breaks it down into smaller sub-queries to generate relevant context.
 
-8. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
+8. **Re-Ranking**: The query responses from Azure AI Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
 
-9. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visually appealing visualizations that make it easy to analyze and share experiment findings.
+9. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
 
-10. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
+10. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visually appealing visualizations that make it easy to analyze and share experiment findings.
+
+11. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
 
 ## Installation
@@ -128,7 +130,8 @@ To use the **RAG Experiment Accelerator**, follow these steps:
     "azure_oai_chat_deployment_name":  "determines the Azure OpenAI deployment name",
     "embedding_model_name": "embedding model name",
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
-    "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0"
+    "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
+    "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
 }
 ```
 

@@ -72,7 +72,7 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             all_docs = load_documents(
-                config.DATA_FORMATS, config.data_dir, chunk_size, overlap
+                config.CHUNKING_STRATEGY, config.AzureDocumentIntelligenceCredentials, config.DATA_FORMATS, config.data_dir, chunk_size, overlap
             )
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
@@ -86,14 +86,15 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
                             ef_search,
                         )
                         data_load = []
-                        for docs in all_docs:
-                            chunk_dict = {
-                                "content": docs.page_content,
-                                "content_vector": embedding_model.generate_embedding(
-                                    chunk=str(pre_process.preprocess(docs.page_content))
-                                ),
-                            }
-                            data_load.append(chunk_dict)
+                        for doc in all_docs:
+                            for value in doc.values():
+                                chunk_dict = {
+                                    "content": value,
+                                    "content_vector": embedding_model.generate_embedding(
+                                        chunk=str(pre_process.preprocess(value))
+                                    ),
+                                }
+                                data_load.append(chunk_dict)
                         upload_data(
                             chunks=data_load,
                             service_endpoint=service_endpoint,

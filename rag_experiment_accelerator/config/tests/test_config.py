@@ -1,8 +1,9 @@
+from rag_experiment_accelerator.config.config import Config
+from unittest.mock import MagicMock, patch
+
 import pytest
 import json
 import os
-from rag_experiment_accelerator.config.config import Config
-from unittest.mock import MagicMock, patch
 
 
 def get_test_config_dir():
@@ -57,6 +58,7 @@ def test_config_init(mock_embedding_model_factory):
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
+    assert config.CHUNKING_STRATEGY == mock_config_data["chunking_strategy"]
     assert config.EF_CONSTRUCTIONS == mock_config_data["ef_construction"]
     assert config.EF_SEARCHES == mock_config_data["ef_search"]
     assert config.RERANK == mock_config_data["rerank"]
