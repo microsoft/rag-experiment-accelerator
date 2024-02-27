@@ -36,12 +36,16 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 9. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
 
-10. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visually appealing visualizations that make it easy to analyze and share experiment findings.
+10. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visualizations that make it easy to analyze and share experiment findings.
 
 11. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
 
 ## Installation
+
+Two options are available, install locally or inside a development container.
+
+### Local install
 
 To use the **RAG Experiment Accelerator**, follow these installation steps:
 
@@ -72,6 +76,78 @@ az account show
 
 5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
+### Use inside a Development Container
+
+#### Install the Pre-Requisite Software
+
+Install the following software on the machine you will perform the deployment from:
+
+>1. For Windows - [Windows Store Ubuntu 18.04 LTS](https://www.microsoft.com/store/productId/9N9TNGVNDL3Q)
+>2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
+>3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
+>4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
+
+#### For Windows - Configure WSL2 Backend for Docker Containers
+
+To enable **Developing inside a Container** you must configure the integration between Docker Desktop and Ubuntu on your machine.
+
+>1. Launch Docker Desktop
+>2. Open **Settings > General**. Make sure the *Use the WSL 2 based engine" is enabled.
+>3. Navigate to **Settings > Resources > WSL INTEGRATION**.
+>      - Ensure *Enable Integration with my default WSL distro" is enabled.
+>      - Enable the Ubuntu-18.04 option.
+>4. Select **Apply & Restart**
+
+##### Connect to Ubuntu WSL with VSCode
+
+Now that Docker Desktop and Ubuntu are integrated, we want to Access the Ubuntu bash prompt from inside VSCode.
+
+>1. Launch VSCode.
+>2. Select **View > Terminal**. A new window should open along the bottom of the VSCode window.
+>3. From this windows use the **Launch Profile** dropdown to open the **Ubuntu 18.04 (WSL)** terminal. 
+>4. A bash prompt should open in the format `{username}@{machine_name}:/mnt/c/Users/{username}$`
+
+Once this is complete, you are ready to configure Git for your Ubuntu WSL environment.
+
+##### Configure Git in Ubuntu WSL environment
+
+The next step is to configure Git for your Ubuntu WSL environment. We will use the bash prompt from the previous step to issue the following commands:
+
+Set Git User Name and Email
+
+``` bash
+    git config --global user.name "Your Name"
+    git config --global user.email "youremail@yourdomain.com"
+```
+
+Set Git [UseHttps](https://github.com/microsoft/Git-Credential-Manager-Core/blob/main/docs/configuration.md#credentialusehttppath)
+
+``` bash
+    git config --global credential.useHttpPath true
+```
+
+Configure Git to use the Windows Host Credential Manager
+
+``` bash
+git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-manager-core.exe"
+```
+
+##### Install Azure CLI On WSL
+
+In your Ubuntu 18.04(WSL) terminal from the previous step, follow the directions [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux) to install Azure CLI.
+
+
+Install Azure CLI and authorize:
+```bash
+az login
+az account set  --subscription="<your_subscription_guid>"
+az account show
+```
+
+#### Data
+
+Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
+---
 
 ## Pre-requisites
 
@@ -96,11 +172,30 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 
 1. Modify the `config.json` file with the hyperparameters for your experiment.
 2. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
+  ```bash
+  python 01_index.py
+  -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -dd "The directory holding the data. Defaults to data"
+  -cf "JSON config filename. Defaults to config.json"
+  ```
 3. Run `02_qa_generation.py` (python 02_qa_generation.py) to generate question-answer pairs using Azure OpenAI.
-4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context. 
+  ```bash
+  python 02_qa_generation.py
+  -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -cf "JSON config filename. Defaults to config.json"
+  ```
+4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
+  ```bash
+  python 03_querying.py
+  -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -cf "JSON config filename. Defaults to config.json"
+  ```
 5. Run `04_evaluation.py` (python 04_evaluation.py) to calculate metrics using various methods and generate charts and reports in Azure Machine Learning using MLFlow integration.
-
-
+  ```bash
+  python 04_evaluation.py
+  -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -cf "JSON config filename. Defaults to config.json"
+  ```
 # Description of configuration elements
 
 ```json
@@ -137,7 +232,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 
 ## Description of embedding models config
 
-`embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence trasnformer models.
+`embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models.
 
 ### Azure OpenAI embedding model config
 
@@ -145,7 +240,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 {
     "type": "azure", 
     "deployment_name": "the deployment name of the model",
-    "dimension": "the dimesion of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
+    "dimension": "the dimension of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
 }
 ```
 
