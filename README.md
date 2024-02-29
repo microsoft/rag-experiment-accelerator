@@ -116,14 +116,14 @@ The next step is to configure Git for your Ubuntu WSL environment. We will use t
 Set Git User Name and Email
 
 ``` bash
-    git config --global user.name "Your Name"
-    git config --global user.email "youremail@yourdomain.com"
+git config --global user.name "Your Name"
+git config --global user.email "youremail@yourdomain.com"
 ```
 
 Set Git [UseHttps](https://github.com/microsoft/Git-Credential-Manager-Core/blob/main/docs/configuration.md#credentialusehttppath)
 
 ``` bash
-    git config --global credential.useHttpPath true
+git config --global credential.useHttpPath true
 ```
 
 Configure Git to use the Windows Host Credential Manager
