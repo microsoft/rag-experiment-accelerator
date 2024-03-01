@@ -280,7 +280,7 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 
 ### Pitfalls
 
-This section outlines common gotchas or pitfalls that engineers/developers/data scientists may encounter while working with RAG Experiment Accelrator.
+This section outlines common gotchas or pitfalls that engineers/developers/data scientists may encounter while working with RAG Experiment Accelerator.
 
 #### Azure Authentication and Authorization
 
