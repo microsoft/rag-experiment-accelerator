@@ -278,6 +278,43 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 ![Search evaluation](./images/search_chart.png)
 
 
+### Pitfalls
+
+This section outlines common gotchas or pitfalls that engineers/developers/data scientists may encounter while working with RAG Experiment Accelrator.
+
+#### Azure Authentication and Authorization
+
+##### Description:
+To successfully utilize this solution, you must first authenticate yourself by logging in to your Azure account. This essential step ensures you have the required permissions to access and manage Azure resources used by it. You might errors related to storing QnA data into Azure Machine Learning Data Assets, executing the query and evaluation step as a result of inappropriate authorization and authentication to Azure. Refer to Point 4 in this document for authentication and authorization.
+
+There might be situations in which the solution would still generate errors inspite of valid authentication and authorization. In such cases, start a new session with a brand new terminal instance, login to Azure using steps mentioned in step 4 and also check if the user has contribute access to the Azure resources related to the solution.
+
+#### Configuration
+
+##### Description
+This solution utilizes several configuration parameters in config.jsonthat directly impact its functionality and performance. Please pay close attention to these settings:
+
+**retrieve_num_of_documents:** This config controls the initial number of documents retrieved for analysis. Excessively high or low values can lead to "index out of range" errors due to rank processing of Search AI results.
+**cross_encoder_at_k:** This config influences the ranking process. A high value might result in irrelevant documents being included in the final results.
+**llm_re_rank_threshold:** This config determines which documents are passed to the language model (LLM) for further processing. Setting this value too high could create an overly large context for the LLM to handle, potentially leading to processing errors or degraded results. This might also result in exception from Azure OpenAI endpoint.
+
+#### Azure OpenAI Model and Deployment
+
+##### Description
+Before running this solution, please ensure you've correctly set up both your Azure OpenAI deployment name within config.json file and add relevant secrets to environment variables (.env file). This information is crucial for the application to connect to the appropriate Azure OpenAI resources and function as designed. If you're unsure about the configuration data, please refer to .env.template and config.json file. The solution has been tested with GPT 3.5 turbo model and needs further tests for any other model.
+
+#### QnA Generation and Querying step
+
+##### Description
+During the QnA generation step, you may occasionally encounter errors related to the JSON output received from Azure OpenAI. These errors can prevent the successful generation of few questions and answers. Here's what you need to know:
+
+Possible Causes:
+
+**Incorrect Formatting:** The JSON output from Azure OpenAI may not adhere to the expected format, causing issues with the QnA generation process.
+**Content Filtering:** Azure OpenAI has content filters in place. If the input text or generated responses are deemed inappropriate, it could lead to errors.
+**API Limitations:** The Azure OpenAI service have token and rate limitations that affect the output.
+
+
 ## Contributing
 
 We welcome your contributions and suggestions. To contribute, you need to agree to a
