@@ -45,7 +45,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 Two options are available, install locally or inside a development container.
 
-### Local install
+### 1. Local install
 
 To use the **RAG Experiment Accelerator**, follow these installation steps:
 
@@ -76,7 +76,7 @@ az account show
 
 5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
-### Use inside a Development Container
+### 2. Use inside a Development Container
 
 #### Install the Pre-Requisite Software
 
@@ -104,7 +104,7 @@ Now that Docker Desktop and Ubuntu are integrated, we want to Access the Ubuntu 
 
 >1. Launch VSCode.
 >2. Select **View > Terminal**. A new window should open along the bottom of the VSCode window.
->3. From this windows use the **Launch Profile** dropdown to open the **Ubuntu 18.04 (WSL)** terminal. 
+>3. From this windows use the **Launch Profile** dropdown to open the **Ubuntu 18.04 (WSL)** terminal.
 >4. A bash prompt should open in the format `{username}@{machine_name}:/mnt/c/Users/{username}$`
 
 Once this is complete, you are ready to configure Git for your Ubuntu WSL environment.
@@ -147,6 +147,7 @@ az account show
 #### Data
 
 Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
+
 ---
 
 ## Pre-requisites
@@ -203,7 +204,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
     "name_prefix": "Name of experiment, search index name used for tracking and comparing jobs",
     "chunking": {
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
-        "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]" 
+        "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]"
     },
     "embedding_models": "see 'Description of embedding models config' below",
     "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
@@ -215,7 +216,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
         "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
     },
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
-    "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder", 
+    "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
     "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
     "cross_encoder_at_k": "determines the threshold when using cross-encoding re-ranking. Chunks with given rank value are selected." ,
     "crossencoder_model" :"determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base",
@@ -238,7 +239,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 
 ```json
 {
-    "type": "azure", 
+    "type": "azure",
     "deployment_name": "the deployment name of the model",
     "dimension": "the dimension of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
 }
@@ -338,19 +339,19 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any questio
 
 ### Developer Contribution Guidelines
 
-- **Branch Naming Convention**: 
+- **Branch Naming Convention**:
     - Use the GitHub UI to include a tag in the branch name, then create the branch directly from the UI. Here are some examples:
         - `bug/11-short-description`
         - `feature/22-short-description`
-- **Merging Changes**: 
+- **Merging Changes**:
     - When merging, squash your commits to have up to 3 incremental commits for Pull Requests (PRs) and merges.
     - Project maintainers can merge accepted code changes from contributors or contributors can request Write Permissions to the repo to merge a pull request once it has been reviewed by project maintainers.
     - Project Maintainers can be contacted via [email](ISE_AI_PLATFORM_TD@microsoft.com).
-- **Branch Hygiene**: 
+- **Branch Hygiene**:
     - Delete the branch after it has been merged.
-- **Testing Changes Locally**: 
+- **Testing Changes Locally**:
     - Before merging, test your changes locally.
-- **Naming Conventions**: 
+- **Naming Conventions**:
     - Use snake case for metric names and configuration variables, like `example_snake_case`.
     - Set up your Git username to be your first and last name, like this: `git config --global user.name "First Last"`
 - **Issue Tracking**:
@@ -359,7 +360,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any questio
 
 ## Trademarks
 
-This project might contain trademarks or logos for projects, products, or services. You must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general) to use Microsoft 
+This project might contain trademarks or logos for projects, products, or services. You must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general) to use Microsoft
 trademarks or logos correctly.
 Don't use Microsoft trademarks or logos in modified versions of this project in a way that causes confusion or implies Microsoft sponsorship.
 Follow the policies of any third-party trademarks or logos that this project contains.
