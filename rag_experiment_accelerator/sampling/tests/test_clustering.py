@@ -85,7 +85,7 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
     config.SAMPLE_OPTIMUM_K = 2
     config.SAMPLE_MIN_CLUSTER = 1
     config.SAMPLE_MAX_CLUSTER = 10
-    config.SAMPLE_PERCENTAGE = 50
+    config.SAMPLE_PERCENTAGE = 100
 
     with patch(
         "rag_experiment_accelerator.sampling.clustering.logger", mock_logger
@@ -110,6 +110,7 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         result = cluster(all_chunks, mock_data_dir, config)
 
         # Assert
+        print(len(result))
         assert len(result) == 2
         assert os.path.exists(
             f"{mock_data_dir}/sampling/all_cluster_predictions_cluster_number_2.csv"
