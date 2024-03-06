@@ -1,4 +1,6 @@
 import os
+import pandas as pd
+from os.path import exists
 
 from dotenv import load_dotenv
 
@@ -8,14 +10,15 @@ from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.sampling.clustering import dataframe_to_chunk_dict
+from rag_experiment_accelerator.sampling.clustering import cluster
 
 load_dotenv(override=True)
-
 
 logger = get_logger(__name__)
 
 
-def run(config_dir: str, filename: str = "config.json"):
+def run(config_dir: str, data_dir: str = "data", filename: str = "config.json"):
     """
     Runs the main experiment loop for the QA generation process using the provided configuration and data.
 
@@ -24,8 +27,40 @@ def run(config_dir: str, filename: str = "config.json"):
     """
     config = Config(config_dir, filename=filename)
     azure_cred = get_default_az_cred()
-    all_docs = load_documents(
-                config.CHUNKING_STRATEGY, config.AzureDocumentIntelligenceCredentials, config.DATA_FORMATS, config.data_dir, 2000, 0)
+
+    all_docs = {}
+    # Check if we have already sampled
+    if config.SAMPLE_DATA:
+        logger.info("Running QA Generation process with sampling")
+        if exists(
+            f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv"
+        ):
+            df = pd.read_csv(
+                f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv"
+            )
+            all_docs = dataframe_to_chunk_dict(df)
+            logger.info(
+                f"Loaded sampled file {data_dir}/sampling/sampled_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv"
+            )
+        else:
+            all_docs = load_documents(
+                config.CHUNKING_STRATEGY,
+                config.AzureDocumentIntelligenceCredentials,
+                config.DATA_FORMATS,
+                config.data_dir,
+                2000,
+                0,
+            )
+            all_docs = cluster(all_docs, data_dir, config)
+    else:
+        all_docs = load_documents(
+            config.CHUNKING_STRATEGY,
+            config.AzureDocumentIntelligenceCredentials,
+            config.DATA_FORMATS,
+            config.data_dir,
+            2000,
+            0,
+        )
 
     try:
         os.makedirs(config.artifacts_dir, exist_ok=True)
