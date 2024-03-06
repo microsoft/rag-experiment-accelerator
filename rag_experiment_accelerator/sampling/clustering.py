@@ -16,7 +16,7 @@ from scipy.spatial.distance import cdist
 from rag_experiment_accelerator.utils.logging import get_logger
 from dotenv import load_dotenv
 
-matplotlib.use("TkAgg")
+matplotlib.use("Agg")
 plt.style.use("ggplot")
 warnings.filterwarnings("ignore")
 load_dotenv(override=True)
