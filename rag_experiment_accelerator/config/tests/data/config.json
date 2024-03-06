@@ -1,5 +1,12 @@
 {
     "name_prefix": "test_prefix",
+    "sampling": {
+        "sample_data": true,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
     "chunking": {
         "chunk_size": [512],
         "overlap_size": [128]
