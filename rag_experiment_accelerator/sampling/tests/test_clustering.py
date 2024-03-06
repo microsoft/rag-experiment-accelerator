@@ -15,8 +15,28 @@ def mock_logger():
 def mock_df():
     return pd.DataFrame(
         {
-            "text": ["This is document 1", "This is document 2", "This is document 3"],
-            "processed_text": ["this document 1", "this document 2", "this document 3"],
+            "text": [
+                "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds "
+                "are known for their distinctive cooing call and their ability to navigate long distances. Pigeons "
+                "are also appreciated for their beauty, with their colorful feathers and iridescent sheen.",
+                "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, "
+                "including delivering messages during wartime and racing competitions. They are also popular as pets "
+                "and can be trained to perform tricks.",
+                "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to "
+                "spread seeds and nutrients throughout their environment and are even considered a keystone species "
+                "in some areas.",
+            ],
+            "processed_text": [
+                "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds "
+                "are known for their distinctive cooing call and their ability to navigate long distances. Pigeons "
+                "are also appreciated for their beauty, with their colorful feathers and iridescent sheen.",
+                "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, "
+                "including delivering messages during wartime and racing competitions. They are also popular as pets "
+                "and can be trained to perform tricks.",
+                "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to "
+                "spread seeds and nutrients throughout their environment and are even considered a keystone species "
+                "in some areas.",
+            ],
         }
     )
 
@@ -47,9 +67,15 @@ def mock_data_dir(tmpdir):
 def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_dir):
     # Arrange
     all_chunks = [
-        {"text": "This is document 1"},
-        {"text": "This is document 2"},
-        {"text": "This is document 3"},
+        {
+            "text1": "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds are known for their distinctive cooing call and their ability to navigate long distances. Pigeons are also appreciated for their beauty, with their colorful feathers and iridescent sheen."
+        },
+        {
+            "text2": "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, including delivering messages during wartime and racing competitions. They are also popular as pets and can be trained to perform tricks."
+        },
+        {
+            "text2": "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to spread seeds and nutrients throughout their environment and are even considered a keystone species in some areas."
+        },
     ]
     config = MagicMock()
     config.SAMPLE_OPTIMUM_K = 2
