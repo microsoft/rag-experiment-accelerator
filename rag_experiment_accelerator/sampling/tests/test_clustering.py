@@ -50,15 +50,17 @@ def mock_reducer():
 def mock_df_concat():
     return pd.DataFrame(
         {
-            "x": [0, 1, 2],
-            "y": [0, 1, 2],
+            "x": [0, 1, 2, 3, 4],
+            "y": [0, 1, 2, 3, 4],
             "text": [
                 "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds are known for their distinctive cooing call and their ability to navigate long distances. Pigeons are also appreciated for their beauty, with their colorful feathers and iridescent sheen.",
                 "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, including delivering messages during wartime and racing competitions. They are also popular as pets and can be trained to perform tricks.",
-                "espite their reputation as pests, pigeons play an important role in the ecosystem. They help to spread seeds and nutrients throughout their environment and are even considered a keystone species in some areas.",
+                "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to spread seeds and nutrients throughout their environment and are even considered a keystone species in some areas.",
+                "Overall, pigeons are fascinating and complex creatures that have captured the attention of people for centuries. Whether you love them or hate them, there is no denying the impact that pigeons have had on human society and the natural world.",
+                "However, pigeons can also be carriers of diseases and can cause damage to buildings and other structures. It is important to take proper precautions when dealing with pigeons, such as wearing gloves and avoiding direct contact with their droppings.",
             ],
-            "prediction": [0, 1, 0],
-            "chunk": [0, 1, 0],
+            "prediction": [0, 1, 0, 1, 0],
+            "chunk": [0, 1, 0, 1, 0],
         }
     )
 
