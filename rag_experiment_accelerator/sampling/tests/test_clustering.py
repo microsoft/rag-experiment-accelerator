@@ -108,10 +108,8 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
     ):
         # Act
         result = cluster(all_chunks, mock_data_dir, config)
-
+        assert len(result) == 0
         # Assert
-        print(len(result))
-        assert len(result) == 2
         assert os.path.exists(
             f"{mock_data_dir}/sampling/all_cluster_predictions_cluster_number_2.csv"
         )

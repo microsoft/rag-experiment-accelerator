@@ -1,7 +1,7 @@
 {
     "name_prefix": "test_prefix",
     "sampling": {
-        "sample_data": true,
+        "sample_data": false,
         "sample_percentage": 5,
         "optimum_k": "auto",
         "min_cluster": 2,

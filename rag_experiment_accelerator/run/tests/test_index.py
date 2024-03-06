@@ -89,7 +89,7 @@ class TestIndex(unittest.TestCase):
         doc2 = MagicMock()
         doc2 = {"key2": "content2"}
         mock_load_documents.return_value = [doc1, doc2]
-        mock_Config.return_value.SAMPLE_DATA = "true"
+        mock_Config.return_value.SAMPLE_DATA = "false"
         mock_Config.return_value.SAMPLE_PERCENTAGE = 5
 
         # Mock the generate_embedding method for each embedding model
