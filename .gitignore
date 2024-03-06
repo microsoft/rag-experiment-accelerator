@@ -181,5 +181,3 @@ data/*
 #  promptflow folders
 .promptflow
 .azure
-
-.vscode

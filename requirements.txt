@@ -31,3 +31,4 @@ evaluate==0.4.1
 azure-ai-textanalytics==5.3.0
 azure.ai.documentintelligence==1.0.0b1
 levenshtein==0.25.0
+azure-keyvault-secrets==4.4.*

@@ -1,4 +1,6 @@
 import os
+from azure.keyvault.secrets import SecretClient
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -57,6 +59,38 @@ def _get_env_var(var_name: str, critical: bool, mask: bool) -> str:
         text = var if not mask else _mask_string(var)
         logger.info(f"{var_name} set to {text}")
     return var
+
+
+def _get_secret_var(var_name: str, critical: bool) -> str:
+    """
+    Get the value of a secret variable.
+
+    Args:
+        var_name (str): The name of the secret to retrieve.
+        critical (bool): Whether or not the function should raise an error if the variable is not set.
+
+    Returns:
+        str: The value of the secret.
+
+    Raises:
+        ValueError: If the `critical` parameter is True and the environment variable is not set.
+    """
+    azure_key_vault_endpoint = _get_env_var(
+        var_name="AZURE_KEY_VAULT_ENDPOINT",
+        critical=True,
+        mask=False,
+    )
+    credential = get_default_az_cred()
+    secret_client = SecretClient(azure_key_vault_endpoint, credential)
+
+    secret = secret_client.get_secret(var_name)
+    if secret is None:
+        logger.critical(f"{var_name} secret variable not set.")
+        if critical:
+            raise ValueError(f"{var_name} secret variable not set.")
+    else:
+        logger.info(f"{var_name} read from {secret.id}")
+    return secret.value
 
 
 class AzureMLCredentials:
@@ -137,10 +171,9 @@ class AzureSearchCredentials:
                 critical=False,
                 mask=False,
             ),
-            azure_search_admin_key=_get_env_var(
-                var_name="AZURE_SEARCH_ADMIN_KEY",
+            azure_search_admin_key=_get_secret_var(
+                var_name="AZURE-SEARCH-KEY",
                 critical=False,
-                mask=True,
             ),
         )
 
@@ -160,7 +193,9 @@ class AzureDocumentIntelligenceCredentials:
         azure_document_intelligence_admin_key: str,
     ) -> None:
         self.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT = azure_document_intelligence_endpoint
-        self.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY = azure_document_intelligence_admin_key
+        self.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY = (
+            azure_document_intelligence_admin_key
+        )
 
     @classmethod
     def from_env(cls) -> "AzureDocumentIntelligenceCredentials":
@@ -294,9 +329,7 @@ class OpenAICredentials:
                 critical=False,
                 mask=False,
             ),
-            openai_api_key=_get_env_var(
-                var_name="OPENAI_API_KEY", critical=False, mask=True
-            ),
+            openai_api_key=_get_secret_var(var_name="AZURE-OPENAI-KEY", critical=False),
             openai_api_version=_get_env_var(
                 var_name="OPENAI_API_VERSION",
                 critical=False,
