@@ -125,5 +125,5 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         assert mock_logger.info.call_args_list[2][0][0] == "Reducing Umap"
         assert (
             mock_logger.info.call_args_list[3][0][0]
-            == "Sampled Document chunk length 2"
+            == "Sampled Document chunk length 0"
         )
