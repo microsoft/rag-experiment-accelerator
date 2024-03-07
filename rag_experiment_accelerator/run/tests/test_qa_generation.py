@@ -63,7 +63,7 @@ def test_run_success(
     mock_get_default_az_cred.return_value = "test_cred"
     mock_df = MagicMock()
     mock_generate_qna.return_value = mock_df
-    mock_exists.return_value = False
+    mock_exists.return_value = True
     mock_read_csv.return_value = pd.DataFrame()
     mock_cluster.return_value = all_docs
     mock_chunk_dict_to_dataframe = dataframe_to_chunk_dict
