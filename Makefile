@@ -1,6 +1,17 @@
 .PHONY: all index qnagen query eval help
 .DEFAULT_GOAL := help
 
+# Load .env file if exists and export all variables before running any target
+ENV_FILE := .env
+ifeq ($(filter $(MAKECMDGOALS),config clean),)
+	ifneq ($(strip $(wildcard $(ENV_FILE))),)
+		ifneq ($(MAKECMDGOALS),config)
+			include $(ENV_FILE)
+			export
+		endif
+	endif
+endif
+
 SHELL := /bin/bash
 target_title = @echo -e "\n\e[34m»»» 🧩 \e[96m$(1)\e[0m..."
 
@@ -16,22 +27,18 @@ load_env: ## 📃 Load .env file
 
 index: ## 📚 Index documents (download documents from blob storage, split to chunks, generate embeddings, create and upload to azure search index)
 	$(call target_title, "indexing")
-	$(MAKE) load_env
 	python3 01_index.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
 qnagen: ## ❓ Generate questions and answers for all document chunks in configuted index
 	$(call target_title, "question and answer generation")
-	$(MAKE) load_env
 	python3 02_qa_generation $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
 query: ## 🔍 Query the index for all questions in jsonl file configured in config.json and generate answers using LLM
 	$(call target_title, "querying") 
-	$(MAKE) load_env
 	python3 03_querying.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
 eval: ## 👓 Evaluate metrics for all answers compared to groud truth
 	$(call target_title, "evaluating")
-	$(MAKE) load_env
 	python3 04_evaluation.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
 clear_docs: ## ❌ Delete all downloaded documents from data folder
