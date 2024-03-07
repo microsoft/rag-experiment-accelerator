@@ -63,7 +63,7 @@ def _get_env_var(var_name: str, critical: bool, mask: bool) -> str:
 
 def _get_secret_var(var_name: str, critical: bool) -> str:
     """
-    Get the value of a secret variable.
+    Get the value of a secret variable from Azure Key Vault or fall back to an environment variable.
 
     Args:
         var_name (str): The name of the secret to retrieve.
@@ -75,22 +75,37 @@ def _get_secret_var(var_name: str, critical: bool) -> str:
     Raises:
         ValueError: If the `critical` parameter is True and the environment variable is not set.
     """
-    azure_key_vault_endpoint = _get_env_var(
-        var_name="AZURE_KEY_VAULT_ENDPOINT",
-        critical=True,
-        mask=False,
+    use_key_vault = (
+        str(
+            _get_env_var(
+                var_name="USE_KEY_VAULT",
+                critical=False,
+                mask=False,
+            )
+        ).lower()
+        == "true"
     )
-    credential = get_default_az_cred()
-    secret_client = SecretClient(azure_key_vault_endpoint, credential)
 
-    secret = secret_client.get_secret(var_name)
-    if secret is None:
-        logger.critical(f"{var_name} secret variable not set.")
-        if critical:
-            raise ValueError(f"{var_name} secret variable not set.")
+    if not use_key_vault:
+        return _get_env_var(var_name, critical, True)
     else:
-        logger.info(f"{var_name} read from {secret.id}")
-    return secret.value
+        azure_key_vault_endpoint = _get_env_var(
+            var_name="AZURE_KEY_VAULT_ENDPOINT",
+            critical=True,
+            mask=False,
+        )
+
+        credential = get_default_az_cred()
+        secret_client = SecretClient(azure_key_vault_endpoint, credential)
+
+        secret = secret_client.get_secret(var_name)
+        if secret is None:
+            logger.critical(f"{var_name} secret variable not set.")
+            if critical:
+                raise ValueError(f"{var_name} secret variable not set.")
+        else:
+            logger.info(f"{var_name} read from {secret.id}")
+        return secret.value
 
 
 class AzureMLCredentials:
