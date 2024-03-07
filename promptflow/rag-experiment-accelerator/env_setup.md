@@ -27,6 +27,7 @@ And the remaining variables must not be set as secret:
 - AZURE_SEARCH_SERVICE_ENDPOINT
 - OPENAI_ENDPOINT
 - OPENAI_API_VERSION
+- OPENAI_API_TYPE
 
 The following variables are optional:
 - AZURE_LANGUAGE_SERVICE_KEY - secret
@@ -34,7 +35,7 @@ The following variables are optional:
 - LOGGING_LEVEL - non secret
 
 ## Configuring your connection locally 
-To configure promptflow to connect to AzureML, you need to update the top level `/azureml/config.json` file with the `workspace_name`, `resource_group`, and `subscription_id` that your connection is stored in. You can find more information about this in the [documentation](https://microsoft.github.io/promptflow/how-to-guides/set-global-configs.html#azureml).
+To configure promptflow to connect to AzureML, you need to update the top level `.azureml/config.json` file with the `workspace_name`, `resource_group`, and `subscription_id` that your connection is stored in. You can find more information about this in the [documentation](https://microsoft.github.io/promptflow/how-to-guides/set-global-configs.html#azureml).
 
 To update the local promptflow connection provider to look for AzureML connections, you can use the following code:
 ``` bash

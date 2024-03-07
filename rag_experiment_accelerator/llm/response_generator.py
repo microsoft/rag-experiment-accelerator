@@ -9,7 +9,7 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.utils.logging import get_logger
 

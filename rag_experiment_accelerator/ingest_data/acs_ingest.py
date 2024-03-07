@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import traceback
 
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
@@ -103,8 +104,8 @@ def upload_data(
             title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
             summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
         except Exception as e:
-            logger.info(f"Could not generate title or summary for chunk {i}")
-            logger.info(e)
+            logger.info(f"Could not generate title or summary for chunk {i}: {str(e)}")
+            logger.info(traceback.format_exc())
             continue
         input_data = {
             "id": str(my_hash(chunk["content"])),

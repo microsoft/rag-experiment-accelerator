@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from langchain.document_loaders import TextLoader
 
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
@@ -9,10 +11,9 @@ logger = get_logger(__name__)
 
 
 def load_text_files(
-    folder_path: str,
+    file_paths: Iterable[str],
     chunk_size: str,
     overlap_size: str,
-    glob_patterns: list[str] = ["txt", "rtf"],
 ):
     """
     Load and process text files from a given folder path.
@@ -33,8 +34,7 @@ def load_text_files(
         file_format="TEXT",
         language=None,
         loader=TextLoader,
-        folder_path=folder_path,
+        file_paths=file_paths,
         chunk_size=chunk_size,
         overlap_size=overlap_size,
-        glob_patterns=glob_patterns,
     )

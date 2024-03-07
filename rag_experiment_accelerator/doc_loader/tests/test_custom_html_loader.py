@@ -1,17 +1,16 @@
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
+from rag_experiment_accelerator.config.paths import get_all_files
 
 
 def test_load_html_files():
-    folder_path = "./data/"
+    folder_path = "./data/html"
     chunk_size = 1000
     overlap_size = 200
-    glob_patterns: list[str] = ["html", "htm", "xhtml", "html5"]
 
     chunks = load_html_files(
-        folder_path=folder_path,
+        file_paths=get_all_files(folder_path),
         chunk_size=chunk_size,
         overlap_size=overlap_size,
-        glob_patterns=glob_patterns,
     )
 
     assert len(chunks) == 20

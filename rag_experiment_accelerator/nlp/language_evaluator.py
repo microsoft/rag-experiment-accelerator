@@ -1,7 +1,7 @@
 from azure.ai.textanalytics import TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 
-from rag_experiment_accelerator.config.config import AzureSkillsCredentials
+from rag_experiment_accelerator.config import AzureSkillsCredentials
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)

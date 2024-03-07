@@ -1,5 +1,4 @@
-import glob
-import os
+from typing import Iterable
 
 from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -13,20 +12,19 @@ def load_structured_files(
     file_format: str,
     language: str,
     loader: BaseLoader,
-    folder_path: str,
+    file_paths: Iterable[str],
     chunk_size: str,
     overlap_size: str,
-    glob_patterns: list[str],
     loader_kwargs: dict[any] = None,
 ):
     """
-    Load and process structured files from a given folder path.
+    Load and process structured files.
 
     Args:
         file_format (str): The file_format of the documents to be loaded.
         language (str): The language of the documents to be loaded.
         loader (BaseLoader): The document loader object that reads the files.
-        folder_path (str): The path of the folder where files are located.
+        file_paths (str): The paths to the files to load.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
         glob_patterns (list[str]): List of file extensions to consider (e.g., ["txt", "md"]).
@@ -36,21 +34,15 @@ def load_structured_files(
         list[Document]: A list of processed and split document chunks.
     """
 
-    logger.info(f"Loading {file_format} files from {folder_path}")
-    matching_files = []
-    for pattern in glob_patterns:
-        # "." is used for hidden files, "~" is used for Word temporary files
-        glob_pattern = f"**/[!.~]*.{pattern}"
-        full_glob_pattern = os.path.join(folder_path, glob_pattern)
-        matching_files += glob.glob(full_glob_pattern, recursive=True)
+    logger.info(f"Loading {file_format} files")
 
-    logger.debug(f"Found {len(matching_files)} {file_format} files")
+    logger.debug(f"Found {len(file_paths)} {file_format} files")
 
     documents = []
     if loader_kwargs is None:
         loader_kwargs = {}
 
-    for file in matching_files:
+    for file in file_paths:
         document = loader(file, **loader_kwargs).load()
         documents += document
 
@@ -75,8 +67,6 @@ def load_structured_files(
 
     docs = text_splitter.split_documents(documents)
 
-    logger.info(
-        f"Split {len(documents)} {file_format} files into {len(docs)} chunks"
-    )
+    logger.info(f"Split {len(documents)} {file_format} files into {len(docs)} chunks")
 
     return docs

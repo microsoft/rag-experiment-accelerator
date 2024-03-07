@@ -1,7 +1,7 @@
 import pytest
 import json
 import os
-from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config import Config
 from unittest.mock import MagicMock, patch
 
 

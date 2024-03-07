@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from rag_experiment_accelerator.doc_loader.customJsonLoader import (
     CustomJSONLoader,
 )
@@ -10,10 +12,9 @@ logger = get_logger(__name__)
 
 
 def load_json_files(
-    folder_path: str,
+    file_paths: Iterable[str],
     chunk_size: str,
     overlap_size: str,
-    glob_patterns: list[str] = ["json"],
 ):
     """
     Load and process Json files from a given folder path.
@@ -35,10 +36,9 @@ def load_json_files(
         file_format="JSON",
         language=None,
         loader=CustomJSONLoader,
-        folder_path=folder_path,
+        file_paths=file_paths,
         chunk_size=chunk_size,
         overlap_size=overlap_size,
-        glob_patterns=glob_patterns,
         loader_kwargs={
             "keys_to_load": keys_to_load,
         },

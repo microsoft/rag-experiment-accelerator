@@ -1,4 +1,5 @@
-from langchain.document_loaders import PyPDFDirectoryLoader
+from typing import Iterable
+from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -7,10 +8,9 @@ logger = get_logger(__name__)
 
 
 def load_pdf_files(
-    folder_path: str,
+    file_paths: Iterable[str],
     chunk_size: int,
     overlap_size: int,
-    glob_patterns: list[str] = ["pdf", "pdfa", "pdfa-1", "pdfl"],
 ):
     """
     Load PDF files from a folder and split them into chunks of text.
@@ -24,15 +24,10 @@ def load_pdf_files(
         list[Document]: A list of Document objects, each representing a chunk of text from a PDF file.
     """
 
-    logger.info(f"Loading PDF files from {folder_path}")
+    logger.info("Loading PDF files")
     documents = []
-    for pattern in glob_patterns:
-        loader = PyPDFDirectoryLoader(
-            path=folder_path,
-            glob=f"**/[!.]*.{pattern}",
-            recursive=True,
-        )
-
+    for file_path in file_paths:
+        loader = PyPDFLoader(file_path=file_path)
         documents += loader.load()
 
     logger.debug(f"Loaded {len(documents)} pages from PDF files")

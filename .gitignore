@@ -183,3 +183,6 @@ data/*
 .azure
 
 .vscode
+
+# AzureML config folder
+.azureml/*

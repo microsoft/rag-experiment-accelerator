@@ -1,5 +1,4 @@
-import os
-from typing import Union
+from typing import Union, List
 
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
@@ -33,7 +32,7 @@ _FORMAT_PROCESSORS = {
 
 def load_documents(
     allowed_formats: Union[list[str], str],
-    folder_path: str,
+    file_paths: List[str],
     chunk_size: int,
     overlap_size: int,
 ):
@@ -53,17 +52,10 @@ def load_documents(
         FileNotFoundError: When the specified folder does not exist.
     """
 
-    if not os.path.exists(folder_path):
-        logger.critical(f"Folder {folder_path} does not exist")
-        raise FileNotFoundError(f"Folder {folder_path} does not exist")
-
     if allowed_formats == "all":
         allowed_formats = _FORMAT_VERSIONS.keys()
 
-    logger.debug(
-        f"Loading documents from {folder_path} with allowed formats"
-        f" {', '.join(allowed_formats)}"
-    )
+    logger.debug(f"Loading documents with allowed formats {', '.join(allowed_formats)}")
 
     documents = {}
 
@@ -71,15 +63,19 @@ def load_documents(
         if format not in _FORMAT_VERSIONS:
             logger.error(f"Format {format} is not supported")
             continue
+        matching_files = [
+            path
+            for path in file_paths
+            if any(path.endswith(pattern) for pattern in _FORMAT_VERSIONS[format])
+        ]
         documents[format] = _FORMAT_PROCESSORS[format](
-            folder_path=folder_path,
+            file_paths=matching_files,
             chunk_size=chunk_size,
             overlap_size=overlap_size,
-            glob_patterns=_FORMAT_VERSIONS[format],
         )
 
     all_documents = sum(documents.values(), [])
 
-    logger.info(f"Loaded {len(all_documents)} chunks from {folder_path}")
+    logger.info(f"Loaded {len(all_documents)} chunks")
 
     return all_documents

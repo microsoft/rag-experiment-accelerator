@@ -1,13 +1,14 @@
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
+from rag_experiment_accelerator.config.paths import get_all_files
 
 
 def test_load_docx_files():
-    folder_path = "./data/"
+    folder_path = "./data/docx"
     chunk_size = 1000
     overlap_size = 400
 
     original_doc = load_docx_files(
-        folder_path=folder_path,
+        file_paths=get_all_files(folder_path),
         chunk_size=chunk_size,
         overlap_size=overlap_size,
     )

@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from langchain.document_loaders import UnstructuredMarkdownLoader
 
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
@@ -9,7 +11,7 @@ logger = get_logger(__name__)
 
 
 def load_markdown_files(
-    folder_path: str,
+    file_paths: Iterable[str],
     chunk_size: str,
     overlap_size: str,
     glob_patterns: list[str] = ["html", "htm", "xhtml", "html5"],
@@ -33,8 +35,7 @@ def load_markdown_files(
         file_format="MARKDOWN",
         language="markdown",
         loader=UnstructuredMarkdownLoader,
-        folder_path=folder_path,
+        file_paths=file_paths,
         chunk_size=chunk_size,
         overlap_size=overlap_size,
-        glob_patterns=glob_patterns,
     )

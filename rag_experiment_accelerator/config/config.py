@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Generator
 
 from rag_experiment_accelerator.config.credentials import (
     AzureMLCredentials,
@@ -9,6 +10,7 @@ from rag_experiment_accelerator.config.credentials import (
 )
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import EmbeddingModelFactory
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -21,6 +23,9 @@ class Config:
 
     Parameters:
         config_filename (str): The name of the JSON file containing configuration settings. Default is 'config.json'.
+        data_dir (str):
+            An input path to read data from. Can be local directory, or AzureML-supported URL when running on AzureML.
+            Defaults to "./data".
 
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
@@ -43,7 +48,7 @@ class Config:
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
-        embedding_models: The embedding models used to generate embeddings
+        EMBEDDING_MODELS: The embedding models used to generate embeddings
     """
 
     _instance = None
@@ -83,17 +88,33 @@ class Config:
                 "Config param validation error: overlap_size must be less than chunk_size"
             )
 
+    def _initialize_paths(self, config_dir, data_dir, data) -> None:
+        self._config_dir = config_dir
+        os.makedirs(self._config_dir, exist_ok=True)
+
+        self.artifacts_dir = os.path.join(self._config_dir, "artifacts")
+        os.makedirs(self.artifacts_dir, exist_ok=True)
+
+        self.data_dir = os.path.join(self._config_dir, data_dir)
+
+        self.EVAL_DATA_JSONL_FILE_PATH = os.path.join(
+            self._config_dir, data["eval_data_jsonl_file_path"]
+        )
+        self.GENERATED_INDEX_NAMES_FILE_PATH = os.path.join(
+            self.artifacts_dir, "generated_index_names.jsonl"
+        )
+        self.QUERY_DATA_LOCATION = os.path.join(self.artifacts_dir, "query_data")
+
+        self.PROMPT_CONFIG_FILE_PATH = os.path.join(
+            self._config_dir, "prompt_config.json"
+        )
+        # TODO make sure the files exist
+
     def _initialize(self, config_dir: str, data_dir: str, filename: str) -> None:
-        with open(f"{config_dir}/{filename}", "r") as json_file:
+        with open(os.path.join(config_dir.strip(), filename.strip()), "r") as json_file:
             data = json.load(json_file)
 
-        self.config_dir = config_dir
-        self.artifacts_dir = f"{config_dir}/artifacts"
-        self.data_dir = f"{config_dir}/" + f"{data_dir}"
-        self.EVAL_DATA_JSONL_FILE_PATH = (
-            f"{self.config_dir}/{data['eval_data_jsonl_file_path']}"
-        )
-        self.QUERY_DATA_LOCATION = f"{self.artifacts_dir}/query_data"
+        self._initialize_paths(config_dir, data_dir, data)
 
         self.CHUNK_SIZES = data["chunking"]["chunk_size"]
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
@@ -138,7 +159,7 @@ class Config:
         )
 
         try:
-            with open(f"{config_dir}/prompt_config.json", "r") as json_file:
+            with open(self.PROMPT_CONFIG_FILE_PATH, "r") as json_file:
                 data = json.load(json_file)
 
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
@@ -151,3 +172,25 @@ class Config:
         except OSError:
             logger.warn("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
+
+    def index_configs(self) -> Generator:
+        for chunk_size in self.CHUNK_SIZES:
+            for overlap in self.OVERLAP_SIZES:
+                for embedding_model in self.embedding_models:
+                    for ef_construction in self.EF_CONSTRUCTIONS:
+                        for ef_search in self.EF_SEARCHES:
+                            yield IndexConfig(
+                                index_name_prefix=self.NAME_PREFIX,
+                                chunk_size=chunk_size,
+                                overlap=overlap,
+                                embedding_model=embedding_model,
+                                ef_construction=ef_construction,
+                                ef_search=ef_search,
+                            )
+
+    def _find_embedding_model_by_name(self, model_name: str) -> EmbeddingModel:
+        for model in self.embedding_models:
+            if model.name == model_name:
+                return model
+        raise AttributeError(f"No model found with the name {model_name}")
+        pass
