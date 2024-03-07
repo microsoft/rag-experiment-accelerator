@@ -1,7 +1,38 @@
 import pandas as pd
 from unittest.mock import patch, MagicMock
 from rag_experiment_accelerator.run.qa_generation import run
+from rag_experiment_accelerator.sampling.clustering import dataframe_to_chunk_dict
 import pytest
+
+
+@pytest.fixture
+def mock_df():
+    return pd.DataFrame(
+        {
+            "text": [
+                "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds "
+                "are known for their distinctive cooing call and their ability to navigate long distances. Pigeons "
+                "are also appreciated for their beauty, with their colorful feathers and iridescent sheen.",
+                "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, "
+                "including delivering messages during wartime and racing competitions. They are also popular as pets "
+                "and can be trained to perform tricks.",
+                "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to "
+                "spread seeds and nutrients throughout their environment and are even considered a keystone species "
+                "in some areas.",
+            ],
+            "processed_text": [
+                "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds "
+                "are known for their distinctive cooing call and their ability to navigate long distances. Pigeons "
+                "are also appreciated for their beauty, with their colorful feathers and iridescent sheen.",
+                "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, "
+                "including delivering messages during wartime and racing competitions. They are also popular as pets "
+                "and can be trained to perform tricks.",
+                "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to "
+                "spread seeds and nutrients throughout their environment and are even considered a keystone species "
+                "in some areas.",
+            ],
+        }
+    )
 
 
 @patch("rag_experiment_accelerator.run.qa_generation.create_data_asset")
@@ -13,6 +44,7 @@ import pytest
 @patch("rag_experiment_accelerator.run.qa_generation.exists")
 @patch("rag_experiment_accelerator.run.qa_generation.pd.read_csv")
 @patch("rag_experiment_accelerator.run.qa_generation.cluster")
+@patch("rag_experiment_accelerator.sampling.clustering.chunk_dict_to_dataframe")
 def test_run_success(
     mock_config,
     mock_get_default_az_cred,
@@ -23,6 +55,7 @@ def test_run_success(
     mock_read_csv,
     mock_exists,
     mock_cluster,
+    mock_chunk_dict_to_dataframe,
 ):
     # Arrange
     all_docs = {}
@@ -33,6 +66,7 @@ def test_run_success(
     mock_exists.return_value = False
     mock_read_csv.return_value = pd.DataFrame()
     mock_cluster.return_value = all_docs
+    mock_chunk_dict_to_dataframe = dataframe_to_chunk_dict
 
     # Act
     run("test_dir")
@@ -51,6 +85,7 @@ def test_run_success(
     mock_read_csv.assert_called_once_with(
         f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.SAMPLE_OPTIMUM_K}.csv"
     )
+    mock_chunk_dict_to_dataframe.assert_called_once_with(mock_df)
 
 
 @patch("os.makedirs")
