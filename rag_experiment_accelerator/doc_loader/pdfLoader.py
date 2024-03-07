@@ -9,22 +9,19 @@ import re
 
 logger = get_logger(__name__)
 
+
 def preprocess_pdf_content(content: str):
     """
     Preprocesses the content extracted from a PDF file.
-
     This function performs the following preprocessing steps on the input content:
     1. Replaces multiple consecutive newline characters ('\\n') with a single newline character.
     2. Removes all remaining newline characters.
     3. Removes Unicode escape sequences in the format '\\uXXXX' where X is a hexadecimal digit.
     4. Converts the content to lowercase.
-
     Args:
         content (str): The content extracted from the PDF file.
-
     Returns:
         str: The preprocessed content.
-
     Example:
         content = "Hello\\n\\nWorld\\n\\u1234 OpenAI"
         preprocessed_content = preprocess_pdf_content(content)
@@ -38,6 +35,7 @@ def preprocess_pdf_content(content: str):
     content = content.lower()
 
     return content
+
 
 def load_pdf_files(
     chunking_strategy,

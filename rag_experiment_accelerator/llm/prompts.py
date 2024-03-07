@@ -85,21 +85,20 @@ do_need_multiple_prompt_instruction = """
 Consider the given question to analyze and determine if it falls into one of these categories:
 
 1. Simple, factual question
-	a. The question is asking for a straightforward fact or piece of information
- 	b. The answer could likely be found stated directly in a single passage of a relevant document
-	c. Breaking the question down further is unlikely to be beneficial
-	Examples: "What year did World War 2 end?", "What is the capital of France?, "What is the features of productX?"
+  a. The question is asking for a straightforward fact or piece of information
+  b. The answer could likely be found stated directly in a single passage of a relevant document
+  c. Breaking the question down further is unlikely to be beneficial
+  Examples: "What year did World War 2 end?", "What is the capital of France?, "What is the features of productX?"
 2. Complex, multi-part question
-	a. The question has multiple distinct components or is asking for information about several related topics
-	b. Different parts of the question would likely need to be answered by separate passages or documents
-	c. Breaking the question down into sub-questions for each component would allow for better results
-	d. The question is open-ended and likely to have a complex or nuanced answer
-	e. Answering it may require synthesizing information from multiple sources
-	f. The question may not have a single definitive answer and could warrant analysis from multiple angles
-Examples: "What were the key causes, major battles, and outcomes of the American Revolutionary War?", "How do electric cars work and how do they compare to gas-powered vehicles?"
+  a. The question has multiple distinct components or is asking for information about several related topics
+  b. Different parts of the question would likely need to be answered by separate passages or documents
+  c. Breaking the question down into sub-questions for each component would allow for better results
+  d. The question is open-ended and likely to have a complex or nuanced answer
+  e. Answering it may require synthesizing information from multiple sources
+  f. The question may not have a single definitive answer and could warrant analysis from multiple angles
+  Examples: "What were the key causes, major battles, and outcomes of the American Revolutionary War?", "How do electric cars work and how do they compare to gas-powered vehicles?"
 
 Based on this rubric, does the given question fall under category 1 (simple) or category 2 (complex)? The output should be in strict JSON format. Ensure that the generated JSON is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks. There should not be any comma after last element in the JSON.
-
 
 Example output:
 {

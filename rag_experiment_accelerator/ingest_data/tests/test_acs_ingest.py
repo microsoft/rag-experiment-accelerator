@@ -158,7 +158,6 @@ def test_upload_data(
     assert mock_embedding_model.generate_embedding.call_count == 2
 
 
-
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.json.loads")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
 def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads):

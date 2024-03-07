@@ -1,6 +1,5 @@
 import hashlib
 import json
-import re
 
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
@@ -157,7 +156,7 @@ def generate_qna(docs, azure_oai_deployment_name):
                     generate_qna_instruction_user_prompt
                     + chunk,
                 )
-                response_dict = json.loads(response.replace('\n','').replace("\'",'').replace("\\",''))
+                response_dict = json.loads(response.replace('\n', '').replace("\'", '').replace("\\", ''))
                 for item in response_dict:
                     data = {
                         "user_prompt": item["question"],
@@ -165,7 +164,7 @@ def generate_qna(docs, azure_oai_deployment_name):
                         "context": chunk,
                     }
                     new_df = new_df._append(data, ignore_index=True)
-                
+
             except Exception as e:
                 logger.error(
                     "could not generate a valid json so moving over to next"
