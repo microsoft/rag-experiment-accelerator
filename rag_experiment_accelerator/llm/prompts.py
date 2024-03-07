@@ -32,27 +32,26 @@ prompt_instruction_entities = (
 )
 
 
-generate_qna_instruction_system_prompt = """you are a prompt creator and have ability to generate new JSON prompts based on the given CONTEXT.
-Generate 1 most relevant new prompt in valid json format according to "RESPONSE SCHEMA EXAMPLE" completely from scratch.
-"RESPONSE SCHEMA EXAMPLE":
-[
-    {
-        "role: "user",
-        "content": "This is the generated prompt text",
-    },
-    {
-        "role: "assistant",
-        "content": "the expected, rightful and correct answer for the question"
-    },
-]
+generate_qna_instruction_system_prompt = """
+you are a quiz creator and have ability to generate human like question-answer pairs from given CONTEXT.
 """
-generate_qna_instruction_user_prompt = """The response must be valid JSON array containing two objects. The first object must contain the keys "role" and "content". The second object must also contain the keys "role" and "content".
-    The response must follow the "RESPONSE SCHEMA EXAMPLE".
-    The most important thing is that the response must be valid JSON ARRAY. DO NOT include anything other than valid schema.
+generate_qna_instruction_user_prompt = """
+Please read the following CONTEXT and generate two question and answer json objects in an array based on the CONTEXT provided. The questions should require deep reading comprehension, logical inference, deduction, and connecting ideas across the text. Avoid simplistic retrieval or pattern matching questions. Instead, focus on questions that test the ability to reason about the text in complex ways, draw subtle conclusions, and combine multiple pieces of information to arrive at an answer. Ensure that the questions are relevant, specific, and cover the key points of the CONTEXT.  Provide concise answers to each question, directly quoting the text from provided context. Provide the array output in strict JSON format as shown in output format. Ensure that the generated JSON is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks. There should not be any comma after last element in the array.
 
-    CONTEXT:
+Output format:
+[
+  {
+    "question": "Question 1",
+    "answer": "Answer 1"
+  },
+  {
+    "question": "Question 2",
+    "answer": "Answer 2"
+  }
+]
 
-    """
+CONTEXT:
+"""
 
 rerank_prompt_instruction = """A list of documents is shown below. Each document has a number next to it along with a summary of the document. A question is also provided.
     Respond with the numbers of the documents you should consult to answer the question, in order of relevance, as well
@@ -82,36 +81,62 @@ rerank_prompt_instruction = """A list of documents is shown below. Each document
         }
     """
 
-do_need_multiple_prompt_instruction1 = """classify the given question into either 'HIGH' or 'LOW'. If the question must absolutely be broken down into smaller questions to search for an answer because it is not straightforward then provide a single word response as 'HIGH' and if the question is not complex and straightforward then provide a single word response as 'LOW'. Do not generate any other text apart from 'YES' or 'NO' and this is non-compromising requirement.
-    e.g.
-    How was Ritesh Modi life different before, during, and after YC?
-    HIGH
+do_need_multiple_prompt_instruction = """
+Consider the given question to analyze and determine if it falls into one of these categories:
 
-    who is Ritesh Modi?
-    LOW
+1. Simple, factual question
+	a. The question is asking for a straightforward fact or piece of information
+ 	b. The answer could likely be found stated directly in a single passage of a relevant document
+	c. Breaking the question down further is unlikely to be beneficial
+	Examples: "What year did World War 2 end?", "What is the capital of France?, "What is the features of productX?"
+2. Complex, multi-part question
+	a. The question has multiple distinct components or is asking for information about several related topics
+	b. Different parts of the question would likely need to be answered by separate passages or documents
+	c. Breaking the question down into sub-questions for each component would allow for better results
+	d. The question is open-ended and likely to have a complex or nuanced answer
+	e. Answering it may require synthesizing information from multiple sources
+	f. The question may not have a single definitive answer and could warrant analysis from multiple angles
+Examples: "What were the key causes, major battles, and outcomes of the American Revolutionary War?", "How do electric cars work and how do they compare to gas-powered vehicles?"
 
-    compare revenue for last 2 quarters?
-    HIGH
+Based on this rubric, does the given question fall under category 1 (simple) or category 2 (complex)? The output should be in strict JSON format. Ensure that the generated JSON is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks. There should not be any comma after last element in the JSON.
 
-    what was the revenue of a company last quarter?
-    LOW
 
-    what is the capital of Denmark?
-    LOW
-    """
-
-do_need_multiple_prompt_instruction = """Classify the complexity of a given question as either 'high' or 'low' based on the following criteria. Assume all and complete information on all topics and subjects is already available to you to answer the question. No additional input or information is required apart from the contextual information you already have. You have all the information already available to answer the question. Do not output anything apart from either high or low.
-
-Questions that require critical thinking, detailed understanding of any topic and subject, are considered 'low' in complexity.
-Questions such as statistical analytics are considered 'high' in complexity.
-
+Example output:
+{
+  "category": "simple"
+}
 """
 
-multiple_prompt_instruction = """Generate two questions in json format based on given schema for user question if it needs multiple questions to search relevant, complete and comprehensive answer. Always generate accurate json without any compromise. The output absolutely must only contains json and nothing apart from json. This is a non-compromising requirement.
-    schema:
-    {
-        questions:[ "question1", "question2", "questionN" ]
-    }
+multiple_prompt_instruction = """Your task is to take a question as input and generate maximum 3 sub-questions that cover all aspects of the original question. The output should be in strict JSON format, with the sub-questions contained in an array.
+
+Here are the requirements:
+1. Analyze the original question and identify the key aspects or components.
+2. Generate sub-questions that address each aspect of the original question.
+3. Ensure that the sub-questions collectively cover the entire scope of the original question.
+4. Format the output as a JSON object with a single key "questions" that contains an array of the generated sub-questions.
+5. Each sub-question should be a string within the "questions" array.
+6. The JSON output should be valid and strictly formatted.
+7. Ensure that the generated JSON is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks. The JSON should be formatted with proper indentation for readability.
+8. There should not be any comma after last element in the array.
+
+
+Example input question:
+What are the main causes of deforestation, and how can it be mitigated?
+
+Example output:
+{
+  "questions": [
+    "What are the primary human activities that contribute to deforestation?",
+    "How does agriculture play a role in deforestation?",
+    "What is the impact of logging and timber harvesting on deforestation?",
+    "How do urbanization and infrastructure development contribute to deforestation?",
+    "What are the environmental consequences of deforestation?",
+    "What are some effective strategies for reducing deforestation?",
+    "How can reforestation and afforestation help mitigate the effects of deforestation?",
+    "What role can governments and policies play in preventing deforestation?",
+    "How can individuals and communities contribute to reducing deforestation?"
+  ]
+}
 """
 
 llm_answer_relevance_instruction = """Generate question for the given answer.

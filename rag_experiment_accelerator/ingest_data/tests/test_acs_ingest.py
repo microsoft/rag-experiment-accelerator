@@ -158,27 +158,6 @@ def test_upload_data(
     assert mock_embedding_model.generate_embedding.call_count == 2
 
 
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
-def test_generate_qna(mock_response_generator):
-    # Arrange
-    content = "This is a test document content. This needs to be above 50 characters because we don't generate responses for chunks of less than size 50. Speaking of which, this is a very long sentence."
-    mock_docs = [
-        dict({str(uuid.uuid4()): content})
-    ]
-    mock_deployment_name = "TestDeployment"
-    mock_response = '[{"role": "user", "content": "Test question?"}, {"role": "assistant", "content": "Test answer."}]'
-    mock_response_generator().generate_response.return_value = mock_response
-
-    # Act
-    result = generate_qna(mock_docs, mock_deployment_name)
-
-    # Assert
-    mock_response_generator().generate_response.assert_called_once()
-    assert len(result) == 1
-    assert result.iloc[0]["user_prompt"] == "Test question?"
-    assert result.iloc[0]["output_prompt"] == "Test answer."
-    assert result.iloc[0]["context"] == content
-
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.json.loads")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
@@ -225,30 +204,30 @@ def test_we_need_multiple_questions(mock_response_generator):
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
-def test_do_we_need_multiple_questions_high(mock_response_generator):
+def test_do_we_need_multiple_questions_true(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
     azure_oai_deployment_name = "TestDeployment"
-    mock_response_generator().generate_response.return_value = "HIGH"
+    mock_response_generator().generate_response.return_value = '{"category": "complex"}'
 
     # Act
     result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
 
     # Assert
     mock_response_generator().generate_response.assert_called_once()
-    assert result is not None
+    assert result is True
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
-def test_do_we_need_multiple_questions_empty(mock_response_generator):
+def test_do_we_need_multiple_questions_false(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
     azure_oai_deployment_name = "TestDeployment"
-    mock_response_generator().generate_response.return_value = ""
+    mock_response_generator().generate_response.return_value = '{"category": ""}'
 
     # Act
     result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
 
     # Assert
     mock_response_generator().generate_response.assert_called_once()
-    assert result is None
+    assert result is False

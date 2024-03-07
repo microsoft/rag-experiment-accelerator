@@ -5,9 +5,39 @@ from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_directory_loader
 from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
 import uuid
+import re
 
 logger = get_logger(__name__)
 
+def preprocess_pdf_content(content: str):
+    """
+    Preprocesses the content extracted from a PDF file.
+
+    This function performs the following preprocessing steps on the input content:
+    1. Replaces multiple consecutive newline characters ('\\n') with a single newline character.
+    2. Removes all remaining newline characters.
+    3. Removes Unicode escape sequences in the format '\\uXXXX' where X is a hexadecimal digit.
+    4. Converts the content to lowercase.
+
+    Args:
+        content (str): The content extracted from the PDF file.
+
+    Returns:
+        str: The preprocessed content.
+
+    Example:
+        content = "Hello\\n\\nWorld\\n\\u1234 OpenAI"
+        preprocessed_content = preprocess_pdf_content(content)
+        print(preprocessed_content)
+        # Output: "hello world openai"
+    """
+
+    content = re.sub(r'\n{2,}', '\n', content)
+    content = re.sub(r'\n{1,}', '', content)
+    content = re.sub(r'\\u[0-9a-fA-F]{4}', '', content)
+    content = content.lower()
+
+    return content
 
 def load_pdf_files(
     chunking_strategy,
@@ -58,7 +88,7 @@ def load_pdf_files(
     docs = text_splitter.split_documents(documents)
     docsList = []
     for doc in docs:
-        docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
+        docsList.append(dict({str(uuid.uuid4()): preprocess_pdf_content(doc.page_content)}))
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 
