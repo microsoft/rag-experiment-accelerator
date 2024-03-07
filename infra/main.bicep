@@ -162,12 +162,9 @@ module storekeys './shared/storekeys.bicep' = {
   }
 }
 
+output USE_KEY_VAULT string = 'true'
 output AZURE_KEY_VAULT_ENDPOINT string = keyvault.outputs.endpoint
 output AZURE_SEARCH_SERVICE_ENDPOINT string = search.outputs.endpoint
-// #disable-next-line outputs-should-not-contain-secrets // Fix this when we have a better way to handle secrets
-// output AZURE_SEARCH_ADMIN_KEY string = listKeys(search.name, '2023-11-01').primaryKey
-//#disable-next-line outputs-should-not-contain-secrets // Fix this when we have a better way to handle secrets
-//output OPENAI_API_KEY string = listKeys(openai.name, '2023-05-01').primaryKey
 output OPENAI_API_TYPE string = 'azure'
 output OPENAI_ENDPOINT string = openai.outputs.endpoint
 output OPENAI_API_VERSION string = '2023-03-15-preview'
