@@ -43,7 +43,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 ## Installation
 
-Two options are available, install locally or inside a development container.
+Two options are available, install locally or run a  development container.
 
 ### 1. Local install
 
@@ -78,16 +78,18 @@ az account show
 
 ### 2. Use inside a Development Container
 
+Using a development container will mean that all of the required software is installed for you. This will utilise WSL.
+
 #### Install the Pre-Requisite Software
 
-Install the following software on the machine you will perform the deployment from:
+Install the following software on the host machine you will perform the deployment from:
 
 >1. For Windows - [Windows Store Ubuntu 18.04 LTS](https://www.microsoft.com/store/productId/9N9TNGVNDL3Q)
 >2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
 >3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
 >4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
 
-#### For Windows - Configure WSL2 Backend for Docker Containers
+#### If you are using Docker Desktop 
 
 To enable **Developing inside a Container** you must configure the integration between Docker Desktop and Ubuntu on your machine.
 
@@ -98,51 +100,17 @@ To enable **Developing inside a Container** you must configure the integration b
 >      - Enable the Ubuntu-18.04 option.
 >4. Select **Apply & Restart**
 
-##### Connect to Ubuntu WSL with VSCode
+#### Developing in a DevContainer
 
-Now that Docker Desktop and Ubuntu are integrated, we want to Access the Ubuntu bash prompt from inside VSCode.
+Further guidance of setting up WSL can be found [here](./docs/wsl.md). Now you have the prerequisites, you can: 
+1. **Clone the repository**: Clone the accelerator's repository in your WSL terminal.
 
->1. Launch VSCode.
->2. Select **View > Terminal**. A new window should open along the bottom of the VSCode window.
->3. From this windows use the **Launch Profile** dropdown to open the **Ubuntu 18.04 (WSL)** terminal.
->4. A bash prompt should open in the format `{username}@{machine_name}:/mnt/c/Users/{username}$`
-
-Once this is complete, you are ready to configure Git for your Ubuntu WSL environment.
-
-##### Configure Git in Ubuntu WSL environment
-
-The next step is to configure Git for your Ubuntu WSL environment. We will use the bash prompt from the previous step to issue the following commands:
-
-Set Git User Name and Email
-
-``` bash
-git config --global user.name "Your Name"
-git config --global user.email "youremail@yourdomain.com"
-```
-
-Set Git [UseHttps](https://github.com/microsoft/Git-Credential-Manager-Core/blob/main/docs/configuration.md#credentialusehttppath)
-
-``` bash
-git config --global credential.useHttpPath true
-```
-
-Configure Git to use the Windows Host Credential Manager
-
-``` bash
-git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-manager-core.exe"
-```
-
-##### Install Azure CLI On WSL
-
-In your Ubuntu 18.04(WSL) terminal from the previous step, follow the directions [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux) to install Azure CLI.
-
-
-Install Azure CLI and authorize:
 ```bash
-az login
-az account set  --subscription="<your_subscription_guid>"
-az account show
+git clone https://github.com/microsoft/rag-experiment-accelerator.git
+code .
 ```
+
+Once the project opens in vscode it should ask you if you would like to "Reopen this in a development container". Say yes.
 
 #### Data
 
@@ -155,6 +123,15 @@ Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `da
 - [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
 - [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
 - [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
+
+### Install with Azure Developer CLI
+This project supports Azure Developer CLI. 
+```sh
+azd provision
+```
+![azd](./docs/azd.png)
+
+Once this has completed you can use the launch configuration to run or debug the 4 steps and the current envFile will be automatically loaded with the correct values.
 
 ### One click Azure deployment
 
