@@ -43,7 +43,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 ## Installation
 
-Two options are available, install locally or run a  development container.
+Two options are available: install locally or run within a development container.
 
 ### 1. Local install
 
@@ -76,9 +76,9 @@ az account show
 
 5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
-### 2. Use inside a Development Container
+### 2. Run within a Development Container
 
-Using a development container will mean that all of the required software is installed for you. This will utilise WSL.
+Using a development container will mean that all of the required software is installed for you. This will utilise WSL. For more information about development containers visit [containers.dev](https://containers.dev/)
 
 #### Install the Pre-Requisite Software
 
@@ -88,17 +88,6 @@ Install the following software on the host machine you will perform the deployme
 >2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
 >3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
 >4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
-
-#### If you are using Docker Desktop 
-
-To enable **Developing inside a Container** you must configure the integration between Docker Desktop and Ubuntu on your machine.
-
->1. Launch Docker Desktop
->2. Open **Settings > General**. Make sure the *Use the WSL 2 based engine" is enabled.
->3. Navigate to **Settings > Resources > WSL INTEGRATION**.
->      - Ensure *Enable Integration with my default WSL distro" is enabled.
->      - Enable the Ubuntu-18.04 option.
->4. Select **Apply & Restart**
 
 #### Developing in a DevContainer
 
@@ -131,7 +120,7 @@ azd provision
 ```
 ![azd](./docs/azd.png)
 
-Once this has completed you can use the launch configuration to run or debug the 4 steps and the current envFile will be automatically loaded with the correct values.
+Once this has completed you can use the launch configuration to run, or debug the 4 steps and the current environment provisioned by `azd` will be loaded with the correct values.
 
 ### One click Azure deployment
 
