@@ -61,12 +61,46 @@ def _get_env_var(var_name: str, critical: bool, mask: bool) -> str:
     return var
 
 
-def _get_secret_var(var_name: str, critical: bool) -> str:
+def _get_secret_var(secret_name: str, critical: bool) -> str:
+    """
+    Get the value of a secret variable from Azure Key Vault.
+
+    Args:
+        secret_name (str): The name of the secret to retrieve.
+        critical (bool): Whether or not the function should raise an error if the variable is not set.
+
+    Returns:
+        str: The value of the secret.
+
+    Raises:
+        ValueError: If the `critical` parameter is True and the environment variable is not set.
+    """
+    azure_key_vault_endpoint = _get_env_var(
+        var_name="AZURE_KEY_VAULT_ENDPOINT",
+        critical=True,
+        mask=False,
+    )
+
+    credential = get_default_az_cred()
+    secret_client = SecretClient(azure_key_vault_endpoint, credential)
+
+    secret = secret_client.get_secret(secret_name)
+    if secret is None:
+        logger.critical(f"{secret_name} secret variable not set.")
+        if critical:
+            raise ValueError(f"{secret_name} secret variable not set.")
+    else:
+        logger.info(f"{secret_name} read from {secret.id}")
+    return secret.value
+
+
+def _get_secret_or_env_var(secret_name: str, env_var_name: str, critical: bool) -> str:
     """
     Get the value of a secret variable from Azure Key Vault or fall back to an environment variable.
 
     Args:
-        var_name (str): The name of the secret to retrieve.
+        secret_name (str): The name of the secret to retrieve.
+        env_var_name (str): The name of the environment variable to retrieve.
         critical (bool): Whether or not the function should raise an error if the variable is not set.
 
     Returns:
@@ -87,25 +121,9 @@ def _get_secret_var(var_name: str, critical: bool) -> str:
     )
 
     if not use_key_vault:
-        return _get_env_var(var_name, critical, True)
+        return _get_env_var(env_var_name, critical, True)
     else:
-        azure_key_vault_endpoint = _get_env_var(
-            var_name="AZURE_KEY_VAULT_ENDPOINT",
-            critical=True,
-            mask=False,
-        )
-
-        credential = get_default_az_cred()
-        secret_client = SecretClient(azure_key_vault_endpoint, credential)
-
-        secret = secret_client.get_secret(var_name)
-        if secret is None:
-            logger.critical(f"{var_name} secret variable not set.")
-            if critical:
-                raise ValueError(f"{var_name} secret variable not set.")
-        else:
-            logger.info(f"{var_name} read from {secret.id}")
-        return secret.value
+        return _get_secret_var(secret_name, critical)
 
 
 class AzureMLCredentials:
@@ -186,8 +204,9 @@ class AzureSearchCredentials:
                 critical=False,
                 mask=False,
             ),
-            azure_search_admin_key=_get_secret_var(
-                var_name="AZURE-SEARCH-KEY",
+            azure_search_admin_key=_get_secret_or_env_var(
+                secret_name="AZURE-SEARCH-KEY",
+                env_var_name="AZURE_SEARCH_ADMIN_KEY",
                 critical=False,
             ),
         )
@@ -344,7 +363,11 @@ class OpenAICredentials:
                 critical=False,
                 mask=False,
             ),
-            openai_api_key=_get_secret_var(var_name="AZURE-OPENAI-KEY", critical=False),
+            openai_api_key=_get_secret_or_env_var(
+                secret_name="AZURE-OPENAI-KEY",
+                env_var_name="OPENAI_API_KEY",
+                critical=False,
+            ),
             openai_api_version=_get_env_var(
                 var_name="OPENAI_API_VERSION",
                 critical=False,
