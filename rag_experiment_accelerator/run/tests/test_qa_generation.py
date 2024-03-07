@@ -6,7 +6,7 @@ import pytest
 
 
 @pytest.fixture
-def mock_df():
+def mock_dfconcat():
     return pd.DataFrame(
         {
             "text": [
@@ -67,6 +67,17 @@ def test_run_success(
     mock_read_csv.return_value = pd.DataFrame()
     mock_cluster.return_value = all_docs
     mock_chunk_dict_to_dataframe = dataframe_to_chunk_dict
+    all_chunks = [
+        {
+            "text1": "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds are known for their distinctive cooing call and their ability to navigate long distances. Pigeons are also appreciated for their beauty, with their colorful feathers and iridescent sheen."
+        },
+        {
+            "text2": "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, including delivering messages during wartime and racing competitions. They are also popular as pets and can be trained to perform tricks."
+        },
+        {
+            "text3": "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to spread seeds and nutrients throughout their environment and are even considered a keystone species in some areas."
+        },
+    ]
 
     # Act
     run("test_dir")
@@ -85,7 +96,8 @@ def test_run_success(
     mock_read_csv.assert_called_once_with(
         f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.SAMPLE_OPTIMUM_K}.csv"
     )
-    mock_chunk_dict_to_dataframe.assert_called_once_with(mock_df)
+    mock_chunk_dict_to_dataframe.assert_called_once_with(mock_dfconcat)
+    mock_cluster.assert_called_once_with(all_chunks, data_dir, mock_config)
 
 
 @patch("os.makedirs")
