@@ -1,13 +1,17 @@
 from typing import Iterable
+import uuid
+
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
 
 def load_pdf_files(
+    environment: Environment,
     file_paths: Iterable[str],
     chunk_size: int,
     overlap_size: int,
@@ -16,7 +20,8 @@ def load_pdf_files(
     Load PDF files from a folder and split them into chunks of text.
 
     Args:
-        folder_path (str): The path to the folder containing the PDF files.
+        environment (Environment): The environment class
+        file_paths (Iterable[str]): Sequence of paths to load.
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
 
@@ -41,7 +46,10 @@ def load_pdf_files(
         f" overlap of {overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
+    docsList = []
+    for doc in docs:
+        docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 
-    return docs
+    return docsList

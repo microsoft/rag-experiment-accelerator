@@ -50,6 +50,8 @@ class Environment:
     azure_search_admin_key: str
     azure_language_service_endpoint: Optional[str]
     azure_language_service_key: Optional[str]
+    azure_document_intelligence_endpoint: Optional[str]
+    azure_document_intelligence_admin_key: Optional[str]
     keyvault_name: Optional[str]
 
     def __post_init__(self) -> None:

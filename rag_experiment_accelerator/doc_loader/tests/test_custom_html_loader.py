@@ -1,25 +1,24 @@
-from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
+from rag_experiment_accelerator.doc_loader.html_loader import load_html_files
 from rag_experiment_accelerator.config.paths import get_all_files
+from rag_experiment_accelerator.config.environment import Environment
 
 
 def test_load_html_files():
-    folder_path = "./data/html"
-    chunk_size = 1000
-    overlap_size = 200
-
     chunks = load_html_files(
-        file_paths=get_all_files(folder_path),
-        chunk_size=chunk_size,
-        overlap_size=overlap_size,
+        environment=Environment.from_env(),
+        file_paths=get_all_files("./data/html"),
+        chunk_size=1000,
+        overlap_size=200,
     )
 
     assert len(chunks) == 20
 
     assert (
-        "Deep Neural Nets: 33 years ago and 33 years from now" in chunks[0].page_content
+        "Deep Neural Nets: 33 years ago and 33 years from now"
+        in list(chunks[0].values())[0]
     )
     assert (
         "Deep Neural Nets: 33 years ago and 33 years from now"
-        not in chunks[5].page_content
+        not in list(chunks[5].values())[0]
     )
-    assert "Musings of a Computer Scientist." in chunks[19].page_content
+    assert "Musings of a Computer Scientist." in list(chunks[19].values())[0]

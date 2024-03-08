@@ -4,6 +4,7 @@ from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
+import uuid
 
 logger = get_logger(__name__)
 
@@ -21,6 +22,7 @@ def load_structured_files(
     Load and process structured files.
 
     Args:
+        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
         file_format (str): The file_format of the documents to be loaded.
         language (str): The language of the documents to be loaded.
         loader (BaseLoader): The document loader object that reads the files.
@@ -35,7 +37,6 @@ def load_structured_files(
     """
 
     logger.info(f"Loading {file_format} files")
-
     logger.debug(f"Found {len(file_paths)} {file_format} files")
 
     documents = []
@@ -43,8 +44,7 @@ def load_structured_files(
         loader_kwargs = {}
 
     for file in file_paths:
-        document = loader(file, **loader_kwargs).load()
-        documents += document
+        documents += loader(file, **loader_kwargs).load()
 
     logger.debug(f"Loaded {len(documents)} {file_format} files")
     if language is None:
@@ -66,7 +66,10 @@ def load_structured_files(
     )
 
     docs = text_splitter.split_documents(documents)
+    docsList = []
+    for doc in docs:
+        docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
 
     logger.info(f"Split {len(documents)} {file_format} files into {len(docs)} chunks")
 
-    return docs
+    return docsList

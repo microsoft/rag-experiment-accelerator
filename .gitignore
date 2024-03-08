@@ -186,3 +186,6 @@ data/*
 
 # AzureML config folder
 .azureml/*
+
+# Generated Conda file
+conda.generated.yaml

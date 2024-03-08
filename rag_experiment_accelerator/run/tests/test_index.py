@@ -5,7 +5,6 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 
 
 class TestIndex(unittest.TestCase):
-    @patch("rag_experiment_accelerator.run.index.load_dotenv")
     @patch("rag_experiment_accelerator.run.index.get_logger")
     @patch("rag_experiment_accelerator.run.index.Environment")
     @patch("rag_experiment_accelerator.run.index.Config")
@@ -24,7 +23,6 @@ class TestIndex(unittest.TestCase):
         mock_config,
         mock_environment,
         mock_get_logger,
-        mock_load_dotenv,
     ):
         # Create a list of mock EmbeddingModel instances
         embedding_models = [mock_embedding_model for _ in range(2)]
@@ -53,7 +51,6 @@ class TestIndex(unittest.TestCase):
                 mock_config,
                 mock_environment,
                 mock_get_logger,
-                mock_load_dotenv,
             )
 
     def run_test(
@@ -66,13 +63,13 @@ class TestIndex(unittest.TestCase):
         mock_config,
         mock_environment,
         mock_get_logger,
-        mock_load_dotenv,
     ):
         # Arrange
         mock_config.DATA_FORMATS = "test_format"
         mock_config.artifacts_dir = "test_artifacts_dir"
         mock_config.data_dir = "data_dir"
         mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "test_deployment_name"
+        mock_config.CHUNKING_STRATEGY = "basic"
         mock_environment.azure_search_service_endpoint = "test_endpoint"
         mock_environment.azure_search_admin_key = "test_key"
 
@@ -111,7 +108,12 @@ class TestIndex(unittest.TestCase):
         # mock_config.assert_called_once()
         mock_load_documents.assert_called()
         expected_call = call(
-            "test_format", file_paths, index_config.chunk_size, index_config.overlap
+            mock_environment,
+            "basic",
+            "test_format",
+            file_paths,
+            index_config.chunk_size,
+            index_config.overlap,
         )
         mock_load_documents.assert_has_calls([expected_call])
         expected_first_call_args = [
@@ -122,7 +124,7 @@ class TestIndex(unittest.TestCase):
             index_config.embedding_model,
             "test_deployment_name",
         ]
-        args, kwargs = mock_upload_data.call_args
+        _, kwargs = mock_upload_data.call_args
         # Assert that the call arguments of the first call are as expected
         self.assertEqual(kwargs.get("chunks"), expected_first_call_args[0])
         self.assertEqual(kwargs.get("service_endpoint"), expected_first_call_args[1])

@@ -1,10 +1,10 @@
 import os
 import pytest
 
-from rag_experiment_accelerator.doc_loader.customJsonLoader import (
+from rag_experiment_accelerator.doc_loader.custom_json_loader import (
     CustomJSONLoader,
 )
-from rag_experiment_accelerator.doc_loader.structuredLoader import (
+from rag_experiment_accelerator.doc_loader.structured_loader import (
     load_structured_files,
 )
 
@@ -25,42 +25,9 @@ def test_load_json_files():
         },
     )
 
-    file_path = os.path.abspath(
-        "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
-    )
     assert (
-        docs[0].page_content
+        list(docs[0].values())[0]
         == "[{'content': 'This is the content for item 1.', 'title': 'Title TEST 1'}, {'content': 'This is the content for item 2.', 'title': 'Title 2'}, {'content': 'This is the content for item 3.', 'title': 'Title 3'}, {'content': 'This is the content for item 4.', 'title': 'Title 4'}, {'content': 'This is the content for item 5.', 'title': 'Title 5'}, {'content': 'This is the content for item 6.', 'title': 'Title 6'}]"
-    )
-    assert docs[0].metadata["source"] == file_path
-
-
-def test_load_json_files_raises_not_a_list():
-    keys_to_load = ["content", "title"]
-    loader = CustomJSONLoader
-    with pytest.raises(ValueError) as exec_info:
-        load_structured_files(
-            file_format="JSON",
-            language=None,
-            loader=loader,
-            file_paths=[
-                os.path.abspath(
-                    "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.bad.not_a_list.json"
-                )
-            ],
-            chunk_size=1000,
-            overlap_size=200,
-            loader_kwargs={
-                "keys_to_load": keys_to_load,
-            },
-        )
-
-    file_path = os.path.abspath(
-        "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.bad.not_a_list.json"
-    )
-    assert (
-        str(exec_info.value)
-        == f"JSON file at path: {file_path} must be a list of object and expects each object to contain the fields ['content', 'title']"
     )
 
 
@@ -89,4 +56,33 @@ def test_load_json_files_raises_invalid_keys():
     assert (
         str(exec_info.value)
         == f"JSON file at path {file_path} must contain the field 'content'"
+    )
+
+
+def test_load_json_files_raises_not_a_list():
+    keys_to_load = ["content", "title"]
+    loader = CustomJSONLoader
+    with pytest.raises(ValueError) as exec_info:
+        load_structured_files(
+            file_format="JSON",
+            language=None,
+            loader=loader,
+            file_paths=[
+                os.path.abspath(
+                    "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.bad.not_a_list.json"
+                )
+            ],
+            chunk_size=1000,
+            overlap_size=200,
+            loader_kwargs={
+                "keys_to_load": keys_to_load,
+            },
+        )
+
+    file_path = os.path.abspath(
+        "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.bad.not_a_list.json"
+    )
+    assert (
+        str(exec_info.value)
+        == f"JSON file at path: {file_path} must be a list of object and expects each object to contain the fields ['content', 'title']"
     )

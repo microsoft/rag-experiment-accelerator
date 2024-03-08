@@ -1,7 +1,7 @@
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
+from rag_experiment_accelerator.doc_loader.document_loader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
@@ -40,7 +40,12 @@ def run(
     index_dict["indexes"].append(index_config.index_name())
 
     all_docs = load_documents(
-        config.DATA_FORMATS, file_paths, index_config.chunk_size, index_config.overlap
+        environment,
+        config.CHUNKING_STRATEGY,
+        config.DATA_FORMATS,
+        file_paths,
+        index_config.chunk_size,
+        index_config.overlap,
     )
 
     data_load = []
