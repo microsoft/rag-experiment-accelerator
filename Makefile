@@ -31,15 +31,15 @@ index: ## 📚 Index documents (download documents from blob storage, split to c
 
 qnagen: ## ❓ Generate questions and answers for all document chunks in configuted index
 	$(call target_title, "question and answer generation")
-	python3 02_qa_generation $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
+	python3 02_qa_generation.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
 
 query: ## 🔍 Query the index for all questions in jsonl file configured in config.json and generate answers using LLM
 	$(call target_title, "querying") 
-	python3 03_querying.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
+	python3 03_querying.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
 
 eval: ## 👓 Evaluate metrics for all answers compared to groud truth
 	$(call target_title, "evaluating")
-	python3 04_evaluation.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
+	python3 04_evaluation.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
 
 clear_docs: ## ❌ Delete all downloaded documents from data folder
 	$(call target_title, "deleting all downloaded documents from data folder")
