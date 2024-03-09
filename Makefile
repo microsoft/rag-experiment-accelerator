@@ -37,7 +37,7 @@ query: ## 🔍 Query the index for all questions in jsonl file configured in con
 	$(call target_title, "querying") 
 	python3 03_querying.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
-eval: ## 👓 Evaluate metrics for all answers compared to groud truth
+eval: ## 👓 Evaluate metrics for all answers compared to ground truth
 	$(call target_title, "evaluating")
 	python3 04_evaluation.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
