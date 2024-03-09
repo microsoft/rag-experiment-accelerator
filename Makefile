@@ -29,7 +29,7 @@ index: ## 📚 Index documents (download documents from blob storage, split to c
 	$(call target_title, "indexing")
 	python3 01_index.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
-qnagen: ## ❓ Generate questions and answers for all document chunks in configuted index
+qnagen: ## ❓ Generate questions and answers for all document chunks in configured index
 	$(call target_title, "question and answer generation")
 	python3 02_qa_generation $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
 
