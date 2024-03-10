@@ -13,6 +13,7 @@ class TestIndex(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.index.Preprocess")
     @patch("rag_experiment_accelerator.run.index.get_index_name")
     @patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
+    @patch("rag_experiment_accelerator.sampling.clustering.cluster")
     def test_run_with_config_values(
         self,
         mock_embedding_model,
@@ -24,6 +25,7 @@ class TestIndex(unittest.TestCase):
         mock_Config,
         mock_get_logger,
         mock_load_dotenv,
+        mock_cluster,
     ):
         # Create a list of mock EmbeddingModel instances
         embedding_models = [mock_embedding_model for _ in range(2)]
@@ -64,6 +66,7 @@ class TestIndex(unittest.TestCase):
         mock_Config,
         mock_get_logger,
         mock_load_dotenv,
+        mock_cluster,
     ):
         # Arrange
         mock_get_index_name.return_value = "test_index_name"
@@ -91,6 +94,7 @@ class TestIndex(unittest.TestCase):
         mock_load_documents.return_value = [doc1, doc2]
         mock_Config.return_value.SAMPLE_DATA = "false"
         mock_Config.return_value.SAMPLE_PERCENTAGE = 5
+        all_docs = MagicMock()
 
         # Mock the generate_embedding method for each embedding model
         for model in embedding_models:
@@ -140,6 +144,9 @@ class TestIndex(unittest.TestCase):
         mock_Preprocess.assert_called_once()
         mock_get_index_name.assert_called()
         mock_create_acs_index.assert_called()
+        mock_cluster.assert_called_once_with(
+            all_docs, "test_artifacts_dir", mock_Config
+        )
 
         @patch("rag_experiment_accelerator.run.index.os.makedirs")
         @patch("rag_experiment_accelerator.run.index.create_acs_index")
