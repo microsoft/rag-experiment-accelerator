@@ -1,4 +1,3 @@
-import pandas as pd
 from unittest.mock import patch, MagicMock
 from rag_experiment_accelerator.run.qa_generation import run
 import pytest
@@ -10,9 +9,6 @@ import pytest
 @patch("rag_experiment_accelerator.run.qa_generation.load_documents")
 @patch("rag_experiment_accelerator.run.qa_generation.get_default_az_cred")
 @patch("rag_experiment_accelerator.run.qa_generation.Config")
-@patch("rag_experiment_accelerator.run.qa_generation.exists")
-@patch("rag_experiment_accelerator.run.qa_generation.pd.read_csv")
-@patch("rag_experiment_accelerator.sampling.clustering.chunk_dict_to_dataframe")
 def test_run_success(
     mock_config,
     mock_get_default_az_cred,
@@ -20,17 +16,11 @@ def test_run_success(
     mock_makedirs,
     mock_generate_qna,
     mock_create_data_asset,
-    mock_read_csv,
-    mock_exists,
 ):
     # Arrange
-    data_dir = "test_data_dir"
-    mock_config.SAMPLE_DATA = False
     mock_get_default_az_cred.return_value = "test_cred"
     mock_df = MagicMock()
     mock_generate_qna.return_value = mock_df
-    mock_exists.return_value = True
-    mock_read_csv.return_value = pd.DataFrame()
 
     # Act
     run("test_dir")
@@ -43,12 +33,6 @@ def test_run_success(
     mock_generate_qna.assert_called_once()
     mock_df.to_json.assert_called_once()
     mock_create_data_asset.assert_called_once()
-    mock_exists.assert_called_once_with(
-        f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.SAMPLE_OPTIMUM_K}.csv"
-    )
-    mock_read_csv.assert_called_once_with(
-        f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.SAMPLE_OPTIMUM_K}.csv"
-    )
 
 
 @patch("os.makedirs")
