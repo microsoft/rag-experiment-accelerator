@@ -13,6 +13,7 @@ class TestIndex(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.index.Preprocess")
     @patch("rag_experiment_accelerator.run.index.get_index_name")
     @patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
+    @patch("rag_experiment_accelerator.sampling.clustering.cluster")
     def test_run_with_config_values(
         self,
         mock_embedding_model,
