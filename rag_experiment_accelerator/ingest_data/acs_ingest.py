@@ -1,22 +1,25 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import ExitStack
 import hashlib
 import json
+from tqdm import tqdm
+
 
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.prompts import (
     do_need_multiple_prompt_instruction,
     generate_qna_instruction_system_prompt,
     generate_qna_instruction_user_prompt,
     multiple_prompt_instruction,
-    prompt_instruction_summary,
-    prompt_instruction_title,
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.timetook import TimeTook
 
 pre_process = Preprocess()
 
@@ -37,57 +40,31 @@ def my_hash(s):
     return hashlib.md5(s.encode()).hexdigest()
 
 
-def generate_title(chunk, azure_oai_deployment_name):
-    """
-    Generates a title for a given chunk of text using a language model.
-
-    Args:
-        chunk (str): The input text to generate a title for.
-        azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
-
-    Returns:
-        str: The generated title.
-    """
-    response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(prompt_instruction_title, chunk)
-    return response
-
-
-def generate_summary(chunk, azure_oai_deployment_name):
-    """
-    Generates a summary of the given chunk of text using the specified language model.
-
-    Args:
-        chunk (str): The text to summarize.
-        azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
-    Returns:
-        str: The generated summary.
-    """
-    response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(prompt_instruction_summary, chunk)
-    return response
-
-
 def upload_data(
     chunks: list,
     service_endpoint: str,
     index_name: str,
     search_key: str,
-    embedding_model: EmbeddingModel,
-    azure_oai_deployment_name: str,
+    config: Config,
 ):
     """
     Uploads data to an Azure AI Search index.
 
+    This function uploads chunks of data to a specified index in Azure
+    Cognitive Search.
+    It uses the provided service endpoint, index name, and search key
+    to connect to the service.
+    The function also converts the chunks into index documents before
+    uploading them.
+    The upload process is done in parallel using a ThreadPoolExecutor.
+
     Args:
         chunks (list): A list of data chunks to upload.
-        service_endpoint (str): The endpoint URL for the Azure AI Search service.
+        service_endpoint (str): The endpoint URL for the Azure AI Search
+        service.
         index_name (str): The name of the index to upload data to.
         search_key (str): The search key for the Azure AI Search service.
-        embedding_model (EmbeddingModel): The embedding model to generate the embedding.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment to use for generating titles and summaries.
+        config (Config):
 
     Returns:
         None
@@ -96,35 +73,45 @@ def upload_data(
     search_client = SearchClient(
         endpoint=service_endpoint, index_name=index_name, credential=credential
     )
-    documents = []
-    for i, chunk in enumerate(chunks):
-        try:
-            title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
-            summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
-        except Exception as e:
-            logger.info(f"Could not generate title or summary for chunk {i}")
-            logger.info(e)
-            continue
-        input_data = {
-            "id": str(my_hash(chunk["content"])),
-            "title": title,
-            "summary": summary,
-            "content": str(chunk["content"]),
-            "filename": "test",
-            "contentVector": chunk["content_vector"],
-            "contentSummary": embedding_model.generate_embedding(
-                chunk=str(pre_process.preprocess(summary))
-            ),
-            "contentTitle": embedding_model.generate_embedding(
-                chunk=str(pre_process.preprocess(title))
-            ),
-        }
 
-        documents.append(input_data)
+    logger.info(f"Preparing data for upload, {len(chunks)}" " documents to upload")
+    documents = chunks_to_index_documents(chunks)
+    with ExitStack() as stack:
+        with TimeTook("uploading data to Azure Cognitive Search", logger=logger):
+            executor = stack.enter_context(
+                ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+            )
+            progress_bar = stack.enter_context(
+                tqdm(
+                    total=len(documents),
+                    desc="upserting documents to Azure Cognitive Search",
+                    unit="doc",
+                    unit_scale=True,
+                )
+            )
 
-        search_client.upload_documents([input_data])
-    logger.info(f"Uploaded {len(documents)} documents")
-    logger.info("all documents have been uploaded to the search index")
+            futures = {
+                executor.submit(search_client.upload_documents, document): document
+                for document in documents
+            }
+
+            for future in as_completed(futures):
+                document = futures[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    logger.error(
+                        f"Failed to upload document {document} with error:"
+                        f" {result.error_message} and"
+                        f"status code: {result.status_code}"
+                        f"ExceptionL: {exc}"
+                    )
+                progress_bar.update(1)
+
+    logger.info(
+        f"Uploaded {len(documents)} documents"
+        f"out of {len(chunks)} documents to Azure Search Index"
+    )
 
 
 def generate_qna(docs, azure_oai_deployment_name):
@@ -153,10 +140,11 @@ def generate_qna(docs, azure_oai_deployment_name):
                     deployment_name=azure_oai_deployment_name
                 ).generate_response(
                     generate_qna_instruction_system_prompt,
-                    generate_qna_instruction_user_prompt
-                    + chunk,
+                    generate_qna_instruction_user_prompt + chunk,
                 )
-                response_dict = json.loads(response.replace('\n', '').replace("\'", '').replace("\\", ''))
+                response_dict = json.loads(
+                    response.replace("\n", "").replace("'", "").replace("\\", "")
+                )
                 for item in response_dict:
                     data = {
                         "user_prompt": item["question"],
@@ -198,11 +186,13 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
 
 def do_we_need_multiple_questions(question, azure_oai_deployment_name):
     """
-    Determines if we need to ask multiple questions based on the response generated by the model.
+    Determines if we need to ask multiple questions based on the response
+    generated by the model.
 
     Args:
         question (str): The question to ask.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment.
+        azure_oai_deployment_name (str): The name of the Azure Opan AI
+        deployment.
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
@@ -225,3 +215,40 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
     except ContentFilteredException as e:
         logger.error(e)
         return False
+
+
+def chunks_to_index_documents(chunks):
+    """
+    Converts chunks of content into index documents for Azure Cognitive Search.
+
+    This function takes a list of chunks, where each chunk is a dictionary
+    containing various pieces of content.
+    It then converts each chunk into a dictionary that's suitable for use as
+    an index document in Azure Cognitive Search.
+    The resulting list of index documents is then returned.
+
+    Args:
+        chunks (list): A list of dictionaries, each containing a chunk of
+        content to be converted.
+
+    Returns:
+        list: A list of dictionaries, each representing an index document.
+    """
+    return [
+        {
+            "id": str(my_hash(chunk["content"])),
+            "title": chunk["title"] if "title" in chunk else "",
+            "summary": chunk["summary"] if "summary" in chunk else "",
+            "content": str(chunk["content"]),
+            "filename": chunk["filename"],
+            "sourceDisplayName": chunk["source_display_name"],
+            "contentVector": chunk["content_vector"]
+            if "content_vector" in chunk
+            else [],
+            "summaryVector": chunk["summary_vector"]
+            if "summary_vector" in chunk
+            else [],
+            "titleVector": chunk["title_vector"] if "title_vector" in chunk else [],
+        }
+        for chunk in chunks
+    ]
