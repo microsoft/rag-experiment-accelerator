@@ -79,7 +79,7 @@ class TestIndex(unittest.TestCase):
         mock_Config.return_value.DATA_FORMATS = "test_format"
         mock_Config.return_value.CHUNKING_STRATEGY = "basic"
         mock_Config.return_value.AzureDocumentIntelligenceCredentials = None
-        mock_Config.return_value.artifacts_dir = "test_artifacts_dir"
+        mock_Config.return_value.artifacts_dir = "artifacts"
         mock_Config.return_value.data_dir = "data_dir"
         mock_Config.return_value.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT = (
             "test_endpoint"
