@@ -49,6 +49,7 @@ class TestIndex(unittest.TestCase):
             mock_Config,
             mock_get_logger,
             mock_load_dotenv,
+            mock_cluster,
         )
 
     def run_test(
