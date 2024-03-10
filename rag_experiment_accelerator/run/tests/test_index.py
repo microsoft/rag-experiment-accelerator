@@ -24,6 +24,7 @@ class TestIndex(unittest.TestCase):
         mock_Config,
         mock_get_logger,
         mock_load_dotenv,
+        mock_cluster,
     ):
         # Create a list of mock EmbeddingModel instances
         embedding_models = [mock_embedding_model for _ in range(2)]
@@ -47,6 +48,7 @@ class TestIndex(unittest.TestCase):
             mock_Config,
             mock_get_logger,
             mock_load_dotenv,
+            mock_cluster,
         )
 
     def run_test(
@@ -64,6 +66,7 @@ class TestIndex(unittest.TestCase):
         mock_Config,
         mock_get_logger,
         mock_load_dotenv,
+        mock_cluster,
     ):
         # Arrange
         mock_get_index_name.return_value = "test_index_name"
@@ -84,6 +87,8 @@ class TestIndex(unittest.TestCase):
             "test_key"
         )
         mock_Config.return_value.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "test_deployment_name"
+        all_docs = MagicMock()
+        sampled_docs = MagicMock()
         doc1 = MagicMock()
         doc1 = {"key1": "content1"}
         doc2 = MagicMock()
@@ -91,6 +96,7 @@ class TestIndex(unittest.TestCase):
         mock_load_documents.return_value = [doc1, doc2]
         mock_Config.return_value.SAMPLE_DATA = "false"
         mock_Config.return_value.SAMPLE_PERCENTAGE = 5
+        mock_cluster.return_value = sampled_docs
 
         # Mock the generate_embedding method for each embedding model
         for model in embedding_models:
@@ -113,11 +119,13 @@ class TestIndex(unittest.TestCase):
         # Assert
         mock_Config.assert_called_once()
         mock_load_documents.assert_called()
+        mock_cluster.assert_called()
         expected_calls = [
             call("basic", None, "test_format", "data_dir", chunk_size, overlap_size)
             for chunk_size, overlap_size in zip(chunk_sizes, overlap_sizes)
         ]
         mock_load_documents.assert_has_calls(expected_calls, any_order=True)
+        mock_cluster.assert_called_once_with(all_docs, "data_dir", mock_Config)
         expected_first_call_args = [
             chunks,
             "test_endpoint",
