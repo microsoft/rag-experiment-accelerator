@@ -1,9 +1,6 @@
 {
 	"name": "RAG Experiment Accelerator",
-	"build": { 
-		"context": "..",
-		"dockerfile": "Dockerfile"
-	},
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.11-bullseye",
 	"features": {
 		"ghcr.io/devcontainers/features/azure-cli:1": {
 			"version": "latest"
@@ -19,7 +16,8 @@
 				"ms-vscode.azure-account",
 				"ms-python.python",
 				"ms-azuretools.vscode-bicep",
-				"prompt-flow.prompt-flow"
+				"prompt-flow.prompt-flow",
+				"ms-azuretools.azure-dev"
 			]
 		}
 	}
