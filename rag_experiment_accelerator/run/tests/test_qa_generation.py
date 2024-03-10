@@ -16,12 +16,15 @@ def test_run_success(
     mock_makedirs,
     mock_generate_qna,
     mock_create_data_asset,
+    mock_cluster,
+    mock_read_csv,
 ):
     # Arrange
     mock_get_default_az_cred.return_value = "test_cred"
     mock_df = MagicMock()
     mock_generate_qna.return_value = mock_df
-
+    mock_cluster = MagicMock()
+    mock_read_csv = MagicMock()
     # Act
     run("test_dir")
 
@@ -33,6 +36,8 @@ def test_run_success(
     mock_generate_qna.assert_called_once()
     mock_df.to_json.assert_called_once()
     mock_create_data_asset.assert_called_once()
+    mock_cluster.assert_not_called()
+    mock_read_csv.assert_not_called()
 
 
 @patch("os.makedirs")
