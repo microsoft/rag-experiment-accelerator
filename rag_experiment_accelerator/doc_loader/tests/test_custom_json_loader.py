@@ -1,10 +1,10 @@
 import os
 import pytest
 
-from rag_experiment_accelerator.doc_loader.custom_json_loader import (
+from rag_experiment_accelerator.doc_loader.customJsonLoader import (
     CustomJSONLoader,
 )
-from rag_experiment_accelerator.doc_loader.structured_loader import (
+from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files,
 )
 

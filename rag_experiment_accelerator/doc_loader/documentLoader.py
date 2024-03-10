@@ -1,14 +1,14 @@
 from typing import Union, List
 
-from rag_experiment_accelerator.doc_loader.docx_loader import load_docx_files
-from rag_experiment_accelerator.doc_loader.html_loader import load_html_files
-from rag_experiment_accelerator.doc_loader.json_loader import load_json_files
-from rag_experiment_accelerator.doc_loader.markdown_loader import (
+from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
+from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
+from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
+from rag_experiment_accelerator.doc_loader.markdownLoader import (
     load_markdown_files,
 )
-from rag_experiment_accelerator.doc_loader.pdf_loader import load_pdf_files
-from rag_experiment_accelerator.doc_loader.text_loader import load_text_files
-from rag_experiment_accelerator.doc_loader.document_intelligence_loader import (
+from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
+from rag_experiment_accelerator.doc_loader.textLoader import load_text_files
+from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
     load_with_azure_document_intelligence,
 )
 from rag_experiment_accelerator.utils.logging import get_logger

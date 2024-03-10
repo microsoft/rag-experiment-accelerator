@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
-from rag_experiment_accelerator.doc_loader.document_loader import load_documents
+from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger

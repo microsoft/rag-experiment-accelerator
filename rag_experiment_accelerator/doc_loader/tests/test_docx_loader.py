@@ -1,4 +1,4 @@
-from rag_experiment_accelerator.doc_loader.docx_loader import load_docx_files
+from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.config.paths import get_all_files
 from rag_experiment_accelerator.config.environment import Environment
 

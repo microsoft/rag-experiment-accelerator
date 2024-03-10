@@ -1,4 +1,4 @@
-from rag_experiment_accelerator.doc_loader.html_loader import load_html_files
+from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
 from rag_experiment_accelerator.config.paths import get_all_files
 from rag_experiment_accelerator.config.environment import Environment
 

@@ -1,7 +1,7 @@
 from typing import Iterable
 from langchain.document_loaders import BSHTMLLoader
 
-from rag_experiment_accelerator.doc_loader.structured_loader import (
+from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files,
 )
 from rag_experiment_accelerator.utils.logging import get_logger
