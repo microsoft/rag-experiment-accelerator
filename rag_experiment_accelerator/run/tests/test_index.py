@@ -25,7 +25,6 @@ class TestIndex(unittest.TestCase):
         mock_Config,
         mock_get_logger,
         mock_load_dotenv,
-        mock_cluster,
     ):
         # Create a list of mock EmbeddingModel instances
         embedding_models = [mock_embedding_model for _ in range(2)]
@@ -49,7 +48,6 @@ class TestIndex(unittest.TestCase):
             mock_Config,
             mock_get_logger,
             mock_load_dotenv,
-            mock_cluster,
         )
 
     def run_test(
