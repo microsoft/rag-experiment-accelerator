@@ -47,6 +47,10 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     Raises:
         Exception: If unable to create the artifacts directory.
     """
+    logger.info(
+        f"Indexing with config from path: {config_dir}/{filename} "
+        f"and data from path: {data_dir}"
+    )
     config = Config(config_dir, data_dir, filename)
     pre_process = Preprocess()
 
