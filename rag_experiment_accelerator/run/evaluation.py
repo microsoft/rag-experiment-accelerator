@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.evaluation import eval
+from rag_experiment_accelerator.run.index import generate_index_name
 from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.utils.utils import get_index_name
 
 load_dotenv(override=True)
 
@@ -44,11 +44,11 @@ def run(config_dir: str, filename: str = "config.json"):
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
-                        index_name = get_index_name(
-                            config.NAME_PREFIX,
+                        index_name = generate_index_name(
+                            config,
                             chunk_size,
                             overlap,
-                            embedding_model.name,
+                            embedding_model,
                             ef_construction,
                             ef_search,
                         )

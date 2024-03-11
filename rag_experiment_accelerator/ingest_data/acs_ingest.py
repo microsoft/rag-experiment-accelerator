@@ -128,14 +128,14 @@ def generate_qna(docs, azure_oai_deployment_name):
         # what happens with < 50 ? Currently we are skipping them
         # But we aren't explicitly saying that stating that, should we?
         chunk = list(doc.values())[0]
-        if len(chunk) > 50:
+        if len(chunk["content"]) > 50:
             response = ""
             try:
                 response = ResponseGenerator(
                     deployment_name=azure_oai_deployment_name
                 ).generate_response(
                     generate_qna_instruction_system_prompt,
-                    generate_qna_instruction_user_prompt + chunk,
+                    generate_qna_instruction_user_prompt + chunk["content"],
                 )
                 response_dict = json.loads(
                     response.replace("\n", "").replace("'", "").replace("\\", "")
@@ -144,7 +144,7 @@ def generate_qna(docs, azure_oai_deployment_name):
                     data = {
                         "user_prompt": item["question"],
                         "output_prompt": item["answer"],
-                        "context": chunk,
+                        "context": chunk["content"],
                     }
                     new_df = new_df._append(data, ignore_index=True)
 
