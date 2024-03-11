@@ -40,45 +40,19 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 11. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
+## Products used
 
-## Installation
+- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
+- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
+- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
 
-Two options are available: install locally or run within a development container.
+## Prerequisites
 
-### 1. Local install
+Two options are available: run within a development container or install locally.
 
-To use the **RAG Experiment Accelerator**, follow these installation steps:
+### 1. Run within a Development Container
 
-1. **Clone the repository**: Clone the accelerator's repository from [GitHub].
-
-```bash
-git clone https://github.com/microsoft/rag-experiment-accelerator.git
-```
-
-2. **setup env file**: Copy `.env.template` and save as `.env` file. Provide values for all the keys
-
-LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
-
-3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
-
-```bash
-conda create -n rag-test python=3.11
-conda activate rag-test
-pip install .
-```
-
-4. Install Azure CLI and authorize:
-```bash
-az login
-az account set  --subscription="<your_subscription_guid>"
-az account show
-```
-
-5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
-
-### 2. Run within a Development Container
-
-Using a development container will mean that all of the required software is installed for you. This will utilise WSL. For more information about development containers visit [containers.dev](https://containers.dev/)
+Using a development container will mean that all of the required software is installed for you. This will require WSL. For more information about development containers visit [containers.dev](https://containers.dev/)
 
 #### Install the Pre-Requisite Software
 
@@ -107,11 +81,39 @@ Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `da
 
 ---
 
-## Pre-requisites
 
-- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
-- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
-- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
+### 2. Local install
+
+You can of course run the **RAG Experiment Accelerator** on a Windows machine if you like, follow these installation steps:
+
+1. **Clone the repository**: Clone the accelerator's repository from [GitHub].
+
+```bash
+git clone https://github.com/microsoft/rag-experiment-accelerator.git
+```
+
+2. **setup env file**: Copy `.env.template` and save as `.env` file. Provide values for all the keys
+
+LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
+
+3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
+
+```bash
+conda create -n rag-test python=3.11
+conda activate rag-test
+pip install .
+```
+
+4. Install Azure CLI and authorize:
+```bash
+az login
+az account set  --subscription="<your_subscription_guid>"
+az account show
+```
+
+5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
+
+## Installation
 
 ### Install with Azure Developer CLI
 This project supports Azure Developer CLI. 
