@@ -98,14 +98,9 @@ def upload_data(
             for future in as_completed(futures):
                 document = futures[future]
                 try:
-                    result = future.result()
-                except Exception as exc:
-                    logger.error(
-                        f"Failed to upload document {document} with error:"
-                        f" {result.error_message} and"
-                        f"status code: {result.status_code}"
-                        f"ExceptionL: {exc}"
-                    )
+                    future.result()
+                except Exception as ex:
+                    logger.error(f"Failed to upload document {document}, error: {ex}")
                 progress_bar.update(1)
 
     logger.info(
