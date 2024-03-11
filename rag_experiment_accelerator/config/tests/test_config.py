@@ -35,22 +35,23 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
     new=mock_get_env_var,
 )
 @patch(
-    "rag_experiment_accelerator.config.config.EmbeddingModelFactory.create",
+    "rag_experiment_accelerator.config.config.create_embedding_model",
 )
-def test_config_init(mock_embedding_model_factory):
+def test_config_init(mock_create_embedding_model):
     # Load mock config data from a YAML file
     with open(f"{get_test_config_dir()}/config.json", "r") as file:
         mock_config_data = json.load(file)
 
     embedding_model_1 = MagicMock()
     embedding_model_2 = MagicMock()
+    environment = MagicMock()
     embedding_model_1.name.return_value = "all-MiniLM-L6-v2"
     embedding_model_1.dimension.return_value = 384
     embedding_model_2.name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
-    mock_embedding_model_factory.side_effect = [embedding_model_1, embedding_model_2]
+    mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
 
-    config = Config(get_test_config_dir())
+    config = Config(environment, get_test_config_dir())
 
     config.embedding_models = [embedding_model_1, embedding_model_2]
 

@@ -149,7 +149,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     environment = Environment.from_env()
-    config = Config(args.config_dir, args.data_dir, args.config_path)
+    config = Config(environment, args.config_dir, args.data_dir, args.config_path)
     # Starting multiple pipelines hence unable to stream them
     for index_config in config.index_configs():
         start_pipeline(

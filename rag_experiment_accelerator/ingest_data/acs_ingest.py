@@ -19,6 +19,8 @@ from rag_experiment_accelerator.llm.prompts import (
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config.environment import Environment
 
 pre_process = Preprocess()
 
@@ -39,40 +41,9 @@ def my_hash(s):
     return hashlib.md5(s.encode()).hexdigest()
 
 
-def generate_title(chunk, azure_oai_deployment_name):
-    """
-    Generates a title for a given chunk of text using a language model.
-
-    Args:
-        chunk (str): The input text to generate a title for.
-        azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
-
-    Returns:
-        str: The generated title.
-    """
-    response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(prompt_instruction_title, chunk)
-    return response
-
-
-def generate_summary(chunk, azure_oai_deployment_name):
-    """
-    Generates a summary of the given chunk of text using the specified language model.
-
-    Args:
-        chunk (str): The text to summarize.
-        azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
-    Returns:
-        str: The generated summary.
-    """
-    response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(prompt_instruction_summary, chunk)
-    return response
-
-
 def upload_data(
+    environment: Environment,
+    config: Config,
     chunks: list,
     service_endpoint: str,
     index_name: str,
@@ -98,11 +69,19 @@ def upload_data(
     search_client = SearchClient(
         endpoint=service_endpoint, index_name=index_name, credential=credential
     )
+    response_generator = ResponseGenerator(
+        environment, config, deployment_name=azure_oai_deployment_name
+    )
     documents = []
     for i, chunk in enumerate(chunks):
         try:
-            title = generate_title(str(chunk["content"]), azure_oai_deployment_name)
-            summary = generate_summary(str(chunk["content"]), azure_oai_deployment_name)
+            chunk_content = str(chunk["content"])
+            title = response_generator.generate_response(
+                prompt_instruction_title, chunk_content
+            )
+            summary = response_generator.generate_response(
+                prompt_instruction_summary, chunk_content
+            )
         except Exception as e:
             logger.info(f"Could not generate title or summary for chunk {i}: {str(e)}")
             logger.info(traceback.format_exc())
@@ -129,7 +108,7 @@ def upload_data(
     logger.info("all documents have been uploaded to the search index")
 
 
-def generate_qna(docs, azure_oai_deployment_name):
+def generate_qna(environment, config, docs, azure_oai_deployment_name):
     """
     Generates a set of questions and answers from a list of documents using a language model.
 
@@ -142,6 +121,9 @@ def generate_qna(docs, azure_oai_deployment_name):
     """
     column_names = ["user_prompt", "output_prompt", "context"]
     new_df = pd.DataFrame(columns=column_names)
+    response_generator = ResponseGenerator(
+        environment, config, azure_oai_deployment_name
+    )
 
     for doc in docs:
         # what happens with < 50 ? Currently we are skipping them
@@ -150,9 +132,7 @@ def generate_qna(docs, azure_oai_deployment_name):
         if len(chunk) > 50:
             response = ""
             try:
-                response = ResponseGenerator(
-                    deployment_name=azure_oai_deployment_name
-                ).generate_response(
+                response_generator.generate_response(
                     generate_qna_instruction_system_prompt,
                     generate_qna_instruction_user_prompt + chunk + "\nEND OF CONTEXT",
                 )
@@ -180,13 +160,13 @@ def generate_qna(docs, azure_oai_deployment_name):
     return new_df
 
 
-def we_need_multiple_questions(question, azure_oai_deployment_name):
+def we_need_multiple_questions(question, response_generator: ResponseGenerator):
     """
     Generates a response to a given question using a language model with multiple prompts.
 
     Args:
         question (str): The question to generate a response for.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment
+        response_generator (ResponseGenerator): Initialised ResponseGenerator to use
 
     Returns:
         str: The generated response.
@@ -194,19 +174,17 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(full_prompt_instruction, "")
+    response = response_generator.generate_response(full_prompt_instruction, "")
     return response
 
 
-def do_we_need_multiple_questions(question, azure_oai_deployment_name):
+def do_we_need_multiple_questions(question, response_generator: ResponseGenerator):
     """
     Determines if we need to ask multiple questions based on the response generated by the model.
 
     Args:
         question (str): The question to ask.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment.
+        response_generator (ResponseGenerator): Initialised ResponseGenerator to use
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
@@ -215,9 +193,7 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
     try:
-        response = ResponseGenerator(
-            deployment_name=azure_oai_deployment_name
-        ).generate_response(full_prompt_instruction, "")
+        response = response_generator.generate_response(full_prompt_instruction, "")
     except ContentFilteredException as e:
         logger.error(e)
         return False

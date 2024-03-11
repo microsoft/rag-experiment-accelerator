@@ -10,6 +10,7 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser()
     environment = Environment.from_env()
     config = Config(
+        environment,
         arg_parser.get_directory_arg(),
         arg_parser.get_data_directory_arg(),
         arg_parser.get_config_filename_arg(),

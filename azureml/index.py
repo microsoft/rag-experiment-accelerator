@@ -40,7 +40,7 @@ def init():
     global index_config
 
     environment = Environment.from_keyvault(args.keyvault_name)
-    config = Config(args.config_dir, args.data_dir, args.config_path)
+    config = Config(environment, args.config_dir, args.data_dir, args.config_path)
     config.data_dir = args.data_dir
     index_config = IndexConfig.from_index_name(args.index_name, config)
 

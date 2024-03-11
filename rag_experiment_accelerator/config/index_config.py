@@ -30,7 +30,6 @@ class IndexConfig:
     ef_construction: int
     ef_search: int
 
-    # TODO: shorter name?
     def index_name(self) -> str:
         return (
             f"{self.index_name_prefix}"

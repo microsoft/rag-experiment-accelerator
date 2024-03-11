@@ -22,6 +22,7 @@ def run(config_dir: str, filename: str = "config.json"):
     Returns:
         None
     """
+    # TODO
     config = Config(config_dir, filename=filename)
     azure_cred = get_default_az_cred()
     all_docs = load_documents(

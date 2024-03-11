@@ -4,6 +4,8 @@ from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.index_config import IndexConfig
+from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import (
     query_acs,
     rerank_documents,
@@ -28,6 +30,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.CHUNK_SIZES = [1]
         self.mock_config.OVERLAP_SIZES = [1]
         self.mock_config.LLM_RERANK_THRESHOLD = 3
+        self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
 
@@ -148,6 +151,7 @@ class TestQuerying(unittest.TestCase):
             output_prompt,
             search_type,
             evaluation_content,
+            self.mock_environment,
             self.mock_config,
             evaluator,
             main_prompt_instruction,
@@ -216,6 +220,7 @@ class TestQuerying(unittest.TestCase):
             output_prompt,
             search_type,
             evaluation_content,
+            self.mock_environment,
             self.mock_config,
             evaluator,
             main_prompt_instruction,
@@ -240,6 +245,7 @@ class TestQuerying(unittest.TestCase):
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
 
     @patch("rag_experiment_accelerator.run.querying.Config")
+    @patch("rag_experiment_accelerator.run.querying.Environment")
     @patch("rag_experiment_accelerator.run.querying.get_default_az_cred")
     @patch("rag_experiment_accelerator.run.querying.SpacyEvaluator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutputHandler")
@@ -261,34 +267,38 @@ class TestQuerying(unittest.TestCase):
         mock_spacy_evaluator,
         mock_get_default_az_cred,
         mock_config,
+        mock_environment,
     ):
         # Arrange
         mock_query_output_handler.return_value.load.return_value = [mock_query_output]
         mock_query_output_handler.return_value.save.side_effect = None
-        mock_config.return_value.CHUNK_SIZES = [1]
-        mock_config.return_value.OVERLAP_SIZES = [1]
-        mock_config.return_value.RERANK_TYPE = "llm"
-        mock_config.return_value.RETRIEVE_NUM_OF_DOCUMENTS = 1
+        mock_config.CHUNK_SIZES = [1]
+        mock_config.OVERLAP_SIZES = [1]
+        mock_config.RERANK_TYPE = "llm"
+        mock_config.RETRIEVE_NUM_OF_DOCUMENTS = 1
         test_dir = os.path.dirname(os.path.abspath(__file__))
         data_file_path = test_dir + "/data/test_data.jsonl"
-        mock_config.return_value.EVAL_DATA_JSONL_FILE_PATH = data_file_path
+        mock_config.EVAL_DATA_JSONL_FILE_PATH = data_file_path
         self.mock_embedding_model.name = "test-embedding-model"
-        mock_config.return_value.embedding_models = [self.mock_embedding_model]
-        mock_config.return_value.EF_CONSTRUCTIONS = [400]
-        mock_config.return_value.EF_SEARCHES = [400]
-        mock_config.return_value.SEARCH_VARIANTS = ["search_for_match_semantic"]
-        mock_config.return_value.NAME_PREFIX = "prefix"
-        mock_config.return_value.RERANK = False
+        mock_config.embedding_models = [self.mock_embedding_model]
+        mock_config.EF_CONSTRUCTIONS = [400]
+        mock_config.EF_SEARCHES = [400]
+        mock_config.SEARCH_VARIANTS = ["search_for_match_semantic"]
+        mock_config.NAME_PREFIX = "prefix"
+        mock_config.RERANK = False
         mock_do_we_need_multiple_questions.return_value = False
         mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]
+        index_config = IndexConfig(
+            "prefix", 100, 100, self.mock_embedding_model, 400, 400
+        )
+        mock_config.index_configs.return_value = [index_config]
         # Act
-        run("test_config_dir")
+        run(mock_environment, mock_config, index_config)
 
         # Assert
         mock_query_and_eval_acs.assert_called()
         mock_response_generator.return_value.generate_response.assert_called()
         mock_query_output_handler.return_value.save.assert_called()
-        mock_create_data_asset.assert_called()
 
 
 if __name__ == "__main__":

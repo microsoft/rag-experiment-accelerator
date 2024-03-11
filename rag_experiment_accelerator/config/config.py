@@ -3,18 +3,12 @@ import os
 from typing import Generator
 from enum import StrEnum
 
-from rag_experiment_accelerator.config.credentials import (
-    AzureMLCredentials,
-    AzureSearchCredentials,
-    AzureSkillsCredentials,
-    AzureDocumentIntelligenceCredentials,
-    OpenAICredentials,
-)
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
-from rag_experiment_accelerator.embedding.factory import EmbeddingModelFactory
+from rag_experiment_accelerator.embedding.factory import create_embedding_model
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
@@ -58,10 +52,9 @@ class Config:
         EMBEDDING_MODELS: The embedding models used to generate embeddings
     """
 
-    _instance = None
-
-    def __new__(
-        cls,
+    def __init__(
+        self,
+        environment: Environment,
         config_dir: str = os.getcwd(),
         data_dir: str = "data",
         filename: str = "config.json",
@@ -76,10 +69,7 @@ class Config:
             Config: The singleton instance of Config.
         """
 
-        if cls._instance is None:
-            cls._instance = super(Config, cls).__new__(cls)
-            cls._instance._initialize(config_dir, data_dir, filename)
-        return cls._instance
+        self._initialize(environment, config_dir, data_dir, filename)
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
@@ -117,7 +107,9 @@ class Config:
         )
         # TODO make sure the files exist
 
-    def _initialize(self, config_dir: str, data_dir: str, filename: str) -> None:
+    def _initialize(
+        self, environment: Environment, config_dir: str, data_dir: str, filename: str
+    ) -> None:
         with open(os.path.join(config_dir.strip(), filename.strip()), "r") as json_file:
             data = json.load(json_file)
 
@@ -147,19 +139,14 @@ class Config:
         self.METRIC_TYPES = data["metric_types"]
         self.CHUNKING_STRATEGY = ChunkingStrategy(data["chunking_strategy"])
         self.LANGUAGE = data.get("language", {})
-        self.OpenAICredentials = OpenAICredentials.from_env()
-        self.AzureSearchCredentials = AzureSearchCredentials.from_env()
-        self.AzureMLCredentials = AzureMLCredentials.from_env()
-        self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
-        self.AzureDocumentIntelligenceCredentials = (
-            AzureDocumentIntelligenceCredentials.from_env()
-        )
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model_config in embedding_model_config:
-            kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
-            self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
+            kwargs = {"environment": environment, **model_config}
+            self.embedding_models.append(
+                create_embedding_model(model_config["type"], **kwargs)
+            )
 
         self.validate_inputs(
             self.CHUNK_SIZES,

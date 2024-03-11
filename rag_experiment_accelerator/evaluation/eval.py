@@ -28,6 +28,7 @@ from rag_experiment_accelerator.llm.prompts import (
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
@@ -253,7 +254,7 @@ def lcsstr(value1, value2):
     return score
 
 
-def llm_answer_relevance(question, answer):
+def llm_answer_relevance(response_generator: ResponseGenerator, question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -267,11 +268,10 @@ def llm_answer_relevance(question, answer):
         double: The relevancy score generated between the question and answer.
 
     """
-    config = Config()
     try:
-        result = ResponseGenerator(
-            deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-        ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
+        result = response_generator.generate_response(
+            sys_message=llm_answer_relevance_instruction, prompt=answer
+        )
     except Exception as e:
         logger.error(f"Unable to generate answer relevance score: {e}")
         return 0
@@ -284,7 +284,7 @@ def llm_answer_relevance(question, answer):
     return float(similarity_score[0][0] * 100)
 
 
-def llm_context_precision(question, context):
+def llm_context_precision(response_generator: ResponseGenerator, question, context):
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -295,12 +295,9 @@ def llm_context_precision(question, context):
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
-    config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
     try:
-        result = ResponseGenerator(
-            deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-        ).generate_response(
+        result = response_generator.generate_response(
             sys_message=llm_context_precision_instruction, prompt=prompt
         )
     except Exception as e:
@@ -313,7 +310,13 @@ def llm_context_precision(question, context):
     return 0
 
 
-def llm_context_recall(question, groundtruth_answer, context):
+def llm_context_recall(
+    response_generator: ResponseGenerator,
+    question,
+    groundtruth_answer,
+    context,
+    temperature: int,
+):
     """
     Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
     Context_recall values range between 0 and 1, with higher values indicating better performance.
@@ -326,12 +329,11 @@ def llm_context_recall(question, groundtruth_answer, context):
         question (str): The question being asked
         groundtruth_answer (str): The ground truth ("output_prompt")
         context (str): The given context.
+        temperature (int): Temperature as defined in the config.
 
     Returns:
         double: The context recall score generated between the ground truth (expected) and context.
     """
-    config = Config()
-
     prompt = (
         "\nquestion: "
         + question
@@ -340,12 +342,10 @@ def llm_context_recall(question, groundtruth_answer, context):
         + "\nanswer: "
         + groundtruth_answer
     )
-    result = ResponseGenerator(
-        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-    ).generate_response(
+    result = response_generator.generate_response(
         sys_message=llm_context_recall_instruction,
         prompt=prompt,
-        temperature=config.TEMPERATURE,
+        temperature=temperature,
     )
     print(result)
     good_response = '"Attributed": "1"'
@@ -471,7 +471,14 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(question, actual, expected, context, metric_type):
+def compute_metrics(
+    response_generator: ResponseGenerator,
+    question,
+    actual,
+    expected,
+    context,
+    metric_type,
+):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -496,6 +503,7 @@ def compute_metrics(question, actual, expected, context, metric_type):
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
             - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+        config (Config): The configuration of the experiment.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -553,11 +561,11 @@ def compute_metrics(question, actual, expected, context, metric_type):
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
     elif metric_type == "llm_answer_relevance":
-        score = llm_answer_relevance(actual, expected)
+        score = llm_answer_relevance(response_generator, actual, expected)
     elif metric_type == "llm_context_precision":
-        score = llm_context_precision(actual, context)
+        score = llm_context_precision(response_generator, actual, context)
     elif metric_type == "llm_context_recall":
-        score = llm_context_recall(question, expected, context)
+        score = llm_context_recall(response_generator, question, expected, context)
     else:
         pass
 
@@ -567,6 +575,7 @@ def compute_metrics(question, actual, expected, context, metric_type):
 def evaluate_prompts(
     exp_name: str,
     index_name: str,
+    environment: Environment,
     config: Config,
     client: mlflow.MlflowClient,
     chunk_size: int,
@@ -581,6 +590,7 @@ def evaluate_prompts(
     Args:
         exp_name (str): Name of the experiment to log the results to.
         index_name (str): The name of the index to use for evaluation.
+        environment (Environment): Initialised Environment class containing environment configuration
         config (Config): The configuration settings to use for evaluation.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
@@ -619,6 +629,10 @@ def evaluate_prompts(
     average_precision_for_search_type = {}
 
     handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
+    response_generator = ResponseGenerator(
+        environment, config, config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    )
+
     query_data_load = handler.load(index_name)
     for data in query_data_load:
         actual = remove_spaces(lower(data.actual))
@@ -628,7 +642,12 @@ def evaluate_prompts(
 
         for metric_type in metric_types:
             score = compute_metrics(
-                data.question, actual, expected, data.context, metric_type
+                response_generator,
+                data.question,
+                actual,
+                expected,
+                data.context,
+                metric_type,
             )
             metric_dic[metric_type] = score
         metric_dic["question"] = data.question
