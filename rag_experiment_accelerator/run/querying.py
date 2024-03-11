@@ -202,7 +202,7 @@ def query_and_eval_acs_multi(
         results for each question.
     """
     context = []
-    evals = []
+    evaluations = []
     for question in questions:
         docs, evaluation = query_and_eval_acs(
             search_client=search_client,
@@ -213,7 +213,11 @@ def query_and_eval_acs_multi(
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
         )
-        evals.append(evaluation)
+        if len(docs) == 0:
+            logger.warning(f"No documents found for question: {question}")
+            continue
+
+        evaluations.append(evaluation)
 
         if config.RERANK:
             prompt_instruction_context = rerank_documents(
@@ -234,7 +238,7 @@ def query_and_eval_acs_multi(
         context.append(openai_response)
         logger.debug(openai_response)
 
-    return context, evals
+    return context, evaluations
 
 
 def run(config_dir: str, filename: str = "config.json"):
@@ -354,7 +358,7 @@ def run(config_dir: str, filename: str = "config.json"):
                                             )
                                             search_evals.append(evaluation)
 
-                                        if config.RERANK:
+                                        if config.RERANK and len(docs) > 0:
                                             prompt_instruction_context = (
                                                 rerank_documents(
                                                     docs,
