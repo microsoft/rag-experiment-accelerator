@@ -34,6 +34,9 @@ param ApplicationInsightsName string = '${ResourcePrefix}ai'
 @description('Name of Azure Machine Learning Workspace')
 param MachineLearningName string = '${ResourcePrefix}aml'
 
+@description('Flag to deply network and other netwrook related resources')
+param DeployResourcesWithIsolatedNetwork bool = false
+
 resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: OpenAIName
   location: Location
@@ -41,9 +44,7 @@ resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   sku: {
     name: 'S0'
   }
-  properties: {
-
-  }
+  properties: {}
 
   resource OpenAIGPTDeployment 'deployments@2023-05-01' = {
     name: OpenAIGPTModelName
@@ -116,5 +117,12 @@ resource MachineLearningWorkspace 'Microsoft.MachineLearningServices/workspaces@
     storageAccount: StorageAccount.id
     keyVault: KeyVault.id
     applicationInsights: monitoring.outputs.ApplicationInsightsId
+  }
+}
+
+module network_resources 'network/network_isolation.bicep' = if (DeployResourcesWithIsolatedNetwork) {
+  name: 'network_isolation_resources'
+  params: {
+    location: Location
   }
 }
