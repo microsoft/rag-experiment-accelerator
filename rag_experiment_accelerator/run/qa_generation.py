@@ -25,6 +25,7 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json"):
     Returns:
         None
     """
+    logger.info("Running QA generation with config file: " f"{config_dir}/{filename}")
     config = Config(config_dir, filename=filename)
     azure_cred = get_default_az_cred()
 

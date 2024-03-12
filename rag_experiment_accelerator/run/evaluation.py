@@ -24,6 +24,7 @@ def run(config_dir: str, filename: str = "config.json"):
     Returns:
         None
     """
+    logger.info("Running evaluation with config file: " f"{config_dir}/{filename}")
     config = Config(config_dir, filename=filename)
 
     ml_client = MLClient(

@@ -244,6 +244,7 @@ def run(config_dir: str, filename: str = "config.json"):
     Returns:
         None
     """
+    logger.info(f"Running querying with config file: {config_dir}/{filename}")
     config = Config(config_dir, filename=filename)
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
