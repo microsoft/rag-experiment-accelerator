@@ -1,4 +1,4 @@
-PyPDF2~=2.0
+PyPDF2~=3.0
 azure-core==1.29.4
 matplotlib==3.8.0
 plotly==5.18.0
