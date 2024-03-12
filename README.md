@@ -46,9 +46,9 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 - [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
 - [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
 
-## Prerequisites
+## Compute setup
 
-Two options are available: run within a development container or install locally.
+At the moment, the RAG Experiment Accelerator runs on a desktop machine. There are two options available; run within a development container or install locally on your host machine.
 
 ### 1. Run within a Development Container
 
@@ -81,10 +81,9 @@ Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `da
 
 ---
 
-
 ### 2. Local install
 
-You can of course run the **RAG Experiment Accelerator** on a Windows machine if you like, follow these installation steps:
+You can of course run the **RAG Experiment Accelerator** on a Windows/Mac machine if you like; you are responsible for installing the correct tooling. Follow these installation steps:
 
 1. **Clone the repository**: Clone the accelerator's repository from [GitHub].
 
@@ -113,7 +112,7 @@ az account show
 
 5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
-## Installation
+## Cloud setup
 
 There are 3 options to install all the required azure services:
 
