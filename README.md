@@ -65,7 +65,7 @@ Install the following software on the host machine you will perform the deployme
 
 #### Developing in a DevContainer
 
-Further guidance of setting up WSL can be found [here](./docs/wsl.md). Now you have the prerequisites, you can: 
+Further guidance of setting up WSL can be found [here](./docs/wsl.md). Now you have the prerequisites, you can:
 1. **Clone the repository**: Clone the accelerator's repository in your WSL terminal.
 
 ```bash
@@ -115,8 +115,10 @@ az account show
 
 ## Installation
 
-### Install with Azure Developer CLI
-This project supports Azure Developer CLI. 
+There are 3 options to install all the required azure services:
+
+### 1. Install with Azure Developer CLI
+This project supports Azure Developer CLI.
 ```sh
 azd up
 ```
@@ -128,13 +130,13 @@ Once this has completed you can use the launch configuration to run, or debug th
 
 ![alt text](./docs/launch.png)
 
-### One click Azure deployment
+### 2. One click Azure deployment via Azure portal UI
 
-If you want to deploy the infrastructure yourself you can also click here:
+If you want to deploy the infrastructure yourself from template you can also click here:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Frag-experiment-accelerator%2Fdevelopment%2Finfra%2Fmain.json)
 
-### Deploy with Azure CLI
+### 3. Deploy with Azure CLI
 
 If you dont want to use `azd` you can use the normal `az` cli too.
 
