@@ -4,9 +4,7 @@ import uuid
 from unittest.mock import patch, Mock
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
-    generate_title,
     my_hash,
-    generate_summary,
     upload_data,
     generate_qna,
     we_need_multiple_questions,
@@ -18,6 +16,7 @@ from rag_experiment_accelerator.llm.prompts import (
     prompt_instruction_summary,
     multiple_prompt_instruction,
 )
+from rag_experiment_accelerator.run.index import generate_summary, generate_title
 
 
 def test_my_hash_with_string():
@@ -163,7 +162,13 @@ def test_upload_data(
 def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads):
     # Arrange
     mock_docs = [
-        dict({str(uuid.uuid4()): "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50"})
+        dict(
+            {
+                str(
+                    uuid.uuid4()
+                ): "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50"
+            }
+        )
     ]
     mock_deployment_name = "TestDeployment"
     mock_response = "Invalid JSON"
