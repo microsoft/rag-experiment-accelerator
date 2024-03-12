@@ -119,8 +119,9 @@ There are 3 options to install all the required azure services:
 ### 1. Install with Azure Developer CLI
 This project supports Azure Developer CLI.
 ```sh
-azd up
+azd provision
 ```
+- You can also use `azd up` if you prefer as this calls `az provision` anyway
 - Please use the up/down arrows to select your Subscription and Region
 
 ![azd](./docs/azd.png)
