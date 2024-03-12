@@ -40,14 +40,50 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 11. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
+## Products used
 
-## Installation
+- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
+- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
+- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
 
-Two options are available, install locally or inside a development container.
+## Compute setup
 
-### 1. Local install
+At the moment, the RAG Experiment Accelerator runs on a desktop machine. There are two options available; run within a development container or install locally on your host machine.
 
-To use the **RAG Experiment Accelerator**, follow these installation steps:
+### 1. Run within a Development Container
+
+Using a development container will mean that all of the required software is installed for you. This will require WSL. For more information about development containers visit [containers.dev](https://containers.dev/)
+
+#### Install the Pre-Requisite Software
+
+Install the following software on the host machine you will perform the deployment from:
+
+>1. For Windows - [Windows Store Ubuntu 22.04.3 LTS](https://www.microsoft.com/store/productId/9pn20msr04dw)
+>2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
+>3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
+>4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
+
+#### Developing in a DevContainer
+
+Further guidance of setting up WSL can be found [here](./docs/wsl.md). Now you have the prerequisites, you can:
+1. **Clone the repository**: Clone the accelerator's repository in your WSL terminal.
+
+```bash
+git clone https://github.com/microsoft/rag-experiment-accelerator.git
+code .
+```
+
+Once the project opens in vscode it should ask you if you would like to "Reopen this in a development container". Say yes.
+
+#### Data
+
+Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
+
+---
+
+### 2. Local install
+
+You can of course run the **RAG Experiment Accelerator** on a Windows/Mac machine if you like; you are responsible for installing the correct tooling. Follow these installation steps:
 
 1. **Clone the repository**: Clone the accelerator's repository from [GitHub].
 
@@ -76,91 +112,33 @@ az account show
 
 5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
-### 2. Use inside a Development Container
+## Cloud setup
 
-#### Install the Pre-Requisite Software
+There are 3 options to install all the required azure services:
 
-Install the following software on the machine you will perform the deployment from:
-
->1. For Windows - [Windows Store Ubuntu 18.04 LTS](https://www.microsoft.com/store/productId/9N9TNGVNDL3Q)
->2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
->3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
->4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
-
-#### For Windows - Configure WSL2 Backend for Docker Containers
-
-To enable **Developing inside a Container** you must configure the integration between Docker Desktop and Ubuntu on your machine.
-
->1. Launch Docker Desktop
->2. Open **Settings > General**. Make sure the *Use the WSL 2 based engine" is enabled.
->3. Navigate to **Settings > Resources > WSL INTEGRATION**.
->      - Ensure *Enable Integration with my default WSL distro" is enabled.
->      - Enable the Ubuntu-18.04 option.
->4. Select **Apply & Restart**
-
-##### Connect to Ubuntu WSL with VSCode
-
-Now that Docker Desktop and Ubuntu are integrated, we want to Access the Ubuntu bash prompt from inside VSCode.
-
->1. Launch VSCode.
->2. Select **View > Terminal**. A new window should open along the bottom of the VSCode window.
->3. From this windows use the **Launch Profile** dropdown to open the **Ubuntu 18.04 (WSL)** terminal.
->4. A bash prompt should open in the format `{username}@{machine_name}:/mnt/c/Users/{username}$`
-
-Once this is complete, you are ready to configure Git for your Ubuntu WSL environment.
-
-##### Configure Git in Ubuntu WSL environment
-
-The next step is to configure Git for your Ubuntu WSL environment. We will use the bash prompt from the previous step to issue the following commands:
-
-Set Git User Name and Email
-
-``` bash
-git config --global user.name "Your Name"
-git config --global user.email "youremail@yourdomain.com"
+### 1. Install with Azure Developer CLI
+This project supports Azure Developer CLI.
+```sh
+azd provision
 ```
+- You can also use `azd up` if you prefer as this calls `az provision` anyway
+- Please use the up/down arrows to select your Subscription and Region
 
-Set Git [UseHttps](https://github.com/microsoft/Git-Credential-Manager-Core/blob/main/docs/configuration.md#credentialusehttppath)
+![azd](./docs/azd.png)
 
-``` bash
-git config --global credential.useHttpPath true
-```
+Once this has completed you can use the launch configuration to run, or debug the 4 steps and the current environment provisioned by `azd` will be loaded with the correct values.
 
-Configure Git to use the Windows Host Credential Manager
+![alt text](./docs/launch.png)
 
-``` bash
-git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-manager-core.exe"
-```
+### 2. One click Azure deployment via Azure portal UI
 
-##### Install Azure CLI On WSL
-
-In your Ubuntu 18.04(WSL) terminal from the previous step, follow the directions [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux) to install Azure CLI.
-
-
-Install Azure CLI and authorize:
-```bash
-az login
-az account set  --subscription="<your_subscription_guid>"
-az account show
-```
-
-#### Data
-
-Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
-
----
-
-## Pre-requisites
-
-- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
-- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
-- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
-
-### One click Azure deployment
+If you want to deploy the infrastructure yourself from template you can also click here:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Frag-experiment-accelerator%2Fdevelopment%2Finfra%2Fmain.json)
 
-### Deploy with Azure CLI
+### 3. Deploy with Azure CLI
+
+If you dont want to use `azd` you can use the normal `az` cli too.
 
 ```bash
 az login
