@@ -14,7 +14,7 @@ docx2txt==0.8
 azure-ai-ml==1.11.1
 azure-identity==1.14.1
 textdistance==4.6.0
-azureml-mlflow==1.53.0
+azureml-mlflow==1.55.0
 fuzzywuzzy==0.18.0
 mlflow==2.10.0
 rouge-score==0.1.2
