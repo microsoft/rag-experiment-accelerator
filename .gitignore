@@ -183,3 +183,5 @@ data/*
 .azure
 
 .vscode
+
+test_artifacts_dir/*
