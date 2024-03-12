@@ -5,8 +5,12 @@ from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
-from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_loader
+from rag_experiment_accelerator.config.credentials import (
+    AzureDocumentIntelligenceCredentials,
+)
+from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
+    DocumentIntelligenceLoader,
+)
 import uuid
 
 logger = get_logger(__name__)
@@ -59,7 +63,19 @@ def load_structured_files(
 
     for file in matching_files:
         if chunking_strategy == "azure-document-intelligence":
-            document = azure_document_intelligence_loader(file, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY)
+            loader = DocumentIntelligenceLoader(
+                folder_path,
+                AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT,
+                AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY,
+                glob_patterns=pattern,
+                excluded_paragraph_roles=[
+                    "pageHeader",
+                    "pageFooter",
+                    "footnote",
+                    "pageNumber",
+                ],
+            )
+            document = loader.load()
         else:
             # Use the loader defined in function call.
             document = loader(file, **loader_kwargs).load()
@@ -89,8 +105,6 @@ def load_structured_files(
     for doc in docs:
         docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
 
-    logger.info(
-        f"Split {len(documents)} {file_format} files into {len(docs)} chunks"
-    )
+    logger.info(f"Split {len(documents)} {file_format} files into {len(docs)} chunks")
 
     return docsList
