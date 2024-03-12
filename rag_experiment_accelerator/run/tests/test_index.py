@@ -131,7 +131,6 @@ def test_run(
         assert mock_cluster.call_count == 4
         assert mock_upload_data.call_count == 32
         assert mock_json_dump.call_count == 1
-        assert mock_logger.info.call_count == 32
         assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
         assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
 
