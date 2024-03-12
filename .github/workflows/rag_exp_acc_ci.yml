@@ -39,7 +39,7 @@ jobs:
       - name: Checkout Actions
         uses: actions/checkout@v4
       - name: Azure login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.azure_credentials }}
       - name: Configure Azure ML Agent
