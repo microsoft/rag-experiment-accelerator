@@ -37,6 +37,21 @@ param MachineLearningName string = '${ResourcePrefix}aml'
 @description('Flag to deply network and other netwrook related resources')
 param DeployResourcesWithIsolatedNetwork bool = false
 
+@description('Address space for the virtual network')
+param VnetAddressSpace string = '10.0.0.0/16'
+
+@description('Subnet name for the proxy server subnet')
+param ProxySubnetName string = 'RemoteAccessSubnet'
+
+@description('Address space for the proxy server subnet')
+param ProxySubnetAddressSpace string = '10.0.0.0/24'
+
+@description('Subnet name for other azure resources')
+param AzureSubnetName string = 'AzureResourceSubnet'
+
+@description('Address space for the other azure resources subnet')
+param AzureSubnetAddressSpace string = '10.0.1.0/24'
+
 resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: OpenAIName
   location: Location
@@ -124,5 +139,10 @@ module network_resources 'network/network_isolation.bicep' = if (DeployResources
   name: 'network_isolation_resources'
   params: {
     location: Location
+    vnetAddressSpace: VnetAddressSpace
+    proxySubnetName: ProxySubnetName
+    proxySubnetAddressSpace: ProxySubnetAddressSpace
+    azureSubnetName: AzureSubnetName
+    azureSubnetAddressSpace: AzureSubnetAddressSpace
   }
 }

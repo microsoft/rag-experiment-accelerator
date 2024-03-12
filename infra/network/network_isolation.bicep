@@ -1,10 +1,10 @@
 param vnetName string = 'myVNet'
 param location string
-param addressPrefix string = '10.0.0.0/16'
-param subnet1Name string = 'subnet1'
-param subnet1Prefix string = '10.0.0.0/24'
-param subnet2Name string = 'subnet2'
-param subnet2Prefix string = '10.0.1.0/24'
+param vnetAddressSpace string
+param proxySubnetName string
+param proxySubnetAddressSpace string
+param azureSubnetName string
+param azureSubnetAddressSpace string
 
 resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
   name: vnetName
@@ -12,20 +12,20 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
   properties: {
     addressSpace: {
       addressPrefixes: [
-        addressPrefix
+        vnetAddressSpace
       ]
     }
     subnets: [
       {
-        name: subnet1Name
+        name: proxySubnetName
         properties: {
-          addressPrefix: subnet1Prefix
+          addressPrefix: proxySubnetAddressSpace
         }
       }
       {
-        name: subnet2Name
+        name: azureSubnetName
         properties: {
-          addressPrefix: subnet2Prefix
+          addressPrefix: azureSubnetAddressSpace
         }
       }
     ]
