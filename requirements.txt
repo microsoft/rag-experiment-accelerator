@@ -16,7 +16,7 @@ azure-identity==1.14.1
 textdistance==4.6.0
 azureml-mlflow==1.53.0
 fuzzywuzzy==0.18.0
-mlflow==2.9.2
+mlflow==2.10.0
 rouge-score==0.1.2
 hnswlib==0.7.0
 pypdf==3.17.0
@@ -33,3 +33,4 @@ azure.ai.documentintelligence==1.0.0b1
 levenshtein==0.25.0
 umap-learn==0.5.5
 kaleido==0.2.1
+azure-keyvault-secrets==4.4.*
