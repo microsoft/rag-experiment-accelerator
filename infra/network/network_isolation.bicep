@@ -1,4 +1,4 @@
-param vnetName string = 'myVNet'
+param vnetName string
 param location string
 param vnetAddressSpace string
 param proxySubnetName string

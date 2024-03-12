@@ -37,20 +37,23 @@ param MachineLearningName string = '${ResourcePrefix}aml'
 @description('Flag to deply network and other netwrook related resources')
 param DeployResourcesWithIsolatedNetwork bool = false
 
+@description('Name of the virtual network')
+param VirtualNetworkName string = '${ResourcePrefix}vnet'
+
 @description('Address space for the virtual network')
-param VnetAddressSpace string = '10.0.0.0/16'
+param VnetAddressSpace string
 
 @description('Subnet name for the proxy server subnet')
-param ProxySubnetName string = 'RemoteAccessSubnet'
+param ProxySubnetName string = '${ResourcePrefix}rmtasubnet'
 
 @description('Address space for the proxy server subnet')
-param ProxySubnetAddressSpace string = '10.0.0.0/24'
+param ProxySubnetAddressSpace string
 
 @description('Subnet name for other azure resources')
-param AzureSubnetName string = 'AzureResourceSubnet'
+param AzureSubnetName string = '${ResourcePrefix}azrsubnet'
 
 @description('Address space for the other azure resources subnet')
-param AzureSubnetAddressSpace string = '10.0.1.0/24'
+param AzureSubnetAddressSpace string
 
 resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: OpenAIName
@@ -124,7 +127,7 @@ module monitoring 'monitor/appInsights.bicep' = {
 
 resource MachineLearningWorkspace 'Microsoft.MachineLearningServices/workspaces@2023-06-01-preview' = {
   name: MachineLearningName
-  location: Location 
+  location: Location
   identity: {
     type: 'systemAssigned'
   }
@@ -138,6 +141,7 @@ resource MachineLearningWorkspace 'Microsoft.MachineLearningServices/workspaces@
 module network_resources 'network/network_isolation.bicep' = if (DeployResourcesWithIsolatedNetwork) {
   name: 'network_isolation_resources'
   params: {
+    vnetName: VirtualNetworkName
     location: Location
     vnetAddressSpace: VnetAddressSpace
     proxySubnetName: ProxySubnetName
