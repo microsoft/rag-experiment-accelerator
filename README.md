@@ -58,7 +58,7 @@ Using a development container will mean that all of the required software is ins
 
 Install the following software on the host machine you will perform the deployment from:
 
->1. For Windows - [Windows Store Ubuntu 18.04 LTS](https://www.microsoft.com/store/productId/9N9TNGVNDL3Q)
+>1. For Windows - [Windows Store Ubuntu 22.04.3 LTS](https://www.microsoft.com/store/productId/9pn20msr04dw)
 >2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
 >3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
 >4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
@@ -118,17 +118,25 @@ az account show
 ### Install with Azure Developer CLI
 This project supports Azure Developer CLI. 
 ```sh
-azd provision
+azd up
 ```
+- Please use the up/down arrows to select your Subscription and Region
+
 ![azd](./docs/azd.png)
 
 Once this has completed you can use the launch configuration to run, or debug the 4 steps and the current environment provisioned by `azd` will be loaded with the correct values.
 
+![alt text](./docs/launch.png)
+
 ### One click Azure deployment
+
+If you want to deploy the infrastructure yourself you can also click here:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Frag-experiment-accelerator%2Fdevelopment%2Finfra%2Fmain.json)
 
 ### Deploy with Azure CLI
+
+If you dont want to use `azd` you can use the normal `az` cli too.
 
 ```bash
 az login
