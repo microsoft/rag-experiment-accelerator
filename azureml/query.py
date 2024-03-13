@@ -1,7 +1,6 @@
 import os
 import sys
 import argparse
-import mlflow
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
@@ -48,13 +47,6 @@ def main():
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
     index_config = IndexConfig.from_index_name(index_name, config)
-
-    with mlflow.start_run():
-        mlflow_client = mlflow.MlflowClient()
-        active_run_data = mlflow_client.get_run(mlflow.active_run().info.run_id).data
-        print(f"Active run data: {active_run_data}")
-        parent_run_id = active_run_data.tags["azureml.pipeline"]
-        print(f"Parent run ID: {parent_run_id}")
 
     query_run(environment, config, index_config)
 

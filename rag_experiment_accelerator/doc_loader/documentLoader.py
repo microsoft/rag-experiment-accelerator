@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, Iterable
 
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
@@ -49,7 +49,7 @@ def load_documents(
     environment: Environment,
     chunking_strategy: ChunkingStrategy,
     allowed_formats: Union[list[str], str],
-    file_paths: List[str],
+    file_paths: Iterable[str],
     chunk_size: int,
     overlap_size: int,
 ):
@@ -77,6 +77,7 @@ def load_documents(
     logger.debug(f"Loading documents with allowed formats {', '.join(allowed_formats)}")
 
     documents = {}
+    file_paths = list(file_paths)  # to be able to iterate over it multiple times
 
     for format in allowed_formats:
         if format not in _FORMAT_VERSIONS:
@@ -87,6 +88,7 @@ def load_documents(
             for path in file_paths
             if any(path.endswith(pattern) for pattern in _FORMAT_VERSIONS[format])
         ]
+
         processor = determine_processor(
             chunking_strategy=chunking_strategy, format=format
         )
