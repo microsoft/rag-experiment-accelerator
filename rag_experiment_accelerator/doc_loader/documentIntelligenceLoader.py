@@ -19,8 +19,8 @@ def load_with_azure_document_intelligence(
     Load pdf files from a folder using Azure Document Intelligence.
 
     Args:
-        file_paths (Iterable[str]): Sequence of paths to load.
         environment (Environment): The environment class
+        file_paths (Iterable[str]): Sequence of paths to load.
         chunk_size (int): Unused.
         overlap_size (int): Unused.
 

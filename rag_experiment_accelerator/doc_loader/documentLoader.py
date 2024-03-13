@@ -36,6 +36,7 @@ _FORMAT_PROCESSORS = {
 
 
 def determine_processor(chunking_strategy: ChunkingStrategy, format: str):
+    """ """
     if chunking_strategy == ChunkingStrategy.AZURE_DOCUMENT_INTELLIGENCE:
         return load_with_azure_document_intelligence
     else:

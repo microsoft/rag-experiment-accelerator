@@ -4,7 +4,7 @@ import argparse
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.config.paths import get_all_files
+from rag_experiment_accelerator.config.paths import get_all_file_paths
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     environment = Environment.from_env()
     config = Config(environment, args.config_path, args.data_dir)
 
-    file_paths = get_all_files(config.data_dir)
+    file_paths = get_all_file_paths(config.data_dir)
     for index_config in config.index_configs():
         index_dict = run(environment, config, index_config, file_paths)
 

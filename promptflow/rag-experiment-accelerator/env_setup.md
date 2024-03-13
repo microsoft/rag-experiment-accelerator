@@ -27,7 +27,6 @@ And the remaining variables must not be set as secret:
 - AZURE_SEARCH_SERVICE_ENDPOINT
 - OPENAI_ENDPOINT
 - OPENAI_API_VERSION
-- OPENAI_API_TYPE
 
 The following variables are optional:
 - AZURE_LANGUAGE_SERVICE_KEY - secret
