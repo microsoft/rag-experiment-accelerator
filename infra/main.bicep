@@ -55,6 +55,9 @@ param AzureSubnetName string = '${ResourcePrefix}azrsubnet'
 @description('Address space for the other azure resources subnet')
 param AzureSubnetAddressSpace string
 
+@description('Public IP address for the bastion')
+param BastionPublicIpName string
+
 resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: OpenAIName
   location: Location
@@ -148,5 +151,19 @@ module network_resources 'network/network_isolation.bicep' = if (DeployResources
     proxySubnetAddressSpace: ProxySubnetAddressSpace
     azureSubnetName: AzureSubnetName
     azureSubnetAddressSpace: AzureSubnetAddressSpace
+  }
+}
+
+module bastionModule 'network/azure_bastion.bicep' = {
+  name: 'myBastionModule'
+  dependsOn: [
+    network_resources
+  ]
+  params: {
+    vnetName: VirtualNetworkName
+    bastionName: '${ResourcePrefix}azbastion'
+    bastionSubnetName: ProxySubnetName
+    location: Location
+    publicIpName: BastionPublicIpName
   }
 }
