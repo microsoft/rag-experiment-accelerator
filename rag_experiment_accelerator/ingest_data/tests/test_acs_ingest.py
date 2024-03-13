@@ -61,7 +61,7 @@ def test_my_hash_with_numbers():
     assert result == expected_hash
 
 
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+@patch("rag_experiment_accelerator.run.index.ResponseGenerator")
 def test_generate_title(mock_response_generator):
     # Arrange
     mock_response = "Test Title"
@@ -79,7 +79,7 @@ def test_generate_title(mock_response_generator):
     assert result == mock_response
 
 
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+@patch("rag_experiment_accelerator.run.index.ResponseGenerator")
 def test_generate_summary(mock_response_generator):
     # Arrange
     mock_summary = "Test Summary"
