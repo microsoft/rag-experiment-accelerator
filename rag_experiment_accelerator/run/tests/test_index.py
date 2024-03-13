@@ -77,7 +77,7 @@ class TestIndex(unittest.TestCase):
         doc1.page_content = "content1"
         doc2 = MagicMock()
         doc2.page_content = "content2"
-        mock_load_documents.return_value = [{ "key1": "content1", "key2": "content2" }]
+        mock_load_documents.return_value = [{"key1": "content1", "key2": "content2"}]
 
         # Mock the generate_embedding method for each embedding model
         index_config.embedding_model.generate_embedding = MagicMock(
@@ -128,7 +128,7 @@ class TestIndex(unittest.TestCase):
         self.assertEqual(kwargs.get("environment"), expected_first_call_args[0])
         self.assertEqual(kwargs.get("config"), expected_first_call_args[1])
         self.assertEqual(kwargs.get("chunks"), expected_first_call_args[2])
-        self.assertEqual(kwargs.get('index_name'), expected_first_call_args[3])
+        self.assertEqual(kwargs.get("index_name"), expected_first_call_args[3])
         self.assertEqual(kwargs.get("embedding_model"), expected_first_call_args[4])
         mock_create_acs_index.assert_called()
         # TODO

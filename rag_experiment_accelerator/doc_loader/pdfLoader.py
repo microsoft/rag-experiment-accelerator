@@ -30,9 +30,9 @@ def preprocess_pdf_content(content: str):
         # Output: "hello world openai"
     """
 
-    content = re.sub(r'\n{2,}', '\n', content)
-    content = re.sub(r'\n{1,}', '', content)
-    content = re.sub(r'\\u[0-9a-fA-F]{4}', '', content)
+    content = re.sub(r"\n{2,}", "\n", content)
+    content = re.sub(r"\n{1,}", "", content)
+    content = re.sub(r"\\u[0-9a-fA-F]{4}", "", content)
     content = content.lower()
 
     return content
@@ -76,7 +76,9 @@ def load_pdf_files(
     docs = text_splitter.split_documents(documents)
     docsList = []
     for doc in docs:
-        docsList.append(dict({str(uuid.uuid4()): preprocess_pdf_content(doc.page_content)}))
+        docsList.append(
+            dict({str(uuid.uuid4()): preprocess_pdf_content(doc.page_content)})
+        )
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 

@@ -133,10 +133,11 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
             try:
                 response_generator.generate_response(
                     generate_qna_instruction_system_prompt,
-                    generate_qna_instruction_user_prompt
-                    + chunk,
+                    generate_qna_instruction_user_prompt + chunk,
                 )
-                response_dict = json.loads(response.replace('\n', '').replace("\'", '').replace("\\", ''))
+                response_dict = json.loads(
+                    response.replace("\n", "").replace("'", "").replace("\\", "")
+                )
                 for item in response_dict:
                     data = {
                         "user_prompt": item["question"],
