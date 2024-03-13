@@ -17,7 +17,6 @@ from rag_experiment_accelerator.config.environment import Environment
 logger = get_logger(__name__)
 
 
-# TODO
 class ResponseGenerator:
     def __init__(self, environment: Environment, config: Config, deployment_name: str):
         self.config = config

@@ -78,6 +78,9 @@ class TestIndex(unittest.TestCase):
         doc2 = MagicMock()
         doc2.page_content = "content2"
         mock_load_documents.return_value = [{"key1": "content1", "key2": "content2"}]
+        mock_preprocess.return_value.preprocess = MagicMock(
+            return_value="preprocessed_content"
+        )
 
         # Mock the generate_embedding method for each embedding model
         index_config.embedding_model.generate_embedding = MagicMock(
@@ -131,8 +134,8 @@ class TestIndex(unittest.TestCase):
         self.assertEqual(kwargs.get("index_name"), expected_first_call_args[3])
         self.assertEqual(kwargs.get("embedding_model"), expected_first_call_args[4])
         mock_create_acs_index.assert_called()
-        # TODO
-        # mock_preprocess.assert_called_once()
+        self.assertEqual(mock_preprocess.return_value.preprocess.call_count, 2)
+        # mock_preprocess.preprocess.assert_called_once()
         mock_create_acs_index.assert_called()
 
     @patch("rag_experiment_accelerator.run.index.create_acs_index")
