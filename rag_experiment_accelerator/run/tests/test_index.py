@@ -77,7 +77,7 @@ class TestIndex(unittest.TestCase):
         doc1.page_content = "content1"
         doc2 = MagicMock()
         doc2.page_content = "content2"
-        mock_load_documents.return_value = [doc1, doc2]
+        mock_load_documents.return_value = [{ "key1": "content1", "key2": "content2" }]
 
         # Mock the generate_embedding method for each embedding model
         index_config.embedding_model.generate_embedding = MagicMock(
@@ -117,23 +117,19 @@ class TestIndex(unittest.TestCase):
         )
         mock_load_documents.assert_has_calls([expected_call])
         expected_first_call_args = [
+            mock_environment,
+            mock_config,
             chunks,
-            "test_endpoint",
-            "test_index_name",
-            "test_key",
+            index_config.index_name(),
             index_config.embedding_model,
-            "test_deployment_name",
         ]
         _, kwargs = mock_upload_data.call_args
         # Assert that the call arguments of the first call are as expected
-        self.assertEqual(kwargs.get("chunks"), expected_first_call_args[0])
-        self.assertEqual(kwargs.get("service_endpoint"), expected_first_call_args[1])
-        # self.assertEqual(kwargs.get('index_name'), expected_first_call_args[2])
-        self.assertEqual(kwargs.get("search_key"), expected_first_call_args[3])
+        self.assertEqual(kwargs.get("environment"), expected_first_call_args[0])
+        self.assertEqual(kwargs.get("config"), expected_first_call_args[1])
+        self.assertEqual(kwargs.get("chunks"), expected_first_call_args[2])
+        self.assertEqual(kwargs.get('index_name'), expected_first_call_args[3])
         self.assertEqual(kwargs.get("embedding_model"), expected_first_call_args[4])
-        self.assertEqual(
-            kwargs.get("azure_oai_deployment_name"), expected_first_call_args[5]
-        )
         mock_create_acs_index.assert_called()
         # TODO
         # mock_preprocess.assert_called_once()

@@ -80,7 +80,7 @@ def test_config_init(mock_create_embedding_model):
     )
     assert config.DATA_FORMATS == mock_config_data["data_formats"]
     assert (
-        config.EVAL_DATA_JSONL_FILE_PATH == f"{get_test_config_dir()}/eval_data.jsonl"
+        config.EVAL_DATA_JSONL_FILE_PATH == f"{get_test_config_dir()}/artifacts/eval_data.jsonl"
     )
 
     assert config.embedding_models[0].name.return_value == "all-MiniLM-L6-v2"

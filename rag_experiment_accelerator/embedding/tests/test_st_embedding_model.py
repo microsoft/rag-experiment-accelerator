@@ -1,7 +1,6 @@
 from unittest.mock import patch
 import pytest
 import numpy as np
-from requests import HTTPError
 from rag_experiment_accelerator.embedding.st_embedding_model import STEmbeddingModel
 
 
@@ -18,7 +17,7 @@ def test_generate_embedding(mock_sentence_transformer):
 
 
 def test_sentence_transformer_embedding_model_raises_non_existing_model():
-    with pytest.raises(HTTPError):
+    with pytest.raises(OSError):
         STEmbeddingModel("non-existing-model", 123)
 
 
