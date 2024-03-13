@@ -17,16 +17,16 @@ def init():
 
     global args
 
-    # input and output arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_dir", type=str, help="directory with input configs")
-    parser.add_argument("--data_dir", type=str, help="directory with input data")
     parser.add_argument(
-        "--config_path", type=str, help="relative path to the config file"
+        "--config_path", type=str, help="input: path to the config file"
     )
-    parser.add_argument("--index_name", type=str, help="experiment index name")
+    parser.add_argument("--data_dir", type=str, help="input: path to the data")
+    parser.add_argument("--index_name", type=str, help="input: experiment index name")
     parser.add_argument(
-        "--keyvault_name", type=str, help="keyvault name to load the environment from"
+        "--keyvault_name",
+        type=str,
+        help="input: keyvault name to load the environment from",
     )
     parser.add_argument(
         "--index_name_path",
@@ -40,8 +40,8 @@ def init():
     global index_config
 
     environment = Environment.from_keyvault(args.keyvault_name)
-    config = Config(environment, args.config_dir, args.data_dir, args.config_path)
-    config.data_dir = args.data_dir
+    config = Config(environment, args.config_path, args.data_dir)
+
     index_config = IndexConfig.from_index_name(args.index_name, config)
 
 

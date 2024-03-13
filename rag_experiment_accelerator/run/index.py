@@ -49,21 +49,21 @@ def run(
     )
 
     data_load = []
-    for docs in all_docs:
-        chunk_dict = {
-            "content": docs.page_content,
-            "content_vector": index_config.embedding_model.generate_embedding(
-                chunk=str(pre_process.preprocess(docs.page_content))
-            ),
-        }
-        data_load.append(chunk_dict)
+    for doc in all_docs:
+        for value in doc.values():
+            chunk_dict = {
+                "content": value,
+                "content_vector": index_config.embedding_model.generate_embedding(
+                    chunk=str(pre_process.preprocess(value))
+                ),
+            }
+            data_load.append(chunk_dict)
     upload_data(
+        environment=environment,
+        config=config,
         chunks=data_load,
-        service_endpoint=environment.azure_search_service_endpoint,
         index_name=index_config.index_name(),
-        search_key=environment.azure_search_admin_key,
         embedding_model=index_config.embedding_model,
-        azure_oai_deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
     )
 
     return index_dict

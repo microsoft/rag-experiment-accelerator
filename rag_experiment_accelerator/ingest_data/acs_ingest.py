@@ -45,11 +45,8 @@ def upload_data(
     environment: Environment,
     config: Config,
     chunks: list,
-    service_endpoint: str,
     index_name: str,
-    search_key: str,
     embedding_model: EmbeddingModel,
-    azure_oai_deployment_name: str,
 ):
     """
     Uploads data to an Azure AI Search index.
@@ -65,12 +62,14 @@ def upload_data(
     Returns:
         None
     """
-    credential = AzureKeyCredential(search_key)
+    credential = AzureKeyCredential(environment.azure_search_admin_key)
     search_client = SearchClient(
-        endpoint=service_endpoint, index_name=index_name, credential=credential
+        endpoint=environment.azure_search_service_endpoint,
+        index_name=index_name,
+        credential=credential,
     )
     response_generator = ResponseGenerator(
-        environment, config, deployment_name=azure_oai_deployment_name
+        environment, config, deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
     )
     documents = []
     for i, chunk in enumerate(chunks):

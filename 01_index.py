@@ -1,20 +1,21 @@
 import json
+import argparse
 
-from rag_experiment_accelerator.run.argument_parser import ArgumentParser
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.config.paths import get_all_files
 
 if __name__ == "__main__":
-    arg_parser = ArgumentParser()
-    environment = Environment.from_env()
-    config = Config(
-        environment,
-        arg_parser.get_directory_arg(),
-        arg_parser.get_data_directory_arg(),
-        arg_parser.get_config_filename_arg(),
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config_path", type=str, help="input: path to the config file"
     )
+    parser.add_argument("--data_dir", type=str, help="input: path to the input data")
+    args, _ = parser.parse_known_args()
+
+    environment = Environment.from_env()
+    config = Config(environment, args.config_path, args.data_dir)
 
     file_paths = get_all_files(config.data_dir)
     for index_config in config.index_configs():

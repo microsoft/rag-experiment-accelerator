@@ -42,11 +42,11 @@
         "llm_answer_relevance",
         "llm_context_precision"
     ],
-    "azure_oai_chat_deployment_name": "gpt-35-turbo",
-    "azure_oai_eval_deployment_name": "gpt-35-turbo",
+    "azure_oai_chat_deployment_name": "gpt-35-turbo-16k",
+    "azure_oai_eval_deployment_name": "gpt-35-turbo-16k",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
+    "eval_data_jsonl_file_path": "./eval_data.jsonl",
     "chunking_strategy": "basic"
 }

@@ -1,6 +1,7 @@
+import argparse
+
 from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.run.argument_parser import ArgumentParser
 from rag_experiment_accelerator.run.querying import run
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
@@ -9,13 +10,22 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 
 
 if __name__ == "__main__":
-    arg_parser = ArgumentParser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config_path", type=str, help="input: path to the config file"
+    )
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        help="input: path to the input data",
+        default=None,  # default is initialised in Config
+    )
+    args, _ = parser.parse_known_args()
+
     environment = Environment.from_env()
     config = Config(
         environment,
-        arg_parser.get_directory_arg(),
-        arg_parser.get_data_directory_arg(),
-        arg_parser.get_config_filename_arg(),
+        args.config_path,
     )
 
     handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)

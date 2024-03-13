@@ -246,28 +246,24 @@ class TestQuerying(unittest.TestCase):
 
     @patch("rag_experiment_accelerator.run.querying.Config")
     @patch("rag_experiment_accelerator.run.querying.Environment")
-    @patch("rag_experiment_accelerator.run.querying.get_default_az_cred")
     @patch("rag_experiment_accelerator.run.querying.SpacyEvaluator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutputHandler")
     @patch("rag_experiment_accelerator.run.querying.create_client")
     @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
-    @patch("rag_experiment_accelerator.run.querying.create_data_asset")
     @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
     def test_run_no_multi_no_rerank(
         self,
         mock_query_and_eval_acs,
         mock_do_we_need_multiple_questions,
-        mock_create_data_asset,
         mock_query_output,
         mock_response_generator,
         mock_create_client,
         mock_query_output_handler,
         mock_spacy_evaluator,
-        mock_get_default_az_cred,
-        mock_config,
         mock_environment,
+        mock_config,
     ):
         # Arrange
         mock_query_output_handler.return_value.load.return_value = [mock_query_output]

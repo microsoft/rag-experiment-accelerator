@@ -15,6 +15,7 @@ load_dotenv(override=True)
 logger = get_logger(__name__)
 
 
+# TODO
 def run(config_dir: str, filename: str = "config.json"):
     """
     Runs the main experiment loop for the QA generation process using the provided configuration and data.
@@ -22,7 +23,6 @@ def run(config_dir: str, filename: str = "config.json"):
     Returns:
         None
     """
-    # TODO
     config = Config(config_dir, filename=filename)
     azure_cred = get_default_az_cred()
     all_docs = load_documents(

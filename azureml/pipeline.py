@@ -2,10 +2,9 @@ import os
 import sys
 import argparse
 
-from azure.ai.ml import MLClient, Input, Output, dsl
+from azure.ai.ml import MLClient, Input, Output, dsl, command
 from azure.ai.ml.parallel import parallel_run_function, RunFunction
 import azure.ai.ml.entities
-from azure.identity import DefaultAzureCredential
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
@@ -14,6 +13,7 @@ from rag_experiment_accelerator.config.environment import Environment  # noqa: E
 from rag_experiment_accelerator.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.config.paths import mlflow_run_name  # noqa: E402
+from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
 
 
 AML_ENVIRONMENT_NAME = "rag-env"
@@ -30,7 +30,7 @@ def generate_conda_file():
 channels:
   - conda-forge
 dependencies:
-  - python=3.10
+  - python=3.11
   - pip
   - pkg-config
   - cmake
@@ -49,14 +49,13 @@ dependencies:
 
 
 def start_pipeline(
-    index_config: IndexConfig,
-    config: Config,
-    config_dir: str,
-    config_path: str,
     environment: Environment,
+    config: Config,
+    index_config: IndexConfig,
+    config_path: str,
 ):
     ml_client = MLClient(
-        credential=DefaultAzureCredential(),
+        credential=get_default_az_cred(),
         subscription_id=environment.aml_subscription_id,
         resource_group_name=environment.aml_resource_group_name,
         workspace_name=environment.aml_workspace_name,
@@ -80,7 +79,7 @@ def start_pipeline(
         description="Upload input documents for RAG accelerator into Azure Search Index",
         inputs={
             "data": Input(type="uri_folder"),
-            "config_dir": Input(type="uri_folder"),
+            "config_path": Input(type="uri_file"),
         },
         outputs={"index_name": Output(type="uri_file", mode="rw_mount")},
         input_data="${{inputs.data}}",
@@ -95,14 +94,53 @@ def start_pipeline(
             code="./",
             entry_script="azureml/index.py",
             program_arguments="""--data_dir ${{inputs.data}} \
-                --config_dir ${{inputs.config_dir}}
-                --index_name_path ${{outputs.index_name}}"""
+                --index_name_path ${{outputs.index_name}} \
+                --config_path ${{inputs.config_path}}"""
             + f" --keyvault_name {environment.keyvault_name}"
-            + f" --config_path {config_path}"
             + f" --index_name {index_config.index_name()}",
             environment=pipeline_job_env,
             append_row_to="${{outputs.index_name}}",
         ),
+    )
+
+    query_pipeline_component = command(
+        name="query_job",
+        display_name="Query documents for the experiment",
+        description="Query documents for the experiment",
+        inputs={
+            "index_name": Input(type="uri_file"),
+            "config_path": Input(type="uri_file"),
+            "eval_data": Input(type="uri_file"),
+        },
+        outputs={"query_result": Output(type="uri_folder", mode="rw_mount")},
+        code="./",
+        command="""python ./azureml/query.py \
+            --eval_data_path ${{inputs.eval_data}} \
+            --config_path ${{inputs.config_path}} \
+            --index_name_path ${{inputs.index_name}} \
+            --query_result_dir ${{outputs.query_result}}"""
+        + f" --keyvault_name {environment.keyvault_name}",
+        environment=pipeline_job_env,
+    )
+
+    eval_pipeline_component = command(
+        name="eval_job",
+        display_name="Evaluate experiment",
+        description="Evaluate experiment",
+        inputs={
+            "index_name": Input(type="uri_file"),
+            "config": Input(type="uri_file"),
+            "query_result": Input(type="uri_folder"),
+        },
+        outputs=dict(eval_result=Output(type="uri_folder", mode="rw_mount")),
+        code="./",
+        command="""python ./azureml/eval.py \
+                --config_path ${{inputs.config}} \
+                --index_name_path ${{inputs.index_name}} \
+                --query_result_dir ${{inputs.query_result}} \
+                --eval_result_dir ${{outputs.eval_result}} """
+        + f" --keyvault_name {environment.keyvault_name}",
+        environment=pipeline_job_env,
     )
 
     @dsl.pipeline(
@@ -110,24 +148,32 @@ def start_pipeline(
         compute=environment.aml_compute_name,
         description="RAG Experiment Pipeline",
     )
-    def rag_pipeline(config_dir_input, data_input, eval_data_input):
+    def rag_pipeline(config_path_input, data_input, eval_data_input):
         index_job = index_pipeline_component(
-            data=data_input, config_dir=config_dir_input
+            data=data_input, config_path=config_path_input
         )
 
-        return {
-            # TODO: this is temporary, in the future the pipeline
-            # will return the result of the eval step
-            "index_result": index_job.outputs.index_name
-        }
+        query_job = query_pipeline_component(
+            index_name=index_job.outputs.index_name,
+            config_path=config_path_input,
+            eval_data=eval_data_input,
+        )
+
+        eval_job = eval_pipeline_component(
+            index_name=index_job.outputs.index_name,
+            config=config_path_input,
+            query_result=query_job.outputs.query_result,
+        )
+
+        return {"eval_result": eval_job.outputs.eval_result}
 
     # Save the environment into Keyvault for the pipeline steps to retrieve later
     environment.to_keyvault()
 
     pipeline = rag_pipeline(
-        config_dir_input=Input(type="uri_file", path=config_dir),
+        config_path_input=Input(type="uri_file", path=config_path),
         data_input=Input(type="uri_folder", path=config.data_dir),
-        # eval_data_input=Input(type="uri_file", path=config.EVAL_DATA_JSON_FILE_PATH),
+        eval_data_input=Input(type="uri_file", path=config.EVAL_DATA_JSONL_FILE_PATH),
     )
     ml_client.jobs.create_or_update(pipeline, experiment_name=config.NAME_PREFIX)
 
@@ -135,23 +181,18 @@ def start_pipeline(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--config_dir", type=str, help="path to the config directory", default="."
-    )
-    parser.add_argument(
         "--data_dir", type=str, help="path to the data folder", default="./data"
     )
     parser.add_argument(
         "--config_path",
         type=str,
         help="relative path to the config file",
-        default="config.json",
+        default="./config.json",
     )
     args = parser.parse_args()
 
     environment = Environment.from_env()
-    config = Config(environment, args.config_dir, args.data_dir, args.config_path)
+    config = Config(environment, args.config_path, args.data_dir)
     # Starting multiple pipelines hence unable to stream them
     for index_config in config.index_configs():
-        start_pipeline(
-            index_config, config, args.config_dir, args.config_path, environment
-        )
+        start_pipeline(environment, config, index_config, args.config_path)

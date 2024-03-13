@@ -6,10 +6,9 @@ from rag_experiment_accelerator.config import Config
 
 
 @tool
-def my_python_tool(should_index: bool, config_dir: str) -> bool:
+def my_python_tool(should_index: bool, config_path: str) -> bool:
     environment = Environment.from_env()
-    # TODO
-    config = Config(environment, config_dir)
+    config = Config(environment, config_path)
 
     if should_index:
         file_paths = get_all_files(config.data_dir)

@@ -5,11 +5,11 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 from azure.keyvault.secrets import SecretClient
 from azure.core.exceptions import ResourceNotFoundError
-from azure.identity import DefaultAzureCredential
 import openai
 from typing import Iterable, Tuple
 
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 
 load_dotenv(override=True)
 logger = get_logger(__name__)
@@ -82,7 +82,7 @@ class Environment:
     def _keyvault(cls, keyvault_name: str) -> SecretClient:
         return SecretClient(
             f"https://{keyvault_name}.vault.azure.net/",
-            credential=DefaultAzureCredential(),
+            credential=get_default_az_cred(),
         )
 
     @classmethod

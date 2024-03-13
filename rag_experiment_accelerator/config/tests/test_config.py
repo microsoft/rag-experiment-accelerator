@@ -39,7 +39,8 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
 )
 def test_config_init(mock_create_embedding_model):
     # Load mock config data from a YAML file
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+    config_path = f"{get_test_config_dir()}/config.json"
+    with open(config_path, "r") as file:
         mock_config_data = json.load(file)
 
     embedding_model_1 = MagicMock()
@@ -51,7 +52,7 @@ def test_config_init(mock_create_embedding_model):
     embedding_model_2.dimension.return_value = 1536
     mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
 
-    config = Config(environment, get_test_config_dir())
+    config = Config(environment, config_path)
 
     config.embedding_models = [embedding_model_1, embedding_model_2]
 
@@ -79,8 +80,7 @@ def test_config_init(mock_create_embedding_model):
     )
     assert config.DATA_FORMATS == mock_config_data["data_formats"]
     assert (
-        config.EVAL_DATA_JSONL_FILE_PATH
-        == f"{get_test_config_dir()}/{mock_config_data['eval_data_jsonl_file_path']}"
+        config.EVAL_DATA_JSONL_FILE_PATH == f"{get_test_config_dir()}/eval_data.jsonl"
     )
 
     assert config.embedding_models[0].name.return_value == "all-MiniLM-L6-v2"

@@ -1,7 +1,6 @@
 import ast
 import os
 import warnings
-from datetime import datetime
 
 import evaluate
 import mlflow
@@ -20,7 +19,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
 from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.llm.prompts import (
     llm_answer_relevance_instruction,
     llm_context_recall_instruction,
@@ -573,56 +572,30 @@ def compute_metrics(
 
 
 def evaluate_prompts(
-    exp_name: str,
-    index_name: str,
     environment: Environment,
     config: Config,
+    index_config: IndexConfig,
     client: mlflow.MlflowClient,
-    chunk_size: int,
-    chunk_overlap: int,
-    embedding_model: EmbeddingModel,
-    ef_construction: int,
-    ef_search: int,
+    name_suffix: str,
 ):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
     Args:
-        exp_name (str): Name of the experiment to log the results to.
-        index_name (str): The name of the index to use for evaluation.
         environment (Environment): Initialised Environment class containing environment configuration
-        config (Config): The configuration settings to use for evaluation.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
-        chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
-        chunk_overlap (int): Amount of overlap between the chunks.
-        embedding_dimension (int): Dimension of the embeddings to use.
-        ef_construction (int): Number of trees to use during index construction.
-        ef_search (int): Number of trees to use during search.
+        config (Config): The configuration settings to use for evaluation.
+        index_config (IndexConfig): Parameters of the index such as chunking and embedding model.
+        output_dir (str): Previously created directory where the output should be placed.
+        name_suffix (str): Name suffix to use for all outputs created.
 
     Returns:
         None
     """
-    try:
-        eval_score_folder = f"{config.artifacts_dir}/eval_score"
-        os.makedirs(eval_score_folder, exist_ok=True)
-    except Exception as e:
-        logger.error(
-            f"Unable to create the '{eval_score_folder}' directory. Please"
-            " ensure you have the proper permissions and try again"
-        )
-        raise e
-    current_datetime = datetime.now()
-    formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
-
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
-    run_name = f"{exp_name}_{formatted_datetime}"
-    mlflow.set_experiment(exp_name)
-    mlflow.start_run(run_name=run_name)
     pd.set_option("display.max_columns", None)
-
-    run_id = mlflow.active_run().info.run_id
 
     total_precision_scores_by_search_type = {}
     map_scores_by_search_type = {}
@@ -633,7 +606,7 @@ def evaluate_prompts(
         environment, config, config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
     )
 
-    query_data_load = handler.load(index_name)
+    query_data_load = handler.load(index_config.index_name())
     for data in query_data_load:
         actual = remove_spaces(lower(data.actual))
         expected = remove_spaces(lower(data.expected))
@@ -700,7 +673,9 @@ def evaluate_prompts(
     columns_to_remove = ["question", "context", "actual", "expected"]
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
-    df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
+    df.to_csv(
+        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"), index=False
+    )
     logger.debug(f"Eval scores: {df.head()}")
 
     temp_df = df.drop(columns=columns_to_remove)
@@ -717,11 +692,15 @@ def evaluate_prompts(
     for col_name in sum_df.columns:
         sum_dict[col_name] = float(sum_df[col_name].values)
 
-    sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
+    sum_df.to_csv(
+        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv"), index=False
+    )
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
-        f"{eval_score_folder}/{formatted_datetime}_ap_scores_at_k_test.csv",
+        os.path.join(
+            config.EVAL_DATA_LOCATION, f"{name_suffix}_ap_scores_at_k_test.csv"
+        ),
         index=False,
     )
     plot_apk_scores(ap_scores_df, run_id, client)
@@ -729,13 +708,13 @@ def evaluate_prompts(
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        f"{eval_score_folder}/{formatted_datetime}_map_scores_test.csv",
+        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}_map_scores_test.csv"),
         index=False,
     )
     plot_map_scores(map_scores_df, run_id, client)
 
     common_data = query_data_load[0]
-    mlflow.log_param("chunk_size", chunk_size)
+    mlflow.log_param("chunk_size", index_config.chunk_size)
     mlflow.log_param("question_count", common_data.question_count)
     mlflow.log_param("rerank", common_data.rerank)
     mlflow.log_param("rerank_type", common_data.rerank_type)
@@ -743,17 +722,19 @@ def evaluate_prompts(
     mlflow.log_param("llm_re_rank_threshold", common_data.llm_re_rank_threshold)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
     mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
-    mlflow.log_param("chunk_overlap", chunk_overlap)
-    mlflow.log_param("embedding_dimension", embedding_model.dimension)
-    mlflow.log_param("embedding_model_name", embedding_model.name)
-    mlflow.log_param("ef_construction", ef_construction)
-    mlflow.log_param("ef_search", ef_search)
+    mlflow.log_param("chunk_overlap", index_config.overlap)
+    mlflow.log_param("embedding_dimension", index_config.embedding_model.dimension)
+    mlflow.log_param("embedding_model_name", index_config.embedding_model.name)
+    mlflow.log_param("ef_construction", index_config.ef_construction)
+    mlflow.log_param("ef_search", index_config.ef_search)
     mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
-    mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")
-    mlflow.log_artifact(f"{eval_score_folder}/sum_{formatted_datetime}.csv")
+    mlflow.log_artifact(os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"))
+    mlflow.log_artifact(
+        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv")
+    )
     draw_hist_df(sum_df, run_id, client)
-    generate_metrics(exp_name, run_id, client)
+    generate_metrics(config.NAME_PREFIX, run_id, client)
     mlflow.end_run()
 
 

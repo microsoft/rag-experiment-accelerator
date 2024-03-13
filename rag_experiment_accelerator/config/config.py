@@ -10,6 +10,7 @@ from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
+
 logger = get_logger(__name__)
 
 
@@ -53,95 +54,46 @@ class Config:
     """
 
     def __init__(
-        self,
-        environment: Environment,
-        config_dir: str = os.getcwd(),
-        data_dir: str = "data",
-        filename: str = "config.json",
+        self, environment: Environment, config_path: str = None, data_dir: str = None
     ):
-        """
-        Creates a new instance of Config only if it doesn't already exist.
+        if not config_path:
+            config_path = os.path.join(os.getcwd(), "./config.json")
+        if not data_dir:
+            data_dir = os.path.join(os.getcwd(), "data/")
+        with open(config_path.strip(), "r") as json_file:
+            config_json = json.load(json_file)
 
-        Parameters:
-            config_filename (str): The name of the JSON file containing configuration settings.
+        self._initialize_paths(config_json, config_path, data_dir)
 
-        Returns:
-            Config: The singleton instance of Config.
-        """
-
-        self._initialize(environment, config_dir, data_dir, filename)
-
-    def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
-        if any(val < 100 or val > 1000 for val in ef_constructions):
-            raise ValueError(
-                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
-            )
-        if any(val < 100 or val > 1000 for val in ef_searches):
-            raise ValueError(
-                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-            )
-        if max(overlap_size) > min(chunk_size):
-            raise ValueError(
-                "Config param validation error: overlap_size must be less than chunk_size"
-            )
-
-    def _initialize_paths(self, config_dir, data_dir, data) -> None:
-        self._config_dir = config_dir
-        os.makedirs(self._config_dir, exist_ok=True)
-
-        self.artifacts_dir = os.path.join(self._config_dir, "artifacts")
-        os.makedirs(self.artifacts_dir, exist_ok=True)
-
-        self.data_dir = os.path.join(self._config_dir, data_dir)
-
-        self.EVAL_DATA_JSONL_FILE_PATH = os.path.join(
-            self._config_dir, data["eval_data_jsonl_file_path"]
-        )
-        self.GENERATED_INDEX_NAMES_FILE_PATH = os.path.join(
-            self.artifacts_dir, "generated_index_names.jsonl"
-        )
-        self.QUERY_DATA_LOCATION = os.path.join(self.artifacts_dir, "query_data")
-
-        self.PROMPT_CONFIG_FILE_PATH = os.path.join(
-            self._config_dir, "prompt_config.json"
-        )
-        # TODO make sure the files exist
-
-    def _initialize(
-        self, environment: Environment, config_dir: str, data_dir: str, filename: str
-    ) -> None:
-        with open(os.path.join(config_dir.strip(), filename.strip()), "r") as json_file:
-            data = json.load(json_file)
-
-        self._initialize_paths(config_dir, data_dir, data)
-
-        self.CHUNK_SIZES = data["chunking"]["chunk_size"]
-        self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
-        self.EF_CONSTRUCTIONS = data["ef_construction"]
-        self.EF_SEARCHES = data["ef_search"]
-        self.NAME_PREFIX = data["name_prefix"]
-        self.SEARCH_VARIANTS = data["search_types"]
-        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get(
+        self.CHUNK_SIZES = config_json["chunking"]["chunk_size"]
+        self.OVERLAP_SIZES = config_json["chunking"]["overlap_size"]
+        self.EF_CONSTRUCTIONS = config_json["ef_construction"]
+        self.EF_SEARCHES = config_json["ef_search"]
+        self.NAME_PREFIX = config_json["name_prefix"]
+        self.SEARCH_VARIANTS = config_json["search_types"]
+        self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = config_json.get(
             "azure_oai_chat_deployment_name", None
         )
-        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = data.get(
+        self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = config_json.get(
             "azure_oai_eval_deployment_name", None
         )
-        self.RETRIEVE_NUM_OF_DOCUMENTS = data["retrieve_num_of_documents"]
-        self.CROSSENCODER_MODEL = data["crossencoder_model"]
-        self.RERANK_TYPE = data["rerank_type"]
-        self.LLM_RERANK_THRESHOLD = data["llm_re_rank_threshold"]
-        self.CROSSENCODER_AT_K = data["cross_encoder_at_k"]
-        self.TEMPERATURE = data["openai_temperature"]
-        self.RERANK = data["rerank"]
-        self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
-        self.DATA_FORMATS = data.get("data_formats", "all")
-        self.METRIC_TYPES = data["metric_types"]
-        self.CHUNKING_STRATEGY = ChunkingStrategy(data["chunking_strategy"])
-        self.LANGUAGE = data.get("language", {})
+        self.RETRIEVE_NUM_OF_DOCUMENTS = config_json["retrieve_num_of_documents"]
+        self.CROSSENCODER_MODEL = config_json["crossencoder_model"]
+        self.RERANK_TYPE = config_json["rerank_type"]
+        self.LLM_RERANK_THRESHOLD = config_json["llm_re_rank_threshold"]
+        self.CROSSENCODER_AT_K = config_json["cross_encoder_at_k"]
+        self.TEMPERATURE = config_json["openai_temperature"]
+        self.RERANK = config_json["rerank"]
+        self.SEARCH_RELEVANCY_THRESHOLD = config_json.get(
+            "search_relevancy_threshold", 0.8
+        )
+        self.DATA_FORMATS = config_json.get("data_formats", "all")
+        self.METRIC_TYPES = config_json["metric_types"]
+        self.CHUNKING_STRATEGY = ChunkingStrategy(config_json["chunking_strategy"])
+        self.LANGUAGE = config_json.get("language", {})
 
         self.embedding_models: list[EmbeddingModel] = []
-        embedding_model_config = data.get("embedding_models", [])
+        embedding_model_config = config_json.get("embedding_models", [])
         for model_config in embedding_model_config:
             kwargs = {"environment": environment, **model_config}
             self.embedding_models.append(
@@ -157,9 +109,9 @@ class Config:
 
         try:
             with open(self.PROMPT_CONFIG_FILE_PATH, "r") as json_file:
-                data = json.load(json_file)
+                config_json = json.load(json_file)
 
-            self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
+            self.MAIN_PROMPT_INSTRUCTION = config_json["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
                 logger.warn(
                     "prompt_config.json found but main_prompt_instruction is"
@@ -169,6 +121,20 @@ class Config:
         except OSError:
             logger.warn("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
+
+    def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
+        if any(val < 100 or val > 1000 for val in ef_constructions):
+            raise ValueError(
+                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
+            )
+        if any(val < 100 or val > 1000 for val in ef_searches):
+            raise ValueError(
+                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
+            )
+        if max(overlap_size) > min(chunk_size):
+            raise ValueError(
+                "Config param validation error: overlap_size must be less than chunk_size"
+            )
 
     def index_configs(self) -> Generator:
         for chunk_size in self.CHUNK_SIZES:
@@ -185,9 +151,53 @@ class Config:
                                 ef_search=ef_search,
                             )
 
+    def _initialize_paths(
+        self, config_json: dict[str], config_file_path: str, data_dir: str
+    ) -> None:
+        self._config_dir = os.path.dirname(config_file_path)
+
+        self.artifacts_dir = (
+            config_json["artifacts_dir"]
+            if "artifacts_dir" in config_json
+            else os.path.join(self._config_dir, "artifacts")
+        )
+
+        if data_dir:
+            self.data_dir = data_dir
+        elif "data_dir" in config_json:
+            self.data_dir = config_json["data_dir"]
+        else:
+            self.data_dir = os.path.join(self._config_dir, "data")
+
+        self.EVAL_DATA_JSONL_FILE_PATH = (
+            config_json["eval_data_jsonl_file_path"]
+            if "eval_data_jsonl_file_path" in config_json
+            else os.path.join(self.artifacts_dir, "eval_data.jsonl")
+        )
+        self.GENERATED_INDEX_NAMES_FILE_PATH = (
+            config_json["generated_index_names_file_path"]
+            if "generated_index_names_file_path" in config_json
+            else os.path.join(self.artifacts_dir, "generated_index_names.jsonl")
+        )
+        self.QUERY_DATA_LOCATION = (
+            config_json["query_data"]
+            if "query_data" in config_json
+            else os.path.join(self.artifacts_dir, "query_data")
+        )
+        self.EVAL_DATA_LOCATION = (
+            config_json["eval_data"]
+            if "eval_data" in config_json
+            else os.path.join(self.artifacts_dir, "eval_score")
+        )
+        # TODO - roll this into the config?
+        self.PROMPT_CONFIG_FILE_PATH = (
+            config_json["prompt_config_file_path"]
+            if "prompt_config_file_path" in config_json
+            else os.path.join(self._config_dir, "prompt_config.json")
+        )
+
     def _find_embedding_model_by_name(self, model_name: str) -> EmbeddingModel:
         for model in self.embedding_models:
             if model.name == model_name:
                 return model
         raise AttributeError(f"No model found with the name {model_name}")
-        pass
