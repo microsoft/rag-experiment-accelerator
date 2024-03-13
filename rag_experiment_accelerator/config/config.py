@@ -89,7 +89,11 @@ class Config:
         )
         self.DATA_FORMATS = config_json.get("data_formats", "all")
         self.METRIC_TYPES = config_json["metric_types"]
-        self.CHUNKING_STRATEGY = ChunkingStrategy(config_json["chunking_strategy"])
+        self.CHUNKING_STRATEGY = (
+            ChunkingStrategy(config_json["chunking_strategy"])
+            if "chunking_strategy" in config_json
+            else ChunkingStrategy.BASIC
+        )
         self.LANGUAGE = config_json.get("language", {})
 
         self.embedding_models: list[EmbeddingModel] = []
