@@ -16,7 +16,7 @@ azure-identity==1.15.0
 textdistance==4.6.1
 azureml-mlflow==1.55.0
 fuzzywuzzy==0.18.0
-mlflow==2.11.0
+mlflow==2.11.1
 rouge-score==0.1.2
 hnswlib==0.8.0
 pypdf==4.1.0
