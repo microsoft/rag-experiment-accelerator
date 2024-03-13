@@ -1,5 +1,5 @@
 PyPDF2~=3.0
-azure-core==1.29.4
+azure-core==1.30.1
 matplotlib==3.8.3
 plotly==5.19.0
 tiktoken==0.6.0
