@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     my_hash,
@@ -17,6 +17,7 @@ from rag_experiment_accelerator.llm.prompts import (
     multiple_prompt_instruction,
 )
 from rag_experiment_accelerator.run.index import generate_summary, generate_title
+from rag_experiment_accelerator.config import Config
 
 
 def test_my_hash_with_string():
@@ -99,39 +100,31 @@ def test_generate_summary(mock_response_generator):
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.SearchClient")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.AzureKeyCredential")
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.generate_title")
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.generate_summary")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.my_hash")
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.pre_process.preprocess")
 def test_upload_data(
-    mock_preprocess,
     mock_my_hash,
-    mock_generate_summary,
-    mock_generate_title,
     mock_AzureKeyCredential,
     mock_SearchClient,
 ):
     # Arrange
-    mock_chunks = [{"content": "test content", "content_vector": "test_vector"}]
+    mock_chunks = [
+        {
+            "content": "test content",
+            "content_vector": "test_vector",
+            "filename": "dummy.pdf",
+            "source_display_name": "dummy",
+        }
+    ]
     mock_service_endpoint = "test_endpoint"
     mock_index_name = "test_index"
     mock_search_key = "test_key"
-    mock_embedding_model = Mock()
-    mock_azure_oai_deployment_name = "test_deployment"
     mock_my_hash.return_value = "test_hash"
-    mock_generate_title.return_value = "test_title"
-    mock_generate_summary.return_value = "test_summary"
-    mock_preprocess.return_value = "test_preprocessed_content"
     mock_AzureKeyCredential.return_value = "test_credential"
+    config = Config()
 
     # Act
     upload_data(
-        mock_chunks,
-        mock_service_endpoint,
-        mock_index_name,
-        mock_search_key,
-        mock_embedding_model,
-        mock_azure_oai_deployment_name,
+        mock_chunks, mock_service_endpoint, mock_index_name, mock_search_key, config
     )
 
     # Assert
@@ -142,19 +135,7 @@ def test_upload_data(
         credential="test_credential",
     )
     mock_my_hash.assert_called_once_with(mock_chunks[0]["content"])
-    mock_generate_title.assert_called_once_with(
-        str(mock_chunks[0]["content"]), mock_azure_oai_deployment_name
-    )
-    mock_generate_summary.assert_called_once_with(
-        str(mock_chunks[0]["content"]), mock_azure_oai_deployment_name
-    )
-    mock_preprocess.assert_any_call("test_summary")
-    mock_preprocess.assert_any_call("test_title")
-    mock_embedding_model.generate_embedding.assert_any_call(
-        chunk="test_preprocessed_content"
-    )
     mock_SearchClient().upload_documents.assert_called_once()
-    assert mock_embedding_model.generate_embedding.call_count == 2
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.json.loads")
