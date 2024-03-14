@@ -164,7 +164,7 @@ artifacts/
 **/.DS_Store
 
 # Data files
-#data/*
+data/*
 # Keep folders
 !data/pdf/
 !data/html/
