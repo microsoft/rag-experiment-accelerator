@@ -1,5 +1,6 @@
 import glob
 import os
+import uuid
 
 from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -11,7 +12,6 @@ from rag_experiment_accelerator.config.credentials import (
 from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
     azure_document_intelligence_loader,
 )
-import uuid
 
 logger = get_logger(__name__)
 
@@ -88,8 +88,7 @@ def load_structured_files(
         )
 
     logger.debug(
-        f"Splitting {file_format} files into chunks of {chunk_size} characters"
-        f" with an overlap of {overlap_size} characters"
+        f"Splitting {file_format} files into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
     )
 
     docs = text_splitter.split_documents(documents)
