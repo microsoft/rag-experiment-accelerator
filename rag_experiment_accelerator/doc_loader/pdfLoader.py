@@ -8,6 +8,7 @@ from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
 from rag_experiment_accelerator.config.credentials import (
     AzureDocumentIntelligenceCredentials,
 )
+
 import uuid
 import re
 
@@ -89,8 +90,7 @@ def load_pdf_files(
     )
 
     logger.debug(
-        f"Splitting PDF pages into chunks of {chunk_size} characters with an"
-        f" overlap of {overlap_size} characters"
+        f"Splitting PDF pages into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
     docsList = []
