@@ -4,7 +4,7 @@ from azure.search.documents.indexes.models import (
     CharFilter,
     CorsOptions,
     HnswParameters,
-    VectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
     LexicalTokenizer,
     SemanticPrioritizedFields,
     SearchableField,
@@ -135,10 +135,10 @@ def create_acs_index(
 
         vector_search = VectorSearch(
             algorithms=[
-                VectorSearchAlgorithmConfiguration(
+                HnswAlgorithmConfiguration(
                     name="my-vector-config",
                     kind="hnsw",
-                    hnsw_parameters=HnswParameters(
+                    parameters=HnswParameters(
                         m=4,
                         ef_construction=int(ef_construction),
                         ef_search=int(ef_search),
