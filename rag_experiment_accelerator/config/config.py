@@ -77,18 +77,15 @@ class Config:
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
             raise ValueError(
-                "Config param validation error: ef_construction must be "
-                "between 100 and 1000 (inclusive)"
+                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
             )
         if any(val < 100 or val > 1000 for val in ef_searches):
             raise ValueError(
-                "Config param validation error: ef_search must be between 100 "
-                "and 1000 (inclusive)"
+                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
             )
         if max(overlap_size) > min(chunk_size):
             raise ValueError(
-                "Config param validation error: overlap_size must be less than"
-                " chunk_size"
+                "Config param validation error: overlap_size must be less than chunk_size"
             )
 
     def _initialize(self, config_dir: str, data_dir: str, filename: str) -> None:
