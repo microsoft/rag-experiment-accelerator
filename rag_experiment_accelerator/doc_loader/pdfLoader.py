@@ -1,9 +1,13 @@
-from langchain.document_loaders import PyPDFDirectoryLoader
+from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import azure_document_intelligence_directory_loader
-from rag_experiment_accelerator.config.credentials import AzureDocumentIntelligenceCredentials
+from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
+    azure_document_intelligence_directory_loader,
+)
+from rag_experiment_accelerator.config.credentials import (
+    AzureDocumentIntelligenceCredentials,
+)
 import uuid
 import re
 
@@ -29,9 +33,9 @@ def preprocess_pdf_content(content: str):
         # Output: "hello world openai"
     """
 
-    content = re.sub(r'\n{2,}', '\n', content)
-    content = re.sub(r'\n{1,}', '', content)
-    content = re.sub(r'\\u[0-9a-fA-F]{4}', '', content)
+    content = re.sub(r"\n{2,}", "\n", content)
+    content = re.sub(r"\n{1,}", "", content)
+    content = re.sub(r"\\u[0-9a-fA-F]{4}", "", content)
     content = content.lower()
 
     return content
@@ -63,7 +67,12 @@ def load_pdf_files(
     documents = []
     for pattern in glob_patterns:
         if chunking_strategy == "azure-document-intelligence":
-            documents += azure_document_intelligence_directory_loader(pattern, folder_path, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT, AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY)
+            documents += azure_document_intelligence_directory_loader(
+                pattern,
+                folder_path,
+                AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT,
+                AzureDocumentIntelligenceCredentials.AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY,
+            )
         else:
             # using langchain
             loader = PyPDFDirectoryLoader(
@@ -86,7 +95,9 @@ def load_pdf_files(
     docs = text_splitter.split_documents(documents)
     docsList = []
     for doc in docs:
-        docsList.append(dict({str(uuid.uuid4()): preprocess_pdf_content(doc.page_content)}))
+        docsList.append(
+            dict({str(uuid.uuid4()): preprocess_pdf_content(doc.page_content)})
+        )
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")
 
