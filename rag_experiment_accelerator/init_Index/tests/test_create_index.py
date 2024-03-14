@@ -7,7 +7,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswParameters,
-    HnswVectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
     SearchField,
     SearchIndex,
 )
@@ -21,11 +21,11 @@ class TestCreateIndex(unittest.TestCase):
 
     # Test that create_acs_index calls create_or_update_index using key
     # credentials
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         # Index test parameters
         service_endpoint = "test_endpoint"
         index_name = "test_index"
@@ -39,12 +39,19 @@ class TestCreateIndex(unittest.TestCase):
             "analyzer_name": None,
             "tokenizers": None,
             "token_filters": None,
-            "char_filters": None
+            "char_filters": None,
         }
 
         # Call the function with the test parameters
-        create_acs_index(service_endpoint, index_name, key,
-                         dimension, ef_construction, ef_search, analyzers)
+        create_acs_index(
+            service_endpoint,
+            index_name,
+            key,
+            dimension,
+            ef_construction,
+            ef_search,
+            analyzers,
+        )
 
         # Assert that the 'create_or_update_index' method was called on the
         # SearchIndexClient
@@ -56,12 +63,12 @@ class TestCreateIndex(unittest.TestCase):
 
     # Test that create_acs_index works correctly when analyzer option is set
     # alone
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchField, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchField, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_analyzer_name_alone(
-            self, mock_create_or_update_index, mock_seearch_field, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_seearch_field, mock_azure_key_credential
+    ):
         service_endpoint = "test_endpoint"
         index_name = "test_index"
         key = "test_key"
@@ -74,30 +81,37 @@ class TestCreateIndex(unittest.TestCase):
             "search_analyzer_name": None,
         }
         expected_analyzer = "test_analyzer"
-        create_acs_index(service_endpoint, index_name, key,
-                         dimension, ef_construction, ef_search, analyzers)
+        create_acs_index(
+            service_endpoint,
+            index_name,
+            key,
+            dimension,
+            ef_construction,
+            ef_search,
+            analyzers,
+        )
         mock_create_or_update_index.assert_called()
         args, kwargs = mock_create_or_update_index.call_args
         index_parameters = mock_seearch_field.call_args_list
         content_description_call = None
 
         for call in index_parameters:
-            if call.kwargs['name'] == 'contentDescription':
+            if call.kwargs["name"] == "contentDescription":
                 content_description_call = call
                 break
 
         self.assertIsNotNone(content_description_call)
-        actual_analyzer = content_description_call.kwargs.get('analyzer_name')
+        actual_analyzer = content_description_call.kwargs.get("analyzer_name")
         self.assertEqual(expected_analyzer, actual_analyzer)
 
     # Test that create_acs_index works correctly when indexAnalyzer is set
     # together with searchAnalyzer and not analyzer option
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchField, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchField, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_analyzer_with_index_and_search_analyzer(
-            self, mock_create_or_update_index, mock_seearch_field, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_seearch_field, mock_azure_key_credential
+    ):
         with self.assertRaises(ValueError):
             service_endpoint = "test_endpoint"
             index_name = "test_index"
@@ -110,23 +124,28 @@ class TestCreateIndex(unittest.TestCase):
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": "test_search_analyzer",
             }
-            create_acs_index(service_endpoint, index_name, key,
-                             dimension, ef_construction, ef_search, analyzers)
+            create_acs_index(
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
             args, kwargs = mock_create_or_update_index.call_args
             index_parameters = mock_seearch_field.call_args_list
             description_call = None
 
             for call in index_parameters:
-                if call.kwargs['name'] == 'description':
+                if call.kwargs["name"] == "description":
                     description_call = call
                     break
 
             self.assertIsNotNone(description_call)
             # Access the analyzer attributes of the call
-            search_analyzer_name = description_call.kwargs.get(
-                'search_analyzer_name')
-            index_analyzer_name = description_call.kwargs.get(
-                'index_analyzer_name')
+            search_analyzer_name = description_call.kwargs.get("search_analyzer_name")
+            index_analyzer_name = description_call.kwargs.get("index_analyzer_name")
             self.assertEqual(index_analyzer_name, "test_index_analyzer")
             self.assertEqual(search_analyzer_name, "test_search_analyzer")
 
@@ -136,29 +155,61 @@ class TestCreateIndex(unittest.TestCase):
                 "index_analyzer_name": None,
                 "search_analyzer_name": "test_search_analyzer",
             }
-            create_acs_index(service_endpoint, index_name, key,
-                             dimension, ef_construction, ef_search, analyzers)
-            self.assertRaises(Exception, create_acs_index, service_endpoint,
-                              index_name, key, dimension, ef_construction, ef_search, analyzers)
+            create_acs_index(
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
+            self.assertRaises(
+                Exception,
+                create_acs_index,
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
 
             analyzers = {
                 "analyzer_name": None,
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": None,
             }
-            create_acs_index(service_endpoint, index_name, key,
-                             dimension, ef_construction, ef_search, analyzers)
-            self.assertRaises(Exception, create_acs_index, service_endpoint,
-                              index_name, key, dimension, ef_construction, ef_search, analyzers)
+            create_acs_index(
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
+            self.assertRaises(
+                Exception,
+                create_acs_index,
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
 
     # Test that create_acs_index raiser error when analyzer is set together
     # with either searchAnalyzer or indexAnalyzer
 
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_analyzer_with_index_or_search_analyzer(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         with self.assertRaises(ValueError):
             service_endpoint = "test_endpoint"
             index_name = "test_index"
@@ -171,113 +222,154 @@ class TestCreateIndex(unittest.TestCase):
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": None,
             }
-            create_acs_index(service_endpoint, index_name, key,
-                             dimension, ef_construction, ef_search, analyzers)
-            self.assertRaises(Exception, create_acs_index, service_endpoint,
-                              index_name, key, dimension, ef_construction, ef_search, analyzers)
+            create_acs_index(
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
+            self.assertRaises(
+                Exception,
+                create_acs_index,
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
 
             analyzers = {
                 "analyzer_name": "test_analyzer",
                 "index_analyzer_name": None,
                 "search_analyzer_name": "test_search_analyzer",
             }
-            create_acs_index(service_endpoint, index_name, key,
-                             dimension, ef_construction, ef_search, analyzers)
-            self.assertRaises(Exception, create_acs_index, service_endpoint,
-                              index_name, key, dimension, ef_construction, ef_search, analyzers)
+            create_acs_index(
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
+            self.assertRaises(
+                Exception,
+                create_acs_index,
+                service_endpoint,
+                index_name,
+                key,
+                dimension,
+                ef_construction,
+                ef_search,
+                analyzers,
+            )
 
     # Test that create_acs_index works correctly when the analyzers dictionary
     # contains non-None values
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_analyzers_non_none(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         analyzers = {
             "index_analyzer_name": "test_index_analyzer",
             "search_analyzer_name": "test_search_analyzer",
             "analyzer_name": None,
-            "tokenizers": [{"name": "my_tokenizer", "token_chars": ["letter", "digit"]}],
+            "tokenizers": [
+                {"name": "my_tokenizer", "token_chars": ["letter", "digit"]}
+            ],
             "token_filters": ["token_filter1", "token_filter2"],
-            "char_filters": [{"name": "my_char_filter", "mappings": ["ph=>f", "qu=>q"]}]
+            "char_filters": [
+                {"name": "my_char_filter", "mappings": ["ph=>f", "qu=>q"]}
+            ],
         }
         try:
-            create_acs_index("test_endpoint", "test_index",
-                             "test_key", 128, 100, 100, analyzers)
+            create_acs_index(
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzers
+            )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
 
     # Test that create_acs_index works correctly when the analyzers dictionary
     # contains None values
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_analyzers_none(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         analyzers = {
             "index_analyzer_name": None,
             "search_analyzer_name": None,
             "analyzer_name": None,
             "tokenizers": None,
             "token_filters": None,
-            "char_filters": None
+            "char_filters": None,
         }
         try:
-            create_acs_index("test_endpoint", "test_index",
-                             "test_key", 128, 100, 100, analyzers)
+            create_acs_index(
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzers
+            )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
 
     # Test that create_acs_index raises an exception when given invalid
     # parameters:
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_invalid_parameters(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         with self.assertRaises(ValueError):
             create_acs_index(None, "test_index", "test_key", 128, 100, 100, {})
 
     # Test that create_acs_index raises an exception when the
     # create_or_update_index method fails
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  side_effect=Exception)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", side_effect=Exception)
     def test_create_acs_index_create_or_update_index_fails(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         with self.assertRaises(Exception):
-            create_acs_index("test_endpoint", "test_index",
-                             "test_key", 128, 100, 100, {})
+            create_acs_index(
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, {}
+            )
 
     # Test that create_acs_index works correctly when the
     # create_or_update_index method returns a non-None value
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_create_or_update_index_returns_non_none(
-            self, mock_create_or_update_index, mock_azure_key_credential):
+        self, mock_create_or_update_index, mock_azure_key_credential
+    ):
         try:
-            create_acs_index("test_endpoint", "test_index",
-                             "test_key", 128, 100, 100, {})
+            create_acs_index(
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, {}
+            )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
 
     # Test that create_acs_index calls create_or_update_index with the correct
     # parameters
-    @patch.object(AzureKeyCredential, '__init__', return_value=None)
-    @patch.object(HnswParameters, '__init__', return_value=None)
-    @patch.object(HnswVectorSearchAlgorithmConfiguration,
-                  '__init__', return_value=None)
-    @patch.object(SearchIndex, '__init__', return_value=None)
-    @patch.object(SearchField, '__init__', return_value=None)
-    @patch.object(SearchIndexClient, 'create_or_update_index',
-                  return_value=mock_result)
-    def test_dimension_setting(self,
-                               mock_create_or_update_index,
-                               mock_search_field, mock_search_index,
-                               mock_hnsw_vector_search_algorithm_configuration,
-                               mock_hnsw_parameters,
-                               mock_azure_key_credential):
+    @patch.object(AzureKeyCredential, "__init__", return_value=None)
+    @patch.object(HnswParameters, "__init__", return_value=None)
+    @patch.object(HnswAlgorithmConfiguration, "__init__", return_value=None)
+    @patch.object(SearchIndex, "__init__", return_value=None)
+    @patch.object(SearchField, "__init__", return_value=None)
+    @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
+    def test_dimension_setting(
+        self,
+        mock_create_or_update_index,
+        mock_search_field,
+        mock_search_index,
+        mock_hnsw_vector_search_algorithm_configuration,
+        mock_hnsw_parameters,
+        mock_azure_key_credential,
+    ):
         # Test parameters
         service_endpoint = "test_endpoint"
         index_name = "test_index"
@@ -291,11 +383,18 @@ class TestCreateIndex(unittest.TestCase):
             "analyzer_name": None,
             "tokenizers": None,
             "token_filters": None,
-            "char_filters": None
+            "char_filters": None,
         }
         # Call the function with the test parameters
-        create_acs_index(service_endpoint, index_name, key,
-                         dimension, ef_construction, ef_search, analyzers)
+        create_acs_index(
+            service_endpoint,
+            index_name,
+            key,
+            dimension,
+            ef_construction,
+            ef_search,
+            analyzers,
+        )
         # Assert that the 'create_or_update_index' method was called with the
         # correct dimension
         args, kwargs = mock_create_or_update_index.call_args
@@ -306,23 +405,26 @@ class TestCreateIndex(unittest.TestCase):
         expected_dimension = dimension
         expected_index_name = index_name
         for call in searchable_fields:
-            if call.kwargs['name'] == 'contentVector':
+            if call.kwargs["name"] == "contentVector":
                 vector_search_dimensions = call
                 break
 
         for call in index_parameters:
-            if 'name' in call.kwargs:
-                index_name_parameter = call.kwargs['name']
+            if "name" in call.kwargs:
+                index_name_parameter = call.kwargs["name"]
                 break
 
         self.assertIsNotNone(index_name_parameter)
         self.assertIsNotNone(vector_search_dimensions)
         self.assertEqual(expected_index_name, index_name_parameter)
-        self.assertEqual(expected_dimension, vector_search_dimensions.kwargs.get(
-            'vector_search_dimensions'))
+        self.assertEqual(
+            expected_dimension,
+            vector_search_dimensions.kwargs.get("vector_search_dimensions"),
+        )
         mock_hnsw_parameters.assert_called_with(
-            m=4, ef_construction=ef_construction, ef_search=ef_search, metric='cosine')
+            m=4, ef_construction=ef_construction, ef_search=ef_search, metric="cosine"
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
