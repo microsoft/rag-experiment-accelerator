@@ -110,21 +110,11 @@ class Config:
             self.EF_CONSTRUCTIONS,
             self.EF_SEARCHES,
         )
-
-        try:
-            with open(self.PROMPT_CONFIG_FILE_PATH, "r") as json_file:
-                config_json = json.load(json_file)
-
-            self.MAIN_PROMPT_INSTRUCTION = config_json["main_prompt_instruction"]
-            if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn(
-                    "prompt_config.json found but main_prompt_instruction is"
-                    " not set. Using default prompts"
-                )
-                self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
-        except OSError:
-            logger.warn("prompt_config.json not found. Using default prompts")
-            self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
+        self.MAIN_PROMPT_INSTRUCTION = (
+            config_json["main_prompt_instruction"]
+            if "main_prompt_instruction" in config_json
+            else main_prompt_instruction
+        )
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
@@ -165,6 +155,7 @@ class Config:
             if "artifacts_dir" in config_json
             else os.path.join(self._config_dir, "artifacts")
         )
+        self._try_create_directory(self.artifacts_dir)
 
         if data_dir:
             self.data_dir = data_dir
@@ -188,12 +179,15 @@ class Config:
             if "query_data" in config_json
             else os.path.join(self.artifacts_dir, "query_data")
         )
+        self._try_create_directory(self.QUERY_DATA_LOCATION)
+
         self.EVAL_DATA_LOCATION = (
             config_json["eval_data"]
             if "eval_data" in config_json
             else os.path.join(self.artifacts_dir, "eval_score")
         )
-        # TODO - roll this into the config?
+        self._try_create_directory(self.EVAL_DATA_LOCATION)
+
         self.PROMPT_CONFIG_FILE_PATH = (
             config_json["prompt_config_file_path"]
             if "prompt_config_file_path" in config_json
@@ -205,3 +199,11 @@ class Config:
             if model.name == model_name:
                 return model
         raise AttributeError(f"No model found with the name {model_name}")
+
+    def _try_create_directory(self, directory: str) -> None:
+        try:
+            os.makedirs(directory, exist_ok=True)
+        except OSError as e:
+            if "Read-only file system" in e.strerror:
+                pass
+            logger.warn(f"Failed to create directory {directory}: {e.strerror}")

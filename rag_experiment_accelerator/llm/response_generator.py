@@ -31,7 +31,7 @@ class ResponseGenerator:
             api_version=environment.openai_api_version,
         )
 
-    def generate_response(self, sys_message, prompt):
+    def generate_response(self, sys_message, prompt) -> str:
         """
         Generates a response to a given prompt using the OpenAI Chat API.
 

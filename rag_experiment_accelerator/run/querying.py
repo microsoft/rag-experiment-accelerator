@@ -272,7 +272,8 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
             environment.azure_search_admin_key,
         )
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
-            for line in file:
+            for i, line in enumerate(file):
+                logger.info(f"Processing question {i + 1} out of {question_count}\n\n")
                 data = json.loads(line)
                 user_prompt = data.get("user_prompt")
                 output_prompt = data.get("output_prompt")

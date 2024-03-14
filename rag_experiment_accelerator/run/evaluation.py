@@ -1,10 +1,13 @@
 from azure.ai.ml import MLClient
 from dotenv import load_dotenv
 
+import mlflow
+
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.evaluation import eval
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
 from rag_experiment_accelerator.utils.logging import get_logger
 
 
@@ -37,3 +40,21 @@ def run(
         client=mlflow_client,
         name_suffix=name_suffix,
     )
+
+
+def initialise_mlflow_client(environment: Environment, config: Config):
+    """
+    Initializes the ML client and sets the MLflow tracking URI.
+    """
+    ml_client = MLClient(
+        get_default_az_cred(),
+        environment.aml_subscription_id,
+        environment.aml_resource_group_name,
+        environment.aml_workspace_name,
+    )
+    mlflow_tracking_uri = ml_client.workspaces.get(
+        ml_client.workspace_name
+    ).mlflow_tracking_uri
+    mlflow.set_tracking_uri(mlflow_tracking_uri)
+    mlflow.set_experiment(config.NAME_PREFIX)
+    return mlflow.MlflowClient(mlflow_tracking_uri)

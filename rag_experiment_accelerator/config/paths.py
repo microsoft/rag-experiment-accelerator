@@ -3,7 +3,7 @@ import glob
 from datetime import datetime
 from typing import Iterable
 
-from rag_experiment_accelerator.config import Config  # noqa: E402
+from rag_experiment_accelerator.config import Config
 
 
 def get_all_file_paths(directory: str) -> Iterable[str]:

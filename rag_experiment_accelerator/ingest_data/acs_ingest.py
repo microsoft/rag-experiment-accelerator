@@ -129,9 +129,8 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
         # But we aren't explicitly saying that stating that, should we?
         chunk = list(doc.values())[0]
         if len(chunk) > 50:
-            response = ""
             try:
-                response_generator.generate_response(
+                response = response_generator.generate_response(
                     generate_qna_instruction_system_prompt,
                     generate_qna_instruction_user_prompt + chunk,
                 )
@@ -148,10 +147,10 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
 
             except Exception as e:
                 logger.error(
-                    "could not generate a valid json so moving over to next"
-                    " question!"
+                    f"could not generate a valid json so moving over to next "
+                    f"question! Error message: {str(e)}"
                 )
-                logger.debug(e)
+                logger.error(traceback.format_exc())
                 logger.debug(f"LLM Response: {response}")
 
     return new_df

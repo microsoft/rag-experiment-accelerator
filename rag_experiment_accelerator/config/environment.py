@@ -93,7 +93,7 @@ class Environment:
     def _is_field_optional(cls, field_name: str) -> bool:
         return vars(cls)["__dataclass_fields__"][field_name].type == Optional[str]
 
-    def _fields(self) -> Iterable[Tuple[str, str]]:
+    def fields(self) -> Iterable[Tuple[str, str]]:
         return vars(self).items()
 
     @classmethod
@@ -128,11 +128,15 @@ class Environment:
         }
         return cls(**values_dict)
 
-    def to_keyvault(self) -> None:
-        keyvault = Environment._keyvault(keyvault_name=self.keyvault_name)
+    def to_keyvault(self, keyvault_name: str = None) -> None:
+        if not keyvault_name:
+            if not self.keyvault_name:
+                raise ValueError("Keyvault name not provided and not set in .env file")
+            keyvault_name = self.keyvault_name
+        keyvault = Environment._keyvault(keyvault_name=keyvault_name)
         # We check if the secret is already there and has the same value,
         # to avoid creating many versions of the same secret
-        for field_name, value in self._fields():
+        for field_name, value in self.fields():
             previous_value = Environment._get_value_from_keyvault(keyvault, field_name)
             if previous_value != str(value):
                 keyvault.set_secret(
