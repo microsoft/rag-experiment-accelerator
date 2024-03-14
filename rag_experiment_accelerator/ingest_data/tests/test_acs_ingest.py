@@ -145,9 +145,10 @@ def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads
     mock_docs = [
         dict(
             {
-                str(
-                    uuid.uuid4()
-                ): "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50"
+                str(uuid.uuid4()): {
+                    "content": "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50",
+                    "metadata": {"source": "test_source"},
+                }
             }
         )
     ]
