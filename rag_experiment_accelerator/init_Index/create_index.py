@@ -4,16 +4,16 @@ from azure.search.documents.indexes.models import (
     CharFilter,
     CorsOptions,
     HnswParameters,
-    HnswAlgorithmConfiguration,
+    HnswVectorSearchAlgorithmConfiguration,
     LexicalTokenizer,
-    SemanticPrioritizedFields,
+    PrioritizedFields,
     SearchableField,
     SearchField,
     SearchFieldDataType,
     SearchIndex,
     SemanticConfiguration,
     SemanticField,
-    SemanticSearch,
+    SemanticSettings,
     SimpleField,
     TokenFilter,
     VectorSearch,
@@ -135,9 +135,8 @@ def create_acs_index(
 
         vector_search = VectorSearch(
             algorithms=[
-                HnswAlgorithmConfiguration(
+                HnswVectorSearchAlgorithmConfiguration(
                     name="my-vector-config",
-                    kind="hnsw",
                     parameters=HnswParameters(
                         m=4,
                         ef_construction=int(ef_construction),
@@ -148,21 +147,20 @@ def create_acs_index(
             ],
             profiles=[
                 VectorSearchProfile(
-                    name="my-vector-search-profile",
-                    algorithm_configuration_name="my-vector-config",
+                    name="my-vector-search-profile", algorithm="my-vector-config"
                 )
             ],
         )
 
         semantic_config = SemanticConfiguration(
             name="my-semantic-config",
-            prioritized_fields=SemanticPrioritizedFields(
-                content_fields=[SemanticField(field_name="content")]
+            prioritized_fields=PrioritizedFields(
+                prioritized_content_fields=[SemanticField(field_name="content")]
             ),
         )
 
         # Create the semantic settings with the configuration
-        semantic_search = SemanticSearch(configurations=[semantic_config])
+        semantic_settings = SemanticSettings(configurations=[semantic_config])
 
         # Define a custom tokenizer, token filter and char filter
         tokenizers = []
@@ -200,7 +198,7 @@ def create_acs_index(
             name=index_name,
             fields=fields,
             vector_search=vector_search,
-            semantic_search=semantic_search,
+            semantic_settings=semantic_settings,
             scoring_profiles=scoring_profiles,
             cors_options=cors_options,
             tokenizers=tokenizers,
