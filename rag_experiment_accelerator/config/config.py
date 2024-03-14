@@ -19,51 +19,36 @@ logger = get_logger(__name__)
 
 class Config:
     """
-    A singleton class for storing configuration settings for the RAG
-    Experiment Accelerator.
+    A singleton class for storing configuration settings for the RAG Experiment Accelerator.
 
     Parameters:
-        config_filename (str): The name of the JSON file containing
-        configuration settings. Default is 'config.json'.
+        config_filename (str): The name of the JSON file containing configuration settings. Default is 'config.json'.
 
     Attributes:
-        CHUNK_SIZES (list[int]): A list of integers representing the chunk
-        sizes for chunking documents.
-        OVERLAP_SIZES (list[int]): A list of integers representing the overlap
-        sizes for chunking documents.
-        EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for
-        HNSW index.
+        CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
+        OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
+        EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
-        AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment
-        to use.
-        AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to
-        use for evaluation.
-        RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve
-        for each query.
+        AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
+        AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.
+        RETRIEVE_NUM_OF_DOCUMENTS (int): The number of documents to retrieve for each query.
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
         LLM_RERANK_THRESHOLD (float): The threshold for reranking using LLM.
-        CROSSENCODER_AT_K (int): The number of documents to rerank using the
-        crossencoder.
+        CROSSENCODER_AT_K (int): The number of documents to rerank using the crossencoder.
         TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
         RERANK (bool): Whether or not to perform reranking.
-        SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result
-        relevancy.
-        DATA_FORMATS (Union[list[str], str]): Allowed formats for input data,
-        if "all", then all formats will be loaded"
+        SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
+        DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
-        EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file
-        which is input for 03_querying script
+        EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
         embedding_models: The embedding models used to generate embeddings
         MAX_WORKER_THREADS (int): Maximum number of worker threads.
-        GENERATE_TITLE (bool): Whether or not to generate title for chunk
-        content. Default is False.
-        GENERATE_SUMMARY (bool): Whether or not to generate summary for chunk
-        content. Default is False.
-        OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk
-        content with generated summary. Default is False.
+        GENERATE_TITLE (bool): Whether or not to generate title for chunk content. Default is False.
+        GENERATE_SUMMARY (bool): Whether or not to generate summary for chunk content. Default is False.
+        OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
     """
 
     _instance = None
@@ -78,8 +63,7 @@ class Config:
         Creates a new instance of Config only if it doesn't already exist.
 
         Parameters:
-            config_filename (str): The name of the JSON file containing
-            configuration settings.
+            config_filename (str): The name of the JSON file containing configuration settings.
 
         Returns:
             Config: The singleton instance of Config.
