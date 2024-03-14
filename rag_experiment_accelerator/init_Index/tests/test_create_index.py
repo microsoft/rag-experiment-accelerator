@@ -7,7 +7,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswParameters,
-    HnswAlgorithmConfiguration,
+    HnswVectorSearchAlgorithmConfiguration,
     SearchField,
     SearchIndex,
 )
@@ -357,7 +357,7 @@ class TestCreateIndex(unittest.TestCase):
     # parameters
     @patch.object(AzureKeyCredential, "__init__", return_value=None)
     @patch.object(HnswParameters, "__init__", return_value=None)
-    @patch.object(HnswAlgorithmConfiguration, "__init__", return_value=None)
+    @patch.object(HnswVectorSearchAlgorithmConfiguration, "__init__", return_value=None)
     @patch.object(SearchIndex, "__init__", return_value=None)
     @patch.object(SearchField, "__init__", return_value=None)
     @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
