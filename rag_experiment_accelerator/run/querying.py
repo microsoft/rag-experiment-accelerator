@@ -253,7 +253,7 @@ def run(config_dir: str, filename: str = "config.json"):
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     question_count = 0
-    # ensure we have a valid Azure credential before going throught the loop.
+    # ensure we have a valid Azure credential before going through the loop.
     azure_cred = get_default_az_cred()
     try:
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:

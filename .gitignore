@@ -181,7 +181,4 @@ data/*
 #  promptflow folders
 .promptflow
 .azure
-
-.vscode
-
 test_artifacts_dir/*

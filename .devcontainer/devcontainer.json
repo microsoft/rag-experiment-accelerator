@@ -5,8 +5,7 @@
 		"ghcr.io/devcontainers/features/azure-cli:1": {
 			"version": "latest"
 		},
-		"ghcr.io/azure/azure-dev/azd:latest": {},
-		"rchaganti/vsc-devcontainer-features/azurebicep": {}
+		"ghcr.io/azure/azure-dev/azd:latest": {}
 	},
 	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"customizations": {
