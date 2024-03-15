@@ -2,8 +2,6 @@
 This script is used to create secrets in Azure Keyvault from the environment variables.
 
 For the list of environment parameters that will be created as secrets, please refer to the Environment class in rag_experiment_accelerator/config/environment.py.
-
-Noe that this script will create secrets with the value None for those environment parameters that are of type Optional[str].
 """
 
 import argparse
