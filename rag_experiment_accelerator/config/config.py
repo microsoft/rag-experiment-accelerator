@@ -124,7 +124,9 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
-        self.AzureDocumentIntelligenceCredentials = AzureDocumentIntelligenceCredentials.from_env()
+        self.AzureDocumentIntelligenceCredentials = (
+            AzureDocumentIntelligenceCredentials.from_env()
+        )
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
@@ -145,11 +147,11 @@ class Config:
 
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn(
+                logger.warning(
                     "prompt_config.json found but main_prompt_instruction is"
                     " not set. Using default prompts"
                 )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
-            logger.warn("prompt_config.json not found. Using default prompts")
+            logger.warning("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
