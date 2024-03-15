@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 from azure.keyvault.secrets import SecretClient
 from azure.core.exceptions import ResourceNotFoundError
-import openai
 from typing import Tuple
 
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -76,7 +75,7 @@ def _get_value_from_keyvault(
 
 @dataclass
 class Environment:
-    openai_api_type: str
+    openai_api_type: Optional[str]
     openai_api_key: str
     openai_api_version: str
     openai_endpoint: str
@@ -92,30 +91,6 @@ class Environment:
     azure_document_intelligence_endpoint: Optional[str]
     azure_document_intelligence_admin_key: Optional[str]
     azure_key_vault_endpoint: Optional[str]
-
-    def __post_init__(self) -> None:
-        """Checks consistency of the environment settigns and sets any credentials.
-
-        Raises:
-            ValueError: If openai_api_type is not 'azure' or 'open_ai'.
-        """
-        if self.openai_api_type is not None and self.openai_api_type not in [
-            "azure",
-            "open_ai",
-        ]:
-            logger.critical("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-            raise ValueError("OPENAI_API_TYPE must be either 'azure' or 'open_ai'.")
-        self._set_openai_credentials()
-
-    def _set_openai_credentials(self) -> None:
-        """Sets the OpenAI credentials."""
-        if self.openai_api_type is not None:
-            openai.api_type = self.openai_api_type
-            openai.api_key = self.openai_api_key
-
-            if self.openai_api_type == "azure":
-                openai.api_version = self.openai_api_version
-                openai.api_base = self.openai_endpoint
 
     @classmethod
     def _field_names(cls) -> list[str]:
