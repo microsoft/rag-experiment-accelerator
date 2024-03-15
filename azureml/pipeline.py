@@ -10,7 +10,7 @@ project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
-from rag_experiment_accelerator.config import Config  # noqa: E402
+from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.config.paths import mlflow_run_name  # noqa: E402
 from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
@@ -96,7 +96,7 @@ def start_pipeline(
             program_arguments="""--data_dir ${{inputs.data}} \
                 --index_name_path ${{outputs.index_name}} \
                 --config_path ${{inputs.config_path}}"""
-            + f" --keyvault_name {environment.keyvault_name}"
+            + f" --keyvault {environment.azure_key_vault_endpoint}"
             + f" --index_name {index_config.index_name()}",
             environment=pipeline_job_env,
             append_row_to="${{outputs.index_name}}",
@@ -119,7 +119,7 @@ def start_pipeline(
             --config_path ${{inputs.config_path}} \
             --index_name_path ${{inputs.index_name}} \
             --query_result_dir ${{outputs.query_result}}"""
-        + f" --keyvault_name {environment.keyvault_name}",
+        + f" --keyvault {environment.azure_key_vault_endpoint}",
         environment=pipeline_job_env,
     )
 
@@ -139,7 +139,7 @@ def start_pipeline(
                 --index_name_path ${{inputs.index_name}} \
                 --query_result_dir ${{inputs.query_result}} \
                 --eval_result_dir ${{outputs.eval_result}} """
-        + f" --keyvault_name {environment.keyvault_name}",
+        + f" --keyvault {environment.azure_key_vault_endpoint}",
         environment=pipeline_job_env,
     )
 
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    environment = Environment.from_env()
+    environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
     # Starting multiple pipelines hence unable to stream them
     for index_config in config.index_configs():

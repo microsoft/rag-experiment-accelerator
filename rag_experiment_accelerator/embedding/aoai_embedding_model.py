@@ -10,7 +10,7 @@ class AOAIEmbeddingModel(EmbeddingModel):
 
     Args:
         deployment_name (str): The name of the deployment.
-        openai_creds (OpenAICredentials): The OpenAI credentials.
+        environment (Environment): The initialised environment.
         dimension (int, optional): The dimension of the embedding. Defaults to 1536 which is the dimension of text-embedding-ada-002.
         **kwargs: Additional keyword arguments.
 
@@ -36,7 +36,7 @@ class AOAIEmbeddingModel(EmbeddingModel):
         Initializes the AzureOpenAIClient.
 
         Args:
-            creds (OpenAICredentials): The OpenAI credentials.
+            environment (Environment): The initialised environment.
 
         Returns:
             AzureOpenAI: The initialized AzureOpenAI client.

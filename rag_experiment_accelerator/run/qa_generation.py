@@ -2,7 +2,7 @@ from typing import Iterable
 
 from dotenv import load_dotenv
 
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents

@@ -1,4 +1,4 @@
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents

@@ -18,7 +18,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.llm.prompts import (
     llm_answer_relevance_instruction,

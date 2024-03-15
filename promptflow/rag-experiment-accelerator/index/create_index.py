@@ -2,12 +2,12 @@ from promptflow import tool
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 
 
 @tool
 def my_python_tool(should_index: bool, config_path: str) -> bool:
-    environment = Environment.from_env()
+    environment = Environment.from_env_or_keyvault()
     config = Config(environment, config_path)
 
     if should_index:

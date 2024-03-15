@@ -1,6 +1,6 @@
 import argparse
 
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import run
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     )
     args, _ = parser.parse_known_args()
 
-    environment = Environment.from_env()
+    environment = Environment.from_env_or_keyvault()
     config = Config(
         environment,
         args.config_path,

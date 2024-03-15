@@ -3,7 +3,7 @@ import os
 from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import (

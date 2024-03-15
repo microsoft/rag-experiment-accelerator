@@ -188,12 +188,6 @@ class Config:
         )
         self._try_create_directory(self.EVAL_DATA_LOCATION)
 
-        self.PROMPT_CONFIG_FILE_PATH = (
-            config_json["prompt_config_file_path"]
-            if "prompt_config_file_path" in config_json
-            else os.path.join(self._config_dir, "prompt_config.json")
-        )
-
     def _find_embedding_model_by_name(self, model_name: str) -> EmbeddingModel:
         for model in self.embedding_models:
             if model.name == model_name:

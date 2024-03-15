@@ -27,7 +27,7 @@ def _get_env_var(var_name: str, is_optional: bool = False) -> Optional[str]:
     return var
 
 
-def field_to_keyvault_name(field_name: str) -> str:
+def field_to_azure_key_vault_endpoint(field_name: str) -> str:
     return field_name.replace("_", "-")
 
 
@@ -52,7 +52,7 @@ class Environment:
     azure_language_service_key: Optional[str]
     azure_document_intelligence_endpoint: Optional[str]
     azure_document_intelligence_admin_key: Optional[str]
-    keyvault_name: Optional[str]
+    azure_key_vault_endpoint: Optional[str]
 
     def __post_init__(self) -> None:
         """Checks consistency of the environment settigns and sets any credentials.
@@ -79,9 +79,9 @@ class Environment:
                 openai.api_base = self.openai_endpoint
 
     @classmethod
-    def _keyvault(cls, keyvault_name: str) -> SecretClient:
+    def _keyvault(cls, azure_key_vault_endpoint: str) -> SecretClient:
         return SecretClient(
-            f"https://{keyvault_name}.vault.azure.net/",
+            azure_key_vault_endpoint,
             credential=get_default_az_cred(),
         )
 
@@ -98,21 +98,23 @@ class Environment:
 
     @classmethod
     def _get_value_from_keyvault(
-        cls, keyvault: SecretClient, field_name: str
+        cls, keyvault: SecretClient, field_name: str, is_optional: bool = False
     ) -> Optional[str]:
         try:
-            value = keyvault.get_secret(field_to_keyvault_name(field_name)).value
+            value = keyvault.get_secret(
+                field_to_azure_key_vault_endpoint(field_name)
+            ).value
             # None values are stored as 'None'
             if value == "None":
                 value = None
             return value
         except ResourceNotFoundError as e:
-            if cls._is_field_optional(field_name):
+            if is_optional:
                 return None
             raise e
 
     @classmethod
-    def from_env(cls) -> "Environment":
+    def _from_env(cls) -> "Environment":
         values_dict = {
             name: _get_env_var(field_to_env_name(name), cls._is_field_optional(name))
             for name in cls._field_names()
@@ -120,25 +122,58 @@ class Environment:
         return cls(**values_dict)
 
     @classmethod
-    def from_keyvault(cls, keyvault_name: str) -> "Environment":
-        keyvault = cls._keyvault(keyvault_name=keyvault_name)
+    def from_keyvault(cls, azure_key_vault_endpoint: str) -> "Environment":
+        """
+        Initialize the Environment using the keyvault endpoint provided.
+        """
+        keyvault = cls._keyvault(azure_key_vault_endpoint=azure_key_vault_endpoint)
         values_dict = {
             field_name: cls._get_value_from_keyvault(keyvault, field_name)
             for field_name in cls._field_names()
         }
         return cls(**values_dict)
 
-    def to_keyvault(self, keyvault_name: str = None) -> None:
-        if not keyvault_name:
-            if not self.keyvault_name:
-                raise ValueError("Keyvault name not provided and not set in .env file")
-            keyvault_name = self.keyvault_name
-        keyvault = Environment._keyvault(keyvault_name=keyvault_name)
-        # We check if the secret is already there and has the same value,
-        # to avoid creating many versions of the same secret
-        for field_name, value in self.fields():
-            previous_value = Environment._get_value_from_keyvault(keyvault, field_name)
-            if previous_value != str(value):
-                keyvault.set_secret(
-                    name=field_to_keyvault_name(field_name), value=str(value)
+    @classmethod
+    def from_env_or_keyvault(cls) -> "Environment":
+        use_key_vault = _get_env_var("USE_KEY_VAULT", is_optional=True)
+
+        if use_key_vault and use_key_vault.lower() == "true":
+            # Most values will be found in env, but secrets will be found in keyvault
+            azure_key_vault_endpoint = _get_env_var(
+                "AZURE_KEY_VAULT_ENDPOINT", is_optional=False
+            )
+            keyvault = cls._keyvault(azure_key_vault_endpoint)
+            values_dict = {}
+
+            # Try to get values from env first
+            for field_name in cls._field_names():
+                is_optional = cls._is_field_optional(field_name)
+                value = _get_env_var(field_to_env_name(field_name), is_optional=True)
+                # If not found in env, try to get from keyvault
+                if not value:
+                    value = cls._get_value_from_keyvault(
+                        keyvault, field_name, is_optional=True
+                    )
+                    if not value and not is_optional:
+                        raise ValueError(
+                            f"Value for {field_name} not found in environment or keyvault"
+                        )
+                values_dict[field_name] = value
+            return cls(**values_dict)
+
+        return cls._from_env()
+
+    def to_keyvault(self, azure_key_vault_endpoint: str = None) -> None:
+        if not azure_key_vault_endpoint:
+            if not self.azure_key_vault_endpoint:
+                raise ValueError(
+                    "Keyvault endpoint not provided and not set in .env file"
                 )
+            azure_key_vault_endpoint = self.azure_key_vault_endpoint
+        keyvault = Environment._keyvault(
+            azure_key_vault_endpoint=azure_key_vault_endpoint
+        )
+        for field_name, value in self.fields():
+            keyvault.set_secret(
+                name=field_to_azure_key_vault_endpoint(field_name), value=str(value)
+            )

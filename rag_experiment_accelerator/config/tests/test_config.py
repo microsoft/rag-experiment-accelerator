@@ -1,7 +1,7 @@
 import pytest
 import json
 import os
-from rag_experiment_accelerator.config import Config
+from rag_experiment_accelerator.config.config import Config
 from unittest.mock import MagicMock, patch
 
 
@@ -31,7 +31,7 @@ def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
 
 
 @patch(
-    "rag_experiment_accelerator.config.credentials._get_env_var",
+    "rag_experiment_accelerator.config.environment._get_env_var",
     new=mock_get_env_var,
 )
 @patch(

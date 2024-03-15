@@ -9,7 +9,7 @@ def test_load_docx_files():
     overlap_size = 400
 
     original_doc = load_docx_files(
-        environment=Environment.from_env(),
+        environment=Environment.from_env_or_keyvault(),
         file_paths=get_all_file_paths(folder_path),
         chunk_size=chunk_size,
         overlap_size=overlap_size,

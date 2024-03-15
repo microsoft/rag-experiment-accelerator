@@ -54,7 +54,7 @@ class LanguageEvaluator:
                 country_hint if country_hint else query_language.split("-")[1]
             )
             self.confidence_threshold = confidence_threshold
-            self.creds = AzureSkillsCredentials.from_env()
+            self.creds = AzureSkillsCredentials.from_env_or_keyvault()
             self.max_content_length = 50000  # Data limit
         except Exception as e:
             logger.error(str(e))

@@ -17,21 +17,8 @@ logger = get_logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--config_path",
-        type=str,
-        help="path to the config file",
-        default="./config.json",
-    )
-    parser.add_argument(
-        "--keyvault_name",
-        type=str,
-        help="keyvault name to create secrets in, if not provided, will attempt to read from .env file",
-        default=None,
-    )
-    args, _ = parser.parse_known_args()
 
-    environment = Environment.from_env()
+    environment = Environment.from_env_or_keyvault()
     logger.info("Creating secrets in Keyvault from the environment")
     logger.info("The following secrets will be created:")
     for secret in environment.fields():
@@ -39,5 +26,5 @@ if __name__ == "__main__":
 
     environment.to_keyvault()
     logger.info(
-        f"Secrets in Keyvault {environment.keyvault_name} have been created successfully."
+        f"Secrets in Keyvault {environment.azure_key_vault_endpoint} have been created successfully."
     )

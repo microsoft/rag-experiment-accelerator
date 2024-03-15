@@ -175,6 +175,9 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   -d "The directory holding the configuration files and data. Defaults to current working directory"
   -cf "JSON config filename. Defaults to config.json"
   ```
+
+Alternatively, you can run the above steps (apart from `02_qa_generation.py`) using an Azure ML pipeline. To do so, follow [the guide here](./docs/azureml-pipeline.md).
+
 # Description of configuration elements
 
 ```json
@@ -246,7 +249,7 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 
 ### Hyper Parameters
 
-![Hyper Parameters](./images/hyper-parameters.png)
+![Hyper Parameters](./images/hyper_parameters.png)
 
 ### Sample Metrics
 

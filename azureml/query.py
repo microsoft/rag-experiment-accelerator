@@ -27,9 +27,9 @@ def main():
         help="input: path to a file containing index name",
     )
     parser.add_argument(
-        "--keyvault_name",
+        "--keyvault",
         type=str,
-        help="input: keyvault name to load the environment from",
+        help="input: keyvault to load the environment from",
     )
     parser.add_argument(
         "--query_result_dir",
@@ -38,7 +38,7 @@ def main():
     )
     args = parser.parse_args()
 
-    environment = Environment.from_keyvault(args.keyvault_name)
+    environment = Environment.from_keyvault(args.keyvault)
 
     config = Config(environment, args.config_path)
     config.EVAL_DATA_JSONL_FILE_PATH = args.eval_data_path

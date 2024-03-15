@@ -7,7 +7,7 @@ project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
-from rag_experiment_accelerator.config import Config  # noqa: E402
+from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.run.index import run as index_run  # noqa: E402
 
@@ -24,9 +24,9 @@ def init():
     parser.add_argument("--data_dir", type=str, help="input: path to the data")
     parser.add_argument("--index_name", type=str, help="input: experiment index name")
     parser.add_argument(
-        "--keyvault_name",
+        "--keyvault",
         type=str,
-        help="input: keyvault name to load the environment from",
+        help="input: keyvault to load the environment from",
     )
     parser.add_argument(
         "--index_name_path",
@@ -39,7 +39,7 @@ def init():
     global environment
     global index_config
 
-    environment = Environment.from_keyvault(args.keyvault_name)
+    environment = Environment.from_keyvault(args.keyvault)
     config = Config(environment, args.config_path, args.data_dir)
 
     index_config = IndexConfig.from_index_name(args.index_name, config)

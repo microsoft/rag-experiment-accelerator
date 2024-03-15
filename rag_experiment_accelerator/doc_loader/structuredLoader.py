@@ -37,7 +37,6 @@ def load_structured_files(
     """
 
     logger.info(f"Loading {file_format} files")
-    logger.debug(f"Found {len(file_paths)} {file_format} files")
 
     documents = []
     if loader_kwargs is None:
