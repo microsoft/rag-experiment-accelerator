@@ -1,4 +1,3 @@
-from typing import Iterable
 from langchain.document_loaders import BSHTMLLoader
 
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
@@ -12,7 +11,7 @@ logger = get_logger(__name__)
 
 def load_html_files(
     environment: Environment,
-    file_paths: Iterable[str],
+    file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
 ):
@@ -21,7 +20,7 @@ def load_html_files(
 
     Args:
         chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
-        file_paths (Iterable[str]): Sequence of paths to load.
+        file_paths (list[str]): Sequence of paths to load.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
         glob_patterns (list[str]): List of file extensions to consider (e.g., ["html", "htm", ...]).

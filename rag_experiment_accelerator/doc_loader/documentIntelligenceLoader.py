@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
 from langchain_core.documents import Document
 
@@ -11,16 +9,16 @@ logger = get_logger(__name__)
 
 def load_with_azure_document_intelligence(
     environment: Environment,
-    file_paths: Iterable[str],
+    file_paths: list[str],
     chunk_size: int,
     overlap_size: int,
-) -> Iterable[Document]:
+) -> list[Document]:
     """
     Load pdf files from a folder using Azure Document Intelligence.
 
     Args:
         environment (Environment): The environment class
-        file_paths (Iterable[str]): Sequence of paths to load.
+        file_paths (list[str]): Sequence of paths to load.
         chunk_size (int): Unused.
         overlap_size (int): Unused.
 

@@ -1,4 +1,3 @@
-from typing import Iterable
 import uuid
 import re
 
@@ -40,7 +39,7 @@ def preprocess_pdf_content(content: str):
 
 def load_pdf_files(
     environment: Environment,
-    file_paths: Iterable[str],
+    file_paths: list[str],
     chunk_size: int,
     overlap_size: int,
 ):
@@ -49,7 +48,7 @@ def load_pdf_files(
 
     Args:
         environment (Environment): The environment class
-        file_paths (Iterable[str]): Sequence of paths to load.
+        file_paths (list[str]): Sequence of paths to load.
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
 

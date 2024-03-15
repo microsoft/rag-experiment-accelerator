@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -13,7 +11,7 @@ def load_structured_files(
     file_format: str,
     language: str,
     loader: BaseLoader,
-    file_paths: Iterable[str],
+    file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
     loader_kwargs: dict[any] = None,

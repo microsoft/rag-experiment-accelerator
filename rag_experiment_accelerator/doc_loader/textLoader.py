@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from langchain.document_loaders import TextLoader
 
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
@@ -13,7 +11,7 @@ logger = get_logger(__name__)
 
 def load_text_files(
     environment: Environment,
-    file_paths: Iterable[str],
+    file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
 ):
@@ -23,7 +21,7 @@ def load_text_files(
     Args:
         environment (Environment): The environment class
         chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
-        file_paths (Iterable[str]): Sequence of paths to load.
+        file_paths (list[str]): Sequence of paths to load.
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
 
