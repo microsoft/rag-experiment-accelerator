@@ -20,7 +20,6 @@ AML_ENVIRONMENT_NAME = "rag-env"
 INDEX_STEP_RETRIES = 3
 INDEX_STEP_TIMEOUT_SECONDS = 10 * 3600
 INDEX_STEP_FILES_PER_BATCH = 4
-INDEX_STEP_CONCURRENCY_PER_INSTANCE = 4
 INDEX_STEP_ERROR_THRESHOLD = 1
 
 
@@ -84,7 +83,6 @@ def start_pipeline(
         outputs={"index_name": Output(type="uri_file", mode="rw_mount")},
         input_data="${{inputs.data}}",
         instance_count=int(environment.aml_compute_instances_number),
-        max_concurrency_per_instance=INDEX_STEP_CONCURRENCY_PER_INSTANCE,
         mini_batch_size=str(INDEX_STEP_FILES_PER_BATCH),
         mini_batch_error_threshold=INDEX_STEP_ERROR_THRESHOLD,
         retry_settings=dict(
