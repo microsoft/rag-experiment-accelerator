@@ -6,7 +6,7 @@ RAG Experiment Accelerator supports running the pipeline on Azure ML compute, in
 
 ## Architecture diagram
 
-![Architecture diagram](../images/azureml_pipeline.png)
+![Architecture diagram](../images/AzureMLPipeline.drawio.png)
 
 ![AzureML pipeline overview](../images/azureml_pipeline_overview.png)
 
@@ -39,6 +39,34 @@ python env_to_keyvault.py
 ```
 
 This will create a secret in the keyvault for each environment variable in the .env file.
+
+## Configuring input for the pipeline
+
+### Providing data input
+
+Data input for the pipeline can be provided on the command line:
+
+```bash
+python azureml/pipeline.py --data_dir <path to data>
+```
+
+Or it can be provided in the config file:
+
+```json
+{
+  "data_dir": "data input"
+}
+```
+
+### Types of data input
+
+The pipeline accepts input in formats understood by AzureML. For more information, see [docs on data inputs and outputs](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-inputs-outputs-pipeline?view=azureml-api-2&tabs=cli#path-and-mode-for-data-inputsoutputs).
+
+This means that local file paths as input for the pipeline are supported. Additionally, you can create, for example, an AzureML Data Asset and provide a path to it as input for the pipeline:
+
+```bash
+python azureml/pipeline.py --data_dir azureml://<datastore-name>/<path-to-data>
+```
 
 ## Running the pipeline
 
