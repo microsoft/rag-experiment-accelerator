@@ -1,19 +1,16 @@
 import os
 import glob
 from datetime import datetime
-from typing import Iterable
 
 from rag_experiment_accelerator.config.config import Config
 
 
-def get_all_file_paths(directory: str) -> Iterable[str]:
+def get_all_file_paths(directory: str) -> list[str]:
     """
-    Returns an iterator over all file paths in a directory recursively.
+    Returns a list of all file paths in a directory listed recursively.
     """
     pattern = os.path.join(directory, "**", "*")
-    for file in glob.glob(pattern, recursive=True):
-        if os.path.isfile(file):
-            yield file
+    return [file for file in glob.glob(pattern, recursive=True) if os.path.isfile(file)]
 
 
 def formatted_datetime_suffix():

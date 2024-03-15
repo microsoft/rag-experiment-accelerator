@@ -31,6 +31,10 @@ class IndexConfig:
     ef_search: int
 
     def index_name(self) -> str:
+        """
+        Returns index name from the fields.
+        Reverse of IndexConfig.from_index_name().
+        """
         return (
             f"{self.index_name_prefix}"
             f"_{str(self.chunk_size)}"
@@ -42,6 +46,10 @@ class IndexConfig:
 
     @classmethod
     def from_index_name(cls, index_name: str, config: Any) -> "IndexConfig":
+        """
+        Creates IndexConfig from the index name.
+        Reverse of index_name().
+        """
         values = index_name.split("_")
         assert len(values) == 6
         return IndexConfig(

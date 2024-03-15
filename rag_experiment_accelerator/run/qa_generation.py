@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from dotenv import load_dotenv
 
 from rag_experiment_accelerator.config.config import Config
@@ -15,7 +13,7 @@ load_dotenv(override=True)
 logger = get_logger(__name__)
 
 
-def run(environment: Environment, config: Config, file_paths: Iterable[str]):
+def run(environment: Environment, config: Config, file_paths: list[str]):
     """
     Runs the main experiment loop for the QA generation process using the provided configuration and data.
 

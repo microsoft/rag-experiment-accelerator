@@ -9,31 +9,6 @@ def get_test_config_dir():
     return os.path.join(os.path.dirname(__file__), "data")
 
 
-def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
-    if var_name == "AZURE_SEARCH_SERVICE_ENDPOINT":
-        return "test_search_endpoint"
-    elif var_name == "AZURE_SEARCH_ADMIN_KEY":
-        return "test_admin_key"
-    elif var_name == "AZURE_SUBSCRIPTION_ID":
-        return "test_subscription_id"
-    elif var_name == "AZURE_WORKSPACE_NAME":
-        return "test_workspace_name"
-    elif var_name == "AZURE_RESOURCE_GROUP_NAME":
-        return "test_resource_group_name"
-    elif var_name == "OPENAI_API_KEY":
-        return "test_api_key"
-    elif var_name == "OPENAI_API_VERSION":
-        return "test_api_version"
-    elif var_name == "OPENAI_ENDPOINT":
-        return "test_api_endpoint"
-    elif var_name == "OPENAI_API_TYPE":
-        return "azure"
-
-
-@patch(
-    "rag_experiment_accelerator.config.environment._get_env_var",
-    new=mock_get_env_var,
-)
 @patch(
     "rag_experiment_accelerator.config.config.create_embedding_model",
 )
