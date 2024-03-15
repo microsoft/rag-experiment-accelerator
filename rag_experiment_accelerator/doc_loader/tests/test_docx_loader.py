@@ -1,6 +1,7 @@
+from unittest.mock import Mock
+
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.config.paths import get_all_file_paths
-from rag_experiment_accelerator.config.environment import Environment
 
 
 def test_load_docx_files():
@@ -9,7 +10,7 @@ def test_load_docx_files():
     overlap_size = 400
 
     original_doc = load_docx_files(
-        environment=Environment.from_env_or_keyvault(),
+        environment=Mock(),
         file_paths=get_all_file_paths(folder_path),
         chunk_size=chunk_size,
         overlap_size=overlap_size,
