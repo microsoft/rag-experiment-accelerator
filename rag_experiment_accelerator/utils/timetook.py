@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 from .logging import get_logger
 
 
@@ -18,12 +18,11 @@ class TimeTook(object):
         self.end = None
 
     def __enter__(self):
-        self.start = datetime.now()
+        self.start = time.perf_counter()
         self.logger.info(f"Starting {self.description}")
 
     def __exit__(self, type, value, traceback):
-        self.end = datetime.now()
+        self.end = time.perf_counter()
         self.logger.info(
-            f"Time took for {self.description}: "
-            f"{(self.end - self.start).total_seconds()} seconds"
+            f"Time took for {self.description}: " f"{self.end - self.start} seconds"
         )
