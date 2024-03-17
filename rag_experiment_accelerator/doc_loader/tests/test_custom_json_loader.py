@@ -11,6 +11,18 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
 
 def test_load_json_files():
     keys_to_load = ["content", "title"]
+    expected_content = [
+        {"content": "This is the content for item 1.", "title": "Title TEST 1"},
+        {"content": "This is the content for item 2.", "title": "Title 2"},
+        {"content": "This is the content for item 3.", "title": "Title 3"},
+        {"content": "This is the content for item 4.", "title": "Title 4"},
+        {"content": "This is the content for item 5.", "title": "Title 5"},
+        {"content": "This is the content for item 6.", "title": "Title 6"},
+    ]
+    expected_metadata = {
+        "source": "/workspaces/rag-experiment-accelerator/rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
+    }
+
     docs = load_structured_files(
         chunking_strategy="basic",
         AzureDocumentIntelligenceCredentials=None,
@@ -26,14 +38,8 @@ def test_load_json_files():
         },
     )
     doc = list(docs[0].values())[0]
-    assert (
-        str(doc["content"])
-        == "[{'content': 'This is the content for item 1.', 'title': 'Title TEST 1'}, {'content': 'This is the content for item 2.', 'title': 'Title 2'}, {'content': 'This is the content for item 3.', 'title': 'Title 3'}, {'content': 'This is the content for item 4.', 'title': 'Title 4'}, {'content': 'This is the content for item 5.', 'title': 'Title 5'}, {'content': 'This is the content for item 6.', 'title': 'Title 6'}]"
-    )
-    assert (
-        str(doc["metadata"])
-        == "{'source': '/workspaces/rag-experiment-accelerator/rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json'}"
-    )
+    assert doc["content"] == str(expected_content)
+    assert doc["metadata"] == expected_metadata
 
 
 def test_load_json_files_raises_invalid_keys():
