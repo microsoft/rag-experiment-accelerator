@@ -1,5 +1,8 @@
 {
-    "name_prefix": "test_prefix",
+    "index_name_prefix": "test_prefix",
+    "experiment_name": "experiment_1",
+    "job_name": "baseline",
+    "job_description": "",
     "chunking": {
         "chunk_size": [512],
         "overlap_size": [128]

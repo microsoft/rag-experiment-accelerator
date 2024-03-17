@@ -50,7 +50,7 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = get_index_name(
-                            config.NAME_PREFIX,
+                            config.INDEX_NAME_PREFIX,
                             chunk_size,
                             overlap,
                             embedding_model.name,
@@ -76,13 +76,18 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             all_docs = load_documents(
-                config.CHUNKING_STRATEGY, config.AzureDocumentIntelligenceCredentials, config.DATA_FORMATS, config.data_dir, chunk_size, overlap
+                config.CHUNKING_STRATEGY,
+                config.AzureDocumentIntelligenceCredentials,
+                config.DATA_FORMATS,
+                config.data_dir,
+                chunk_size,
+                overlap,
             )
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = get_index_name(
-                            config.NAME_PREFIX,
+                            config.INDEX_NAME_PREFIX,
                             chunk_size,
                             overlap,
                             embedding_model.name,

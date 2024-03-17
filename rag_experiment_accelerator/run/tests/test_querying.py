@@ -23,7 +23,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.EF_CONSTRUCTIONS = [400]
         self.mock_config.EF_SEARCHES = [400]
         self.mock_config.SEARCH_VARIANTS = ["search_for_match_semantic"]
-        self.mock_config.NAME_PREFIX = "prefix"
+        self.mock_config.INDEX_NAME_PREFIX = "prefix"
         self.mock_config.RERANK_TYPE = "llm"
         self.mock_config.CHUNK_SIZES = [1]
         self.mock_config.OVERLAP_SIZES = [1]
@@ -277,7 +277,7 @@ class TestQuerying(unittest.TestCase):
         mock_config.return_value.EF_CONSTRUCTIONS = [400]
         mock_config.return_value.EF_SEARCHES = [400]
         mock_config.return_value.SEARCH_VARIANTS = ["search_for_match_semantic"]
-        mock_config.return_value.NAME_PREFIX = "prefix"
+        mock_config.return_value.INDEX_NAME_PREFIX = "prefix"
         mock_config.return_value.RERANK = False
         mock_do_we_need_multiple_questions.return_value = False
         mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]

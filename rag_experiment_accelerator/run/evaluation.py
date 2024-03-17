@@ -45,7 +45,7 @@ def run(config_dir: str, filename: str = "config.json"):
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = get_index_name(
-                            config.NAME_PREFIX,
+                            config.INDEX_NAME_PREFIX,
                             chunk_size,
                             overlap,
                             embedding_model.name,
@@ -55,7 +55,9 @@ def run(config_dir: str, filename: str = "config.json"):
                         logger.info(f"Evaluating Index: {index_name}")
 
                         eval.evaluate_prompts(
-                            exp_name=config.NAME_PREFIX,
+                            exp_name=config.EXPERIMENT_NAME,
+                            job_name=config.JOB_NAME,
+                            job_description=config.JOB_DESCRIPTION,
                             index_name=index_name,
                             config=config,
                             client=client,

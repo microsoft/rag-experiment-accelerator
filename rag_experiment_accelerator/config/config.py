@@ -29,7 +29,10 @@ class Config:
         EMBEDDING_DIMENSIONS (list[int]): The number of dimensions to use for document embeddings.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
-        NAME_PREFIX (str): A prefix to use for the names of saved models.
+        INDEX_NAME_PREFIX (str): A prefix to use for the names of saved models.
+        EXPERIMENT_NAME (str): The name of the experiment in Azure ML (optional, if not set INDEX_NAME_PREFIX will be used).
+        JOB_NAME (str): The name of the job in Azure ML (optional, if not set EXPERIMENT_NAME and current datetime will be used).
+        JOB_DESCRIPTION (str): The description of the job in Azure ML (optional).
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
         AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.
@@ -100,7 +103,10 @@ class Config:
         self.OVERLAP_SIZES = data["chunking"]["overlap_size"]
         self.EF_CONSTRUCTIONS = data["ef_construction"]
         self.EF_SEARCHES = data["ef_search"]
-        self.NAME_PREFIX = data["name_prefix"]
+        self.INDEX_NAME_PREFIX = data["index_name_prefix"]
+        self.EXPERIMENT_NAME = data["experiment_name"] or self.INDEX_NAME_PREFIX
+        self.JOB_NAME = data["job_name"]
+        self.JOB_DESCRIPTION = data["job_description"]
         self.SEARCH_VARIANTS = data["search_types"]
         self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = data.get(
             "azure_oai_chat_deployment_name", None
@@ -124,7 +130,9 @@ class Config:
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
-        self.AzureDocumentIntelligenceCredentials = AzureDocumentIntelligenceCredentials.from_env()
+        self.AzureDocumentIntelligenceCredentials = (
+            AzureDocumentIntelligenceCredentials.from_env()
+        )
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])

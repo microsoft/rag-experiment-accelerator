@@ -566,6 +566,8 @@ def compute_metrics(question, actual, expected, context, metric_type):
 
 def evaluate_prompts(
     exp_name: str,
+    job_name,
+    job_description,
     index_name: str,
     config: Config,
     client: mlflow.MlflowClient,
@@ -607,9 +609,13 @@ def evaluate_prompts(
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
-    run_name = f"{exp_name}_{formatted_datetime}"
+    run_name = (
+        job_name
+        if (job_name is not None) and (job_name != "")
+        else f"{exp_name}_{formatted_datetime}"
+    )
     mlflow.set_experiment(exp_name)
-    mlflow.start_run(run_name=run_name)
+    mlflow.start_run(run_name=run_name, description=job_description)
     pd.set_option("display.max_columns", None)
 
     run_id = mlflow.active_run().info.run_id
@@ -619,7 +625,7 @@ def evaluate_prompts(
     average_precision_for_search_type = {}
 
     handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
-    query_data_load = handler.load(index_name)
+    query_data_load = handler.load(index_name, config.EXPERIMENT_NAME, config.JOB_NAME)
     for data in query_data_load:
         actual = remove_spaces(lower(data.actual))
         expected = remove_spaces(lower(data.expected))

@@ -179,7 +179,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 
 ```json
 {
-    "name_prefix": "Name of experiment, search index name used for tracking and comparing jobs",
+    "index_name_prefix": "Search index name prefix used for tracking and comparing jobs",
     "chunking": {
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]"
@@ -193,6 +193,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
         "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
     },
+    "experiment_name": "name of the experiment",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
     "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,

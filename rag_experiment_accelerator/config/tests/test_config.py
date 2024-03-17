@@ -55,7 +55,8 @@ def test_config_init(mock_embedding_model_factory):
 
     config.embedding_models = [embedding_model_1, embedding_model_2]
 
-    assert config.NAME_PREFIX == mock_config_data["name_prefix"]
+    assert config.INDEX_NAME_PREFIX == mock_config_data["index_name_prefix"]
+    assert config.EXPERIMENT_NAME == mock_config_data["experiment_name"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
     assert config.CHUNKING_STRATEGY == mock_config_data["chunking_strategy"]

@@ -268,7 +268,7 @@ def run(config_dir: str, filename: str = "config.json"):
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
                         index_name = get_index_name(
-                            config.NAME_PREFIX,
+                            config.INDEX_NAME_PREFIX,
                             chunk_size,
                             overlap,
                             embedding_model.name,
@@ -277,7 +277,9 @@ def run(config_dir: str, filename: str = "config.json"):
                         )
                         logger.info(f"Index: {index_name}")
 
-                        handler.handle_archive_by_index(index_name)
+                        handler.handle_archive_by_index(
+                            index_name, config.EXPERIMENT_NAME, config.JOB_NAME
+                        )
 
                         search_client = create_client(
                             service_endpoint, index_name, search_admin_key
@@ -394,7 +396,12 @@ def run(config_dir: str, filename: str = "config.json"):
                                             context=qna_context,
                                             question=user_prompt,
                                         )
-                                        handler.save(index_name=index_name, data=output)
+                                        handler.save(
+                                            index_name=index_name,
+                                            data=output,
+                                            experiment_name=config.EXPERIMENT_NAME,
+                                            job_name=config.JOB_NAME,
+                                        )
 
                                 except BadRequestError as e:
                                     logger.error(

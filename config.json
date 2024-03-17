@@ -1,5 +1,8 @@
 {
-    "name_prefix": "surface",
+    "index_name_prefix": "surface",
+    "experiment_name": "surface",
+    "job_name": "baseline",
+    "job_description": "",
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200]
