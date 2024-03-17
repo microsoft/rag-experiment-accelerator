@@ -12,7 +12,6 @@ from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import EmbeddingModelFactory
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.config.credentials import _get_env_var
 
 logger = get_logger(__name__)
 
@@ -131,7 +130,7 @@ class Config:
         self.AzureDocumentIntelligenceCredentials = (
             AzureDocumentIntelligenceCredentials.from_env()
         )
-        self.MAX_WORKER_THREADS = _get_env_var("MAX_WORKER_THREADS", False, False)
+        self.MAX_WORKER_THREADS = os.environ.get("MAX_WORKER_THREADS", None)
         self.GENERATE_TITLE = data.get("generate_title", False)
         self.GENERATE_SUMMARY = data.get("generate_summary", False)
         self.OVERRIDE_CONTENT_WITH_SUMMARY = data.get(
