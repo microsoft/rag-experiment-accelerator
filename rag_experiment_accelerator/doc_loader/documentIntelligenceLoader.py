@@ -28,6 +28,7 @@ class DocumentIntelligenceLoader(BaseLoader):
         endpoint: str,
         key: str,
         glob_patterns: List[str] = None,
+        split_documents_by_page=False,
         excluded_paragraph_roles=[],
         patterns_to_remove: List[str] = [],
     ):
@@ -39,6 +40,7 @@ class DocumentIntelligenceLoader(BaseLoader):
             end_point: Azure Document Intelligence endpoint
             key: Azure Document Intelligence key
             glob_patterns: when the given path is a directory, glob_patterns is used to match the files that should be loaded
+            split_documents_by_page: if True, each page in the document will be loaded into separate LangChain document, otherwise (default) the entire document will be loaded into a single LangChain document
             excluded_paragraph_roles: a list of paragraph roles to exclude. The full list of paragraph roles can be viewed here: https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0#paragraph-roles
             patterns_to_remove: a list of specific regex patterns to be removed from the extracted text
         """
@@ -50,6 +52,7 @@ class DocumentIntelligenceLoader(BaseLoader):
         self.key = key
         self.patterns_to_remove = patterns_to_remove
         self.glob_patterns = glob_patterns
+        self.split_documents_by_page = split_documents_by_page
         self.excluded_paragraph_roles = excluded_paragraph_roles
 
     def load(self) -> List[Document]:
@@ -116,11 +119,18 @@ class DocumentIntelligenceLoader(BaseLoader):
             ]
             paragraphs_by_role = self._get_paragraphs_by_role(result)
 
-            paragraphs_by_page = self._split_paragraphs_by_page(relevant_paragraphs)
-            for page_number, page_paragraphs in paragraphs_by_page.items():
+            if self.split_documents_by_page:
+                paragraphs_by_page = self._split_paragraphs_by_page(relevant_paragraphs)
+                for page_number, page_paragraphs in paragraphs_by_page.items():
+                    documents.append(
+                        self._convert_to_langchain_document(
+                            page_paragraphs, file_path, paragraphs_by_role, page_number
+                        )
+                    )
+            else:
                 documents.append(
                     self._convert_to_langchain_document(
-                        page_paragraphs, file_path, paragraphs_by_role, page_number
+                        relevant_paragraphs, file_path, paragraphs_by_role, 1
                     )
                 )
 
