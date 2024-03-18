@@ -278,8 +278,6 @@ class DocumentIntelligenceLoader(BaseLoader):
         content = table.get("caption", {}).get("content", "")
 
         previous_row_index = -1
-        rows_to_span = 0
-        spanning_content = ""
         for cell in table.cells:
             if cell.get("kind") == "columnHeader":
                 continue
@@ -289,19 +287,6 @@ class DocumentIntelligenceLoader(BaseLoader):
                 if cell["columnIndex"] < len(table_headers)
                 else ""
             )
-
-            # If the cell spans multiple rows, we need to combine the content of the spanning cells
-            if rows_to_span > 0:
-                spanning_content += cell.content
-                rows_to_span -= 1
-                if rows_to_span == 0:
-                    content += f"{header}{spanning_content}"
-                    spanning_content = ""
-                else:
-                    spanning_content += ", "
-                continue
-            else:
-                rows_to_span = cell.get("rowSpan", 0)
 
             is_new_row = previous_row_index != cell["rowIndex"]
             if is_new_row:
