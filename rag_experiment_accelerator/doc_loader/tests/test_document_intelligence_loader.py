@@ -201,6 +201,7 @@ def test_get_file_paths_returns_according_to_glob():
 
     assert loader._get_file_paths() == []
 
+
 def test_get_file_paths_works_for_single_files():
     loader = DocumentIntelligenceLoader(
         path="rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json",
@@ -208,4 +209,5 @@ def test_get_file_paths_works_for_single_files():
         key="key",
     )
 
-    assert loader._get_file_paths() == ['rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json']
+    assert loader._get_file_paths() == [
+        'rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json']
