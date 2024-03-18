@@ -14,6 +14,14 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 - Find the best combination of hyperparameters.
 - Generate detailed reports and visualizations from experiment results.
 
+## Latest changes
+
+18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data. 
+
+This is done to ensure representative results in the sample that one would get across the entire dataset.
+
+**Note**: It is recommended to rebuild your environment if you have used this tool before due to new dependencies.
+
 ## Features
 
 The **RAG Experiment Accelerator** is config driven and offers a rich set of features to support its purpose:
