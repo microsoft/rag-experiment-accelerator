@@ -33,8 +33,7 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
 
     This function initializes the configuration, logs the configuration
     details, and sets up the preprocessor.
-    It then creates the necessary directories
-    and initializes an empty index dictionary.
+    It then creates the necessary directories and initializes an empty index dictionary.
     The function then creates search indexes based on the configuration.
     After creating the indexes, it writes the index names to a file.
     The function then splits the documents into chunks,
@@ -42,14 +41,14 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     and uploads them to Azure Search.
 
     Args:
-        config_dir (str): The directory where the configuration file
-        is located.
+        config_dir (str): The directory where the configuration file is located.
+        data_dir (str): The directory where the data is located.
+        filename (str): The name of the configuration file.
     Raises:
         Exception: If unable to create the artifacts directory.
     """
     logger.info(
-        f"Indexing with config from path: {config_dir}/{filename} "
-        f"and data from path: {data_dir}"
+        f"Indexing with config from path: {config_dir}/{filename} and data from path: {data_dir}"
     )
     config = Config(config_dir, data_dir, filename)
     pre_process = Preprocess()
@@ -108,8 +107,7 @@ def ensure_artifact_dir_exits(config):
         os.makedirs(config.artifacts_dir, exist_ok=True)
     except Exception as e:
         logger.error(
-            f"Unable to create the '{config.artifacts_dir}' directory. Please"
-            " ensure you have the proper permissions and try again"
+            f"Unable to create the '{config.artifacts_dir}' directory. Please ensure you have the proper permissions and try again"
         )
         raise e
 
@@ -134,23 +132,17 @@ def create_search_index(config, service_endpoint, key, index_dict, chunk_size, o
     Creates a search index in Azure Search.
 
     This function constructs the index name based on various configuration
-    parameters and then creates the index using the `create_acs_index`
-    function.
+    parameters and then creates the index using the `create_acs_index` function.
     It logs the start and end of the index creation process and the time took.
     The created index name is then added to the `index_dict` dictionary.
 
     Args:
-        config (object): A configuration object that holds various settings.
+        config (Config): A configuration object that holds various settings.
         service_endpoint (str): The Azure Search service endpoint.
         key (str): The Azure Search service key.
         index_dict (dict): A dictionary to store the created index names.
         chunk_size (int): The size of the chunks of content.
         overlap (int): The overlap size between chunks.
-        dimension (int): The size of the embedding vector.
-        ef_construction (int): The size of the dynamic list used during the
-        construction of the HNSW graph.
-        ef_search (int): The size of the dynamic list used during the search
-        phase.
     """
 
     for embedding_model in config.embedding_models:
@@ -184,14 +176,12 @@ def generate_index_name(
     Generates an index name considering config parameters
 
     Args:
-        config (object): A configuration object that holds various settings.
+        config (Config): A configuration object that holds various settings.
         chunk_size (int): The size of the chunks of content.
         overlap (int): The overlap size between chunks.
-        dimension (int): The size of the embedding vector.
-        ef_construction (int): The size of the dynamic list used during the
-        construction of the HNSW graph.
-        ef_search (int): The size of the dynamic list used during the search
-        phase.
+        embedding_model (object): The embedding model which was created.
+        ef_construction (int): The size of the dynamic list used during the construction of the HNSW graph.
+        ef_search (int): The size of the dynamic list used during the search phase.
 
     Returns:
         index_name (str): The generated index name.
