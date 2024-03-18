@@ -174,3 +174,38 @@ def test_excluding_paragraphs(mock_document_intelligence, _):
         documents[0].page_content
         == "Title for page number one Some text for the first page\n\nSome text for the 2nd page. Here we also have a table:\n\nName: Alice, Age: 25 \nName: Bob, Age: 32 \n\nTitle for page number three This is the end - at page 3.\n==="
     )
+
+
+def test_get_file_paths():
+    loader = DocumentIntelligenceLoader(
+        path="rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["json"],
+    )
+
+    assert set(loader._get_file_paths()) == set([
+        "rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json",
+        "rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/table_without_headers.json",
+        "rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/multiple_pages.json"
+    ])
+
+
+def test_get_file_paths_returns_according_to_glob():
+    loader = DocumentIntelligenceLoader(
+        path="rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["pdf"],
+    )
+
+    assert loader._get_file_paths() == []
+
+def test_get_file_paths_works_for_single_files():
+    loader = DocumentIntelligenceLoader(
+        path="rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json",
+        endpoint="endpoint",
+        key="key",
+    )
+
+    assert loader._get_file_paths() == ['rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json']
