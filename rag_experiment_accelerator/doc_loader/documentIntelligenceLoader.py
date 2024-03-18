@@ -294,7 +294,7 @@ class DocumentIntelligenceLoader(BaseLoader):
                 previous_row_index = cell["rowIndex"]
 
             content += f"{header}{cell.content}"
-            content += ", " if cell["columnIndex"] < len(table_headers) - 1 else ""
+            content += ", " if cell["columnIndex"] < len(table_headers) - 1 else " "
         return content
 
     def _substitute_table_paragraphs(self, paragraphs, tables):

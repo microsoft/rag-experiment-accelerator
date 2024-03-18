@@ -16,9 +16,9 @@ class SimplePythonObject:
         return getattr(self, key, default)
 
 
-def mock_simple_response():
+def mock_simple_response(file_name):
     with open(
-        "rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/simple_response.json",
+        f"rag_experiment_accelerator/doc_loader/tests/test_data/document_intelligence_response/{file_name}",
         "r",
     ) as f:
         return json.load(f, object_hook=lambda d: SimplePythonObject(**d))
@@ -27,7 +27,8 @@ def mock_simple_response():
 @patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
 @patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
 def test__load(mock_document_intelligence, _):
-    mock_document_intelligence.return_value = mock_simple_response()
+    mock_document_intelligence.return_value = mock_simple_response(
+        'simple_response.json')
 
     loader = DocumentIntelligenceLoader(
         path="path",
@@ -41,7 +42,7 @@ def test__load(mock_document_intelligence, _):
     assert len(documents) == 1, "No documents were loaded"
     assert (
         documents[0].page_content
-        == "This is the Title\n\nSome text\n\nCol 1: Row 1 Col 1, Col 2: Row 1 Col 2, Col 3: Row 1 Col 3\nCol 1: Row 2 Col 1, Col 2: Row 2 Col 2, Col 3: Row 2 Col 3\n\nThis is the end."
+        == "This is the Title\n\nSome text\n\nCol 1: Row 1 Col 1, Col 2: Row 1 Col 2, Col 3: Row 1 Col 3 \nCol 1: Row 2 Col 1, Col 2: Row 2 Col 2, Col 3: Row 2 Col 3 \n\nThis is the end."
     )
     assert documents[0].metadata["source"] == "path/to/some/file"
     assert documents[0].metadata["page"] == 0
@@ -68,7 +69,8 @@ def test_load_with_ocr_is_used_as_fallback(mock_load_with_ocr, _, __):
 @patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
 @patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
 def test_content_cleaning(mock_document_intelligence, _):
-    mock_document_intelligence.return_value = mock_simple_response()
+    mock_document_intelligence.return_value = mock_simple_response(
+        'simple_response.json')
 
     loader = DocumentIntelligenceLoader(
         path="path",
@@ -82,5 +84,27 @@ def test_content_cleaning(mock_document_intelligence, _):
 
     assert (
         documents[0].page_content
-        == "This is the \n\nSome text\n\nCol 1: Row 1 Col 1, Col 2: Row 1 Col 2, Col 3: Row 1 Col 3\nCol 1: Row 2 Col 1, Col 2: Row 2 Col 2, Col 3: Row 2 Col 3\n\nThis is the end."
+        == "This is the \n\nSome text\n\nCol 1: Row 1 Col 1, Col 2: Row 1 Col 2, Col 3: Row 1 Col 3 \nCol 1: Row 2 Col 1, Col 2: Row 2 Col 2, Col 3: Row 2 Col 3 \n\nThis is the end."
+    )
+
+
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
+def test_table_without_headers(mock_document_intelligence, _):
+    mock_document_intelligence.return_value = mock_simple_response(
+        'table_without_headers.json')
+
+    loader = DocumentIntelligenceLoader(
+        path="path",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["pdf"],
+        patterns_to_remove=["Ti.*e"]
+    )
+
+    documents = loader.load()
+
+    assert (
+        documents[0].page_content
+        == "Table without Headers\n===\n\nTesting a table that has no headers\n\nA B \nC D \nE F \nG H \n\nThis is the end."
     )
