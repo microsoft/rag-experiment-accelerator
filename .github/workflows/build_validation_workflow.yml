@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Checkout Actions
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Load all build validation related dependencies
@@ -31,7 +31,7 @@ jobs:
           set -e # fail on error
           python -m pip install --upgrade pip
           python -m pip install -e . -r requirements.txt -r dev-requirements.txt
-          
+
       - name: Run flake
         shell: bash
         run: |
@@ -43,7 +43,7 @@ jobs:
           pytest . --cov=. --cov-report=html --cov-config=.coveragerc
 
       - name: Publish Unit Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
           path: "htmlcov/**"

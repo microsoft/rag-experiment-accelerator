@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: rag-experiment-accelerator
+metadata:
+    template: azd-init@1.6.1
