@@ -77,6 +77,7 @@ def test_content_cleaning(mock_document_intelligence, _):
         endpoint="endpoint",
         key="key",
         glob_patterns=["pdf"],
+        patterns_to_remove=["Ti.*e"]
     )
 
     documents = loader.load()
@@ -98,7 +99,6 @@ def test_table_without_headers(mock_document_intelligence, _):
         endpoint="endpoint",
         key="key",
         glob_patterns=["pdf"],
-        patterns_to_remove=["Ti.*e"]
     )
 
     documents = loader.load()
