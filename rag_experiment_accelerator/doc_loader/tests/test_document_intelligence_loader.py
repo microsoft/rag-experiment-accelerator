@@ -77,7 +77,6 @@ def test_content_cleaning(mock_document_intelligence, _):
         endpoint="endpoint",
         key="key",
         glob_patterns=["pdf"],
-        patterns_to_remove=["Ti.*e"]
     )
 
     documents = loader.load()
@@ -108,3 +107,48 @@ def test_table_without_headers(mock_document_intelligence, _):
         documents[0].page_content
         == "Table without Headers\n===\n\nTesting a table that has no headers\n\nA B \nC D \nE F \nG H \n\nThis is the end."
     )
+
+
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
+def test_document_with_multiple_pages_without_splitting_documents_by_page(mock_document_intelligence, _):
+    mock_document_intelligence.return_value = mock_simple_response(
+        'multiple_pages.json')
+
+    loader = DocumentIntelligenceLoader(
+        path="path",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["pdf"],
+        split_documents_by_page=False
+    )
+
+    documents = loader.load()
+
+    assert (
+        documents[0].page_content
+        == "Title for page number one Some text for the first page\n\n# Title for page number two\n\nSome text for the 2nd page. Here we also have a table:\n\nName: Alice, Age: 25 \nName: Bob, Age: 32 \n\nTitle for page number three This is the end - at page 3.\n==="
+    )
+    assert len(documents) == 1
+
+
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
+def test_document_with_multiple_pages_with_split_documents_by_page(mock_document_intelligence, _):
+    mock_document_intelligence.return_value = mock_simple_response(
+        'multiple_pages.json')
+
+    loader = DocumentIntelligenceLoader(
+        path="path",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["pdf"],
+        split_documents_by_page=True
+    )
+
+    documents = loader.load()
+
+    assert len(documents) == 3
+    assert documents[0].page_content == "Title for page number one Some text for the first page"
+    assert documents[1].page_content == "# Title for page number two\n\nSome text for the 2nd page. Here we also have a table:\n\nName: Alice, Age: 25 \nName: Bob, Age: 32 "
+    assert documents[2].page_content == "Title for page number three This is the end - at page 3.\n==="
