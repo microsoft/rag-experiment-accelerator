@@ -3,7 +3,6 @@ from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
     DocumentIntelligenceLoader,
 )
 from unittest.mock import patch
-from types import SimpleNamespace
 
 
 class SimplePythonObject:
@@ -25,14 +24,9 @@ def mock_simple_response():
         return json.load(f, object_hook=lambda d: SimplePythonObject(**d))
 
 
-@patch(
-    "rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths",
-    return_value=["path/to/some/file"],
-)
-@patch(
-    "rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence"
-)
-def test_DocumentIntelligenceLoader(mock_document_intelligence, _):
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
+def test__load(mock_document_intelligence, _):
     mock_document_intelligence.return_value = mock_simple_response()
 
     loader = DocumentIntelligenceLoader(
@@ -51,3 +45,21 @@ def test_DocumentIntelligenceLoader(mock_document_intelligence, _):
     )
     assert documents[0].metadata["source"] == "path/to/some/file"
     assert documents[0].metadata["page"] == 0
+
+
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence", side_effect=Exception("Error"))
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._load_with_ocr")
+def test_load_with_ocr_is_used_as_fallback(mock_load_with_ocr, _, __):
+
+    loader = DocumentIntelligenceLoader(
+        path="path",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["pdf"],
+    )
+
+    loader.load()
+
+    mock_load_with_ocr.assert_called_once()
+    mock_load_with_ocr.assert_called_with('path/to/some/file')
