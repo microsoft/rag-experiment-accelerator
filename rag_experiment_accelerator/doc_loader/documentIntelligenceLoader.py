@@ -98,16 +98,8 @@ class DocumentIntelligenceLoader(BaseLoader):
     def _analyze_document(self, file_path: str):
         documents = []
         try:
-            with open(file_path, "rb") as file:
-                content = file.read()
-                poller = self.client.begin_analyze_document(
-                    "prebuilt-layout",
-                    content,
-                    content_type="application/octet-stream",
-                    output_content_format="markdown",
-                )
+            result = self._call_document_intelligence(file_path)
 
-            result = poller.result()
             paragraphs = self._substitute_table_paragraphs(
                 result.paragraphs, result.tables
             )
@@ -115,7 +107,7 @@ class DocumentIntelligenceLoader(BaseLoader):
             relevant_paragraphs = [
                 paragraph
                 for paragraph in paragraphs
-                if paragraph.role not in self.excluded_paragraph_roles
+                if paragraph["role"] not in self.excluded_paragraph_roles
             ]
             paragraphs_by_role = self._get_paragraphs_by_role(result)
 
@@ -141,6 +133,19 @@ class DocumentIntelligenceLoader(BaseLoader):
             )
             return self._load_with_ocr(file_path)
 
+    def _call_document_intelligence(self, file_path):
+        with open(file_path, "rb") as file:
+            content = file.read()
+            poller = self.client.begin_analyze_document(
+                "prebuilt-layout",
+                content,
+                content_type="application/octet-stream",
+                output_content_format="markdown",
+            )
+
+        result = poller.result()
+        return result
+
     def _clean_content(self, content: str):
         # Remove AI doc intelligence traces.
         pattern = re.compile(r":selected:|:unselected:")
@@ -154,13 +159,16 @@ class DocumentIntelligenceLoader(BaseLoader):
     def _get_paragraphs_by_role(self, result):
         dict = {}
         for paragraph in result.paragraphs:
-            if not paragraph.role or paragraph.role in self.excluded_paragraph_roles:
+            if (
+                not paragraph["role"]
+                or paragraph["role"] in self.excluded_paragraph_roles
+            ):
                 continue
             paragraph_item = {
                 "content": paragraph.content,
                 "page": paragraph.bounding_regions[0].get("pageNumber"),
             }
-            dict[paragraph.role] = dict.get(paragraph.role, []) + [paragraph_item]
+            dict[paragraph["role"]] = dict.get(paragraph["role"], []) + [paragraph_item]
 
         tables = []
         for table in result.tables:
