@@ -413,7 +413,9 @@ def run(config_dir: str, filename: str = "config.json"):
 
                         search_client.close()
                         create_data_asset(
-                            handler.get_output_path(index_name),
+                            handler.get_output_path(
+                                index_name, config.EXPERIMENT_NAME, config.JOB_NAME
+                            ),
                             index_name,
                             azure_cred,
                             config.AzureMLCredentials,

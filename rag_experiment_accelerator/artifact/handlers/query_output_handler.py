@@ -39,7 +39,9 @@ class QueryOutputHandler(ArtifactHandler):
         """
         return f"eval_output_{index_name}_{experiment_name}_{job_name}.jsonl"
 
-    def get_output_path(self, index_name: str) -> str:
+    def get_output_path(
+        self, index_name: str, experiment_name: str, job_name: str
+    ) -> str:
         """
         Returns the output path for a given index name.
 
@@ -49,7 +51,7 @@ class QueryOutputHandler(ArtifactHandler):
         Returns:
             str: The output path.
         """
-        return f"{self.data_location}/{self._get_output_name(index_name)}"
+        return f"{self.data_location}/{self._get_output_name(index_name, experiment_name, job_name)}"
 
     def load(
         self, index_name: str, experiment_name: str, job_name: str
