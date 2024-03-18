@@ -63,3 +63,24 @@ def test_load_with_ocr_is_used_as_fallback(mock_load_with_ocr, _, __):
 
     mock_load_with_ocr.assert_called_once()
     mock_load_with_ocr.assert_called_with('path/to/some/file')
+
+
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._get_file_paths", return_value=["path/to/some/file"],)
+@patch("rag_experiment_accelerator.doc_loader.documentIntelligenceLoader.DocumentIntelligenceLoader._call_document_intelligence")
+def test_content_cleaning(mock_document_intelligence, _):
+    mock_document_intelligence.return_value = mock_simple_response()
+
+    loader = DocumentIntelligenceLoader(
+        path="path",
+        endpoint="endpoint",
+        key="key",
+        glob_patterns=["pdf"],
+        patterns_to_remove=["Ti.*e"]
+    )
+
+    documents = loader.load()
+
+    assert (
+        documents[0].page_content
+        == "This is the \n\nSome text\n\nCol 1: Row 1 Col 1, Col 2: Row 1 Col 2, Col 3: Row 1 Col 3\nCol 1: Row 2 Col 1, Col 2: Row 2 Col 2, Col 3: Row 2 Col 3\n\nThis is the end."
+    )

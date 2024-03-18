@@ -152,7 +152,8 @@ class DocumentIntelligenceLoader(BaseLoader):
         content = pattern.sub("", content)
         # Remove specific regex patterns.
         for regex_pattern in self.patterns_to_remove:
-            content = regex_pattern.sub("", content)
+            pattern = re.compile(regex_pattern)
+            content = pattern.sub("", content)
 
         return content
 
