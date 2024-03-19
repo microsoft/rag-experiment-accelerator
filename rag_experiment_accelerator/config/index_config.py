@@ -6,7 +6,7 @@ from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 
 @dataclass
 class IndexConfig:
-    """A class to hold parameters for each indee configured through Config.
+    """A class to hold parameters for each index configured through Config.
 
     Attributes:
         index_name_prefix (str):
