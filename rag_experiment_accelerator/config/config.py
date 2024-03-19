@@ -129,6 +129,7 @@ class Config:
         self.AzureDocumentIntelligenceCredentials = (
             AzureDocumentIntelligenceCredentials.from_env()
         )
+        # Sampling
         self.SAMPLE_DATA = bool(data["sampling"]["sample_data"])
         self.SAMPLE_PERCENTAGE = data["sampling"]["sample_percentage"]
         self.SAMPLE_OPTIMUM_K = data["sampling"]["optimum_k"]
@@ -160,11 +161,11 @@ class Config:
 
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn(
+                logger.warning(
                     "prompt_config.json found but main_prompt_instruction is"
                     " not set. Using default prompts"
                 )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
-            logger.warn("prompt_config.json not found. Using default prompts")
+            logger.warning("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
