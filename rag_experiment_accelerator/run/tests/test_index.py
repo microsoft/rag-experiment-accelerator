@@ -108,7 +108,6 @@ class TestIndex(unittest.TestCase):
         )
 
         # Assert
-        # mock_config.assert_called_once()
         mock_load_documents.assert_called()
         expected_call = call(
             mock_environment,
