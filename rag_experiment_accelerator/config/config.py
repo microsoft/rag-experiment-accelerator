@@ -130,7 +130,7 @@ class Config:
                 "Config param validation error: overlap_size must be less than chunk_size"
             )
 
-    def index_configs(self) -> Generator:
+    def index_configs(self) -> Generator[IndexConfig]:
         for chunk_size in self.CHUNK_SIZES:
             for overlap in self.OVERLAP_SIZES:
                 for embedding_model in self.embedding_models:

@@ -583,10 +583,9 @@ def evaluate_prompts(
 
     Args:
         environment (Environment): Initialised Environment class containing environment configuration
-        client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         config (Config): The configuration settings to use for evaluation.
         index_config (IndexConfig): Parameters of the index such as chunking and embedding model.
-        output_dir (str): Previously created directory where the output should be placed.
+        client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         name_suffix (str): Name suffix to use for all outputs created.
 
     Returns:

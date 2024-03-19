@@ -36,6 +36,5 @@ def load_with_azure_document_intelligence(
             ).load()
         except Exception as e:
             logger.warning(f"Failed to load {file_path}: {e}")
-            pass
 
     return documents
