@@ -45,6 +45,8 @@ class Config:
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
         embedding_models: The embedding models used to generate embeddings
+        SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
+        SAMPLE_PERCENTAGE (int): Percentage of dataset
     """
 
     _instance = None
@@ -127,12 +129,24 @@ class Config:
         self.AzureDocumentIntelligenceCredentials = (
             AzureDocumentIntelligenceCredentials.from_env()
         )
+        # Sampling
+        self.SAMPLE_DATA = bool(data["sampling"]["sample_data"])
+        self.SAMPLE_PERCENTAGE = data["sampling"]["sample_percentage"]
+        self.SAMPLE_OPTIMUM_K = data["sampling"]["optimum_k"]
+        self.SAMPLE_MIN_CLUSTER = data["sampling"]["min_cluster"]
+        self.SAMPLE_MAX_CLUSTER = data["sampling"]["max_cluster"]
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model_config in embedding_model_config:
             kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
             self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
+
+        if self.SAMPLE_DATA:
+            if self.SAMPLE_PERCENTAGE < 0 or self.SAMPLE_PERCENTAGE > 100:
+                raise ValueError(
+                    "Config param validation error: sample_percentage must be between 0 and 100 (inclusive)"
+                )
 
         self.validate_inputs(
             self.CHUNK_SIZES,

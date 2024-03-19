@@ -51,6 +51,8 @@ def run(config_dir: str, filename: str = "config.json"):
                             embedding_model.name,
                             ef_construction,
                             ef_search,
+                            config.SAMPLE_DATA,
+                            config.SAMPLE_PERCENTAGE,
                         )
                         logger.info(f"Evaluating Index: {index_name}")
 
