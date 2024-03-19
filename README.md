@@ -107,6 +107,10 @@ LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO
 
 ```bash
 conda create -n rag-test python=3.11
+conda init bash
+```
+Close your terminal, open a new one, and run:
+```bash
 conda activate rag-test
 pip install .
 ```
