@@ -15,6 +15,9 @@ hnswlib==0.8.0
 langchain==0.1.12
 langchain-community==0.0.28
 levenshtein==0.25.0
+umap-learn==0.5.5
+kaleido==0.2.1
+azure-keyvault-secrets==4.8.*
 lxml==5.1.0
 matplotlib==3.8.3
 mlflow==2.11.1

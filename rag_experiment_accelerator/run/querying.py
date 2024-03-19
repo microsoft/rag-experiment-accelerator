@@ -274,6 +274,8 @@ def run(config_dir: str, filename: str = "config.json"):
                             embedding_model.name,
                             ef_construction,
                             ef_search,
+                            config.SAMPLE_DATA,
+                            config.SAMPLE_PERCENTAGE,
                         )
                         logger.info(f"Index: {index_name}")
 
@@ -300,7 +302,15 @@ def run(config_dir: str, filename: str = "config.json"):
                                             user_prompt,
                                             config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                         )
-                                        responses = json.loads(llm_response)
+                                        try:
+                                            responses = json.loads(llm_response)
+                                        except json.JSONDecodeError as ef:
+                                            logger.error(
+                                                f"Unable to decode response from LLM {user_prompt}",
+                                                exc_info=ef,
+                                            )
+                                            is_multi_question = False
+                                            continue
                                         new_questions = []
                                         if isinstance(responses, dict):
                                             new_questions = responses["questions"]
