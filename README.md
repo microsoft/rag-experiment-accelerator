@@ -14,6 +14,14 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 - Find the best combination of hyperparameters.
 - Generate detailed reports and visualizations from experiment results.
 
+## Latest changes
+
+18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data. 
+
+This is done to ensure representative results in the sample that one would get across the entire dataset.
+
+**Note**: It is recommended to rebuild your environment if you have used this tool before due to new dependencies.
+
 ## Features
 
 The **RAG Experiment Accelerator** is config driven and offers a rich set of features to support its purpose:
@@ -161,6 +169,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   ```bash
   python 02_qa_generation.py
   -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -dd "The directory holding the data. Defaults to data"
   -cf "JSON config filename. Defaults to config.json"
   ```
 4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
@@ -180,6 +189,13 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 ```json
 {
     "name_prefix": "Name of experiment, search index name used for tracking and comparing jobs",
+    "sampling": {
+        "sample_data": "Set to true to enable sampling",
+        "sample_percentage": "Percentage of the document corpus to sample",
+        "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+        "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
+        "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30",
+    },
     "chunking": {
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]"
