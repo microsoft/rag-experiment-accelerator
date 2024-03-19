@@ -1,4 +1,4 @@
-from langchain.document_loaders import BSHTMLLoader
+from langchain_community.document_loaders import BSHTMLLoader
 
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files,
