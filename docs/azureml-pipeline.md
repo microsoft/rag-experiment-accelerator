@@ -38,7 +38,7 @@ AZURE_KEY_VAULT_ENDPOINT=<keyvault endpoint, e.g. https://<keyvault-name>.vault.
 python env_to_keyvault.py
 ```
 
-This will create a secret in the keyvault for each environment variable in the .env file.
+This script assumes you already have a `.env` file populated with values. and will use this file to create a secret in the keyvault for each environment variable in the `.env` file.
 
 ## Configuring input for the pipeline
 
