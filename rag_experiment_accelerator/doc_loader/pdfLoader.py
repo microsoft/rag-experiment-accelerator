@@ -1,4 +1,7 @@
-from langchain.document_loaders import PyPDFDirectoryLoader
+import uuid
+import re
+
+from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -9,8 +12,6 @@ from rag_experiment_accelerator.config.credentials import (
     AzureDocumentIntelligenceCredentials,
 )
 
-import uuid
-import re
 
 logger = get_logger(__name__)
 

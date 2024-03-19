@@ -133,10 +133,7 @@ class Config:
         self.MAX_WORKER_THREADS = os.environ.get("MAX_WORKER_THREADS", None)
         self.GENERATE_TITLE = data.get("generate_title", False)
         self.GENERATE_SUMMARY = data.get("generate_summary", False)
-        self.OVERRIDE_CONTENT_WITH_SUMMARY = data.get(
-            "override_content_with_summary", False
-        )
-
+        self.OVERRIDE_CONTENT_WITH_SUMMARY = data.get("override_content_with_summary", False)
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
         for model_config in embedding_model_config:
@@ -156,11 +153,11 @@ class Config:
 
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn(
+                logger.warning(
                     "prompt_config.json found but main_prompt_instruction is"
                     " not set. Using default prompts"
                 )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
-            logger.warn("prompt_config.json not found. Using default prompts")
+            logger.warning("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction

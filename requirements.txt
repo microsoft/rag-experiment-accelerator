@@ -12,14 +12,14 @@ docx2txt==0.8
 evaluate==0.4.1
 fuzzywuzzy==0.18.0
 hnswlib==0.8.0
-langchain==0.1.9
+langchain==0.1.12
 langchain-community==0.0.28
 levenshtein==0.25.0
 lxml==5.1.0
 matplotlib==3.8.3
 mlflow==2.11.1
-openai==1.13.3
-plotly==5.19.0
+openai==1.14.1
+plotly==5.20.0
 pypdf==4.1.0
 pytesseract==0.3.10
 python-dotenv==1.0.1
