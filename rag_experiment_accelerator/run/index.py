@@ -519,8 +519,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
 
     Args:
         pre_process (object): An object with a method for preprocessing text.
-                embedding_model (object): The embedding model which was created
-        using `EmbeddingModelFactory`.
+        embedding_model (object): The embedding model which was created using `EmbeddingModelFactory`.
         chunk (dict): A dictionary containing a chunk of content.
 
     Returns:
