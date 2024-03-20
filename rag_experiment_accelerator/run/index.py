@@ -4,6 +4,7 @@ from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+from rag_experiment_accelerator.sampling.clustering import cluster
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -24,7 +25,6 @@ def run(
         None
     """
     pre_process = Preprocess()
-
     index_dict = {"indexes": []}
 
     logger.info(f"Creating Index with name: {index_config.index_name()}")
@@ -47,6 +47,9 @@ def run(
         index_config.chunk_size,
         index_config.overlap,
     )
+
+    if config.SAMPLE_DATA:
+        all_docs = cluster(all_docs, config.sampling_output_dir, config)
 
     data_load = []
     for doc in all_docs:

@@ -339,7 +339,6 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
                                 evaluator=evaluator,
                             )
                             search_evals.append(evaluation)
-
                         if config.RERANK:
                             prompt_instruction_context = rerank_documents(
                                 docs,
@@ -384,4 +383,3 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
                     )
                     continue
         search_client.close()
-    # )

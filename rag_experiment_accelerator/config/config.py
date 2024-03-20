@@ -21,7 +21,7 @@ class ChunkingStrategy(StrEnum):
 
 class Config:
     """
-    A singleton class for storing configuration settings for the RAG Experiment Accelerator.
+    A class for storing configuration settings for the RAG Experiment Accelerator.
 
     Parameters:
         config_filename (str): The name of the JSON file containing configuration settings. Default is 'config.json'.
@@ -50,7 +50,9 @@ class Config:
         DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
-        EMBEDDING_MODELS: The embedding models used to generate embeddings
+        embedding_models: The embedding models used to generate embeddings
+        SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
+        SAMPLE_PERCENTAGE (int): Percentage of dataset
     """
 
     def __init__(
@@ -115,6 +117,16 @@ class Config:
             if "main_prompt_instruction" in config_json
             else main_prompt_instruction
         )
+        self.SAMPLE_DATA = "sampling" in config_json
+        if self.SAMPLE_DATA:
+            self.SAMPLE_PERCENTAGE = config_json["sampling"]["sample_percentage"]
+            if self.SAMPLE_PERCENTAGE < 0 or self.SAMPLE_PERCENTAGE > 100:
+                raise ValueError(
+                    "Config param validation error: sample_percentage must be between 0 and 100 (inclusive)"
+                )
+            self.SAMPLE_OPTIMUM_K = config_json["sampling"]["optimum_k"]
+            self.SAMPLE_MIN_CLUSTER = config_json["sampling"]["min_cluster"]
+            self.SAMPLE_MAX_CLUSTER = config_json["sampling"]["max_cluster"]
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
@@ -130,7 +142,7 @@ class Config:
                 "Config param validation error: overlap_size must be less than chunk_size"
             )
 
-    def index_configs(self) -> Generator[IndexConfig]:
+    def index_configs(self) -> Generator[IndexConfig, None, None]:
         for chunk_size in self.CHUNK_SIZES:
             for overlap in self.OVERLAP_SIZES:
                 for embedding_model in self.embedding_models:
@@ -187,6 +199,13 @@ class Config:
             else os.path.join(self.artifacts_dir, "eval_score")
         )
         self._try_create_directory(self.EVAL_DATA_LOCATION)
+
+        self.sampling_output_dir = (
+            config_json["sampling_output_dir"]
+            if "sampling_output_dir" in config_json
+            else os.path.join(self.artifacts_dir, "sampling")
+        )
+        self._try_create_directory(self.sampling_output_dir)
 
     def _find_embedding_model_by_name(self, model_name: str) -> EmbeddingModel:
         for model in self.embedding_models:

@@ -1,174 +1,107 @@
-import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, patch
+from rag_experiment_accelerator.config.config import Config
+
 from rag_experiment_accelerator.run.index import run
-from rag_experiment_accelerator.config.index_config import IndexConfig
+from rag_experiment_accelerator.config.paths import get_all_file_paths
 
 
-class TestIndex(unittest.TestCase):
-    @patch("rag_experiment_accelerator.run.index.get_logger")
-    @patch("rag_experiment_accelerator.run.index.Environment")
-    @patch("rag_experiment_accelerator.run.index.Config")
-    @patch("rag_experiment_accelerator.run.index.load_documents")
-    @patch("rag_experiment_accelerator.run.index.upload_data")
-    @patch("rag_experiment_accelerator.run.index.create_acs_index")
-    @patch("rag_experiment_accelerator.run.index.Preprocess")
-    @patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
-    def test_run_with_config_values(
-        self,
-        mock_embedding_model,
-        mock_preprocess,
-        mock_create_acs_index,
-        mock_upload_data,
-        mock_load_documents,
-        mock_config,
-        mock_environment,
-        mock_get_logger,
-    ):
-        # Create a list of mock EmbeddingModel instances
-        embedding_models = [mock_embedding_model for _ in range(2)]
+@patch("rag_experiment_accelerator.config.config.os.makedirs")
+@patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
+@patch("rag_experiment_accelerator.run.index.upload_data")
+@patch("rag_experiment_accelerator.run.index.cluster")
+@patch("rag_experiment_accelerator.run.index.load_documents")
+@patch("rag_experiment_accelerator.run.index.create_acs_index")
+@patch("rag_experiment_accelerator.run.index.logger")
+@patch("rag_experiment_accelerator.run.index.Preprocess")
+@patch("rag_experiment_accelerator.run.index.Config")
+@patch("rag_experiment_accelerator.run.index.Environment")
+def test_run(
+    mock_environment,
+    mock_config,
+    mock_preprocess,
+    mock_logger,
+    mock_create_acs_index,
+    mock_load_documents,
+    mock_cluster,
+    mock_upload_data,
+    mock_embedding_model,
+    _,
+):
+    # Arrange
+    data_dir = "./data"
 
-        # Set a side effect to assign a dimension value to each embedding model
-        mock_embedding_model.side_effect = [
-            MagicMock(dimension=100 * i) for i in range(1, 3)
-        ]
+    mock_config = Config(mock_environment)
+    mock_config.artifacts_dir = "artifacts_dir"
+    mock_config.CHUNK_SIZES = [10, 20]
+    mock_config.OVERLAP_SIZES = [5, 10]
 
-        for embedding_model in embedding_models:
-            index_config = IndexConfig(
-                index_name_prefix="test_index_name",
-                chunk_size="chunk_size1",
-                overlap="overlap_size1",
-                embedding_model=embedding_model,
-                ef_construction="ef_construction1",
-                ef_search="ef_search1",
-            )
+    # Create a list of mock EmbeddingModel instances
+    embedding_models = [mock_embedding_model for _ in range(2)]
 
-            self.run_test(
-                index_config,
-                mock_preprocess,
-                mock_create_acs_index,
-                mock_upload_data,
-                mock_load_documents,
-                mock_config,
-                mock_environment,
-                mock_get_logger,
-            )
+    # Set a side effect to assign a dimension value to each embedding model
+    mock_embedding_model = MagicMock()
+    mock_embedding_model.side_effect = [
+        MagicMock(dimension=100 * i) for i in range(1, 3)
+    ]
+    mock_config.embedding_models = embedding_models
+    mock_config.EF_CONSTRUCTIONS = ["ef_construction1", "ef_construction2"]
+    mock_config.EF_SEARCHES = ["ef_search1", "ef_search2"]
+    mock_config.SAMPLE_DATA = True
+    mock_config.SAMPLE_PERCENTAGE = 50
+    mock_config.NAME_PREFIX = "prefix"
+    mock_config.LANGUAGE = {"analyzers": ["analyzer1", "analyzer2"]}
 
-    def run_test(
-        self,
-        index_config,
-        mock_preprocess,
-        mock_create_acs_index,
-        mock_upload_data,
-        mock_load_documents,
-        mock_config,
-        mock_environment,
-        mock_get_logger,
-    ):
-        # Arrange
-        mock_config.DATA_FORMATS = "test_format"
-        mock_config.artifacts_dir = "test_artifacts_dir"
-        mock_config.data_dir = "data_dir"
-        mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "test_deployment_name"
-        mock_config.CHUNKING_STRATEGY = "basic"
-        mock_environment.azure_search_service_endpoint = "test_endpoint"
-        mock_environment.azure_search_admin_key = "test_key"
+    mock_environment.azure_search_service_endpoint = "service_endpoint"
+    mock_environment.azure_search_admin_key = "admin_key"
+    mock_environment.azure_document_intelligence_endpoint = (
+        "document_intelligence_endpoint"
+    )
+    mock_environment.azure_document_intelligence_key = "document_intelligence_key"
 
-        doc1 = MagicMock()
-        doc1.page_content = "content1"
-        doc2 = MagicMock()
-        doc2.page_content = "content2"
-        mock_load_documents.return_value = [{"key1": "content1", "key2": "content2"}]
-        mock_preprocess.return_value.preprocess = MagicMock(
-            return_value="preprocessed_content"
-        )
+    mock_config.DATA_FORMATS = ["format1", "format2"]
+    mock_config.data_dir = "data_dir"
+    mock_config.CHUNKING_STRATEGY = "chunking_strategy"
+    mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "oai_deployment_name"
 
-        # Mock the generate_embedding method for each embedding model
-        index_config.embedding_model.generate_embedding = MagicMock(
-            return_value="embedding_value"
-        )
+    mock_preprocess.return_value.preprocess.return_value = "preprocessed_value"
 
-        chunks = [
-            {
-                "content": "content1",
-                "content_vector": index_config.embedding_model.generate_embedding(),
-            },
-            {
-                "content": "content2",
-                "content_vector": index_config.embedding_model.generate_embedding(),
-            },
-        ]
-        file_paths = ["file_path_one", "file_path_two"]
+    mock_load_documents.return_value = [
+        {"doc1": "value1"},
+        {"doc2": "value2"},
+        {"doc3": "value3"},
+    ]
 
-        # Act
-        run(
-            environment=mock_environment,
-            config=mock_config,
-            index_config=index_config,
-            file_paths=file_paths,
-        )
+    mock_cluster.return_value = [
+        {"cluster1": "value1"},
+        {"cluster2": "value2"},
+        {"cluster3": "value3"},
+    ]
+    file_paths = get_all_file_paths(data_dir)
 
-        # Assert
-        mock_load_documents.assert_called()
-        expected_call = call(
-            mock_environment,
-            "basic",
-            "test_format",
-            file_paths,
-            index_config.chunk_size,
-            index_config.overlap,
-        )
-        mock_load_documents.assert_has_calls([expected_call])
-        expected_first_call_args = [
-            mock_environment,
-            mock_config,
-            chunks,
-            index_config.index_name(),
-            index_config.embedding_model,
-        ]
-        _, kwargs = mock_upload_data.call_args
-        # Assert that the call arguments of the first call are as expected
-        self.assertEqual(kwargs.get("environment"), expected_first_call_args[0])
-        self.assertEqual(kwargs.get("config"), expected_first_call_args[1])
-        self.assertEqual(kwargs.get("chunks"), expected_first_call_args[2])
-        self.assertEqual(kwargs.get("index_name"), expected_first_call_args[3])
-        self.assertEqual(kwargs.get("embedding_model"), expected_first_call_args[4])
-        mock_create_acs_index.assert_called()
-        self.assertEqual(mock_preprocess.return_value.preprocess.call_count, 2)
-        # mock_preprocess.preprocess.assert_called_once()
-        mock_create_acs_index.assert_called()
+    # Act
+    for index_config in mock_config.index_configs():
+        run(mock_environment, mock_config, index_config, file_paths)
 
-    @patch("rag_experiment_accelerator.run.index.create_acs_index")
-    @patch("rag_experiment_accelerator.run.index.load_documents")
-    @patch("rag_experiment_accelerator.run.index.upload_data")
-    @patch("rag_experiment_accelerator.run.index.Preprocess")
-    @patch("rag_experiment_accelerator.run.index.Config")
-    @patch("rag_experiment_accelerator.run.index.IndexConfig")
-    @patch("rag_experiment_accelerator.run.index.Environment")
-    def test_run_upload_data_exception(
-        self,
-        mock_environment,
-        mock_index_config,
-        mock_config,
-        mock_preprocess,
-        mock_upload_data,
-        mock_load_documents,
-        mock_create_acs_index,
-    ):
-        # Arrange
-        mock_upload_data.side_effect = Exception("Test exception")
+    # Assert
+    assert mock_preprocess.call_count == 32
+    assert mock_logger.error.call_count == 0
+    assert mock_create_acs_index.call_count == 32
+    assert mock_load_documents.call_count == 32
+    assert mock_cluster.call_count == 32
+    assert mock_upload_data.call_count == 32
+    assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
+    assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
 
-        # Act
-        with self.assertRaises(Exception) as context:
-            run(
-                environment=mock_environment,
-                config=mock_config,
-                index_config=mock_index_config,
-                file_paths=["file_path_one", "file_path_two"],
-            )
+    assert mock_load_documents.call_args_list[0][0][1] == "chunking_strategy"
+    assert mock_load_documents.call_args_list[0][0][2] == ["format1", "format2"]
+    assert mock_load_documents.call_args_list[0][0][3] == file_paths
+    assert mock_load_documents.call_args_list[0][0][4] == 10
+    assert mock_load_documents.call_args_list[0][0][5] == 5
 
-        # Assert
-        self.assertTrue("Test exception" in str(context.exception))
-
-
-if __name__ == "__main__":
-    unittest.main()
+    assert mock_cluster.call_args_list[0][0][0] == [
+        {"doc1": "value1"},
+        {"doc2": "value2"},
+        {"doc3": "value3"},
+    ]
+    assert mock_cluster.call_args_list[0][0][1].endswith("sampling")
+    assert mock_cluster.call_args_list[0][0][2] == mock_config
