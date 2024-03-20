@@ -13,11 +13,11 @@ from rag_experiment_accelerator.config.paths import get_all_file_paths
 @patch("rag_experiment_accelerator.run.index.create_acs_index")
 @patch("rag_experiment_accelerator.run.index.logger")
 @patch("rag_experiment_accelerator.run.index.Preprocess")
-@patch("rag_experiment_accelerator.run.index.Config")
+@patch("rag_experiment_accelerator.run.index.Config.__init__", return_value=None)
 @patch("rag_experiment_accelerator.run.index.Environment")
 def test_run(
     mock_environment,
-    mock_config,
+    _,
     mock_preprocess,
     mock_logger,
     mock_create_acs_index,
@@ -25,12 +25,12 @@ def test_run(
     mock_cluster,
     mock_upload_data,
     mock_embedding_model,
-    _,
+    __,
 ):
     # Arrange
     data_dir = "./data"
 
-    mock_config = Config(mock_environment)
+    mock_config = Config()
     mock_config.artifacts_dir = "artifacts_dir"
     mock_config.CHUNK_SIZES = [10, 20]
     mock_config.OVERLAP_SIZES = [5, 10]
