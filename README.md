@@ -111,7 +111,7 @@ conda init bash
 ```
 Close your terminal, open a new one, and run:
 ```bash
-conda activate rag-test
+conda activate rag-experiment
 pip install .
 ```
 
