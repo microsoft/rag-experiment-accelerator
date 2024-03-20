@@ -106,7 +106,7 @@ LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
-conda create -n rag-test python=3.11
+conda create -n rag-experiment python=3.11
 conda init bash
 ```
 Close your terminal, open a new one, and run:
