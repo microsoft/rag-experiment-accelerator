@@ -21,7 +21,6 @@ def run(
     environment: Environment,
     config: Config,
     file_paths: list[str],
-    sampled_input_data_csv_path: str,
 ):
     """
     Runs the main experiment loop for the QA generation process using the provided configuration and data.
@@ -29,27 +28,16 @@ def run(
     Returns:
         None
     """
-    # all_docs = load_documents(
-    #     environment=environment,
-    #     chunking_strategy=config.CHUNKING_STRATEGY,
-    #     allowed_formats=config.DATA_FORMATS,
-    #     file_paths=file_paths,
-    #     chunk_size=2000,
-    #     overlap_size=0,
-    # )
     logger.info("Running QA generation")
 
     all_docs = {}
     # Check if we have already sampled
     if config.SAMPLE_DATA:
-        assert (
-            sampled_input_data_csv_path is not None
-        ), "Sampled input data csv path is required for sampling"
         logger.info("Running QA Generation process with sampling")
-        if exists(sampled_input_data_csv_path):
-            df = pd.read_csv(sampled_input_data_csv_path)
+        if exists(config._sampled_cluster_predictions_path()):
+            df = pd.read_csv(config._sampled_cluster_predictions_path())
             all_docs = dataframe_to_chunk_dict(df)
-            logger.info(sampled_input_data_csv_path)
+            logger.info("Loaded sampled data")
         else:
             all_docs = load_documents(
                 environment,

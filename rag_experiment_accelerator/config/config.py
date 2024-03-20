@@ -220,3 +220,9 @@ class Config:
             if "Read-only file system" in e.strerror:
                 pass
             logger.warn(f"Failed to create directory {directory}: {e.strerror}")
+
+    def _sampled_cluster_predictions_path(self):
+        return os.path.join(
+            self.sampling_output_dir,
+            f"sampled_cluster_predictions_cluster_number_{self.SAMPLE_OPTIMUM_K}.csv",
+        )

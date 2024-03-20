@@ -49,7 +49,7 @@ def run(
     )
 
     if config.SAMPLE_DATA:
-        all_docs = cluster(all_docs, config.sampling_output_dir, config)
+        all_docs = cluster(all_docs, config)
 
     data_load = []
     for doc in all_docs:

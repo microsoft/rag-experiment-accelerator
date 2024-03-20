@@ -14,8 +14,10 @@ from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.config.paths import mlflow_run_name  # noqa: E402
 from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
+from rag_experiment_accelerator.utils.logging import get_logger  # noqa: E402
 
 
+logger = get_logger(__name__)
 AML_ENVIRONMENT_NAME = "rag-env"
 INDEX_STEP_RETRIES = 3
 INDEX_STEP_TIMEOUT_SECONDS = 10 * 3600
@@ -191,6 +193,12 @@ if __name__ == "__main__":
 
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
+
+    if config.SAMPLE_DATA:
+        logger.error(
+            "Can't sample data when running on AzureML pipeline. Please run the pipeline locally"
+        )
+        exit()
     # Starting multiple pipelines hence unable to stream them
     for index_config in config.index_configs():
         start_pipeline(environment, config, index_config, args.config_path)

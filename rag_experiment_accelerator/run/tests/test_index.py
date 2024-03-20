@@ -103,5 +103,4 @@ def test_run(
         {"doc2": "value2"},
         {"doc3": "value3"},
     ]
-    assert mock_cluster.call_args_list[0][0][1].endswith("sampling")
-    assert mock_cluster.call_args_list[0][0][2] == mock_config
+    assert mock_cluster.call_args_list[0][0][1] == mock_config
