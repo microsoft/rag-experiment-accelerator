@@ -76,6 +76,7 @@ def load_html_files_semantic(
             filename=filename
         )
 
+        # TODO: Why are titles separated?
         chunks = chunk_by_title(
             elements=elements,
             new_after_n_chars=chunk_size,
@@ -83,11 +84,14 @@ def load_html_files_semantic(
         )
 
         embeddings_dict = {}
+        # TODO: If it's a single word - don't chunk it. Toss it.
         for chunk in chunks:
             if chunk.id not in unique_dict:
                 unique_dict[chunk.id] = chunk.text
             doc = nlp(chunk.text)
+            # TODO: Consider using a different embedding model, or configurable model
             embeddings_dict[chunk.id] = doc.vector
+        # TODO: Parameterize the similarity score
         high_similarity, low_similarity = get_semantic_similarity(embeddings_dict, unique_dict, 0.95)
         all_chunks.update(high_similarity)
         all_chunks.update(low_similarity)
