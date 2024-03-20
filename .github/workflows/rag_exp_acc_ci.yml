@@ -23,7 +23,7 @@ jobs:
       AZURE_SEARCH_ADMIN_KEY: ${{ secrets.AZURE_SEARCH_ADMIN_KEY }}
       AZURE_SEARCH_SERVICE_ENDPOINT: ${{ secrets.AZURE_SEARCH_SERVICE_ENDPOINT }}
       AZURE_LANGUAGE_SERVICE_KEY: ${{ secrets.AZURE_LANGUAGE_SERVICE_KEY }}
-      AZURE_LANGUAGE_SERVICE_ENDPOINT: ${{ secrets.AZURE_LANGUAGE_SERVICE_ENDPOINT }}      
+      AZURE_LANGUAGE_SERVICE_ENDPOINT: ${{ secrets.AZURE_LANGUAGE_SERVICE_ENDPOINT }}
       OPENAI_API_TYPE: "azure"
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
@@ -31,13 +31,15 @@ jobs:
       AML_RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
       AML_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
       AML_WORKSPACE_NAME: ${{ secrets.WORKSPACE_NAME }}
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: ""
+      AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY: ""
     name: code validation through execution
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions
         uses: actions/checkout@v4
       - name: Azure login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.azure_credentials }}
       - name: Configure Azure ML Agent
@@ -49,11 +51,11 @@ jobs:
       - name: execute qna step
         shell: bash
         run: |
-          python 02_qa_generation.py  
+          python 02_qa_generation.py
       - name: execute querying step
         shell: bash
         run: |
-          python 03_querying.py  
+          python 03_querying.py
       - name: execute evaluation step
         shell: bash
         run: |

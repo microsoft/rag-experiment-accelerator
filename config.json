@@ -1,7 +1,14 @@
 {
-    "name_prefix": "surface",
+    "name_prefix": "surfacesample",
+    "sampling": {
+        "sample_data": false,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
     "chunking": {
-        "chunk_size": [1000],
+        "chunk_size": [500],
         "overlap_size": [200]
     },
     "embedding_models": [
@@ -47,5 +54,6 @@
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
+    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
+    "chunking_strategy": "basic"
 }

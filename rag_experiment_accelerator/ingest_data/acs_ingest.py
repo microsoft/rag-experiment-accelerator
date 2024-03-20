@@ -1,6 +1,5 @@
 import hashlib
 import json
-import re
 
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
@@ -140,12 +139,14 @@ def generate_qna(docs, azure_oai_deployment_name):
         pandas.DataFrame: A DataFrame containing the generated questions, answers, and context for each document.
     """
     column_names = ["user_prompt", "output_prompt", "context"]
+
     new_df = pd.DataFrame(columns=column_names)
 
-    for i, chunk in enumerate(docs):
+    for doc in docs:
         # what happens with < 50 ? Currently we are skipping them
         # But we aren't explicitly saying that stating that, should we?
-        if len(chunk.page_content) > 50:
+        chunk = list(doc.values())[0]
+        if len(chunk) > 50:
             response = ""
             try:
                 response = ResponseGenerator(
@@ -153,23 +154,17 @@ def generate_qna(docs, azure_oai_deployment_name):
                 ).generate_response(
                     generate_qna_instruction_system_prompt,
                     generate_qna_instruction_user_prompt
-                    + chunk.page_content
-                    + "\nEND OF CONTEXT",
+                    + chunk,
                 )
-                response_dict = json.loads(response)
+                response_dict = json.loads(response.replace('\n', '').replace("\'", '').replace("\\", ''))
                 for item in response_dict:
-                    if item["role"] == "user":
-                        user_prompt = item["content"]
-                    if item["role"] == "assistant":
-                        output_prompt = item["content"]
+                    data = {
+                        "user_prompt": item["question"],
+                        "output_prompt": item["answer"],
+                        "context": chunk,
+                    }
+                    new_df = new_df._append(data, ignore_index=True)
 
-                data = {
-                    "user_prompt": user_prompt,
-                    "output_prompt": output_prompt,
-                    "context": chunk.page_content,
-                }
-                new_df = new_df._append(data, ignore_index=True)
-                logger.info(f"Generated QnA for document {i}")
             except Exception as e:
                 logger.error(
                     "could not generate a valid json so moving over to next"
@@ -219,7 +214,14 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
         response = ResponseGenerator(
             deployment_name=azure_oai_deployment_name
         ).generate_response(full_prompt_instruction, "")
+
+        json_output = json.loads(response)
+        question_complexity = json_output.get("category", "")
+
+        if question_complexity == "" or question_complexity.lower() == "simple":
+            return False
+        else:
+            return True
     except ContentFilteredException as e:
         logger.error(e)
         return False
-    return re.search(r"\bHIGH\b", response.upper())

@@ -1,4 +1,3 @@
-from requests import HTTPError
 from sentence_transformers import SentenceTransformer
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 
@@ -55,7 +54,7 @@ class STEmbeddingModel(EmbeddingModel):
         super().__init__(name=model_name, dimension=dimension, **kwargs)
         try:
             self._model = SentenceTransformer(self.name)
-        except HTTPError as e:
+        except OSError as e:
             logger.error(
                 f"Error retrieving model: {self.name}. Please check that the model name is correct and that you have an internet connection."
             )

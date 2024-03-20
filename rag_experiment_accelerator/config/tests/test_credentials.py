@@ -17,9 +17,14 @@ def test_init_search_credentials():
     assert creds.AZURE_SEARCH_ADMIN_KEY == "somekey"
 
 
+@patch("rag_experiment_accelerator.config.credentials._get_secret_or_env_var")
 @patch("rag_experiment_accelerator.config.credentials._get_env_var")
-def test_from_env_search_credentials(mock_get_env_var):
-    mock_get_env_var.side_effect = ["http://fromenv.com", "envkey"]
+def test_from_env_search_credentials(
+    mock_get_env_var,
+    mock_get_secret_or_env_var,
+):
+    mock_get_secret_or_env_var.side_effect = ["envkey"]
+    mock_get_env_var.side_effect = ["http://fromenv.com"]
 
     creds = AzureSearchCredentials.from_env()
 
@@ -96,9 +101,14 @@ def test_raises_when_openai_api_version_is_none_for_azure_openai():
         )
 
 
+@patch("rag_experiment_accelerator.config.credentials._get_secret_or_env_var")
 @patch("rag_experiment_accelerator.config.credentials._get_env_var")
-def test_from_env_openai_credentials(mock_get_env_var):
-    mock_get_env_var.side_effect = ["azure", "envkey", "v1", "http://envexample.com"]
+def test_from_env_openai_credentials(
+    mock_get_env_var,
+    mock_get_secret_or_env_var,
+):
+    mock_get_secret_or_env_var.side_effect = ["envkey"]
+    mock_get_env_var.side_effect = ["azure", "v1", "http://envexample.com"]
 
     creds = OpenAICredentials.from_env()
 

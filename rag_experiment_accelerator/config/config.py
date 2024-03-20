@@ -5,6 +5,7 @@ from rag_experiment_accelerator.config.credentials import (
     AzureMLCredentials,
     AzureSearchCredentials,
     AzureSkillsCredentials,
+    AzureDocumentIntelligenceCredentials,
     OpenAICredentials,
 )
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
@@ -44,6 +45,8 @@ class Config:
         METRIC_TYPES (list[str]): A list of metric types to use.
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
         embedding_models: The embedding models used to generate embeddings
+        SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
+        SAMPLE_PERCENTAGE (int): Percentage of dataset
     """
 
     _instance = None
@@ -117,18 +120,33 @@ class Config:
         self.SEARCH_RELEVANCY_THRESHOLD = data.get("search_relevancy_threshold", 0.8)
         self.DATA_FORMATS = data.get("data_formats", "all")
         self.METRIC_TYPES = data["metric_types"]
+        self.CHUNKING_STRATEGY = data["chunking_strategy"]
         self.LANGUAGE = data.get("language", {})
         self.OpenAICredentials = OpenAICredentials.from_env()
         self.AzureSearchCredentials = AzureSearchCredentials.from_env()
         self.AzureMLCredentials = AzureMLCredentials.from_env()
         self.AzureSkillsCredentials = AzureSkillsCredentials.from_env()
+        self.AzureDocumentIntelligenceCredentials = (
+            AzureDocumentIntelligenceCredentials.from_env()
+        )
+        # Sampling
+        self.SAMPLE_DATA = bool(data["sampling"]["sample_data"])
+        self.SAMPLE_PERCENTAGE = data["sampling"]["sample_percentage"]
+        self.SAMPLE_OPTIMUM_K = data["sampling"]["optimum_k"]
+        self.SAMPLE_MIN_CLUSTER = data["sampling"]["min_cluster"]
+        self.SAMPLE_MAX_CLUSTER = data["sampling"]["max_cluster"]
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = data.get("embedding_models", [])
-
         for model_config in embedding_model_config:
             kwargs = {"openai_creds": self.OpenAICredentials, **model_config}
             self.embedding_models.append(EmbeddingModelFactory.create(**kwargs))
+
+        if self.SAMPLE_DATA:
+            if self.SAMPLE_PERCENTAGE < 0 or self.SAMPLE_PERCENTAGE > 100:
+                raise ValueError(
+                    "Config param validation error: sample_percentage must be between 0 and 100 (inclusive)"
+                )
 
         self.validate_inputs(
             self.CHUNK_SIZES,
@@ -143,11 +161,11 @@ class Config:
 
             self.MAIN_PROMPT_INSTRUCTION = data["main_prompt_instruction"]
             if self.MAIN_PROMPT_INSTRUCTION is None:
-                logger.warn(
+                logger.warning(
                     "prompt_config.json found but main_prompt_instruction is"
                     " not set. Using default prompts"
                 )
                 self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction
         except OSError:
-            logger.warn("prompt_config.json not found. Using default prompts")
+            logger.warning("prompt_config.json not found. Using default prompts")
             self.MAIN_PROMPT_INSTRUCTION = main_prompt_instruction

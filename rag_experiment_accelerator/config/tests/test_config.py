@@ -1,8 +1,9 @@
+from rag_experiment_accelerator.config.config import Config
+from unittest.mock import MagicMock, patch
+
 import pytest
 import json
 import os
-from rag_experiment_accelerator.config.config import Config
-from unittest.mock import MagicMock, patch
 
 
 def get_test_config_dir():
@@ -57,6 +58,7 @@ def test_config_init(mock_embedding_model_factory):
     assert config.NAME_PREFIX == mock_config_data["name_prefix"]
     assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
     assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
+    assert config.CHUNKING_STRATEGY == mock_config_data["chunking_strategy"]
     assert config.EF_CONSTRUCTIONS == mock_config_data["ef_construction"]
     assert config.EF_SEARCHES == mock_config_data["ef_search"]
     assert config.RERANK == mock_config_data["rerank"]
@@ -86,6 +88,12 @@ def test_config_init(mock_embedding_model_factory):
 
     assert config.embedding_models[1].name.return_value == "text-embedding-ada-002"
     assert config.embedding_models[1].dimension.return_value == 1536
+
+    assert config.SAMPLE_DATA == bool(mock_config_data["sampling"]["sample_data"])
+    assert config.SAMPLE_PERCENTAGE == mock_config_data["sampling"]["sample_percentage"]
+    assert config.SAMPLE_OPTIMUM_K == mock_config_data["sampling"]["optimum_k"]
+    assert config.SAMPLE_MIN_CLUSTER == mock_config_data["sampling"]["min_cluster"]
+    assert config.SAMPLE_MAX_CLUSTER == mock_config_data["sampling"]["max_cluster"]
 
 
 def test_chunk_size_greater_than_overlap_size():

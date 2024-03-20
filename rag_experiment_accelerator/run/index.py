@@ -7,6 +7,7 @@ from rag_experiment_accelerator.config import Config
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+from rag_experiment_accelerator.sampling.clustering import cluster
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.utils import get_index_name
@@ -24,6 +25,10 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     Returns:
         None
     """
+    logger.info(
+        f"Indexing with config from path: {config_dir}/{filename} "
+        f"and data from path: {data_dir}"
+    )
     config = Config(config_dir, data_dir, filename)
     pre_process = Preprocess()
 
@@ -52,7 +57,10 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
                             embedding_model.name,
                             ef_construction,
                             ef_search,
+                            config.SAMPLE_DATA,
+                            config.SAMPLE_PERCENTAGE,
                         )
+
                         logger.info(f"Creating Index with name: {index_name}")
                         create_acs_index(
                             service_endpoint,
@@ -72,8 +80,17 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
     for chunk_size in config.CHUNK_SIZES:
         for overlap in config.OVERLAP_SIZES:
             all_docs = load_documents(
-                config.DATA_FORMATS, config.data_dir, chunk_size, overlap
+                config.CHUNKING_STRATEGY,
+                config.AzureDocumentIntelligenceCredentials,
+                config.DATA_FORMATS,
+                config.data_dir,
+                chunk_size,
+                overlap,
             )
+
+            if config.SAMPLE_DATA:
+                all_docs = cluster(all_docs, data_dir, config)
+
             for embedding_model in config.embedding_models:
                 for ef_construction in config.EF_CONSTRUCTIONS:
                     for ef_search in config.EF_SEARCHES:
@@ -84,16 +101,20 @@ def run(config_dir: str, data_dir: str = "data", filename: str = "config.json") 
                             embedding_model.name,
                             ef_construction,
                             ef_search,
+                            config.SAMPLE_DATA,
+                            config.SAMPLE_PERCENTAGE,
                         )
+
                         data_load = []
-                        for docs in all_docs:
-                            chunk_dict = {
-                                "content": docs.page_content,
-                                "content_vector": embedding_model.generate_embedding(
-                                    chunk=str(pre_process.preprocess(docs.page_content))
-                                ),
-                            }
-                            data_load.append(chunk_dict)
+                        for doc in all_docs:
+                            for value in doc.values():
+                                chunk_dict = {
+                                    "content": value,
+                                    "content_vector": embedding_model.generate_embedding(
+                                        chunk=str(pre_process.preprocess(value))
+                                    ),
+                                }
+                                data_load.append(chunk_dict)
                         upload_data(
                             chunks=data_load,
                             service_endpoint=service_endpoint,

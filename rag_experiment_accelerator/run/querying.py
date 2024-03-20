@@ -244,11 +244,12 @@ def run(config_dir: str, filename: str = "config.json"):
     Returns:
         None
     """
+    logger.info(f"Running querying with config file: {config_dir}/{filename}")
     config = Config(config_dir, filename=filename)
     service_endpoint = config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT
     search_admin_key = config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY
     question_count = 0
-    # ensure we have a valid Azure credential before going throught the loop.
+    # ensure we have a valid Azure credential before going through the loop.
     azure_cred = get_default_az_cred()
     try:
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
@@ -273,6 +274,8 @@ def run(config_dir: str, filename: str = "config.json"):
                             embedding_model.name,
                             ef_construction,
                             ef_search,
+                            config.SAMPLE_DATA,
+                            config.SAMPLE_PERCENTAGE,
                         )
                         logger.info(f"Index: {index_name}")
 
@@ -299,7 +302,15 @@ def run(config_dir: str, filename: str = "config.json"):
                                             user_prompt,
                                             config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
                                         )
-                                        responses = json.loads(llm_response)
+                                        try:
+                                            responses = json.loads(llm_response)
+                                        except json.JSONDecodeError as ef:
+                                            logger.error(
+                                                f"Unable to decode response from LLM {user_prompt}",
+                                                exc_info=ef,
+                                            )
+                                            is_multi_question = False
+                                            continue
                                         new_questions = []
                                         if isinstance(responses, dict):
                                             new_questions = responses["questions"]
