@@ -1,54 +1,40 @@
-from rag_experiment_accelerator.utils.logging import get_logger
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
-from pathlib import Path
+from langchain_core.documents import Document
+
+from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
 
-def azure_document_intelligence_loader(file_path, endpoint, key):
-    """
-    Load a file using Azure Document Intelligence.
-
-    Args:
-        file_path (str): The path to the file.
-        endpoint (str): The Azure Document Intelligence endpoint.
-        key (str): The Azure Document Intelligence key.
-
-    Returns:
-        Document: A Document object.
-    """
-
-    document = []
-    try:
-        loader = AzureAIDocumentIntelligenceLoader(file_path=file_path, api_key=key, api_endpoint=endpoint, api_model="prebuilt-read")
-        document += loader.load()
-    except Exception as e:
-        logger.warning(f"Failed to load {file_path}: {e}")
-        pass
-
-    return document
-
-
-def azure_document_intelligence_directory_loader(pattern, folder_path, endpoint, key):
+def load_with_azure_document_intelligence(
+    environment: Environment,
+    file_paths: list[str],
+    chunk_size: int,
+    overlap_size: int,
+) -> list[Document]:
     """
     Load pdf files from a folder using Azure Document Intelligence.
 
     Args:
-        pattern (str): The file extension to look for.
-        folder_path (str): The path to the folder containing the files.
-        endpoint (str): The Azure Document Intelligence endpoint.
-        key (str): The Azure Document Intelligence key.
+        environment (Environment): The environment class
+        file_paths (list[str]): Sequence of paths to load.
+        chunk_size (int): Unused.
+        overlap_size (int): Unused.
 
     Returns:
         list[Document]: A list of Document objects.
     """
-
-    glob = f"**/[!.]*.{pattern}"
-    p = Path(folder_path)
-    documents = []
-    items = p.glob(glob)
-    for i in items:
-        if i.is_file():
-            documents += azure_document_intelligence_loader(i, endpoint, key)
+    documents: list[Document] = []
+    for file_path in file_paths:
+        try:
+            documents += AzureAIDocumentIntelligenceLoader(
+                file_path=file_path,
+                api_key=environment.azure_document_intelligence_admin_key,
+                api_endpoint=environment.azure_document_intelligence_endpoint,
+                api_model="prebuilt-read",
+            ).load()
+        except Exception as e:
+            logger.warning(f"Failed to load {file_path}: {e}")
 
     return documents

@@ -12,25 +12,26 @@ from tenacity import (
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
 
 class ResponseGenerator:
-    def __init__(self, deployment_name):
-        self.config = Config()
+    def __init__(self, environment: Environment, config: Config, deployment_name: str):
+        self.config = config
         self.deployment_name = deployment_name
         self.temperature = self.config.TEMPERATURE
-        self.client = self._initialize_azure_openai_client()
+        self.client = self._initialize_azure_openai_client(environment)
 
-    def _initialize_azure_openai_client(self):
+    def _initialize_azure_openai_client(self, environment: Environment):
         return AzureOpenAI(
-            azure_endpoint=self.config.OpenAICredentials.OPENAI_ENDPOINT,
-            api_key=self.config.OpenAICredentials.OPENAI_API_KEY,
-            api_version=self.config.OpenAICredentials.OPENAI_API_VERSION,
+            azure_endpoint=environment.openai_endpoint,
+            api_key=environment.openai_api_key,
+            api_version=environment.openai_api_version,
         )
 
-    def generate_response(self, sys_message, prompt):
+    def generate_response(self, sys_message, prompt) -> str:
         """
         Generates a response to a given prompt using the OpenAI Chat API.
 

@@ -1,6 +1,5 @@
 import warnings
 import numpy as np
-import os
 import matplotlib
 import matplotlib.pyplot as plt
 import string
@@ -49,7 +48,7 @@ def spacy_tokenizer(sentence):
     return mytokens
 
 
-def determine_optimum_k_elbow(embeddings_2d, X, min_cluster, max_cluster, data_dir):
+def determine_optimum_k_elbow(embeddings_2d, X, min_cluster, max_cluster, result_dir):
     """
     Determines the optimal number of clusters using the Elbow Method.
 
@@ -58,7 +57,7 @@ def determine_optimum_k_elbow(embeddings_2d, X, min_cluster, max_cluster, data_d
         X (numpy.ndarray): Input data.
         min_cluster (int): Minimum number of clusters to consider.
         max_cluster (int): Maximum number of clusters to consider.
-        data_dir (str): Directory to save the output files.
+        result_dir (str): Directory to save the output files.
 
     Returns:
         int: The optimum number of clusters.
@@ -114,15 +113,12 @@ def determine_optimum_k_elbow(embeddings_2d, X, min_cluster, max_cluster, data_d
     logger.info(f"The optimum cluster number is {opt_k[0]}")
     optimum_k = opt_k[0]
 
-    if not os.path.exists(f"{data_dir}/sampling/"):
-        os.mkdir(f"{data_dir}/sampling/")
-
     plt.plot(K, distortions, "b-")
     plt.plot(x_line, y_line, "r")
     plt.xlabel("k")
     plt.ylabel("Distortion")
     plt.title("The Elbow Method showing the optimal k")
-    plt.savefig(f"{data_dir}/sampling/elbow_{optimum_k}.png")
+    plt.savefig(f"{result_dir}/elbow_{optimum_k}.png")
 
     return optimum_k
 
@@ -185,7 +181,7 @@ def chunk_dict_to_dataframe(all_chunks):
     return df
 
 
-def cluster_kmeans(embeddings_2d, optimum_k, df, data_dir):
+def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     """
     Perform K-means clustering on 2D embeddings.
 
@@ -193,7 +189,7 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, data_dir):
         embeddings_2d (numpy.ndarray): 2D embeddings array.
         optimum_k (int): Number of clusters to create.
         df (pandas.DataFrame): DataFrame containing additional data.
-        data_dir (str): Directory to save the clustering results.
+        result_dir (str): Directory to save the clustering results.
 
     Returns:
         tuple: A tuple containing the following lists:
@@ -211,11 +207,9 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, data_dir):
     kmeans.fit(embeddings_2d)
 
     # Plot
-    if not os.path.exists(f"{data_dir}/sampling/"):
-        os.mkdir(f"{data_dir}/sampling/")
     fig = px.scatter(x=embeddings_2d[:, 0], y=embeddings_2d[:, 1], color=kmeans.labels_)
     fig.write_image(
-        f"{data_dir}/sampling/all_cluster_predictions_cluster_number_{optimum_k}.jpg"
+        f"{result_dir}/all_cluster_predictions_cluster_number_{optimum_k}.jpg"
     )
 
     # Save
@@ -230,13 +224,12 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, data_dir):
     return x, y, text, processed_text, chunk, prediction, prediction_values
 
 
-def cluster(all_chunks, data_dir, config):
+def cluster(all_chunks, config):
     """
     Clusters the given chunks of documents using TF-IDF and K-means clustering.
 
     Args:
         all_chunks (list): A list of document chunks.
-        data_dir (str): The directory where the data will be saved.
         config (object): The configuration object.
 
     Returns:
@@ -266,23 +259,21 @@ def cluster(all_chunks, data_dir, config):
             X,
             config.SAMPLE_MIN_CLUSTER,
             config.SAMPLE_MAX_CLUSTER,
-            data_dir,
+            config.sampling_output_dir,
         )
     else:
         optimum_k = config.SAMPLE_OPTIMUM_K
 
     # Cluster
     x, y, text, processed_text, chunk, prediction, prediction_values = cluster_kmeans(
-        embeddings_2d, optimum_k, df, data_dir
+        embeddings_2d, optimum_k, df, config.sampling_output_dir
     )
 
     # Capture all predictions
     data = {"x": x, "y": y, "text": text, "prediction": prediction, "chunk": chunk}
     df = pd.DataFrame(data)
-    if not os.path.exists(f"{data_dir}/sampling/"):
-        os.mkdir(f"{data_dir}/sampling/")
     df.to_csv(
-        f"{data_dir}/sampling/all_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+        f"{config.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
         sep=",",
     )
 
@@ -307,7 +298,7 @@ def cluster(all_chunks, data_dir, config):
     # Concatenate the list of DataFrames into a single DataFrame
     df_concat = pd.concat(df_list)
     df_concat.to_csv(
-        f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+        config._sampled_cluster_predictions_path(),
         sep=",",
     )
     # Rebuild sampled chunks dict

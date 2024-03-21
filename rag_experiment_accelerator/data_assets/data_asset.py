@@ -3,30 +3,30 @@ from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
 
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.utils.auth import get_default_az_cred
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
 
-def create_data_asset(
-    data_path, data_asset_name, azure_credential, azure_ml_credentials
-):
+def create_data_asset(data_path: str, data_asset_name: str, environment: Environment):
     """
     Creates a new data asset in Azure Machine Learning workspace.
 
     Args:
         data_path (str): The path to the data file.
         data_asset_name (str): The name of the data asset.
-        azure_ml_credentials (AzureMLCredentials): The credentials for the Azure Machine Learning workspace.
+        environment (Environment): Class containing the environment configuration
 
     Returns:
         int: The version of the created data asset.
     """
 
     ml_client = MLClient(
-        azure_credential,
-        azure_ml_credentials.SUBSCRIPTION_ID,
-        azure_ml_credentials.RESOURCE_GROUP_NAME,
-        azure_ml_credentials.WORKSPACE_NAME,
+        get_default_az_cred(),
+        environment.aml_subscription_id,
+        environment.aml_resource_group_name,
+        environment.aml_workspace_name,
     )
 
     aml_dataset = Data(
