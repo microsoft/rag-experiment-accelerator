@@ -12,15 +12,14 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
 def test_load_json_files():
     keys_to_load = ["content", "title"]
     docs = load_structured_files(
-        chunking_strategy="basic",
-        AzureDocumentIntelligenceCredentials=None,
         file_format="JSON",
         language=None,
         loader=CustomJSONLoader,
-        folder_path="rag_experiment_accelerator/doc_loader/tests/test_data/json",
+        file_paths=[
+            "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
+        ],
         chunk_size=1000,
         overlap_size=200,
-        glob_patterns=["valid.json"],
         loader_kwargs={
             "keys_to_load": keys_to_load,
         },
@@ -36,17 +35,16 @@ def test_load_json_files_raises_invalid_keys():
     keys_to_load = ["content", "title"]
     with pytest.raises(ValueError) as exec_info:
         load_structured_files(
-            chunking_strategy="basic",
-            AzureDocumentIntelligenceCredentials=None,
             file_format="JSON",
             language=None,
             loader=CustomJSONLoader,
-            folder_path=os.path.abspath(
-                "rag_experiment_accelerator/doc_loader/tests/test_data/json"
-            ),
+            file_paths=[
+                os.path.abspath(
+                    "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.bad.invalid_keys.json"
+                )
+            ],
             chunk_size=1000,
             overlap_size=200,
-            glob_patterns=["invalid_keys.json"],
             loader_kwargs={
                 "keys_to_load": keys_to_load,
             },
@@ -66,17 +64,16 @@ def test_load_json_files_raises_not_a_list():
     loader = CustomJSONLoader
     with pytest.raises(ValueError) as exec_info:
         load_structured_files(
-            chunking_strategy="basic",
-            AzureDocumentIntelligenceCredentials=None,
             file_format="JSON",
             language=None,
             loader=loader,
-            folder_path=os.path.abspath(
-                "rag_experiment_accelerator/doc_loader/tests/test_data/json"
-            ),
+            file_paths=[
+                os.path.abspath(
+                    "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.bad.not_a_list.json"
+                )
+            ],
             chunk_size=1000,
             overlap_size=200,
-            glob_patterns=["not_a_list.json"],
             loader_kwargs={
                 "keys_to_load": keys_to_load,
             },

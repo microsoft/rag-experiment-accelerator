@@ -1,8 +1,8 @@
 from azure.ai.textanalytics import TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 
-from rag_experiment_accelerator.config.config import AzureSkillsCredentials
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
@@ -40,6 +40,7 @@ class LanguageEvaluator:
 
     def __init__(
         self,
+        environment: Environment,
         query_language="en-us",
         default_language="en",
         country_hint="",
@@ -54,8 +55,8 @@ class LanguageEvaluator:
                 country_hint if country_hint else query_language.split("-")[1]
             )
             self.confidence_threshold = confidence_threshold
-            self.creds = AzureSkillsCredentials.from_env()
             self.max_content_length = 50000  # Data limit
+            self.environment = environment
         except Exception as e:
             logger.error(str(e))
 
@@ -73,11 +74,11 @@ class LanguageEvaluator:
 
     def detect_language(self, text: str):
         try:
-            service_endpoint = self.creds.AZURE_LANGUAGE_SERVICE_ENDPOINT
-            key = self.creds.AZURE_LANGUAGE_SERVICE_KEY
-
             client = TextAnalyticsClient(
-                endpoint=service_endpoint, credential=AzureKeyCredential(key)
+                endpoint=self.environment.azure_language_service_endpoint,
+                credential=AzureKeyCredential(
+                    self.environment.azure_language_service_key
+                ),
             )
             response = client.detect_language(documents=[text])
 
