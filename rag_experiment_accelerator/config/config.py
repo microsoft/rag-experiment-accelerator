@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 class ChunkingStrategy(StrEnum):
     BASIC = "basic"
     AZURE_DOCUMENT_INTELLIGENCE = "azure-document-intelligence"
+    SEMANTIC = "semantic"
 
 
 class Config:
@@ -97,6 +98,8 @@ class Config:
             else ChunkingStrategy.BASIC
         )
         self.LANGUAGE = config_json.get("language", {})
+        self.SEMANTIC_SIMILARITY_THRESHOLD = config_json.get(
+            "semantic_similarity_threshold", .95)
 
         self.embedding_models: list[EmbeddingModel] = []
         embedding_model_config = config_json.get("embedding_models", [])

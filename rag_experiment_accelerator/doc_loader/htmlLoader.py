@@ -13,13 +13,14 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.config.config import ChunkingStrategy
+from rag_experiment_accelerator.config.config import ChunkingStrategy, Config
 
 logger = get_logger(__name__)
 
 
 def load_html_files(
     environment: Environment,
+    config: Config,
     file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
@@ -28,29 +29,38 @@ def load_html_files(
     Load and process HTML files from a given folder path.
 
     Args:
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
+        environment (Environment): The environment class
+        config (Config): The configuration class
         file_paths (list[str]): Sequence of paths to load.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
-        glob_patterns (list[str]): List of file extensions to consider (e.g., ["html", "htm", ...]).
 
     Returns:
         list[Document]: A list of processed and split document chunks.
     """
 
     logger.debug("Loading html files")
+    
+    if config.CHUNKING_STRATEGY == ChunkingStrategy.SEMANTIC:
+        return _load_html_files_semantic(
+            file_paths=file_paths,
+            chunk_size=chunk_size,
+            overlap_size=overlap_size,
+            similarity_score=config.SEMANTIC_SIMILARITY_SCORE
+        )
 
-    return load_structured_files(
-        file_format="HTML",
-        language="html",
-        loader=BSHTMLLoader,
-        file_paths=file_paths,
-        chunk_size=chunk_size,
-        overlap_size=overlap_size,
-        loader_kwargs={"open_encoding": "utf-8"},
-    )
+    else:
+        return load_structured_files(
+            file_format="HTML",
+            language="html",
+            loader=BSHTMLLoader,
+            file_paths=file_paths,
+            chunk_size=chunk_size,
+            overlap_size=overlap_size,
+            loader_kwargs={"open_encoding": "utf-8"},
+        )
 
-def load_html_files_semantic(    
+def _load_html_files_semantic(
     file_paths: list[str],
     chunk_size: int = 0,
     overlap_size: int = 0,

@@ -5,12 +5,14 @@ from rag_experiment_accelerator.doc_loader.structuredLoader import (
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
+from rag_experiment_accelerator.config.config import Config
 
 logger = get_logger(__name__)
 
 
 def load_markdown_files(
     environment: Environment,
+    config: Config,
     file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
