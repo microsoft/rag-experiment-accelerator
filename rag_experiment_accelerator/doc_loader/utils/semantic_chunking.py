@@ -1,5 +1,8 @@
 from sklearn.metrics.pairwise import cosine_similarity
+from rag_experiment_accelerator.utils.logging import get_logger
+from langchain_core.documents import Document
 
+logger = get_logger(__name__)
 
 def get_semantic_similarity(embeddings_dict, text_dict, threshold):
     high_similarity = {}
@@ -14,7 +17,7 @@ def get_semantic_similarity(embeddings_dict, text_dict, threshold):
     for key, array_of_keys in high_sim.items():
         similar_text = ""
         for key_dep in array_of_keys:
-            similar_text += ", " + text_dict[key_dep]
+            similar_text += text_dict[key_dep] + ", "
         similar_text += ", " + text_dict[key]
         high_similarity[key] = similar_text
 
@@ -28,7 +31,7 @@ def generate_pairwise_embeddings(embeddings, threshold):
         for key2, embedding2 in embeddings.items():
             if key1 != key2:
                 similarity = cosine_similarity([embedding1], [embedding2])[0][0]
-                print(f"{similarity}--{threshold}")
+                logger.debug(f"{similarity}--{threshold}")
                 key_to_check = (key1, key2)
 
                 if key_to_check in cosine_similarities or tuple(reversed(key_to_check)) in cosine_similarities:
