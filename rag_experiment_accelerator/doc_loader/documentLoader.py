@@ -1,5 +1,3 @@
-from typing import Union
-
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files, load_html_files_semantic
 from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files

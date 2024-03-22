@@ -1,8 +1,8 @@
 from sklearn.metrics.pairwise import cosine_similarity
 from rag_experiment_accelerator.utils.logging import get_logger
-from langchain_core.documents import Document
 
 logger = get_logger(__name__)
+
 
 def get_semantic_similarity(embeddings_dict, text_dict, threshold):
     high_similarity = {}

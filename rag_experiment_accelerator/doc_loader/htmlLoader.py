@@ -1,5 +1,3 @@
-from glob import glob
-import os
 from langchain_community.document_loaders import BSHTMLLoader
 from unstructured.partition.html import partition_html
 from unstructured.chunking.title import chunk_by_title
@@ -40,7 +38,7 @@ def load_html_files(
     """
 
     logger.debug("Loading html files")
-    
+
     if config.CHUNKING_STRATEGY == ChunkingStrategy.SEMANTIC:
         return _load_html_files_semantic(
             file_paths=file_paths,
@@ -59,6 +57,7 @@ def load_html_files(
             overlap_size=overlap_size,
             loader_kwargs={"open_encoding": "utf-8"},
         )
+
 
 def _load_html_files_semantic(
     file_paths: list[str],
@@ -105,8 +104,6 @@ def _load_html_files_semantic(
                 doc = nlp(chunk.text)
                 embeddings_dict[chunk.id] = doc.vector
         high_similarity, low_similarity = get_semantic_similarity(embeddings_dict, unique_dict, similarity_score)
-        all_chunks.update(high_similarity) 
+        all_chunks.update(high_similarity)
         all_chunks.update(low_similarity)
     return(all_chunks)
-
-
