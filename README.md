@@ -106,8 +106,12 @@ LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
-conda create -n rag-test python=3.11
-conda activate rag-test
+conda create -n rag-experiment python=3.11
+conda init bash
+```
+Close your terminal, open a new one, and run:
+```bash
+conda activate rag-experiment
 pip install .
 ```
 
@@ -184,6 +188,9 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   -d "The directory holding the configuration files and data. Defaults to current working directory"
   -cf "JSON config filename. Defaults to config.json"
   ```
+
+Alternatively, you can run the above steps (apart from `02_qa_generation.py`) using an Azure ML pipeline. To do so, follow [the guide here](./docs/azureml-pipeline.md).
+
 # Description of configuration elements
 
 ```json
@@ -262,7 +269,7 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 
 ### Hyper Parameters
 
-![Hyper Parameters](./images/hyper-parameters.png)
+![Hyper Parameters](./images/hyper_parameters.png)
 
 ### Sample Metrics
 

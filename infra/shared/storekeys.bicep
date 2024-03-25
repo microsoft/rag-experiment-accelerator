@@ -3,8 +3,8 @@ param azureOpenAIName string = ''
 param azureAISearchName string = ''
 param rgName string = ''
 // Do not use _ in the key names as it is not allowed in the key vault secret name
-param openAIKeyName string = 'AZURE-OPENAI-KEY'
-param searchKeyName string = 'AZURE-SEARCH-KEY'
+param openAIKeyName string = 'openai-api-key'
+param searchKeyName string = 'azure-search-admin-key'
 
 resource openAIKeySecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   parent: keyVault
