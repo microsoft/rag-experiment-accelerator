@@ -1,5 +1,5 @@
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
-from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files, load_html_files_semantic
+from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
 from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
 from rag_experiment_accelerator.doc_loader.markdownLoader import (
     load_markdown_files,
@@ -39,8 +39,6 @@ def determine_processor(chunking_strategy: ChunkingStrategy, format: str) -> cal
     """
     if chunking_strategy == ChunkingStrategy.AZURE_DOCUMENT_INTELLIGENCE:
         return load_with_azure_document_intelligence
-    if chunking_strategy == ChunkingStrategy.SEMANTIC:
-        return load_html_files_semantic
     else:
         return _FORMAT_PROCESSORS[format]
 
