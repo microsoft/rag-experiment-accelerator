@@ -158,6 +158,9 @@ class Config:
                                 embedding_model=embedding_model,
                                 ef_construction=ef_construction,
                                 ef_search=ef_search,
+                                sampling_percentage=self.SAMPLE_PERCENTAGE
+                                if self.SAMPLE_DATA
+                                else 0,
                             )
 
     def _initialize_paths(
