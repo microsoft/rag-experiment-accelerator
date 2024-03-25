@@ -73,7 +73,7 @@ def _load_html_files_semantic(
         overlap_size (int, optional): The maximum number of tokens to overlap between chunks. Defaults to 0.
         similarity_score (float, optional): The similarity score to use for semantic chunking. Defaults to 0.95.
     """
-    
+
     logger.debug("Loading html files semantically")
 
     nlp = spacy.load("en_core_web_md")
@@ -81,7 +81,7 @@ def _load_html_files_semantic(
     all_chunks = {}
 
     for filename in file_paths:
-        ## TODO: Handle Metadata in some way?
+        # TODO: Handle Metadata in some way?
         elements = partition_html(
             filename=filename
         )
@@ -106,4 +106,4 @@ def _load_html_files_semantic(
         high_similarity, low_similarity = get_semantic_similarity(embeddings_dict, unique_dict, similarity_score)
         all_chunks.update(high_similarity)
         all_chunks.update(low_similarity)
-    return(all_chunks)
+    return (all_chunks)
