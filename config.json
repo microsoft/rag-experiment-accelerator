@@ -1,14 +1,7 @@
 {
-    "name_prefix": "surfacesample",
-    "sampling": {
-        "sample_data": false,
-        "sample_percentage": 5,
-        "optimum_k": "auto",
-        "min_cluster": 2,
-        "max_cluster": 30
-    },
+    "name_prefix": "surface",
     "chunking": {
-        "chunk_size": [500],
+        "chunk_size": [1000],
         "overlap_size": [200]
     },
     "embedding_models": [

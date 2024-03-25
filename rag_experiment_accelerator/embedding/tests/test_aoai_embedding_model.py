@@ -1,7 +1,8 @@
-from unittest.mock import patch
-from rag_experiment_accelerator.config.credentials import OpenAICredentials
+from unittest.mock import patch, MagicMock
+
 from openai.types.create_embedding_response import CreateEmbeddingResponse, Usage
 from openai.types.embedding import Embedding
+
 from rag_experiment_accelerator.embedding.aoai_embedding_model import AOAIEmbeddingModel
 
 
@@ -21,19 +22,19 @@ def test_generate_embedding(mock_client):
 
     mock_client().embeddings.create.return_value = mock_embeddings
 
-    creds = OpenAICredentials("azure", "", "", "")
-    model = AOAIEmbeddingModel("text-embedding-ada-002", creds)
+    environment = MagicMock()
+    model = AOAIEmbeddingModel("text-embedding-ada-002", environment=environment)
     embeddings = model.generate_embedding("Hello world")
     assert embeddings == mock_embeddings.data[0].embedding
 
 
 def test_emebdding_dimension_has_default():
-    creds = OpenAICredentials("azure", "", "", "")
-    model = AOAIEmbeddingModel("text-embedding-ada-002", creds)
+    environment = MagicMock()
+    model = AOAIEmbeddingModel("text-embedding-ada-002", environment)
     assert model.dimension == 1536
 
 
 def test_can_set_embedding_dimension():
-    creds = OpenAICredentials("azure", "", "", "")
-    model = AOAIEmbeddingModel("model_name", creds, 123)
+    environment = MagicMock()
+    model = AOAIEmbeddingModel("text-embedding-ada-002", environment, 123)
     assert model.dimension == 123

@@ -1,65 +1,36 @@
 from unittest.mock import MagicMock, patch
-import pytest
+from rag_experiment_accelerator.config.config import Config
 
 from rag_experiment_accelerator.run.index import run
+from rag_experiment_accelerator.config.paths import get_all_file_paths
 
 
-@pytest.fixture
-def mock_config():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_preprocess():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_logger():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_create_acs_index():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_load_documents():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_cluster():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_upload_data():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_embedding_model():
-    return MagicMock()
-
-
+@patch("rag_experiment_accelerator.config.config.os.makedirs")
+@patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
+@patch("rag_experiment_accelerator.run.index.upload_data")
+@patch("rag_experiment_accelerator.run.index.cluster")
+@patch("rag_experiment_accelerator.run.index.load_documents")
+@patch("rag_experiment_accelerator.run.index.create_acs_index")
+@patch("rag_experiment_accelerator.run.index.logger")
+@patch("rag_experiment_accelerator.run.index.Preprocess")
+@patch("rag_experiment_accelerator.run.index.Config.__init__", return_value=None)
+@patch("rag_experiment_accelerator.run.index.Environment")
 def test_run(
-    mock_config,
-    mock_embedding_model,
+    mock_environment,
+    _,
     mock_preprocess,
     mock_logger,
     mock_create_acs_index,
     mock_load_documents,
     mock_cluster,
     mock_upload_data,
+    mock_embedding_model,
+    __,
 ):
     # Arrange
-    config_dir = "config_dir"
-    data_dir = "data_dir"
-    filename = "config.json"
+    data_dir = "./data"
 
-    mock_config.return_value = mock_config
+    mock_config = Config()
     mock_config.artifacts_dir = "artifacts_dir"
     mock_config.CHUNK_SIZES = [10, 20]
     mock_config.OVERLAP_SIZES = [5, 10]
@@ -68,6 +39,7 @@ def test_run(
     embedding_models = [mock_embedding_model for _ in range(2)]
 
     # Set a side effect to assign a dimension value to each embedding model
+    mock_embedding_model = MagicMock()
     mock_embedding_model.side_effect = [
         MagicMock(dimension=100 * i) for i in range(1, 3)
     ]
@@ -78,19 +50,20 @@ def test_run(
     mock_config.SAMPLE_PERCENTAGE = 50
     mock_config.NAME_PREFIX = "prefix"
     mock_config.LANGUAGE = {"analyzers": ["analyzer1", "analyzer2"]}
-    mock_config.AzureSearchCredentials.AZURE_SEARCH_SERVICE_ENDPOINT = (
-        "service_endpoint"
+
+    mock_environment.azure_search_service_endpoint = "service_endpoint"
+    mock_environment.azure_search_admin_key = "admin_key"
+    mock_environment.azure_document_intelligence_endpoint = (
+        "document_intelligence_endpoint"
     )
-    mock_config.AzureSearchCredentials.AZURE_SEARCH_ADMIN_KEY = "admin_key"
-    mock_config.AzureDocumentIntelligenceCredentials = (
-        "document_intelligence_credentials"
-    )
+    mock_environment.azure_document_intelligence_key = "document_intelligence_key"
+
     mock_config.DATA_FORMATS = ["format1", "format2"]
     mock_config.data_dir = "data_dir"
     mock_config.CHUNKING_STRATEGY = "chunking_strategy"
     mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "oai_deployment_name"
 
-    mock_preprocess.preprocess.return_value = "preprocessed_value"
+    mock_preprocess.return_value.preprocess.return_value = "preprocessed_value"
 
     mock_load_documents.return_value = [
         {"doc1": "value1"},
@@ -103,52 +76,31 @@ def test_run(
         {"cluster2": "value2"},
         {"cluster3": "value3"},
     ]
+    file_paths = get_all_file_paths(data_dir)
 
     # Act
-    with patch("rag_experiment_accelerator.run.index.Config", mock_config), patch(
-        "rag_experiment_accelerator.run.index.Preprocess", mock_preprocess
-    ), patch("rag_experiment_accelerator.run.index.logger", mock_logger), patch(
-        "rag_experiment_accelerator.run.index.create_acs_index", mock_create_acs_index
-    ), patch(
-        "rag_experiment_accelerator.run.index.load_documents", mock_load_documents
-    ), patch(
-        "rag_experiment_accelerator.run.index.cluster", mock_cluster
-    ), patch(
-        "rag_experiment_accelerator.run.index.upload_data", mock_upload_data
-    ), patch(
-        "rag_experiment_accelerator.run.index.open", create=True
-    ), patch(
-        "rag_experiment_accelerator.run.index.json.dump"
-    ) as mock_json_dump:
-        run(config_dir, data_dir, filename)
+    for index_config in mock_config.index_configs():
+        run(mock_environment, mock_config, index_config, file_paths)
 
-        # Assert
-        assert mock_config.call_count == 1
-        assert mock_preprocess.call_count == 1
-        assert mock_logger.error.call_count == 0
-        assert mock_create_acs_index.call_count == 32
-        assert mock_load_documents.call_count == 4
-        assert mock_cluster.call_count == 4
-        assert mock_upload_data.call_count == 32
-        assert mock_json_dump.call_count == 1
-        assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
-        assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
+    # Assert
+    assert mock_preprocess.call_count == 32
+    assert mock_logger.error.call_count == 0
+    assert mock_create_acs_index.call_count == 32
+    assert mock_load_documents.call_count == 32
+    assert mock_cluster.call_count == 32
+    assert mock_upload_data.call_count == 32
+    assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
+    assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
 
-        assert mock_load_documents.call_args_list[0][0][0] == "chunking_strategy"
-        assert (
-            mock_load_documents.call_args_list[0][0][1]
-            == "document_intelligence_credentials"
-        )
-        assert mock_load_documents.call_args_list[0][0][2] == ["format1", "format2"]
-        assert mock_load_documents.call_args_list[0][0][3] == "data_dir"
-        assert mock_load_documents.call_args_list[0][0][4] == 10
-        assert mock_load_documents.call_args_list[0][0][5] == 5
-        # ... assert other load_documents calls
+    assert mock_load_documents.call_args_list[0][0][1] == "chunking_strategy"
+    assert mock_load_documents.call_args_list[0][0][2] == ["format1", "format2"]
+    assert mock_load_documents.call_args_list[0][0][3] == file_paths
+    assert mock_load_documents.call_args_list[0][0][4] == 10
+    assert mock_load_documents.call_args_list[0][0][5] == 5
 
-        assert mock_cluster.call_args_list[0][0][0] == [
-            {"doc1": "value1"},
-            {"doc2": "value2"},
-            {"doc3": "value3"},
-        ]
-        assert mock_cluster.call_args_list[0][0][1] == "data_dir"
-        assert mock_cluster.call_args_list[0][0][2] == mock_config
+    assert mock_cluster.call_args_list[0][0][0] == [
+        {"doc1": "value1"},
+        {"doc2": "value2"},
+        {"doc3": "value3"},
+    ]
+    assert mock_cluster.call_args_list[0][0][1] == mock_config

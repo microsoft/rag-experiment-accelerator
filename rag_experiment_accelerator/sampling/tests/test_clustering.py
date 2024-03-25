@@ -88,6 +88,12 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
     config.SAMPLE_MIN_CLUSTER = 1
     config.SAMPLE_MAX_CLUSTER = 10
     config.SAMPLE_PERCENTAGE = 100
+    config.sampling_output_dir = os.path.join(mock_data_dir, "sampling")
+    config._sampled_cluster_predictions_path = lambda: os.path.join(
+        config.sampling_output_dir,
+        f"sampled_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+    )
+    os.makedirs(config.sampling_output_dir)
 
     with patch(
         "rag_experiment_accelerator.sampling.clustering.logger", mock_logger
@@ -109,14 +115,20 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         return_value=mock_df_concat,
     ):
         # Act
-        result = cluster(all_chunks, mock_data_dir, config)
+        result = cluster(all_chunks, config)
         assert len(result) == 0
         # Assert
         assert os.path.exists(
-            f"{mock_data_dir}/sampling/all_cluster_predictions_cluster_number_2.csv"
+            os.path.join(
+                config.sampling_output_dir,
+                "all_cluster_predictions_cluster_number_2.csv",
+            )
         )
         assert os.path.exists(
-            f"{mock_data_dir}/sampling/sampled_cluster_predictions_cluster_number_2.csv"
+            os.path.join(
+                config.sampling_output_dir,
+                "sampled_cluster_predictions_cluster_number_2.csv",
+            )
         )
         assert mock_logger.info.call_count == 4
         assert (
