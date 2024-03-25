@@ -32,7 +32,7 @@ PyMuPDF==1.23.26
 PyPDF2~=3.0
 rouge-score==0.1.2
 scikit-learn==1.4.1post1
-sentence-transformers==2.5.1
+sentence-transformers==2.6.0
 spacy==3.7.4
 textdistance==4.6.1
 tiktoken==0.6.0
