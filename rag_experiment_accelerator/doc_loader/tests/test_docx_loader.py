@@ -11,6 +11,7 @@ def test_load_docx_files():
 
     original_doc = load_docx_files(
         environment=Mock(),
+        config=Mock(),
         file_paths=get_all_file_paths(folder_path),
         chunk_size=chunk_size,
         overlap_size=overlap_size,
