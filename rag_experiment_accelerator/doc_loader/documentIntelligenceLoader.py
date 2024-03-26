@@ -7,15 +7,15 @@ from rag_experiment_accelerator.config.environment import Environment
 logger = get_logger(__name__)
 
 
-def get_supported_formats() -> list[str]:
+def is_supported_by_document_intelligence(format: str) -> bool:
     """
-    Get supported formats for the Azure Document Intelligence loader.
+    Returns whether a format is supported by Azure Document Intelligence or not.
 
     Returns:
-        list[str]: List of formats.
+        bool: True if the format is supported, False otherwise.
     """
 
-    return ["pdf", "html", "markdown", "json", "text", "docx"]
+    return format.lower() in ["pdf", "html", "markdown", "json", "text", "docx"]
 
 
 def load_with_azure_document_intelligence(
