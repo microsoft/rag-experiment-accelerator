@@ -168,6 +168,9 @@ class Config:
                                 sampling_percentage=self.SAMPLE_PERCENTAGE
                                 if self.SAMPLE_DATA
                                 else 0,
+                                generate_title=self.GENERATE_TITLE,
+                                generate_summary=self.GENERATE_SUMMARY,
+                                override_content_with_summary=self.OVERRIDE_CONTENT_WITH_SUMMARY,
                             )
 
     def _initialize_paths(

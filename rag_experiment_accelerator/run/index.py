@@ -153,7 +153,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
                 else:
                     embedded_chunks.append(chunk_dict)
 
-    if config.OVERRIDE_CONTENT_WITH_SUMMARY:
+    if config.override_content_with_summary:
         for chunk in chunks:
             if "summary" in chunk:
                 chunk["content"] = chunk["summary"]

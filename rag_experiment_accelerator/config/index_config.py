@@ -30,6 +30,9 @@ class IndexConfig:
     ef_construction: int
     ef_search: int
     sampling_percentage: int = 0
+    generate_title: bool = False
+    generate_summary: bool = False
+    override_content_with_summary: bool = False
 
     def index_name(self) -> str:
         """
@@ -38,14 +41,17 @@ class IndexConfig:
         """
         index_name = (
             f"{self.index_name_prefix}"
-            f"_{str(self.chunk_size)}"
-            f"_{str(self.overlap)}"
-            f"_{str(self.embedding_model.name.lower())}"
-            f"_{str(self.ef_construction)}"
-            f"_{str(self.ef_search)}"
+            f"_cs-{str(self.chunk_size)}"
+            f"_o-{str(self.overlap)}"
+            f"_em-{str(self.embedding_model.name.lower())}"
+            f"_efc-{str(self.ef_construction)}"
+            f"_efs-{str(self.ef_search)}"
+            f"_sp-{str(self.sampling_percentage)}"
+            f"_t-{int(self.generate_title)}"
+            f"_s-{int(self.generate_summary)}"
+            f"_oc-{int(self.override_content_with_summary)}"
         )
-        if self.sampling_percentage:
-            index_name += f"_{str(self.sampling_percentage)}"
+
         return index_name
 
     @classmethod
@@ -55,7 +61,13 @@ class IndexConfig:
         Reverse of index_name().
         """
         values = index_name.split("_")
-        assert len(values) == 6 or len(values) == 7, "Invalid index name"
+        if len(values) != 10:
+            raise (f"Invalid index name [{index_name}]")
+
+        values = [
+            value.split("-")[1] for value in values
+        ]  # Extract values from the string
+
         return IndexConfig(
             index_name_prefix=values[0],
             chunk_size=int(values[1]),
@@ -63,5 +75,8 @@ class IndexConfig:
             embedding_model=config._find_embedding_model_by_name(values[3]),
             ef_construction=int(values[4]),
             ef_search=int(values[5]),
-            sampling_percentage=int(values[6]) if len(values) == 7 else 0,
+            sampling_percentage=int(values[6]),
+            generate_title=bool(values[7]),
+            generate_summary=bool(values[8]),
+            override_content_with_summary=bool(values[9]),
         )

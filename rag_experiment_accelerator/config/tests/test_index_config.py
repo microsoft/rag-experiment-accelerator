@@ -14,6 +14,9 @@ def test_index_config_to_index_name():
         embedding_model=mock_embedding_model,
         ef_construction=3,
         ef_search=4,
+        generate_summary=False,
+        generate_title=False,
+        override_content_with_summary=False,
     )
 
     assert index_config.index_name() == "prefix_1_2_modelname_3_4"
