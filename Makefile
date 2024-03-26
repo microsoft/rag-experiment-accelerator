@@ -51,3 +51,11 @@ clear_artifacts: ## ❌ Delete all document chunks, index data and evaluation sc
 	&& rm -rf ./artifacts/eval_score \
 	&& rm -rf ./artifacts/index_data \
 	&& rm -rf ./artifacts/outputs
+
+test: ## 🧪 Run tests
+	$(call target_title, "running tests")
+	pytest . --cov=. --cov-report=html --cov-config=.coveragerc
+
+flake: ## 🧹 Run flake8
+	$(call target_title, "running flake8")
+	flake8 --extend-ignore=E501
