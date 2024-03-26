@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from unittest.mock import patch
+from unittest.mock import patch, Mock, ANY
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     my_hash,
@@ -10,14 +10,12 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     we_need_multiple_questions,
     do_we_need_multiple_questions,
 )
-
 from rag_experiment_accelerator.llm.prompts import (
+    multiple_prompt_instruction,
     prompt_instruction_title,
     prompt_instruction_summary,
-    multiple_prompt_instruction,
 )
 from rag_experiment_accelerator.run.index import generate_summary, generate_title
-from rag_experiment_accelerator.config import Config
 
 
 def test_my_hash_with_string():
@@ -103,7 +101,7 @@ def test_generate_summary(mock_response_generator):
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.my_hash")
 def test_upload_data(
     mock_my_hash,
-    mock_AzureKeyCredential,
+    mock_azure_key_credential,
     mock_SearchClient,
 ):
     # Arrange
@@ -111,28 +109,32 @@ def test_upload_data(
         {
             "content": "test content",
             "content_vector": "test_vector",
-            "filename": "dummy.pdf",
-            "source_display_name": "dummy",
+            "filename": "test_file_name",
+            "source_display_name": "test_source_name",
         }
     ]
-    mock_service_endpoint = "test_endpoint"
-    mock_index_name = "test_index"
     mock_search_key = "test_key"
     mock_my_hash.return_value = "test_hash"
-    mock_AzureKeyCredential.return_value = "test_credential"
-    config = Config()
+    mock_environment = Mock()
+    mock_environment.azure_search_service_endpoint = "test_endpoint"
+    mock_environment.azure_search_admin_key = "test_key"
+    mock_config = Mock()
+    mock_config.MAX_WORKER_THREADS = None
 
     # Act
     upload_data(
-        mock_chunks, mock_service_endpoint, mock_index_name, mock_search_key, config
+        mock_environment,
+        mock_config,
+        mock_chunks,
+        "test_index",
     )
 
     # Assert
-    mock_AzureKeyCredential.assert_called_once_with(mock_search_key)
+    mock_azure_key_credential.assert_called_once_with(mock_search_key)
     mock_SearchClient.assert_called_once_with(
-        endpoint=mock_service_endpoint,
-        index_name=mock_index_name,
-        credential="test_credential",
+        endpoint="test_endpoint",
+        index_name="test_index",
+        credential=ANY,
     )
     mock_my_hash.assert_called_once_with(mock_chunks[0]["content"])
     mock_SearchClient().upload_documents.assert_called_once()
@@ -158,62 +160,65 @@ def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads
     mock_json_loads.side_effect = json.JSONDecodeError("Invalid JSON", doc="", pos=0)
 
     # Act
-    result = generate_qna(mock_docs, mock_deployment_name)
+    result = generate_qna(Mock(), Mock(), mock_docs, mock_deployment_name)
 
     # Assert
     assert len(result) == 0
     mock_json_loads.assert_called_once_with(mock_response)
 
 
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+@patch(
+    "rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator",
+    return_value=Mock(),
+)
 def test_we_need_multiple_questions(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
-    azure_oai_deployment_name = "TestDeployment"
     mock_response = "The meaning of life is 42."
-    mock_response_generator().generate_response.return_value = mock_response
+    mock_response_generator.generate_response.return_value = mock_response
     expected_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
 
     # Act
-    result = we_need_multiple_questions(question, azure_oai_deployment_name)
+    result = we_need_multiple_questions(question, mock_response_generator)
 
     # Assert
-    mock_response_generator.assert_called_with(
-        deployment_name=azure_oai_deployment_name
-    )
-    mock_response_generator().generate_response.assert_called_once_with(
+    mock_response_generator.generate_response.assert_called_once_with(
         expected_prompt_instruction, ""
     )
     assert result == mock_response
 
 
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+@patch(
+    "rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator",
+    return_value=Mock(),
+)
 def test_do_we_need_multiple_questions_true(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
-    azure_oai_deployment_name = "TestDeployment"
-    mock_response_generator().generate_response.return_value = '{"category": "complex"}'
+    mock_response_generator.generate_response.return_value = '{"category": "complex"}'
 
     # Act
-    result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
+    result = do_we_need_multiple_questions(question, mock_response_generator)
 
     # Assert
-    mock_response_generator().generate_response.assert_called_once()
+    mock_response_generator.generate_response.assert_called_once()
     assert result is True
 
 
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
+@patch(
+    "rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator",
+    return_value=Mock(),
+)
 def test_do_we_need_multiple_questions_false(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
-    azure_oai_deployment_name = "TestDeployment"
-    mock_response_generator().generate_response.return_value = '{"category": ""}'
+    mock_response_generator.generate_response.return_value = '{"category": ""}'
 
     # Act
-    result = do_we_need_multiple_questions(question, azure_oai_deployment_name)
+    result = do_we_need_multiple_questions(question, mock_response_generator)
 
     # Assert
-    mock_response_generator().generate_response.assert_called_once()
+    mock_response_generator.generate_response.assert_called_once()
     assert result is False

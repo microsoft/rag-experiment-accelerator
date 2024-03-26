@@ -181,4 +181,11 @@ data/*
 #  promptflow folders
 .promptflow
 .azure
-test_artifacts_dir/*
+
+.vscode
+
+# AzureML config folder
+.azureml/*
+
+# Generated Conda file
+conda.generated.yaml

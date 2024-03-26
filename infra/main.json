@@ -1023,11 +1023,11 @@
             },
             "openAIKeyName": {
               "type": "string",
-              "defaultValue": "AZURE-OPENAI-KEY"
+              "defaultValue": "openai_api_key"
             },
             "searchKeyName": {
               "type": "string",
-              "defaultValue": "AZURE-SEARCH-KEY"
+              "defaultValue": "azure_search_admin_key"
             }
           },
           "resources": [

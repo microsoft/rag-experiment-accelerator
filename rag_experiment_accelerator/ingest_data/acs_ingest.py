@@ -2,8 +2,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import hashlib
 import json
-from tqdm import tqdm
-
+import traceback
 
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
@@ -20,6 +19,7 @@ from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.timetook import TimeTook
+from rag_experiment_accelerator.config.environment import Environment
 
 pre_process = Preprocess()
 
@@ -41,11 +41,10 @@ def my_hash(s):
 
 
 def upload_data(
-    chunks: list,
-    service_endpoint: str,
-    index_name: str,
-    search_key: str,
+    environment: Environment,
     config: Config,
+    chunks: list,
+    index_name: str,
 ):
     """
     Uploads data to an Azure AI Search index.
@@ -56,34 +55,28 @@ def upload_data(
     The upload process is done in parallel using a ThreadPoolExecutor.
 
     Args:
-        chunks (list): A list of data chunks to upload.
-        service_endpoint (str): The endpoint URL for the Azure AI Search service.
-        index_name (str): The name of the index to upload data to.
-        search_key (str): The search key for the Azure AI Search service.
-        config (Config):
+        environment (Environment): The environment configuration.
+        config (Config): The configuration object.
+        chunks (list): A list of dictionaries, each containing a chunk of content to be uploaded.
+        index_name (str): The name of the index to upload the data to.
 
     Returns:
         None
     """
-    credential = AzureKeyCredential(search_key)
+    credential = AzureKeyCredential(environment.azure_search_admin_key)
     search_client = SearchClient(
-        endpoint=service_endpoint, index_name=index_name, credential=credential
+        endpoint=environment.azure_search_service_endpoint,
+        index_name=index_name,
+        credential=credential,
     )
 
-    logger.info(f"Preparing data for upload, {len(chunks)}" " documents to upload")
+    logger.info(f"Preparing data for upload, {len(chunks)} documents to upload")
     documents = chunks_to_index_documents(chunks)
+
     with ExitStack() as stack:
         with TimeTook("uploading data to Azure Cognitive Search", logger=logger):
             executor = stack.enter_context(
                 ThreadPoolExecutor(config.MAX_WORKER_THREADS)
-            )
-            progress_bar = stack.enter_context(
-                tqdm(
-                    total=len(documents),
-                    desc="upserting documents to Azure Cognitive Search",
-                    unit="doc",
-                    unit_scale=True,
-                )
             )
 
             futures = {
@@ -97,15 +90,13 @@ def upload_data(
                     future.result()
                 except Exception as ex:
                     logger.error(f"Failed to upload document {document}, error: {ex}")
-                progress_bar.update(1)
 
     logger.info(
-        f"Uploaded {len(documents)} documents"
-        f"out of {len(chunks)} documents to Azure Search Index"
+        f"Uploaded {len(documents)} documents out of {len(chunks)} documents to Azure Search Index"
     )
 
 
-def generate_qna(docs, azure_oai_deployment_name):
+def generate_qna(environment, config, docs, azure_oai_deployment_name):
     """
     Generates a set of questions and answers from a list of documents using a language model.
 
@@ -119,6 +110,9 @@ def generate_qna(docs, azure_oai_deployment_name):
     column_names = ["user_prompt", "output_prompt", "context"]
 
     new_df = pd.DataFrame(columns=column_names)
+    response_generator = ResponseGenerator(
+        environment, config, azure_oai_deployment_name
+    )
 
     for doc in docs:
         # what happens with < 50 ? Currently we are skipping them
@@ -127,9 +121,7 @@ def generate_qna(docs, azure_oai_deployment_name):
         if len(chunk["content"]) > 50:
             response = ""
             try:
-                response = ResponseGenerator(
-                    deployment_name=azure_oai_deployment_name
-                ).generate_response(
+                response = response_generator.generate_response(
                     generate_qna_instruction_system_prompt,
                     generate_qna_instruction_user_prompt + chunk["content"],
                 )
@@ -146,22 +138,22 @@ def generate_qna(docs, azure_oai_deployment_name):
 
             except Exception as e:
                 logger.error(
-                    "could not generate a valid json so moving over to next"
-                    " question!"
+                    f"could not generate a valid json so moving over to next "
+                    f"question! Error message: {str(e)}"
                 )
-                logger.debug(e)
+                logger.error(traceback.format_exc())
                 logger.debug(f"LLM Response: {response}")
 
     return new_df
 
 
-def we_need_multiple_questions(question, azure_oai_deployment_name):
+def we_need_multiple_questions(question, response_generator: ResponseGenerator):
     """
     Generates a response to a given question using a language model with multiple prompts.
 
     Args:
         question (str): The question to generate a response for.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment
+        response_generator (ResponseGenerator): Initialised ResponseGenerator to use
 
     Returns:
         str: The generated response.
@@ -169,19 +161,17 @@ def we_need_multiple_questions(question, azure_oai_deployment_name):
     full_prompt_instruction = (
         multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
-    response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
-    ).generate_response(full_prompt_instruction, "")
+    response = response_generator.generate_response(full_prompt_instruction, "")
     return response
 
 
-def do_we_need_multiple_questions(question, azure_oai_deployment_name):
+def do_we_need_multiple_questions(question, response_generator: ResponseGenerator):
     """
     Determines if we need to ask multiple questions based on the response generated by the model.
 
     Args:
         question (str): The question to ask.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment.
+        response_generator (ResponseGenerator): Initialised ResponseGenerator to use
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
@@ -190,9 +180,7 @@ def do_we_need_multiple_questions(question, azure_oai_deployment_name):
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
     try:
-        response = ResponseGenerator(
-            deployment_name=azure_oai_deployment_name
-        ).generate_response(full_prompt_instruction, "")
+        response = response_generator.generate_response(full_prompt_instruction, "")
 
         json_output = json.loads(response)
         question_complexity = json_output.get("category", "")

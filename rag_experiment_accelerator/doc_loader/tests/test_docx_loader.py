@@ -1,15 +1,17 @@
+from unittest.mock import Mock
+
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
+from rag_experiment_accelerator.config.paths import get_all_file_paths
 
 
 def test_load_docx_files():
-    folder_path = "./data/"
+    folder_path = "./data/docx"
     chunk_size = 1000
     overlap_size = 400
 
     original_doc = load_docx_files(
-        chunking_strategy="basic",
-        AzureDocumentIntelligenceCredentials=None,
-        folder_path=folder_path,
+        environment=Mock(),
+        file_paths=get_all_file_paths(folder_path),
         chunk_size=chunk_size,
         overlap_size=overlap_size,
     )
