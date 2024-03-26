@@ -16,7 +16,8 @@
 				"ms-python.python",
 				"ms-azuretools.vscode-bicep",
 				"prompt-flow.prompt-flow",
-				"ms-azuretools.azure-dev"
+				"ms-azuretools.azure-dev",
+				"streetsidesoftware.code-spell-checker"
 			]
 		}
 	}
