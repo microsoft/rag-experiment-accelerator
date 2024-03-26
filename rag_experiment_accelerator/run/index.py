@@ -67,10 +67,10 @@ def run(
         docs = cluster(docs, config)
 
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
-    embed_chunks(config, pre_process, docs_ready_to_index)
+    embed_chunks(index_config, pre_process, docs_ready_to_index)
 
-    generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
-    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
+    generate_titles_from_chunks(index_config, pre_process, docs_ready_to_index)
+    generate_summaries_from_chunks(index_config, pre_process, docs_ready_to_index)
 
     with TimeTook(
         f"load documents to Azure Search index {index_config.index_name()}",
