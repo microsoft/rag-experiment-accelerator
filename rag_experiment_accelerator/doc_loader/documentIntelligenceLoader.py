@@ -5,6 +5,7 @@ import re
 import os
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
+from rag_experiment_accelerator.config.environment import Environment
 from azure.core.credentials import AzureKeyCredential
 from langchain_core.documents import Document
 from pathlib import Path
@@ -15,6 +16,46 @@ from rag_experiment_accelerator.utils.logging import get_logger
 from azure.ai.documentintelligence.models import DocumentParagraph
 
 logger = get_logger(__name__)
+
+
+def load_with_azure_document_intelligence(
+    environment: Environment,
+    file_paths: list[str],
+    chunk_size: int,
+    overlap_size: int,
+) -> list[Document]:
+    """
+    Load pdf files from a folder using Azure Document Intelligence.
+
+    Args:
+        environment (Environment): The environment class
+        file_paths (list[str]): Sequence of paths to load.
+        chunk_size (int): Unused.
+        overlap_size (int): Unused.
+
+    Returns:
+        list[Document]: A list of Document objects.
+    """
+    documents: list[Document] = []
+    for file_path in file_paths:
+        try:
+            loader = DocumentIntelligenceLoader(
+                file_path,
+                environment.azure_document_intelligence_endpoint,
+                environment.azure_document_intelligence_admin_key,
+                glob_patterns=["*"],
+                excluded_paragraph_roles=[
+                    "pageHeader",
+                    "pageFooter",
+                    "footnote",
+                    "pageNumber",
+                ],
+            )
+            documents += loader.load()
+        except Exception as e:
+            logger.warning(f"Failed to load {file_path}: {e}")
+
+    return documents
 
 
 class DocumentIntelligenceLoader(BaseLoader):
@@ -349,6 +390,7 @@ class DocumentIntelligenceLoader(BaseLoader):
             logger.error(
                 f"Failed to load {file_path} with Azure Document Intelligence using the 'prebuilt-read' model: {e}"
             )
+            raise e
 
         logger.info(
             f'Successfully loaded {file_path} with Azure Document Intelligence using the "prebuilt-read" model.'
