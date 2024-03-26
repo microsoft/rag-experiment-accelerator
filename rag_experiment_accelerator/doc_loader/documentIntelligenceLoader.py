@@ -1,3 +1,4 @@
+import uuid
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
 from langchain_core.documents import Document
 
@@ -15,7 +16,19 @@ def is_supported_by_document_intelligence(format: str) -> bool:
         bool: True if the format is supported, False otherwise.
     """
 
-    return format.lower() in ["pdf", "html", "markdown", "json", "text", "docx"]
+    return format.lower() in [
+        "pdf",
+        "jpeg",
+        "jpg",
+        "png",
+        "bmp",
+        "heif",
+        "tiff",
+        "docx",
+        "xlsx",
+        "pptx",
+        "html",
+    ]
 
 
 def load_with_azure_document_intelligence(
@@ -48,4 +61,4 @@ def load_with_azure_document_intelligence(
         except Exception as e:
             logger.warning(f"Failed to load {file_path}: {e}")
 
-    return documents
+    return [{str(uuid.uuid4()): doc.page_content} for doc in documents]
