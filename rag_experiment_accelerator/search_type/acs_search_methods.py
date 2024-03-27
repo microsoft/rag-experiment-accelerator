@@ -86,7 +86,7 @@ def search_for_match_semantic(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="title, summary",
+        fields="titleVector, summaryVector",
         vector=embedding,
     )
 
@@ -144,12 +144,12 @@ def search_for_match_Hybrid_multi(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="title",
+        fields="titleVector",
         vector=embedding,
     )
     vector3 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="summary",
+        fields="summaryVector",
         vector=embedding,
     )
 
@@ -198,7 +198,7 @@ def search_for_match_Hybrid_cross(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="title, summary",
+        fields="titleVector, summaryVector",
         vector=embedding,
     )
 
