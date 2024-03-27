@@ -279,7 +279,7 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
         )
         title_vector = config.embedding_model.generate_embedding(
             str(pre_process.preprocess(title))
-        )[0]
+        )
     else:
         title = ""
         title_vector = []
@@ -313,7 +313,7 @@ def proccess_summary(config: IndexConfig, pre_process, chunk):
         )
         summaryVector = config.embedding_model.generate_embedding(
             str(pre_process.preprocess(summary))
-        )[0]
+        )
     else:
         summary = ""
         summaryVector = []
