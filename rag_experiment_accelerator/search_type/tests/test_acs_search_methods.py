@@ -190,12 +190,12 @@ def test_search_for_match_Hybrid_multi(mock_vector_query):
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="title",
+                fields="titleVector",
                 vector=embedding,
             ),
             call(
                 k=retrieve_num_of_documents,
-                fields="summary",
+                fields="summaryVector",
                 vector=embedding,
             ),
         ]
@@ -244,8 +244,8 @@ def test_search_for_match_Hybrid_multi_handles_exception(
     mock_vector_query.assert_has_calls(
         [
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
-            call(k=retrieve_num_of_documents, fields="title", vector=embedding),
-            call(k=retrieve_num_of_documents, fields="summary", vector=embedding),
+            call(k=retrieve_num_of_documents, fields="titleVector", vector=embedding),
+            call(k=retrieve_num_of_documents, fields="summaryVector", vector=embedding),
         ]
     )
     client.search.assert_called_once_with(
@@ -300,7 +300,7 @@ def test_search_for_match_Hybrid_cross(mock_vector_query):
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="title, summary",
+                fields="titleVector, summaryVector",
                 vector=embedding,
             ),
         ]
@@ -350,7 +350,7 @@ def test_search_for_match_Hybrid_cross_handles_exception(
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="title, summary",
+                fields="titleVector, summaryVector",
                 vector=embedding,
             ),
         ]
