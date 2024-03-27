@@ -65,7 +65,7 @@ class IndexConfig:
             raise (f"Invalid index name [{index_name}]")
 
         values = [
-            value.split("-")[1] for value in values
+            value.split("-")[1] if value.find("-") != -1 else value for value in values
         ]  # Extract values from the string
 
         return IndexConfig(
