@@ -1,4 +1,4 @@
-.PHONY: all index qnagen query eval help
+.PHONY: all index qnagen query eval help azureml clear_docs clear_artifacts test flake
 .DEFAULT_GOAL := help
 
 # Load .env file if exists and export all variables before running any target
@@ -40,6 +40,12 @@ query: ## 🔍 Query the index for all questions in jsonl file configured in con
 eval: ## 👓 Evaluate metrics for all answers compared to ground truth
 	$(call target_title, "evaluating")
 	python3 04_evaluation.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
+
+
+azureml: ## 🚀 Run all steps in sequence on Azure ML
+	$(call target_title, "running on Azure ML")
+	python3 azureml/pipeline.py --data_dir ./config.json
+
 
 clear_docs: ## ❌ Delete all downloaded documents from data folder
 	$(call target_title, "deleting all downloaded documents from data folder")
