@@ -86,7 +86,7 @@ def search_for_match_semantic(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentTitle, contentSummary",
+        fields="title, summary",
         vector=embedding,
     )
 
@@ -121,7 +121,7 @@ def search_for_match_Hybrid_multi(
 ):
     """
     Searches for matching documents in Azure AI Search using a hybrid approach that combines
-    multiple vectors (contentVector, contentTitle, and contentSummary) to retrieve the most relevant
+    multiple vectors (contentVector, title, and summary) to retrieve the most relevant
     results.
 
     Args:
@@ -144,12 +144,12 @@ def search_for_match_Hybrid_multi(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentTitle",
+        fields="title",
         vector=embedding,
     )
     vector3 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentSummary",
+        fields="summary",
         vector=embedding,
     )
 
@@ -198,7 +198,7 @@ def search_for_match_Hybrid_cross(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentTitle, contentSummary",
+        fields="title, summary",
         vector=embedding,
     )
 
@@ -324,12 +324,12 @@ def search_for_match_pure_vector_multi(
     )
     vector2 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentTitle",
+        fields="title",
         vector=embedding,
     )
     vector3 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentSummary",
+        fields="summary",
         vector=embedding,
     )
 
@@ -373,7 +373,7 @@ def search_for_match_pure_vector_cross(
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentVector, contentTitle, contentSummary",
+        fields="contentVector, title, summary",
         vector=embedding,
     )
 

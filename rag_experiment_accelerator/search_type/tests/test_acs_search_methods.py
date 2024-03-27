@@ -97,7 +97,7 @@ def test_search_for_match_semantic(mock_vector_query):
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="contentTitle, contentSummary",
+                fields="title, summary",
                 vector=embedding,
             ),
         ]
@@ -190,12 +190,12 @@ def test_search_for_match_Hybrid_multi(mock_vector_query):
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="contentTitle",
+                fields="title",
                 vector=embedding,
             ),
             call(
                 k=retrieve_num_of_documents,
-                fields="contentSummary",
+                fields="summary",
                 vector=embedding,
             ),
         ]
@@ -244,10 +244,8 @@ def test_search_for_match_Hybrid_multi_handles_exception(
     mock_vector_query.assert_has_calls(
         [
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
-            call(k=retrieve_num_of_documents, fields="contentTitle", vector=embedding),
-            call(
-                k=retrieve_num_of_documents, fields="contentSummary", vector=embedding
-            ),
+            call(k=retrieve_num_of_documents, fields="title", vector=embedding),
+            call(k=retrieve_num_of_documents, fields="summary", vector=embedding),
         ]
     )
     client.search.assert_called_once_with(
@@ -302,7 +300,7 @@ def test_search_for_match_Hybrid_cross(mock_vector_query):
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="contentTitle, contentSummary",
+                fields="title, summary",
                 vector=embedding,
             ),
         ]
@@ -352,7 +350,7 @@ def test_search_for_match_Hybrid_cross_handles_exception(
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="contentTitle, contentSummary",
+                fields="title, summary",
                 vector=embedding,
             ),
         ]
@@ -569,10 +567,8 @@ def test_search_for_match_pure_vector_multi(mock_vector_query):
     mock_vector_query.assert_has_calls(
         [
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
-            call(k=retrieve_num_of_documents, fields="contentTitle", vector=embedding),
-            call(
-                k=retrieve_num_of_documents, fields="contentSummary", vector=embedding
-            ),
+            call(k=retrieve_num_of_documents, fields="title", vector=embedding),
+            call(k=retrieve_num_of_documents, fields="summary", vector=embedding),
         ]
     )
     client.search.assert_called_once_with(
@@ -619,10 +615,8 @@ def test_search_for_match_pure_vector_multi_handles_exception(
     mock_vector_query.assert_has_calls(
         [
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
-            call(k=retrieve_num_of_documents, fields="contentTitle", vector=embedding),
-            call(
-                k=retrieve_num_of_documents, fields="contentSummary", vector=embedding
-            ),
+            call(k=retrieve_num_of_documents, fields="title", vector=embedding),
+            call(k=retrieve_num_of_documents, fields="summary", vector=embedding),
         ]
     )
     client.search.assert_called_once_with(
@@ -675,7 +669,7 @@ def test_search_for_match_pure_vector_cross(mock_vector_query):
         [
             call(
                 k=retrieve_num_of_documents,
-                fields="contentVector, contentTitle, contentSummary",
+                fields="contentVector, title, summary",
                 vector=embedding,
             )
         ]
@@ -720,7 +714,7 @@ def test_search_for_match_pure_vector_cross_handles_exception(
     # Assert
     mock_vector_query.assert_called_once_with(
         k=retrieve_num_of_documents,
-        fields="contentVector, contentTitle, contentSummary",
+        fields="contentVector, title, summary",
         vector=embedding,
     )
     client.search.assert_called_once_with(
