@@ -69,8 +69,8 @@ def run(
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
     embed_chunks(index_config, pre_process, docs_ready_to_index)
 
-    generate_titles_from_chunks(index_config, pre_process, docs_ready_to_index)
-    generate_summaries_from_chunks(index_config, pre_process, docs_ready_to_index)
+    generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
+    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
 
     with TimeTook(
         f"load documents to Azure Search index {index_config.index_name()}",
@@ -81,7 +81,6 @@ def run(
             config=config,
             chunks=docs_ready_to_index,
             index_name=index_config.index_name(),
-            embedding_model=index_config.embedding_model,
         )
 
     return index_dict
@@ -185,7 +184,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
     """
     chunk["content_vector"] = embedding_model.generate_embedding(
         str(pre_process.preprocess(chunk["content"]))
-    )[0]
+    )
 
     return chunk
 

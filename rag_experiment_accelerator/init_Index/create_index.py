@@ -46,9 +46,6 @@ def create_acs_index(
                 "Both 'index_analyzer_name' and 'search_analyzer_name' must be set together"
             )
 
-        index_analyzer = index_analyzer_name if index_analyzer_name else ""
-        search_analyzer = search_analyzer_name if search_analyzer_name else ""
-
         # Analyzer can only be used if neither search analyzer or index analyzer are set
         if analyzers.get("analyzer_name") and (
             analyzers.get("search_analyzer_name")
@@ -57,7 +54,6 @@ def create_acs_index(
             raise ValueError(
                 "analyzer_name should be empty if either search_analyzer_name or index_analyzer_name is not empty"
             )
-        analyzer = analyzers.get("analyzer_name") or ""
 
         # Create a search index
         index_client = SearchIndexClient(
@@ -65,6 +61,7 @@ def create_acs_index(
         )
         fields = [
             SimpleField(name="id", type=SearchFieldDataType.String, key=True),
+            SimpleField(name="sourceDisplayName", type=SearchFieldDataType.String),
             SearchableField(
                 name="content",
                 type=SearchFieldDataType.String,
@@ -90,18 +87,6 @@ def create_acs_index(
                 searchable=False,
                 retrievable=True,
             ),
-            SearchableField(
-                name="description",
-                type=SearchFieldDataType.String,
-                index_analyzer_name=index_analyzer,
-                search_analyzer_name=search_analyzer,
-            ),
-            SearchableField(
-                name="text",
-                type=SearchFieldDataType.String,
-                searchable=True,
-                analyzer_name=search_analyzer,
-            ),
             SearchField(
                 name="contentVector",
                 type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
@@ -110,26 +95,18 @@ def create_acs_index(
                 vector_search_profile="my-vector-search-profile",
             ),
             SearchField(
-                name="contentTitle",
+                name="titleVector",
                 type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                 searchable=True,
                 vector_search_dimensions=int(dimension),
                 vector_search_profile="my-vector-search-profile",
             ),
             SearchField(
-                name="contentSummary",
+                name="summaryVector",
                 type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                 searchable=True,
                 vector_search_dimensions=int(dimension),
                 vector_search_profile="my-vector-search-profile",
-            ),
-            SearchField(
-                name="contentDescription",
-                type=SearchFieldDataType.String,
-                sortable=True,
-                filterable=True,
-                facetable=True,
-                analyzer_name=analyzer,
             ),
         ]
 

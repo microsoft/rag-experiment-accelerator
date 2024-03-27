@@ -80,7 +80,7 @@ def upload_data(
             )
 
             futures = {
-                executor.submit(search_client.upload_documents, document): document
+                executor.submit(search_client.upload_documents, [document]): document
                 for document in documents
             }
 
