@@ -109,7 +109,10 @@ class Config:
                 create_embedding_model(model_config["type"], **kwargs)
             )
 
-        self.MAX_WORKER_THREADS = os.environ.get("MAX_WORKER_THREADS", None)
+        max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
+        self.MAX_WORKER_THREADS = (
+            int(max_worker_threads) if max_worker_threads else None
+        )
         self.GENERATE_TITLE = config_json.get("generate_title", False)
         self.GENERATE_SUMMARY = config_json.get("generate_summary", False)
         self.OVERRIDE_CONTENT_WITH_SUMMARY = config_json.get(
