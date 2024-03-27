@@ -1,4 +1,4 @@
-.PHONY: all index qnagen query eval help azureml clear_docs clear_artifacts test flake
+.PHONY: all index qnagen query eval help azureml clear_docs clear_artifacts test flake updatekv
 .DEFAULT_GOAL := help
 
 # Load .env file if exists and export all variables before running any target
@@ -65,3 +65,7 @@ test: ## 🧪 Run tests
 flake: ## 🧹 Run flake8
 	$(call target_title, "running flake8")
 	flake8 --extend-ignore=E501
+
+updatekv: ## 🔄 Update keyvault secrets
+	$(call target_title, "updating keyvault secrets")
+	python3 env_to_keyvault.py
