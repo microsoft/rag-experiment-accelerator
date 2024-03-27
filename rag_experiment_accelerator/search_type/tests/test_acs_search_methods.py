@@ -97,7 +97,7 @@ def test_search_for_match_semantic(mock_vector_query):
             call(k=retrieve_num_of_documents, fields="contentVector", vector=embedding),
             call(
                 k=retrieve_num_of_documents,
-                fields="title, summary",
+                fields="titleVector, summaryVector",
                 vector=embedding,
             ),
         ]
