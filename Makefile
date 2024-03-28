@@ -27,24 +27,24 @@ load_env: ## 📃 Load .env file
 
 index: ## 📚 Index documents (download documents from blob storage, split to chunks, generate embeddings, create and upload to azure search index)
 	$(call target_title, "indexing")
-	python3 01_index.py $(if $(d),-d $(d)) $(if $(dd),-dd $(dd)) $(if $(cf),-cf $(cf))
+	python3 01_index.py $(if $(dd),--data_dir $(dd), --data_dir ./data) $(if $(cp),--config_path $(cp))
 
 qnagen: ## ❓ Generate questions and answers for all document chunks in configured index
 	$(call target_title, "question and answer generation")
-	python3 02_qa_generation.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
+	python3 02_qa_generation.py $(if $(dd),--data_dir $(dd), --data_dir ./data) $(if $(cp),--config_path $(cp))
 
 query: ## 🔍 Query the index for all questions in jsonl file configured in config.json and generate answers using LLM
 	$(call target_title, "querying") 
-	python3 03_querying.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
+	python3 03_querying.py $(if $(dd),--data_dir $(dd), --data_dir ./data) $(if $(cp),--config_path $(cp))
 
 eval: ## 👓 Evaluate metrics for all answers compared to ground truth
 	$(call target_title, "evaluating")
-	python3 04_evaluation.py $(if $(d),-d $(d)) $(if $(cf),-cf $(cf))
+	python3 04_evaluation.py $(if $(dd),--data_dir $(dd), --data_dir ./data) $(if $(cp),--config_path $(cp))
 
 
 azureml: ## 🚀 Run all steps in sequence on Azure ML
 	$(call target_title, "running on Azure ML")
-	python3 azureml/pipeline.py $(if $(d),--data_dir $(d), --data_dir ./data) 
+	python3 azureml/pipeline.py $(if $(dd),--data_dir $(dd), --data_dir ./data) 
 
 
 clear_docs: ## ❌ Delete all downloaded documents from data folder
