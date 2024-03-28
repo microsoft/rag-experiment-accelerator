@@ -101,6 +101,10 @@ def start_pipeline(
             environment=pipeline_job_env,
             append_row_to="${{outputs.index_name}}",
         ),
+        environment_variables={
+            "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
+            "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
+        },
     )
 
     query_pipeline_component = command(
@@ -121,6 +125,10 @@ def start_pipeline(
             --query_result_dir ${{outputs.query_result}}"""
         + f" --keyvault {environment.azure_key_vault_endpoint}",
         environment=pipeline_job_env,
+        environment_variables={
+            "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
+            "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
+        },
     )
 
     eval_pipeline_component = command(
@@ -141,6 +149,10 @@ def start_pipeline(
                 --eval_result_dir ${{outputs.eval_result}} """
         + f" --keyvault {environment.azure_key_vault_endpoint}",
         environment=pipeline_job_env,
+        environment_variables={
+            "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
+            "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
+        },
     )
 
     @dsl.pipeline(

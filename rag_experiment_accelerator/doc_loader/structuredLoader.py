@@ -1,8 +1,9 @@
+import uuid
+
 from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
-import uuid
 
 logger = get_logger(__name__)
 
@@ -58,14 +59,15 @@ def load_structured_files(
         )
 
     logger.debug(
-        f"Splitting {file_format} files into chunks of {chunk_size} characters"
-        f" with an overlap of {overlap_size} characters"
+        f"Splitting {file_format} files into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
     )
 
     docs = text_splitter.split_documents(documents)
     docsList = []
     for doc in docs:
-        docsList.append(dict({str(uuid.uuid4()): doc.page_content}))
+        docsList.append(
+            {str(uuid.uuid4()): {"content": doc.page_content, "metadata": doc.metadata}}
+        )
 
     logger.info(f"Split {len(documents)} {file_format} files into {len(docs)} chunks")
 

@@ -46,10 +46,16 @@ def test_run(
     mock_config.embedding_models = embedding_models
     mock_config.EF_CONSTRUCTIONS = ["ef_construction1", "ef_construction2"]
     mock_config.EF_SEARCHES = ["ef_search1", "ef_search2"]
+    mock_config.DATA_FORMATS = "test_format"
+    mock_config.CHUNKING_STRATEGY = "basic"
+    mock_config.MAX_WORKER_THREADS = 1
     mock_config.SAMPLE_DATA = True
     mock_config.SAMPLE_PERCENTAGE = 50
     mock_config.NAME_PREFIX = "prefix"
     mock_config.LANGUAGE = {"analyzers": ["analyzer1", "analyzer2"]}
+    mock_config.GENERATE_TITLE = False
+    mock_config.GENERATE_SUMMARY = False
+    mock_config.OVERRIDE_CONTENT_WITH_SUMMARY = False
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
     mock_environment.azure_search_admin_key = "admin_key"
@@ -66,15 +72,15 @@ def test_run(
     mock_preprocess.return_value.preprocess.return_value = "preprocessed_value"
 
     mock_load_documents.return_value = [
-        {"doc1": "value1"},
-        {"doc2": "value2"},
-        {"doc3": "value3"},
+        {"key1": {"content": "content1", "metadata": {"source": "source1"}}},
+        {"key2": {"content": "content2", "metadata": {"source": "source2"}}},
+        {"key3": {"content": "content3", "metadata": {"source": "source3"}}},
     ]
 
     mock_cluster.return_value = [
-        {"cluster1": "value1"},
-        {"cluster2": "value2"},
-        {"cluster3": "value3"},
+        {"cluster1": {"content": "content1", "metadata": {"source": "source1"}}},
+        {"cluster2": {"content": "content2", "metadata": {"source": "source2"}}},
+        {"cluster3": {"content": "content3", "metadata": {"source": "source3"}}},
     ]
     file_paths = get_all_file_paths(data_dir)
 
@@ -99,8 +105,8 @@ def test_run(
     assert mock_load_documents.call_args_list[0][0][5] == 5
 
     assert mock_cluster.call_args_list[0][0][0] == [
-        {"doc1": "value1"},
-        {"doc2": "value2"},
-        {"doc3": "value3"},
+        {"key1": {"content": "content1", "metadata": {"source": "source1"}}},
+        {"key2": {"content": "content2", "metadata": {"source": "source2"}}},
+        {"key3": {"content": "content3", "metadata": {"source": "source3"}}},
     ]
     assert mock_cluster.call_args_list[0][0][1] == mock_config

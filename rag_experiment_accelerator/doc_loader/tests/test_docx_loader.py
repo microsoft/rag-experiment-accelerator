@@ -18,6 +18,8 @@ def test_load_docx_files():
 
     assert len(original_doc) == 3
 
-    assert "We recently commissioned" in list(original_doc[0].values())[0]
-    assert "We recently commissioned" in list(original_doc[1].values())[0]
-    assert "We recently commissioned" not in list(original_doc[2].values())[0]
+    assert "We recently commissioned" in list(original_doc[0].values())[0]["content"]
+    assert "We recently commissioned" in list(original_doc[1].values())[0]["content"]
+    assert (
+        "We recently commissioned" not in list(original_doc[2].values())[0]["content"]
+    )
