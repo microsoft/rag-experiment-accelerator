@@ -141,6 +141,10 @@ class Config:
             self.SAMPLE_MIN_CLUSTER = config_json["sampling"]["min_cluster"]
             self.SAMPLE_MAX_CLUSTER = config_json["sampling"]["max_cluster"]
 
+        # log all the configuration settings in debug mode
+        for key, value in config_json.items():
+            logger.debug(f"Configuration setting: {key} = {value}")
+
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
             raise ValueError(
@@ -230,7 +234,7 @@ class Config:
         for model in self.embedding_models:
             if model.name == model_name:
                 return model
-        raise AttributeError(f"No model found with the name {model_name}")
+        raise AttributeError(f"No model found with the name: [{model_name}]")
 
     def _try_create_directory(self, directory: str) -> None:
         try:

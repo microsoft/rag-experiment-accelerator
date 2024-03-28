@@ -66,13 +66,13 @@ class IndexConfig:
 
         return IndexConfig(
             index_name_prefix=values[0],
-            chunk_size=int(values[1].split("-")[1]),
-            overlap=int(values[2].split("-")[1]),
-            ef_construction=int(values[3].split("-")[1]),
-            ef_search=int(values[4].split("-")[1]),
-            sampling_percentage=int(values[5].split("-")[1]),
-            generate_title=bool(values[6].split("-")[1]),
-            generate_summary=bool(values[7].split("-")[1]),
-            override_content_with_summary=bool(values[8].split("-")[1]),
-            embedding_model=config._find_embedding_model_by_name(values[9]),
+            chunk_size=int(values[1].split("-")[1].strip()),
+            overlap=int(values[2].split("-")[1].strip()),
+            ef_construction=int(values[3].split("-")[1].strip()),
+            ef_search=int(values[4].split("-")[1].strip()),
+            sampling_percentage=int(values[5].split("-")[1].strip()),
+            generate_title=bool(int(values[6].split("-")[1].strip())),
+            generate_summary=bool(int(values[7].split("-")[1].strip())),
+            override_content_with_summary=bool(int(values[8].split("-")[1].strip())),
+            embedding_model=config._find_embedding_model_by_name(values[9].strip()),
         )
