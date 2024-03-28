@@ -43,13 +43,13 @@ class IndexConfig:
             f"{self.index_name_prefix}"
             f"_cs-{str(self.chunk_size)}"
             f"_o-{str(self.overlap)}"
-            f"_em-{str(self.embedding_model.name.lower())}"
             f"_efc-{str(self.ef_construction)}"
             f"_efs-{str(self.ef_search)}"
             f"_sp-{str(self.sampling_percentage)}"
             f"_t-{int(self.generate_title)}"
             f"_s-{int(self.generate_summary)}"
             f"_oc-{int(self.override_content_with_summary)}"
+            f"_{str(self.embedding_model.name.lower())}"
         )
 
         return index_name
@@ -64,19 +64,15 @@ class IndexConfig:
         if len(values) != 10:
             raise (f"Invalid index name [{index_name}]")
 
-        values = [
-            value.split("-")[1] if value.find("-") != -1 else value for value in values
-        ]  # Extract values from the string
-
         return IndexConfig(
             index_name_prefix=values[0],
-            chunk_size=int(values[1]),
-            overlap=int(values[2]),
-            embedding_model=config._find_embedding_model_by_name(values[3]),
-            ef_construction=int(values[4]),
-            ef_search=int(values[5]),
-            sampling_percentage=int(values[6]),
-            generate_title=bool(values[7]),
-            generate_summary=bool(values[8]),
-            override_content_with_summary=bool(values[9]),
+            chunk_size=int(values[1].split("-")[1]),
+            overlap=int(values[2].split("-")[1]),
+            ef_construction=int(values[3].split("-")[1]),
+            ef_search=int(values[4].split("-")[1]),
+            sampling_percentage=int(values[5].split("-")[1]),
+            generate_title=bool(values[6].split("-")[1]),
+            generate_summary=bool(values[7].split("-")[1]),
+            override_content_with_summary=bool(values[8].split("-")[1]),
+            embedding_model=config._find_embedding_model_by_name(values[9]),
         )
