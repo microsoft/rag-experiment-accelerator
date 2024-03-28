@@ -14,6 +14,14 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 - Find the best combination of hyperparameters.
 - Generate detailed reports and visualizations from experiment results.
 
+## Latest changes
+
+18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data. 
+
+This is done to ensure representative results in the sample that one would get across the entire dataset.
+
+**Note**: It is recommended to rebuild your environment if you have used this tool before due to new dependencies.
+
 ## Features
 
 The **RAG Experiment Accelerator** is config driven and offers a rich set of features to support its purpose:
@@ -98,8 +106,12 @@ LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
-conda create -n rag-test python=3.11
-conda activate rag-test
+conda create -n rag-experiment python=3.11
+conda init bash
+```
+Close your terminal, open a new one, and run:
+```bash
+conda activate rag-experiment
 pip install .
 ```
 
@@ -161,6 +173,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   ```bash
   python 02_qa_generation.py
   -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -dd "The directory holding the data. Defaults to data"
   -cf "JSON config filename. Defaults to config.json"
   ```
 4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
@@ -175,6 +188,9 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   -d "The directory holding the configuration files and data. Defaults to current working directory"
   -cf "JSON config filename. Defaults to config.json"
   ```
+
+Alternatively, you can run the above steps (apart from `02_qa_generation.py`) using an Azure ML pipeline. To do so, follow [the guide here](./docs/azureml-pipeline.md).
+
 # Description of configuration elements
 
 ```json
@@ -247,7 +263,7 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 
 ### Hyper Parameters
 
-![Hyper Parameters](./images/hyper-parameters.png)
+![Hyper Parameters](./images/hyper_parameters.png)
 
 ### Sample Metrics
 

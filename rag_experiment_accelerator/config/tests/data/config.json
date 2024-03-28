@@ -1,8 +1,19 @@
 {
+<<<<<<< HEAD
     "index_name_prefix": "test_prefix",
     "experiment_name": "experiment_1",
     "job_name": "baseline",
     "job_description": "",
+=======
+    "name_prefix": "test_prefix",
+    "sampling": {
+        "sample_data": false,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
+>>>>>>> development
     "chunking": {
         "chunk_size": [512],
         "overlap_size": [128]
@@ -42,6 +53,5 @@
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
     "data_formats": "test_data_format",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
     "chunking_strategy": "basic"
 }

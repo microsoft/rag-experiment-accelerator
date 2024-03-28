@@ -26,6 +26,9 @@ def cross_encoder_rerank_documents(
     Returns:
         list: A list of the top k documents, sorted by their relevance to the user prompt.
     """
+    if not documents:
+        return []
+
     model = CrossEncoder(model_name)
     cross_scores_ques = model.predict(
         [[user_prompt, item] for item in documents],
@@ -41,14 +44,16 @@ def cross_encoder_rerank_documents(
     return sub_context
 
 
-def llm_rerank_documents(documents, question, deployment_name, rerank_threshold):
+def llm_rerank_documents(
+    documents, question, response_generator: ResponseGenerator, rerank_threshold
+):
     """
     Reranks a list of documents based on a given question using the LLM model.
 
     Args:
         documents (list): A list of documents to be reranked.
         question (str): The question to be used for reranking.
-        deployment_name (str): The name of the LLM deployment to be used.
+        response_generator (ResponseGenerator): The initialised ResponseGenerator to use.
         rerank_threshold (int): The threshold for reranking documents.
 
     Returns:
@@ -65,9 +70,7 @@ def llm_rerank_documents(documents, question, deployment_name, rerank_threshold)
         Question: {question}
     """
 
-    response = ResponseGenerator(deployment_name=deployment_name).generate_response(
-        rerank_prompt_instruction, prompt
-    )
+    response = response_generator.generate_response(rerank_prompt_instruction, prompt)
     logger.debug("Response", response)
     pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
     try:

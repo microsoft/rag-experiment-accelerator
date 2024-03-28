@@ -1,7 +1,6 @@
 import ast
 import os
 import warnings
-from datetime import datetime
 
 import evaluate
 import mlflow
@@ -19,8 +18,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
-from rag_experiment_accelerator.config import Config
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.llm.prompts import (
     llm_answer_relevance_instruction,
     llm_context_recall_instruction,
@@ -28,6 +27,7 @@ from rag_experiment_accelerator.llm.prompts import (
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
+from rag_experiment_accelerator.config.environment import Environment
 
 logger = get_logger(__name__)
 
@@ -253,7 +253,7 @@ def lcsstr(value1, value2):
     return score
 
 
-def llm_answer_relevance(question, answer):
+def llm_answer_relevance(response_generator: ResponseGenerator, question, answer):
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -267,11 +267,10 @@ def llm_answer_relevance(question, answer):
         double: The relevancy score generated between the question and answer.
 
     """
-    config = Config()
     try:
-        result = ResponseGenerator(
-            deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-        ).generate_response(sys_message=llm_answer_relevance_instruction, prompt=answer)
+        result = response_generator.generate_response(
+            sys_message=llm_answer_relevance_instruction, prompt=answer
+        )
     except Exception as e:
         logger.error(f"Unable to generate answer relevance score: {e}")
         return 0
@@ -284,7 +283,7 @@ def llm_answer_relevance(question, answer):
     return float(similarity_score[0][0] * 100)
 
 
-def llm_context_precision(question, context):
+def llm_context_precision(response_generator: ResponseGenerator, question, context):
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -295,12 +294,9 @@ def llm_context_precision(question, context):
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
-    config = Config()
     prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
     try:
-        result = ResponseGenerator(
-            deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-        ).generate_response(
+        result = response_generator.generate_response(
             sys_message=llm_context_precision_instruction, prompt=prompt
         )
     except Exception as e:
@@ -313,7 +309,13 @@ def llm_context_precision(question, context):
     return 0
 
 
-def llm_context_recall(question, groundtruth_answer, context):
+def llm_context_recall(
+    response_generator: ResponseGenerator,
+    question,
+    groundtruth_answer,
+    context,
+    temperature: int,
+):
     """
     Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
     Context_recall values range between 0 and 1, with higher values indicating better performance.
@@ -326,12 +328,11 @@ def llm_context_recall(question, groundtruth_answer, context):
         question (str): The question being asked
         groundtruth_answer (str): The ground truth ("output_prompt")
         context (str): The given context.
+        temperature (int): Temperature as defined in the config.
 
     Returns:
         double: The context recall score generated between the ground truth (expected) and context.
     """
-    config = Config()
-
     prompt = (
         "\nquestion: "
         + question
@@ -340,12 +341,10 @@ def llm_context_recall(question, groundtruth_answer, context):
         + "\nanswer: "
         + groundtruth_answer
     )
-    result = ResponseGenerator(
-        deployment_name=config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
-    ).generate_response(
+    result = response_generator.generate_response(
         sys_message=llm_context_recall_instruction,
         prompt=prompt,
-        temperature=config.TEMPERATURE,
+        temperature=temperature,
     )
     print(result)
     good_response = '"Attributed": "1"'
@@ -471,7 +470,14 @@ def plot_map_scores(df, run_id, client):
     client.log_figure(run_id, fig, plot_name)
 
 
-def compute_metrics(question, actual, expected, context, metric_type):
+def compute_metrics(
+    response_generator: ResponseGenerator,
+    question,
+    actual,
+    expected,
+    context,
+    metric_type,
+):
     """
     Computes a score for the similarity between two strings using a specified metric.
 
@@ -496,6 +502,7 @@ def compute_metrics(question, actual, expected, context, metric_type):
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
             - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+        config (Config): The configuration of the experiment.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -553,11 +560,11 @@ def compute_metrics(question, actual, expected, context, metric_type):
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
     elif metric_type == "llm_answer_relevance":
-        score = llm_answer_relevance(actual, expected)
+        score = llm_answer_relevance(response_generator, actual, expected)
     elif metric_type == "llm_context_precision":
-        score = llm_context_precision(actual, context)
+        score = llm_context_precision(response_generator, actual, context)
     elif metric_type == "llm_context_recall":
-        score = llm_context_recall(question, expected, context)
+        score = llm_context_recall(response_generator, question, expected, context)
     else:
         pass
 
@@ -565,67 +572,45 @@ def compute_metrics(question, actual, expected, context, metric_type):
 
 
 def evaluate_prompts(
-    exp_name: str,
-    job_name,
-    job_description,
-    index_name: str,
+    environment: Environment,
     config: Config,
+    index_config: IndexConfig,
     client: mlflow.MlflowClient,
-    chunk_size: int,
-    chunk_overlap: int,
-    embedding_model: EmbeddingModel,
-    ef_construction: int,
-    ef_search: int,
+    name_suffix: str,
 ):
     """
     Evaluates prompts using various metrics and logs the results to MLflow.
 
     Args:
-        exp_name (str): Name of the experiment to log the results to.
-        index_name (str): The name of the index to use for evaluation.
+        environment (Environment): Initialised Environment class containing environment configuration
         config (Config): The configuration settings to use for evaluation.
+        index_config (IndexConfig): Parameters of the index such as chunking and embedding model.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
-        chunk_size (int): Size of the chunks to split the prompts into. - UNUSED!
-        chunk_overlap (int): Amount of overlap between the chunks.
-        embedding_dimension (int): Dimension of the embeddings to use.
-        ef_construction (int): Number of trees to use during index construction.
-        ef_search (int): Number of trees to use during search.
+        name_suffix (str): Name suffix to use for all outputs created.
 
     Returns:
         None
     """
-    try:
-        eval_score_folder = f"{config.artifacts_dir}/eval_score"
-        os.makedirs(eval_score_folder, exist_ok=True)
-    except Exception as e:
-        logger.error(
-            f"Unable to create the '{eval_score_folder}' directory. Please"
-            " ensure you have the proper permissions and try again"
-        )
-        raise e
-    current_datetime = datetime.now()
-    formatted_datetime = current_datetime.strftime("%Y_%m_%d_%H_%M_%S")
-
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
-    run_name = (
-        job_name
-        if (job_name is not None) and (job_name != "")
-        else f"{exp_name}_{formatted_datetime}"
-    )
-    mlflow.set_experiment(exp_name)
-    mlflow.start_run(run_name=run_name, description=job_description)
-    pd.set_option("display.max_columns", None)
 
-    run_id = mlflow.active_run().info.run_id
+    pd.set_option("display.max_columns", None)
 
     total_precision_scores_by_search_type = {}
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
 
     handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
-    query_data_load = handler.load(index_name, config.EXPERIMENT_NAME, config.JOB_NAME)
+
+    response_generator = ResponseGenerator(
+        environment, config, config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+    )
+
+    query_data_load = handler.load(
+        index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+    )
+
     for data in query_data_load:
         actual = remove_spaces(lower(data.actual))
         expected = remove_spaces(lower(data.expected))
@@ -634,7 +619,12 @@ def evaluate_prompts(
 
         for metric_type in metric_types:
             score = compute_metrics(
-                data.question, actual, expected, data.context, metric_type
+                response_generator,
+                data.question,
+                actual,
+                expected,
+                data.context,
+                metric_type,
             )
             metric_dic[metric_type] = score
         metric_dic["question"] = data.question
@@ -687,7 +677,9 @@ def evaluate_prompts(
     columns_to_remove = ["question", "context", "actual", "expected"]
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
-    df.to_csv(f"{eval_score_folder}/{formatted_datetime}.csv", index=False)
+    df.to_csv(
+        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"), index=False
+    )
     logger.debug(f"Eval scores: {df.head()}")
 
     temp_df = df.drop(columns=columns_to_remove)
@@ -704,11 +696,15 @@ def evaluate_prompts(
     for col_name in sum_df.columns:
         sum_dict[col_name] = float(sum_df[col_name].values)
 
-    sum_df.to_csv(f"{eval_score_folder}/sum_{formatted_datetime}.csv", index=False)
+    sum_df.to_csv(
+        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv"), index=False
+    )
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
-        f"{eval_score_folder}/{formatted_datetime}_ap_scores_at_k_test.csv",
+        os.path.join(
+            config.EVAL_DATA_LOCATION, f"{name_suffix}_ap_scores_at_k_test.csv"
+        ),
         index=False,
     )
     plot_apk_scores(ap_scores_df, run_id, client)
@@ -716,13 +712,13 @@ def evaluate_prompts(
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        f"{eval_score_folder}/{formatted_datetime}_map_scores_test.csv",
+        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}_map_scores_test.csv"),
         index=False,
     )
     plot_map_scores(map_scores_df, run_id, client)
 
     common_data = query_data_load[0]
-    mlflow.log_param("chunk_size", chunk_size)
+    mlflow.log_param("chunk_size", index_config.chunk_size)
     mlflow.log_param("question_count", common_data.question_count)
     mlflow.log_param("rerank", common_data.rerank)
     mlflow.log_param("rerank_type", common_data.rerank_type)
@@ -730,17 +726,19 @@ def evaluate_prompts(
     mlflow.log_param("llm_re_rank_threshold", common_data.llm_re_rank_threshold)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
     mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
-    mlflow.log_param("chunk_overlap", chunk_overlap)
-    mlflow.log_param("embedding_dimension", embedding_model.dimension)
-    mlflow.log_param("embedding_model_name", embedding_model.name)
-    mlflow.log_param("ef_construction", ef_construction)
-    mlflow.log_param("ef_search", ef_search)
+    mlflow.log_param("chunk_overlap", index_config.overlap)
+    mlflow.log_param("embedding_dimension", index_config.embedding_model.dimension)
+    mlflow.log_param("embedding_model_name", index_config.embedding_model.name)
+    mlflow.log_param("ef_construction", index_config.ef_construction)
+    mlflow.log_param("ef_search", index_config.ef_search)
     mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
-    mlflow.log_artifact(f"{eval_score_folder}/{formatted_datetime}.csv")
-    mlflow.log_artifact(f"{eval_score_folder}/sum_{formatted_datetime}.csv")
+    mlflow.log_artifact(os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"))
+    mlflow.log_artifact(
+        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv")
+    )
     draw_hist_df(sum_df, run_id, client)
-    generate_metrics(exp_name, run_id, client)
+    generate_metrics(config.INDEX_NAME_PREFIX, run_id, client)
     mlflow.end_run()
 
 
