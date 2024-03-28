@@ -1,11 +1,8 @@
 {
-<<<<<<< HEAD
     "index_name_prefix": "test_prefix",
     "experiment_name": "experiment_1",
     "job_name": "baseline",
     "job_description": "",
-=======
-    "name_prefix": "test_prefix",
     "sampling": {
         "sample_data": false,
         "sample_percentage": 5,
@@ -13,7 +10,6 @@
         "min_cluster": 2,
         "max_cluster": 30
     },
->>>>>>> development
     "chunking": {
         "chunk_size": [512],
         "overlap_size": [128]

@@ -175,7 +175,7 @@ def start_pipeline(
         data_input=Input(type="uri_folder", path=config.data_dir),
         eval_data_input=Input(type="uri_file", path=config.EVAL_DATA_JSONL_FILE_PATH),
     )
-    ml_client.jobs.create_or_update(pipeline, experiment_name=config.NAME_PREFIX)
+    ml_client.jobs.create_or_update(pipeline, experiment_name=config.INDEX_NAME_PREFIX)
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ def run(
     """
     pre_process = Preprocess()
     index_dict = {"indexes": []}
+
     logger.info(f"Creating Index with name: {index_config.index_name()}")
     create_acs_index(
         environment.azure_search_service_endpoint,

@@ -22,4 +22,4 @@ def mlflow_run_name(config: Config, suffix: str = None):
     """Returns a name to use for the MlFlow experiment run."""
     if not suffix:
         suffix = formatted_datetime_suffix()
-    return f"{config.NAME_PREFIX}_{suffix}"
+    return f"{config.INDEX_NAME_PREFIX}_{suffix}"

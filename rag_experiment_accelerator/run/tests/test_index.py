@@ -48,7 +48,7 @@ def test_run(
     mock_config.EF_SEARCHES = ["ef_search1", "ef_search2"]
     mock_config.SAMPLE_DATA = True
     mock_config.SAMPLE_PERCENTAGE = 50
-    mock_config.NAME_PREFIX = "prefix"
+    mock_config.INDEX_NAME_PREFIX = "prefix"
     mock_config.LANGUAGE = {"analyzers": ["analyzer1", "analyzer2"]}
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
