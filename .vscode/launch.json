@@ -35,6 +35,14 @@
             "module": "04_evaluation",
             "justMyCode": true,
             "envFile": "${input:dotEnvFilePath}",
+        },
+        {
+            "name": "5. AzureML Pipleline",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "azureml.pipeline",
+            "justMyCode": true,
+            "envFile": "${input:dotEnvFilePath}",
         }
     ],
     "inputs": [
