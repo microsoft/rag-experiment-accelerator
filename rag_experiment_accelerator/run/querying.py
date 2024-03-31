@@ -397,7 +397,6 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
             with ExitStack() as stack:
                 executor = stack.enter_context(ThreadPoolExecutor())
-
                 futures = {
                     executor.submit(
                         query_and_eval_single_line,
