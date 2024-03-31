@@ -51,5 +51,8 @@
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
     "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
-    "chunking_strategy": "basic"
+    "chunking_strategy": "basic",
+    "generate_title": false,
+    "generate_summary": false,
+    "override_content_with_summary": false
 }

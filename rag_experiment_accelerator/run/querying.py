@@ -1,6 +1,5 @@
 import json
 
-
 from azure.search.documents import SearchClient
 from dotenv import load_dotenv
 from openai import BadRequestError
@@ -203,7 +202,7 @@ def query_and_eval_acs_multi(
         results for each question.
     """
     context = []
-    evals = []
+    evaluations = []
     response_generator = ResponseGenerator(
         environment, config, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
     )
@@ -217,7 +216,11 @@ def query_and_eval_acs_multi(
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
         )
-        evals.append(evaluation)
+        if len(docs) == 0:
+            logger.warning(f"No documents found for question: {question}")
+            continue
+
+        evaluations.append(evaluation)
 
         if config.RERANK:
             prompt_instruction_context = rerank_documents(
@@ -236,7 +239,7 @@ def query_and_eval_acs_multi(
         context.append(openai_response)
         logger.debug(openai_response)
 
-    return context, evals
+    return context, evaluations
 
 
 def run(environment: Environment, config: Config, index_config: IndexConfig):
@@ -341,7 +344,7 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
                                 evaluator=evaluator,
                             )
                             search_evals.append(evaluation)
-                        if config.RERANK:
+                        if config.RERANK and len(docs) > 0:
                             prompt_instruction_context = rerank_documents(
                                 docs,
                                 user_prompt,

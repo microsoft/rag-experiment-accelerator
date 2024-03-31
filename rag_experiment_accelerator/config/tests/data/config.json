@@ -49,5 +49,8 @@
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
     "data_formats": "test_data_format",
-    "chunking_strategy": "basic"
+    "chunking_strategy": "basic",
+    "generate_title": false,
+    "generate_summary": false,
+    "override_content_with_summary": false
 }
