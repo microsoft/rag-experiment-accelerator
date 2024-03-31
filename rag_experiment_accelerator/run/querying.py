@@ -396,7 +396,9 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
         )
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
             with ExitStack() as stack:
-                executor = stack.enter_context(ThreadPoolExecutor())
+                executor = stack.enter_context(
+                    ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+                )
                 futures = {
                     executor.submit(
                         query_and_eval_single_line,
@@ -414,12 +416,12 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
                     for line_number, line in enumerate(file)
                 }
 
-            for future in as_completed(futures):
-                try:
-                    future.result()
-                except Exception as exc:
-                    logger.error(
-                        f"query generated an exception: {exc} for line {line}..."
-                    )
+                for future in as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as exc:
+                        logger.error(
+                            f"query generated an exception: {exc} for line {line}..."
+                        )
 
         search_client.close()
