@@ -33,7 +33,9 @@ if __name__ == "__main__":
         run(environment, config, index_config)
 
         create_data_asset(
-            data_path=handler.get_output_path(index_config.index_name()),
+            data_path=handler.get_output_path(
+                index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+            ),
             data_asset_name=index_config.index_name(),
             environment=environment,
         )
