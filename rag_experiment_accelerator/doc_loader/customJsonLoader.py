@@ -52,7 +52,8 @@ class CustomJSONLoader(BaseLoader):
                     page_content.append(data_dict)
 
             metadata = {
-                "source": str(self.file_path),
+                "source": str(self.file_path).replace(str(Path.cwd()), ""),
             }
+
             docs.append(Document(page_content=str(page_content), metadata=metadata))
         return docs
