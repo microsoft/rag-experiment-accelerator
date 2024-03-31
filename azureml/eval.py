@@ -4,6 +4,8 @@ import argparse
 import mlflow
 from mlflow import MlflowClient
 
+from rag_experiment_accelerator.evaluation.eval import get_run_tags
+
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
@@ -62,6 +64,7 @@ def main():
     mlflow_client = mlflow.MlflowClient()
     mlflow.set_experiment(config.EXPERIMENT_NAME)
 
+    mlflow.set_tags(get_run_tags(config))
     with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
         eval_run(
             environment, config, index_config, mlflow_client, name_suffix="_result"

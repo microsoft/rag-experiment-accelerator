@@ -356,6 +356,30 @@ def llm_context_recall(
     ) * 100
 
 
+def get_run_tags(config: Config):
+    """
+    Returns the tags to be associated with the current run.
+
+    Args:
+        config (Config): The configuration settings to use for the tags.
+
+    Returns:
+        dict: The tags to be associated with the current run.
+    """
+    return {
+        "chunk_size": config.CHUNK_SIZES,
+        "chunking_strategy": config.CHUNKING_STRATEGY,
+        "rerank": config.RERANK,
+        "rerank_type": config.RERANK_TYPE,
+        "crossencoder_model": config.CROSSENCODER_MODEL,
+        "retrieve_num_of_documents": config.RETRIEVE_NUM_OF_DOCUMENTS,
+        "crossencoder_at_k": config.CROSSENCODER_AT_K,
+        "overlap_sizes": config.OVERLAP_SIZES,
+        "ef_construction": config.EF_CONSTRUCTIONS,
+        "ef_search": config.EF_SEARCHES,
+    }
+
+
 def generate_metrics(experiment_name, run_id, client):
     """
     Generates metrics for a given experiment and run ID.
