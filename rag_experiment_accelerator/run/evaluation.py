@@ -57,5 +57,5 @@ def initialise_mlflow_client(environment: Environment, config: Config):
     ).mlflow_tracking_uri
     mlflow.set_tracking_uri(mlflow_tracking_uri)
 
-    mlflow.set_experiment(config.INDEX_NAME_PREFIX)
+    mlflow.set_experiment(config.EXPERIMENT_NAME)
     return mlflow.MlflowClient(mlflow_tracking_uri)

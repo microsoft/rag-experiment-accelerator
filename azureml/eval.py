@@ -60,7 +60,7 @@ def main():
     config.EVAL_DATA_LOCATION = args.eval_result_dir
 
     mlflow_client = mlflow.MlflowClient()
-    mlflow.set_experiment(config.INDEX_NAME_PREFIX)
+    mlflow.set_experiment(config.EXPERIMENT_NAME)
 
     with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
         eval_run(

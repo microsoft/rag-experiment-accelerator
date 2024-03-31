@@ -1,7 +1,7 @@
 {
     "index_name_prefix": "surface",
     "experiment_name": "baseline",
-    "job_name": "baseline surface",
+    "job_name": "baseline_job",
     "job_description": "",
     "chunking": {
         "chunk_size": [1000],
