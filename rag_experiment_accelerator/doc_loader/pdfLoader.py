@@ -1,7 +1,7 @@
 import uuid
 import re
 
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 
 def preprocess_pdf_content(content: str):
     """
-    Preprocesses the content extracted from a PDF file.
+    Preprocess the content extracted from a PDF file.
     This function performs the following preprocessing steps on the input content:
     1. Replaces multiple consecutive newline characters ('\\n') with a single newline character.
     2. Removes all remaining newline characters.
@@ -69,14 +69,18 @@ def load_pdf_files(
     )
 
     logger.debug(
-        f"Splitting PDF pages into chunks of {chunk_size} characters with an"
-        f" overlap of {overlap_size} characters"
+        f"Splitting PDF pages into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
     docsList = []
     for doc in docs:
         docsList.append(
-            dict({str(uuid.uuid4()): preprocess_pdf_content(doc.page_content)})
+            {
+                str(uuid.uuid4()): {
+                    "content": preprocess_pdf_content(doc.page_content),
+                    "metadata": doc.metadata,
+                }
+            }
         )
 
     logger.info(f"Split {len(documents)} PDF pages into {len(docs)} chunks")

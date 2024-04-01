@@ -10,10 +10,12 @@
 	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"customizations": {
 		"vscode": {
+			"settings": { "ms-python.flake8.args": ["--ignore=E501"] },
 			"extensions": [
 				"github.vscode-pull-request-github",
 				"ms-vscode.azure-account",
 				"ms-python.python",
+				"ms-python.flake8",
 				"ms-azuretools.vscode-bicep",
 				"prompt-flow.prompt-flow",
 				"ms-azuretools.azure-dev",

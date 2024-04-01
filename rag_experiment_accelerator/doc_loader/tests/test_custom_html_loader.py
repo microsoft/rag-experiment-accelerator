@@ -16,10 +16,10 @@ def test_load_html_files():
 
     assert (
         "Deep Neural Nets: 33 years ago and 33 years from now"
-        in list(chunks[0].values())[0]
+        in list(chunks[0].values())[0]["content"]
     )
     assert (
         "Deep Neural Nets: 33 years ago and 33 years from now"
-        not in list(chunks[5].values())[0]
+        not in list(chunks[5].values())[0]["content"]
     )
-    assert "Musings of a Computer Scientist." in list(chunks[19].values())[0]
+    assert "Musings of a Computer Scientist." in list(chunks[19].values())[0]["content"]

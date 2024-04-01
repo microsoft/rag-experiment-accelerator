@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import ExitStack
 import hashlib
 import json
 import traceback
@@ -5,20 +7,18 @@ import traceback
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.prompts import (
     do_need_multiple_prompt_instruction,
     generate_qna_instruction_system_prompt,
     generate_qna_instruction_user_prompt,
     multiple_prompt_instruction,
-    prompt_instruction_summary,
-    prompt_instruction_title,
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.config.environment import Environment
 
 pre_process = Preprocess()
@@ -45,18 +45,20 @@ def upload_data(
     config: Config,
     chunks: list,
     index_name: str,
-    embedding_model: EmbeddingModel,
 ):
     """
     Uploads data to an Azure AI Search index.
 
+    This function uploads chunks of data to a specified index in Azure Cognitive Search.
+    It uses the provided service endpoint, index name, and search key to connect to the service.
+    The function also converts the chunks into index documents before uploading them.
+    The upload process is done in parallel using a ThreadPoolExecutor.
+
     Args:
-        chunks (list): A list of data chunks to upload.
-        service_endpoint (str): The endpoint URL for the Azure AI Search service.
-        index_name (str): The name of the index to upload data to.
-        search_key (str): The search key for the Azure AI Search service.
-        embedding_model (EmbeddingModel): The embedding model to generate the embedding.
-        azure_oai_deployment_name (str): The name of the Azure Opan AI deployment to use for generating titles and summaries.
+        environment (Environment): The environment configuration.
+        config (Config): The configuration object.
+        chunks (list): A list of dictionaries, each containing a chunk of content to be uploaded.
+        index_name (str): The name of the index to upload the data to.
 
     Returns:
         None
@@ -67,43 +69,31 @@ def upload_data(
         index_name=index_name,
         credential=credential,
     )
-    response_generator = ResponseGenerator(
-        environment, config, deployment_name=config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+
+    logger.info(f"Preparing data for upload, {len(chunks)} documents to upload")
+    documents = chunks_to_index_documents(chunks)
+
+    with ExitStack() as stack:
+        with TimeTook("uploading data to Azure Cognitive Search", logger=logger):
+            executor = stack.enter_context(
+                ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+            )
+
+            futures = {
+                executor.submit(search_client.upload_documents, [document]): document
+                for document in documents
+            }
+
+            for future in as_completed(futures):
+                document = futures[future]
+                try:
+                    future.result()
+                except Exception as ex:
+                    logger.error(f"Failed to upload document {document}, error: {ex}")
+
+    logger.info(
+        f"Uploaded {len(documents)} documents out of {len(chunks)} documents to Azure Search Index"
     )
-    documents = []
-    for i, chunk in enumerate(chunks):
-        try:
-            chunk_content = str(chunk["content"])
-            title = response_generator.generate_response(
-                prompt_instruction_title, chunk_content
-            )
-            summary = response_generator.generate_response(
-                prompt_instruction_summary, chunk_content
-            )
-        except Exception as e:
-            logger.info(f"Could not generate title or summary for chunk {i}: {str(e)}")
-            logger.info(traceback.format_exc())
-            continue
-        input_data = {
-            "id": str(my_hash(chunk["content"])),
-            "title": title,
-            "summary": summary,
-            "content": str(chunk["content"]),
-            "filename": "test",
-            "contentVector": chunk["content_vector"],
-            "contentSummary": embedding_model.generate_embedding(
-                chunk=str(pre_process.preprocess(summary))
-            ),
-            "contentTitle": embedding_model.generate_embedding(
-                chunk=str(pre_process.preprocess(title))
-            ),
-        }
-
-        documents.append(input_data)
-
-        search_client.upload_documents([input_data])
-    logger.info(f"Uploaded {len(documents)} documents")
-    logger.info("all documents have been uploaded to the search index")
 
 
 def generate_qna(environment, config, docs, azure_oai_deployment_name):
@@ -128,11 +118,12 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
         # what happens with < 50 ? Currently we are skipping them
         # But we aren't explicitly saying that stating that, should we?
         chunk = list(doc.values())[0]
-        if len(chunk) > 50:
+        if len(chunk["content"]) > 50:
+            response = ""
             try:
                 response = response_generator.generate_response(
                     generate_qna_instruction_system_prompt,
-                    generate_qna_instruction_user_prompt + chunk,
+                    generate_qna_instruction_user_prompt + chunk["content"],
                 )
                 response_dict = json.loads(
                     response.replace("\n", "").replace("'", "").replace("\\", "")
@@ -141,7 +132,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
                     data = {
                         "user_prompt": item["question"],
                         "output_prompt": item["answer"],
-                        "context": chunk,
+                        "context": chunk["content"],
                     }
                     new_df = new_df._append(data, ignore_index=True)
 
@@ -201,3 +192,38 @@ def do_we_need_multiple_questions(question, response_generator: ResponseGenerato
     except ContentFilteredException as e:
         logger.error(e)
         return False
+
+
+def chunks_to_index_documents(chunks):
+    """
+    Converts chunks of content into index documents for Azure Cognitive Search.
+
+    This function takes a list of chunks, where each chunk is a dictionary containing various pieces of content.
+    It then converts each chunk into a dictionary that's suitable for use as an index document in Azure Cognitive Search.
+    The resulting list of index documents is then returned.
+
+    Args:
+        chunks (list): A list of dictionaries, each containing a chunk of
+        content to be converted.
+
+    Returns:
+        list: A list of dictionaries, each representing an index document.
+    """
+    return [
+        {
+            "id": str(my_hash(chunk["content"])),
+            "title": chunk["title"] if "title" in chunk else "",
+            "summary": chunk["summary"] if "summary" in chunk else "",
+            "content": str(chunk["content"]),
+            "filename": chunk["filename"],
+            "sourceDisplayName": chunk["source_display_name"],
+            "contentVector": chunk["content_vector"]
+            if "content_vector" in chunk
+            else [],
+            "summaryVector": chunk["summary_vector"]
+            if "summary_vector" in chunk
+            else [],
+            "titleVector": chunk["title_vector"] if "title_vector" in chunk else [],
+        }
+        for chunk in chunks
+    ]
