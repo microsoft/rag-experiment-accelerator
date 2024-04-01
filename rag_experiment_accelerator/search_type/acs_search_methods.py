@@ -373,7 +373,7 @@ def search_for_match_pure_vector_cross(
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
-        fields="contentVector, title, summary",
+        fields="contentVector, titleVector, summaryVector",
         vector=embedding,
     )
 
