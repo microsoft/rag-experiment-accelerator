@@ -62,7 +62,7 @@ def load_with_azure_document_intelligence(
                 ).load()[0].page_content,
                 "metadata": {
                     "source": file_path,
-                    "page": 0
+                    "page": 0   # Azure Document Intelligence always returns a single page so we set it to 0
                 }})
         except Exception as e:
             logger.warning(f"Failed to load {file_path}: {e}")
