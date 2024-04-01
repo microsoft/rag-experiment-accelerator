@@ -25,7 +25,7 @@ def load_docx_files(
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
         **kwargs (dict): Unused.
-        
+
 
     Returns:
         list[Document]: A list of processed and split document chunks.

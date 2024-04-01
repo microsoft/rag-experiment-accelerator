@@ -48,7 +48,7 @@
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
     "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
-    "chunking_strategy": "azure-document-intelligence",
+    "chunking_strategy": "basic",
     "azure_document_intelligence_model": "prebuilt-read",
     "generate_title": false,
     "generate_summary": false,

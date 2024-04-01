@@ -43,6 +43,8 @@ class Config:
         RERANK_TYPE (str): The type of reranking to use.
         LLM_RERANK_THRESHOLD (float): The threshold for reranking using LLM.
         CROSSENCODER_AT_K (int): The number of documents to rerank using the crossencoder.
+        CHUNKING_STRATEGY (ChunkingStrategy): The strategy to use for chunking documents.
+        AZURE_DOCUMENT_INTELLIGENCE_MODEL (str): The model to use for Azure Document Intelligence extraction.
         TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
         RERANK (bool): Whether or not to perform reranking.
         SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
