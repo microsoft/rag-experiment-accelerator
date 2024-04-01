@@ -1,8 +1,11 @@
 {
-    "name_prefix": "guy6",
+    "name_prefix": "surface",
     "chunking": {
         "chunk_size": [1000],
-        "overlap_size": [200]
+        "overlap_size": [200],
+        "generate_title": false,
+        "generate_summary": false,
+        "override_content_with_summary": false
     },
     "embedding_models": [
         {
@@ -49,7 +52,6 @@
     "data_formats": "all",
     "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
     "chunking_strategy": "basic",
-    "generate_title": false,
-    "generate_summary": false,
-    "override_content_with_summary": false
+    "query_expansion": "disabled",
+    "min_query_expansion_related_question_similarity_score": 90
 }

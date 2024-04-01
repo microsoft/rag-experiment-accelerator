@@ -32,6 +32,9 @@ class Config:
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
+        GENERATE_TITLE (bool): Whether or not to generate title for chunk content. Default is False.
+        GENERATE_SUMMARY (bool): Whether or not to generate summary for chunk content. Default is False.
+        OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         NAME_PREFIX (str): A prefix to use for the names of saved models.
@@ -51,11 +54,10 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
         embedding_models: The embedding models used to generate embeddings
         MAX_WORKER_THREADS (int): Maximum number of worker threads.
-        GENERATE_TITLE (bool): Whether or not to generate title for chunk content. Default is False.
-        GENERATE_SUMMARY (bool): Whether or not to generate summary for chunk content. Default is False.
-        OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
         SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
         SAMPLE_PERCENTAGE (int): Percentage of dataset
+        QUERY_EXPANSION (str): Whether or not to perform query expansion. possible values are "Disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer", "generated_related_questions". Default is False.
+        MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE (int): The minimum similarity score for query expansion generated related questions. Default is 90.
     """
 
     def __init__(
@@ -69,9 +71,14 @@ class Config:
             config_json = json.load(json_file)
 
         self._initialize_paths(config_json, config_path, data_dir)
-
-        self.CHUNK_SIZES = config_json["chunking"]["chunk_size"]
-        self.OVERLAP_SIZES = config_json["chunking"]["overlap_size"]
+        chunking_config = config_json["chunking"]
+        self.CHUNK_SIZES = chunking_config["chunk_size"]
+        self.OVERLAP_SIZES = chunking_config["overlap_size"]
+        self.GENERATE_TITLE = chunking_config.get("generate_title", False)
+        self.GENERATE_SUMMARY = chunking_config.get("generate_summary", False)
+        self.OVERRIDE_CONTENT_WITH_SUMMARY = chunking_config.get(
+            "override_content_with_summary", False
+        )
         self.EF_CONSTRUCTIONS = config_json["ef_construction"]
         self.EF_SEARCHES = config_json["ef_search"]
         self.NAME_PREFIX = config_json["name_prefix"]
@@ -113,11 +120,6 @@ class Config:
         self.MAX_WORKER_THREADS = (
             int(max_worker_threads) if max_worker_threads else None
         )
-        self.GENERATE_TITLE = config_json.get("generate_title", False)
-        self.GENERATE_SUMMARY = config_json.get("generate_summary", False)
-        self.OVERRIDE_CONTENT_WITH_SUMMARY = config_json.get(
-            "override_content_with_summary", False
-        )
 
         self.validate_inputs(
             self.CHUNK_SIZES,
@@ -144,6 +146,8 @@ class Config:
         # log all the configuration settings in debug mode
         for key, value in config_json.items():
             logger.debug(f"Configuration setting: {key} = {value}")
+
+        self.QUERY_EXPANSION = config_json.get("query_expansion", "Disabled")
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):

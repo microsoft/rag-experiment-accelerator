@@ -10,6 +10,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
+from rag_experiment_accelerator.evaluation.eval import cosine_similarity
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.evaluation.search_eval import (
     evaluate_search_result,
@@ -136,6 +137,8 @@ def query_and_eval_acs(
     evaluation_content: str,
     retrieve_num_of_documents: int,
     evaluator: SpacyEvaluator,
+    config: Config,
+    response_generator: ResponseGenerator,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
@@ -150,22 +153,131 @@ def query_and_eval_acs(
         evaluation_content (str): The content to use for evaluating the search results.
         retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
         evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+        config (Config): The configuration object.
+        response_generator (ResponseGenerator): The response generator object.
 
     Returns:
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
-    search_result = query_acs(
-        search_client=search_client,
-        embedding_model=embedding_model,
-        user_prompt=query,
-        s_v=search_type,
-        retrieve_num_of_documents=retrieve_num_of_documents,
-    )
+    if config.QUERY_EXPANSION == "generated_hypothetical_answer":
+        # Query expansion with generated answer (HyDE)
+        answer = response_generator.generate_response(
+            "You are a helpful expert research assistant. Provide an example answer to the given question, that might be found in a document.",
+            query,
+            config.CHAT_MODEL_NAME,
+            config.TEMPERATURE,
+        )
+
+        search_result = query_acs(
+            search_client=search_client,
+            embedding_model=embedding_model,
+            user_prompt=answer,
+            s_v=search_type,
+            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+        )
+
+    elif config.QUERY_EXPANSION == "generated_hypothetical_document_to_answer":
+        # Query expansion with generated document with contains the answer  (HyDE)
+        answer = response_generator.generate_response(
+            "You are a helpful expert research assistant. Write a scientific paper to answer to the given question.",
+            query,
+            config.CHAT_MODEL_NAME,
+            config.TEMPERATURE,
+        )
+
+        search_result = query_acs(
+            search_client=search_client,
+            embedding_model=embedding_model,
+            user_prompt=answer,
+            s_v=search_type,
+            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+        )
+
+    elif config.QUERY_EXPANSION == "generated_related_questions":
+        # Query expansion with generated questions
+        augmented_questions = response_generator.generate_response(
+            "You are a helpful expert research assistant. Your users are asking questions"
+            "Suggest up to five additional related questions to help them find the information they need, for the provided question. "
+            "Suggest only short questions without compound sentences. Suggest a variety of questions that cover different aspects of the topic."
+            "Make sure they are complete questions, and that they are related to the original question."
+            "Output one question per line. Do not number the questions.",
+            query,
+            config.CHAT_MODEL_NAME,
+            config.TEMPERATURE,
+        )
+
+        # filter out non related questions
+        questions = filter_non_related_questions(
+            query,
+            augmented_questions.split("\n"),
+            config.EMBEDDING_MODEL_NAME,
+            config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
+        )
+
+        doc_set = set()
+        score_dict = {}
+
+        for question in questions:
+            search_result = query_acs(
+                search_client=search_client,
+                embedding_model=embedding_model,
+                user_prompt=question,
+                s_v=search_type,
+                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+            )
+
+            # deduplicate retrieved documents by using a set
+            for doc in search_result:
+                doc_set.add(doc["content"])
+                score_dict[doc["content"]] = doc["@search.score"]
+
+        search_result = list(doc_set)
+        search_result = [{"content": doc} for doc in search_result]
+        for doc in search_result:
+            doc["@search.score"] = score_dict[doc["content"]]
+
+        search_result.sort(key=lambda x: x["@search.score"], reverse=True)
+        search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
+    # Query expansion == "Disabled", perform stadard search
+    else:
+        search_result = query_acs(
+            search_client=search_client,
+            embedding_model=embedding_model,
+            user_prompt=query,
+            s_v=search_type,
+            retrieve_num_of_documents=retrieve_num_of_documents,
+        )
     docs, evaluation = evaluate_search_result(
         search_result, evaluation_content, evaluator
     )
     evaluation["query"] = query
     return docs, evaluation
+
+
+def filter_non_related_questions(
+    query,
+    generated_questions,
+    embedding_model,
+    MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
+):
+    questions = [query]
+
+    query_vector = embedding_model.generate_embedding(query)
+
+    for generated_question in generated_questions:
+        generated_question_vector = embedding_model.generate_embedding(
+            generated_question
+        )
+        similarity_score_array = (
+            cosine_similarity(query_vector, generated_question_vector) * 100
+        )
+        similarity_score = int(
+            sum(similarity_score_array) / len(similarity_score_array)
+        )
+        if similarity_score >= MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE:
+            questions.append(generated_question)
+
+    return questions
 
 
 def query_and_eval_acs_multi(
@@ -215,6 +327,8 @@ def query_and_eval_acs_multi(
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
+            config=config,
+            response_generator=response_generator,
         )
         if len(docs) == 0:
             logger.warning(f"No documents found for question: {question}")
@@ -340,6 +454,8 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
                                 evaluation_content=evaluation_content,
                                 retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                                 evaluator=evaluator,
+                                config=config,
+                                response_generator=response_generator,
                             )
                             search_evals.append(evaluation)
                         if config.RERANK and len(docs) > 0:

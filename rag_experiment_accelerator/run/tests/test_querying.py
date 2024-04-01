@@ -30,6 +30,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.CHUNK_SIZES = [1]
         self.mock_config.OVERLAP_SIZES = [1]
         self.mock_config.LLM_RERANK_THRESHOLD = 3
+        self.mock_config.QUERY_EXPANSION = "Disabled"
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
@@ -71,7 +72,10 @@ class TestQuerying(unittest.TestCase):
 
     @patch("rag_experiment_accelerator.run.querying.query_acs")
     @patch("rag_experiment_accelerator.run.querying.evaluate_search_result")
-    def test_query_and_eval_acs(self, mock_evaluate_search_result, mock_query_acs):
+    @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
+    def test_query_and_eval_acs(
+        self, mock_response_generator, mock_evaluate_search_result, mock_query_acs
+    ):
         # Arrange
         query = "test query"
         search_type = "test search type"
@@ -94,6 +98,8 @@ class TestQuerying(unittest.TestCase):
             evaluation_content,
             retrieve_num_of_documents,
             mock_evaluator,
+            self.mock_config,
+            mock_response_generator(),
         )
 
         # Assert
@@ -166,6 +172,8 @@ class TestQuerying(unittest.TestCase):
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
+            config=self.mock_config,
+            response_generator=mock_response_generator(),
         )
         # mock_rerank_documents.assert_not_called()
         mock_rerank_documents.assert_called_with(
@@ -235,6 +243,8 @@ class TestQuerying(unittest.TestCase):
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
+            config=self.mock_config,
+            response_generator=mock_response_generator(),
         )
         mock_rerank_documents.assert_not_called()
         mock_response_generator.return_value.generate_response.assert_called_with(
