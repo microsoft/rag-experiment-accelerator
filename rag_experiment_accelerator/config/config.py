@@ -99,6 +99,8 @@ class Config:
             if "chunking_strategy" in config_json
             else ChunkingStrategy.BASIC
         )
+        self.AZURE_DOCUMENT_INTELLIGENCE_MODEL = config_json.get(
+            "azure_document_intelligence_model", "prebuilt-read")
         self.LANGUAGE = config_json.get("language", {})
 
         self.embedding_models: list[EmbeddingModel] = []
@@ -242,7 +244,8 @@ class Config:
         except OSError as e:
             if "Read-only file system" in e.strerror:
                 pass
-            logger.warn(f"Failed to create directory {directory}: {e.strerror}")
+            logger.warn(
+                f"Failed to create directory {directory}: {e.strerror}")
 
     def _sampled_cluster_predictions_path(self):
         return os.path.join(
