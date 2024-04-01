@@ -1,5 +1,5 @@
 {
-    "name_prefix": "guy6",
+    "name_prefix": "surface",
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200]
@@ -48,7 +48,8 @@
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
     "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
-    "chunking_strategy": "basic",
+    "chunking_strategy": "azure-document-intelligence",
+    "azure_document_intelligence_model": "prebuilt-read",
     "generate_title": false,
     "generate_summary": false,
     "override_content_with_summary": false

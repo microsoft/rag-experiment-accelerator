@@ -34,8 +34,8 @@ def is_supported_by_document_intelligence(format: str) -> bool:
 def load_with_azure_document_intelligence(
     environment: Environment,
     file_paths: list[str],
-    chunk_size: int,
-    overlap_size: int,
+    azure_document_intelligence_model: str,
+    **kwargs: dict,
 ) -> list[Document]:
     """
     Load pdf files from a folder using Azure Document Intelligence.
@@ -43,22 +43,28 @@ def load_with_azure_document_intelligence(
     Args:
         environment (Environment): The environment class
         file_paths (list[str]): Sequence of paths to load.
-        chunk_size (int): Unused.
-        overlap_size (int): Unused.
+        azure_document_intelligence_model (str): The model to use for Azure Document Intelligence.
+        **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of Document objects.
     """
-    documents: list[Document] = []
+    documents = []
+    logger.info(f"Using model {azure_document_intelligence_model}")
     for file_path in file_paths:
         try:
-            documents += AzureAIDocumentIntelligenceLoader(
-                file_path=file_path,
-                api_key=environment.azure_document_intelligence_admin_key,
-                api_endpoint=environment.azure_document_intelligence_endpoint,
-                api_model="prebuilt-read",
-            ).load()
+            documents.append({
+                "content": AzureAIDocumentIntelligenceLoader(
+                    file_path=file_path,
+                    api_key=environment.azure_document_intelligence_admin_key,
+                    api_endpoint=environment.azure_document_intelligence_endpoint,
+                    api_model=azure_document_intelligence_model,
+                ).load()[0].page_content,
+                "metadata": {
+                    "source": file_path,
+                    "page": 0
+                }})
         except Exception as e:
             logger.warning(f"Failed to load {file_path}: {e}")
 
-    return [{str(uuid.uuid4()): doc.page_content} for doc in documents]
+    return [{str(uuid.uuid4()): doc} for doc in documents]
