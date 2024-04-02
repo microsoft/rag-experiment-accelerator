@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
-from tqdm import tqdm
 import re
 import os
 import uuid
@@ -126,9 +125,6 @@ class DocumentIntelligenceLoader(BaseLoader):
 
         with ExitStack() as stack:
             executor = stack.enter_context(ThreadPoolExecutor())
-            progress_bar = stack.enter_context(
-                tqdm(total=len(file_paths), desc="Analyzing documents")
-            )
 
             futures = {
                 executor.submit(self._analyze_document, file_path)
@@ -140,7 +136,6 @@ class DocumentIntelligenceLoader(BaseLoader):
                     documents += future.result()
                 except Exception as exc:
                     logger.error(f"Processing document generated an exception: {exc}")
-                progress_bar.update(1)
 
             return documents
 
