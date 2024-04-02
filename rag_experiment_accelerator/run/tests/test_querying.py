@@ -30,7 +30,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.CHUNK_SIZES = [1]
         self.mock_config.OVERLAP_SIZES = [1]
         self.mock_config.LLM_RERANK_THRESHOLD = 3
-        self.mock_config.QUERY_EXPANSION = "Disabled"
+        self.mock_config.QUERY_EXPANSION = "disabled"
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)

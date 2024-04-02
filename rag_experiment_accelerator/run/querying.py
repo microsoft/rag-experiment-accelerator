@@ -233,7 +233,7 @@ def query_and_eval_acs(
 
         search_result.sort(key=lambda x: x["@search.score"], reverse=True)
         search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
-    # Query expansion == "Disabled", perform stadard search
+    # Query expansion == "disabled", perform stadard search
     else:
         search_result = query_acs(
             search_client=search_client,
