@@ -164,8 +164,6 @@ def query_and_eval_acs(
         answer = response_generator.generate_response(
             "You are a helpful expert research assistant. Provide an example answer to the given question, that might be found in a document.",
             query,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
         )
 
         search_result = query_acs(
@@ -181,8 +179,6 @@ def query_and_eval_acs(
         answer = response_generator.generate_response(
             "You are a helpful expert research assistant. Write a scientific paper to answer to the given question.",
             query,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
         )
 
         search_result = query_acs(
@@ -202,8 +198,6 @@ def query_and_eval_acs(
             "Make sure they are complete questions, and that they are related to the original question."
             "Output one question per line. Do not number the questions.",
             query,
-            config.CHAT_MODEL_NAME,
-            config.TEMPERATURE,
         )
 
         # filter out non related questions
