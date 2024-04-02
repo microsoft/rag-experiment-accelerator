@@ -229,7 +229,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
     "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
-    "query_expansion": "this feature allows to experiment with query diffrent query expansion approaches which may improve the retrieval metrics, possible values are 'disabled' (default), 'generated_hypothetical_answer', 'generated_hypothetical_document_to_answer', 'generated_related_questions' reference article - Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings) - https://arxiv.org/abs/2212.10496"
+    "query_expansion": "this feature allows you to experiment with various query expansion approaches which may improve the retrieval metrics The possible values are 'disabled' (default), 'generated_hypothetical_answer', 'generated_hypothetical_document_to_answer', 'generated_related_questions' reference article - Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings) - https://arxiv.org/abs/2212.10496"
 }
 ```
 
