@@ -39,8 +39,7 @@ def test_run(
     # Assert
     mock_load_documents.assert_called_once_with(
         mock_environment,
-        mock_config.CHUNKING_STRATEGY,
-        mock_config.DATA_FORMATS,
+        mock_config,
         filepaths,
         2000,
         0,

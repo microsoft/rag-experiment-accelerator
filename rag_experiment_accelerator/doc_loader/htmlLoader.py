@@ -99,7 +99,7 @@ def _load_html_files_semantic(
                 if chunk.id not in unique_dict:
                     # Create a Document out of the chunk)
                     unique_dict[chunk.id] = {"content": chunk.text, "metadata": chunk.metadata.to_dict()}
-                # TODO: Allow embedding model to be configurable
+                # TODO: Allow embedding model to be configurable. Currently uses small spacy model for speed
                 doc = nlp(chunk.text)
                 embeddings_dict[chunk.id] = doc.vector
         high_similarity, low_similarity = get_semantic_similarity(embeddings_dict, unique_dict, similarity_score)

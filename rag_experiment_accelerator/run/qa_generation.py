@@ -41,8 +41,7 @@ def run(
         else:
             all_docs = load_documents(
                 environment,
-                config.CHUNKING_STRATEGY,
-                config.DATA_FORMATS,
+                config,
                 file_paths,
                 2000,
                 0,
@@ -51,8 +50,7 @@ def run(
     else:
         all_docs = load_documents(
             environment,
-            config.CHUNKING_STRATEGY,
-            config.DATA_FORMATS,
+            config,
             file_paths,
             2000,
             0,

@@ -98,11 +98,10 @@ def test_run(
     assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
     assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
 
-    assert mock_load_documents.call_args_list[0][0][1] == "chunking_strategy"
-    assert mock_load_documents.call_args_list[0][0][2] == ["format1", "format2"]
-    assert mock_load_documents.call_args_list[0][0][3] == file_paths
-    assert mock_load_documents.call_args_list[0][0][4] == 10
-    assert mock_load_documents.call_args_list[0][0][5] == 5
+    assert mock_load_documents.call_args_list[0][0][1].CHUNKING_STRATEGY == "chunking_strategy"
+    assert mock_load_documents.call_args_list[0][0][2] == file_paths
+    assert mock_load_documents.call_args_list[0][0][3] == 10
+    assert mock_load_documents.call_args_list[0][0][4] == 5
 
     assert mock_cluster.call_args_list[0][0][0] == [
         {"key1": {"content": "content1", "metadata": {"source": "source1"}}},
