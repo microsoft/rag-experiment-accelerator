@@ -1,6 +1,5 @@
 import re
 
-from abc import ABC
 from string import punctuation
 from typing import Optional
 
@@ -9,7 +8,7 @@ from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class Preprocess(ABC):
+class Preprocess:
     def __init__(self, name: Optional[str] = None):
         self.name = name if name else self.__class__.__name__
 
