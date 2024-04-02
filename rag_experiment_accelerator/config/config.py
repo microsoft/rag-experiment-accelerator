@@ -56,7 +56,7 @@ class Config:
         MAX_WORKER_THREADS (int): Maximum number of worker threads.
         SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
         SAMPLE_PERCENTAGE (int): Percentage of dataset
-        QUERY_EXPANSION (str): Whether or not to perform query expansion. possible values are "Disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer", "generated_related_questions". Default is False.
+        QUERY_EXPANSION (str): Whether or not to perform query expansion. Possible values are "disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer", "generated_related_questions". Default is `disabled`.
         MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE (int): The minimum similarity score for query expansion generated related questions. Default is 90.
     """
 
