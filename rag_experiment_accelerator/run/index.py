@@ -56,8 +56,7 @@ def run(
 
     docs = load_documents(
         environment,
-        config.CHUNKING_STRATEGY,
-        config.DATA_FORMATS,
+        config,
         file_paths,
         index_config.chunk_size,
         index_config.overlap,
