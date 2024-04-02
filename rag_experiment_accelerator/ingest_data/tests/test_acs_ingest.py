@@ -10,10 +10,12 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     we_need_multiple_questions,
     do_we_need_multiple_questions,
 )
-
 from rag_experiment_accelerator.llm.prompts import (
     multiple_prompt_instruction,
+    prompt_instruction_title,
+    prompt_instruction_summary,
 )
+from rag_experiment_accelerator.run.index import generate_summary, generate_title
 
 
 def test_my_hash_with_string():
@@ -58,29 +60,66 @@ def test_my_hash_with_numbers():
     assert result == expected_hash
 
 
+@patch("rag_experiment_accelerator.run.index.ResponseGenerator")
+def test_generate_title(mock_response_generator):
+    # Arrange
+    mock_response = "Test Title"
+    mock_chunk = "This is a test chunk of text."
+    mock_deployment_name = "TestDeployment"
+    mock_response_generator().generate_response.return_value = mock_response
+
+    # Act
+    result = generate_title(mock_chunk, mock_deployment_name)
+
+    # Assert
+    mock_response_generator().generate_response.assert_called_once_with(
+        prompt_instruction_title, mock_chunk
+    )
+    assert result == mock_response
+
+
+@patch("rag_experiment_accelerator.run.index.ResponseGenerator")
+def test_generate_summary(mock_response_generator):
+    # Arrange
+    mock_summary = "Test Summary"
+    mock_chunk = "This is a test chunk of text."
+    mock_deployment_name = "TestDeployment"
+    mock_response_generator().generate_response.return_value = mock_summary
+
+    # Act
+    result = generate_summary(mock_chunk, mock_deployment_name)
+
+    # Assert
+    mock_response_generator().generate_response.assert_called_once_with(
+        prompt_instruction_summary, mock_chunk
+    )
+    assert result == mock_summary
+
+
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.SearchClient")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.AzureKeyCredential")
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.my_hash")
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.pre_process.preprocess")
-@patch("rag_experiment_accelerator.ingest_data.acs_ingest.ResponseGenerator")
 def test_upload_data(
-    mock_response_generator,
-    mock_preprocess,
     mock_my_hash,
     mock_azure_key_credential,
     mock_SearchClient,
 ):
     # Arrange
-    mock_chunks = [{"content": "test content", "content_vector": "test_vector"}]
+    mock_chunks = [
+        {
+            "content": "test content",
+            "content_vector": "test_vector",
+            "filename": "test_file_name",
+            "source_display_name": "test_source_name",
+        }
+    ]
     mock_search_key = "test_key"
-    mock_embedding_model = Mock()
     mock_my_hash.return_value = "test_hash"
-    mock_preprocess.return_value = "test_preprocessed_content"
     mock_environment = Mock()
     mock_environment.azure_search_service_endpoint = "test_endpoint"
     mock_environment.azure_search_admin_key = "test_key"
     mock_config = Mock()
-    mock_response_generator.return_value.generate_response.return_value = "test_text"
+    mock_config.MAX_WORKER_THREADS = None
 
     # Act
     upload_data(
@@ -88,7 +127,6 @@ def test_upload_data(
         mock_config,
         mock_chunks,
         "test_index",
-        mock_embedding_model,
     )
 
     # Assert
@@ -99,12 +137,7 @@ def test_upload_data(
         credential=ANY,
     )
     mock_my_hash.assert_called_once_with(mock_chunks[0]["content"])
-    mock_preprocess.assert_any_call("test_text")
-    mock_embedding_model.generate_embedding.assert_any_call(
-        chunk="test_preprocessed_content"
-    )
     mock_SearchClient().upload_documents.assert_called_once()
-    assert mock_embedding_model.generate_embedding.call_count == 2
 
 
 @patch("rag_experiment_accelerator.ingest_data.acs_ingest.json.loads")
@@ -114,9 +147,10 @@ def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads
     mock_docs = [
         dict(
             {
-                str(
-                    uuid.uuid4()
-                ): "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50"
+                str(uuid.uuid4()): {
+                    "content": "This is a test document content with extras so we reach the 50 mark for response to be called, there is NO Path for less than 50",
+                    "metadata": {"source": "test_source"},
+                }
             }
         )
     ]

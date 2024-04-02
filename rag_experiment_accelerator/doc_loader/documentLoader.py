@@ -7,6 +7,7 @@ from rag_experiment_accelerator.doc_loader.markdownLoader import (
 from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
 from rag_experiment_accelerator.doc_loader.textLoader import load_text_files
 from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
+    is_supported_by_document_intelligence,
     load_with_azure_document_intelligence,
 )
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -37,7 +38,10 @@ def determine_processor(chunking_strategy: ChunkingStrategy, format: str) -> cal
     """
     Determine and return document processor based on chunking strategy and format.
     """
-    if chunking_strategy == ChunkingStrategy.AZURE_DOCUMENT_INTELLIGENCE:
+    if (
+        chunking_strategy == ChunkingStrategy.AZURE_DOCUMENT_INTELLIGENCE
+        and is_supported_by_document_intelligence(format)
+    ):
         return load_with_azure_document_intelligence
     else:
         return _FORMAT_PROCESSORS[format]
