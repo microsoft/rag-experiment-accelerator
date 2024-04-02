@@ -42,6 +42,11 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
+from rag_experiment_accelerator.llm.prompts import (
+    prompt_generated_hypothetical_answer,
+    prompt_generated_hypothetical_document_to_answer,
+    prompt_generated_related_questions,
+)
 
 load_dotenv(override=True)
 
@@ -162,7 +167,7 @@ def query_and_eval_acs(
     if config.QUERY_EXPANSION == "generated_hypothetical_answer":
         # Query expansion with generated answer (HyDE)
         answer = response_generator.generate_response(
-            "You are a helpful expert research assistant. Provide an example answer to the given question, that might be found in a document.",
+            prompt_generated_hypothetical_answer,
             query,
         )
 
@@ -177,7 +182,7 @@ def query_and_eval_acs(
     elif config.QUERY_EXPANSION == "generated_hypothetical_document_to_answer":
         # Query expansion with generated document with contains the answer  (HyDE)
         answer = response_generator.generate_response(
-            "You are a helpful expert research assistant. Write a scientific paper to answer to the given question.",
+            prompt_generated_hypothetical_document_to_answer,
             query,
         )
 
@@ -192,11 +197,7 @@ def query_and_eval_acs(
     elif config.QUERY_EXPANSION == "generated_related_questions":
         # Query expansion with generated questions
         augmented_questions = response_generator.generate_response(
-            "You are a helpful expert research assistant. Your users are asking questions"
-            "Suggest up to five additional related questions to help them find the information they need, for the provided question. "
-            "Suggest only short questions without compound sentences. Suggest a variety of questions that cover different aspects of the topic."
-            "Make sure they are complete questions, and that they are related to the original question."
-            "Output one question per line. Do not number the questions.",
+            prompt_generated_related_questions,
             query,
         )
 
