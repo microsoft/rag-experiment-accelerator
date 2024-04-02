@@ -44,7 +44,7 @@ def load_html_files(
             file_paths=file_paths,
             chunk_size=chunk_size,
             overlap_size=overlap_size,
-            similarity_score=config.SEMANTIC_SIMILARITY_SCORE
+            similarity_score=config.SEMANTIC_SIMILARITY_THRESHOLD
         )
 
     else:
@@ -74,14 +74,13 @@ def _load_html_files_semantic(
         similarity_score (float, optional): The similarity score to use for semantic chunking. Defaults to 0.95.
     """
 
-    logger.debug("Loading html files semantically")
+    logger.info("Loading html files semantically")
 
     nlp = spacy.load("en_core_web_md")
     unique_dict = {}
     all_chunks = {}
 
     for filename in file_paths:
-        # TODO: Handle Metadata in some way?
         elements = partition_html(
             filename=filename
         )
@@ -99,7 +98,7 @@ def _load_html_files_semantic(
             if len(chunk.text.split()) > 2:
                 if chunk.id not in unique_dict:
                     # Create a Document out of the chunk)
-                    unique_dict[chunk.id] = chunk.text
+                    unique_dict[chunk.id] = {"content": chunk.text, "metadata": chunk.metadata.to_dict()}
                 # TODO: Allow embedding model to be configurable
                 doc = nlp(chunk.text)
                 embeddings_dict[chunk.id] = doc.vector

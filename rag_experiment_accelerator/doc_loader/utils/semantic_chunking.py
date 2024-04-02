@@ -17,9 +17,9 @@ def get_semantic_similarity(embeddings_dict, text_dict, threshold):
     for key, array_of_keys in high_sim.items():
         similar_text = ""
         for key_dep in array_of_keys:
-            similar_text += text_dict[key_dep] + ", "
-        similar_text += ", " + text_dict[key]
-        high_similarity[key] = similar_text
+            similar_text += text_dict[key_dep]["content"] + ", "
+        similar_text += ", " + text_dict[key]["content"]
+        high_similarity[key] = {"content": similar_text, "metadata": text_dict[key]["metadata"]}
 
     return high_similarity, low_similarity
 
