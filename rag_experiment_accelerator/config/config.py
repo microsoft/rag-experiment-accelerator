@@ -147,7 +147,7 @@ class Config:
         for key, value in config_json.items():
             logger.debug(f"Configuration setting: {key} = {value}")
 
-        self.QUERY_EXPANSION = config_json.get("query_expansion", "disabled")
+        self.QUERY_EXPANSION = config_json.get("query_expansion", "disabled").lower()
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
