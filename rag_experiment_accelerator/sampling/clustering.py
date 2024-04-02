@@ -29,7 +29,6 @@ def init_clusting():
         None
 
     """
-    logger.info("Initializing clustering process")
     load_dotenv(override=True)
 
     parser = en_core_web_lg.load(disable=["ner"])
@@ -238,7 +237,7 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     return x, y, text, processed_text, chunk, prediction, prediction_values
 
 
-def cluster(all_chunks, config):
+def cluster(all_chunks, config, parser):
     """
     Clusters the given chunks of documents using TF-IDF and K-means clustering.
 
@@ -255,7 +254,9 @@ def cluster(all_chunks, config):
 
     # Tokenise and remove punctuation and stopwords
     tqdm.pandas()
-    df["processed_text"] = df["text"].progress_apply(spacy_tokenizer)
+    df["processed_text"] = df["text"].progress_apply(
+        lambda text: spacy_tokenizer(text, parser)
+    )
 
     # Run TF-IDF
     logger.info("Run TF-IDF")
