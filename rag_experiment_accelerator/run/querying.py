@@ -134,36 +134,14 @@ def rerank_documents(
     return result
 
 
-def query_and_eval_acs(
+def expand_query_and_search(
+    config: Config,
+    response_generator: ResponseGenerator,
     search_client: SearchClient,
     embedding_model: EmbeddingModel,
     query: str,
     search_type: str,
-    evaluation_content: str,
-    retrieve_num_of_documents: int,
-    evaluator: SpacyEvaluator,
-    config: Config,
-    response_generator: ResponseGenerator,
-) -> tuple[list[str], list[dict[str, any]]]:
-    """
-    Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
-    results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
-    the evaluation results.
-
-    Args:
-        search_client (SearchClient): The Azure AI Search client to use for querying the service.
-        embedding_model (EmbeddingModel): The model used to generate the embeddings.
-        query (str): The search query to execute.
-        search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
-        evaluation_content (str): The content to use for evaluating the search results.
-        retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
-        evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
-        config (Config): The configuration object.
-        response_generator (ResponseGenerator): The response generator object.
-
-    Returns:
-        tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
-    """
+):
     if config.QUERY_EXPANSION == "generated_hypothetical_answer":
         # Query expansion with generated answer (HyDE)
         answer = response_generator.generate_response(
@@ -233,8 +211,42 @@ def query_and_eval_acs(
 
         search_result.sort(key=lambda x: x["@search.score"], reverse=True)
         search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
-    # Query expansion == "disabled", perform stadard search
-    else:
+
+    return search_result
+
+
+def query_and_eval_acs(
+    search_client: SearchClient,
+    embedding_model: EmbeddingModel,
+    query: str,
+    search_type: str,
+    evaluation_content: str,
+    retrieve_num_of_documents: int,
+    evaluator: SpacyEvaluator,
+    config: Config,
+    response_generator: ResponseGenerator,
+) -> tuple[list[str], list[dict[str, any]]]:
+    """
+    Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
+    results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
+    the evaluation results.
+
+    Args:
+        search_client (SearchClient): The Azure AI Search client to use for querying the service.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
+        query (str): The search query to execute.
+        search_type (str): The type of search to execute (e.g. 'semantic', 'vector', etc.).
+        evaluation_content (str): The content to use for evaluating the search results.
+        retrieve_num_of_documents (int): The number of documents to retrieve from the search results.
+        evaluator (SpacyEvaluator): The evaluator to use for evaluating the search results.
+        config (Config): The configuration object.
+        response_generator (ResponseGenerator): The response generator object.
+
+    Returns:
+        tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
+    """
+
+    if config.QUERY_EXPANSION == "disabled":
         search_result = query_acs(
             search_client=search_client,
             embedding_model=embedding_model,
@@ -242,6 +254,9 @@ def query_and_eval_acs(
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
         )
+    else:
+        search_result = expand_query_and_search()
+
     docs, evaluation = evaluate_search_result(
         search_result, evaluation_content, evaluator
     )
