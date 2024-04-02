@@ -6,7 +6,7 @@ from rag_experiment_accelerator.nlp.preprocess import Preprocess
 logger = get_logger(__name__)
 
 
-class SpacyPreprocess(Preprocess):
+class StopWordsPreprocess(Preprocess):
     def __init__(self):
         self.nlp = spacy.load("en_core_web_lg")
 
