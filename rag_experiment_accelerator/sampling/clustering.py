@@ -18,16 +18,30 @@ from dotenv import load_dotenv
 matplotlib.use("Agg")
 plt.style.use("ggplot")
 warnings.filterwarnings("ignore")
-load_dotenv(override=True)
 logger = get_logger(__name__)
 
-punctuations = string.punctuation
-stopwords = list(STOP_WORDS)
-parser = en_core_web_lg.load(disable=["ner"])
-parser.max_length = 7000000
+
+def init_clusting():
+    """
+    Initialize the clustering process.
+
+    Returns:
+        None
+
+    """
+    logger.info("Initializing clustering process")
+    load_dotenv(override=True)
+
+    parser = en_core_web_lg.load(disable=["ner"])
+    parser.max_length = 7000000
+
+    punctuations = string.punctuation
+    stopwords = list(STOP_WORDS)
+
+    return parser, punctuations, stopwords
 
 
-def spacy_tokenizer(sentence):
+def spacy_tokenizer(sentence, parser):
     """
     Tokenizes a sentence using the Spacy library.
 
