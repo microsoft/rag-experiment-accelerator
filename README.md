@@ -266,7 +266,7 @@ Based on the reference article - [Precise Zero-Shot Dense Retrieval without Rele
 The following configuration options turns on this experimantation approachs:
 
 
-### Generate hypothertical answer for the question in query
+### Generate hypothetical answer for the question in query
 ```json
 {
     "query_expansion": "generated_hypothetical_answer"
