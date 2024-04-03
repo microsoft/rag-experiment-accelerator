@@ -14,6 +14,7 @@ def load_markdown_files(
     file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
+    **kwargs: dict,
 ):
     """
     Load and process Markdown files from a given folder path.
@@ -23,6 +24,7 @@ def load_markdown_files(
         file_paths (list[str]): Sequence of paths to load.
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
+        **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of processed and split document chunks.
