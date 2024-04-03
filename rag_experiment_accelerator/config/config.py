@@ -243,6 +243,7 @@ class Config:
 
     def _try_create_directory(self, directory: str) -> None:
         try:
+            logger.info(f"Creating directory: {directory}")
             os.makedirs(directory, exist_ok=True)
         except OSError as e:
             logger.warn(f"Failed to create directory {directory}: {e.strerror}")
