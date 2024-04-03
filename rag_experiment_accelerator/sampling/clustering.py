@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import string
-import en_core_web_lg
 import plotly.express as px
 import pandas as pd
 from tqdm import tqdm
@@ -30,6 +29,7 @@ def init_clusting():
 
     """
     load_dotenv(override=True)
+    import en_core_web_lg
 
     parser = en_core_web_lg.load(disable=["ner"])
     parser.max_length = 7000000
