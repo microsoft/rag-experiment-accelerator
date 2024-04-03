@@ -5,6 +5,7 @@ import argparse
 from azure.ai.ml import MLClient, Input, Output, dsl, command
 from azure.ai.ml.parallel import parallel_run_function, RunFunction
 import azure.ai.ml.entities
+from rag_experiment_accelerator.evaluation.eval import get_run_tags
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
@@ -105,6 +106,7 @@ def start_pipeline(
             "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
             "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
         },
+        tags=get_run_tags(index_config),
     )
 
     query_pipeline_component = command(
@@ -129,6 +131,7 @@ def start_pipeline(
             "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
             "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
         },
+        tags=get_run_tags(index_config),
     )
 
     eval_pipeline_component = command(
@@ -153,12 +156,14 @@ def start_pipeline(
             "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
             "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
         },
+        tags=get_run_tags(index_config),
     )
 
     @dsl.pipeline(
         name=mlflow_run_name(config),
         compute=environment.aml_compute_name,
         description="RAG Experiment Pipeline",
+        tags=get_run_tags(index_config),
     )
     def rag_pipeline(config_path_input, data_input, eval_data_input):
         index_job = index_pipeline_component(

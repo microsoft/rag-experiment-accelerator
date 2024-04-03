@@ -27,6 +27,7 @@
         "distilbert",
         "distro",
         "htmlcov",
+        "keyvault",
         "libuv",
         "mpnet",
         "ndarray",
