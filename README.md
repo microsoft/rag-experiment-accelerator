@@ -260,20 +260,20 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 
 ## Query Expansion
 
-Giving an example of an hypothertical answer for the question in query, an hypothertical passage which holds an answer to the query, or generate few alternative related question might improve retrieval and thus get more accurate chunks of docs to pass into LLM context.
+Giving an example of an hypothetical answer for the question in query, an hypothetical passage which holds an answer to the query, or generate few alternative related question might improve retrieval and thus get more accurate chunks of docs to pass into LLM context.
 Based on the reference article - [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings)](https://arxiv.org/abs/2212.10496).
 
 The following configuration options turns on this experimantation approachs:
 
 
-### Generate hypothertical answer for the question in query
+### Generate hypothetical answer for the question in query
 ```json
 {
     "query_expansion": "generated_hypothetical_answer"
 }
 ```
 
-### Generate hypothertical document which includes an answer for the question in query
+### Generate hypothetical document which includes an answer for the question in query
 ```json
 {
     "query_expansion": "generated_hypothetical_document_to_answer"
