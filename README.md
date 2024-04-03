@@ -161,7 +161,7 @@ az deployment group create --subscription <subscription-id> --resource-group <re
 
 To use the **RAG Experiment Accelerator**, follow these steps:
 
-1. Modify the `config.json` file with the hyperparameters for your experiment.
+1. Copy the provided `config.sample.json` file to a file named `config.json` and change any hyperparameters to tailor to your experiment.
 2. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
   ```bash
   python 01_index.py

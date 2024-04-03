@@ -47,16 +47,16 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_index.py --data-directory-name='data-ci'
+          python 01_index.py --data_dir='data-ci' --config_path='./config.json'
       - name: execute qna step
         shell: bash
         run: |
-          python 02_qa_generation.py
+          python 02_qa_generation.py --config_path='./config.json'
       - name: execute querying step
         shell: bash
         run: |
-          python 03_querying.py
+          python 03_querying.py --config_path='./config.json'
       - name: execute evaluation step
         shell: bash
         run: |
-          python 04_evaluation.py
+          python 04_evaluation.py --config_path='./config.json'
