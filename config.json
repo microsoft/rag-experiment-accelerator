@@ -52,6 +52,8 @@
     "data_formats": "all",
     "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
     "chunking_strategy": "basic",
-    "query_expansion": "disabled",
+    "chain_of_thoughts": false,
+    "hyde": "disabled",
+    "query_expansion": false,
     "min_query_expansion_related_question_similarity_score": 90
 }

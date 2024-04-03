@@ -56,7 +56,9 @@ class Config:
         MAX_WORKER_THREADS (int): Maximum number of worker threads.
         SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
         SAMPLE_PERCENTAGE (int): Percentage of dataset
-        QUERY_EXPANSION (str): Whether or not to perform query expansion. Possible values are "disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer", "generated_related_questions". Default is `disabled`.
+        CHAIN_OF_THOUGHTS (bool): Whether chain of thoughts is enabled or not. if enabled LLM will check if it's possible to split complex query to multiple queries and do so. else it will leave the original query as is. Default is False.
+        HYDE (str): Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM. Possible values are "disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer". Default is 'disabled'.
+        QUERY_EXPANSION (bool): Whether or not to perform query expansion and generate up to five related questions using LLM (depends on similairy score) and use those to retrieve documents. Default is False.
         MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE (int): The minimum similarity score for query expansion generated related questions. Default is 90.
     """
 
@@ -147,7 +149,12 @@ class Config:
         for key, value in config_json.items():
             logger.debug(f"Configuration setting: {key} = {value}")
 
-        self.QUERY_EXPANSION = config_json.get("query_expansion", "disabled").lower()
+        self.CHAIN_OF_THOUGHTS = config_json.get("chain_of_thoughts", False)
+        self.HYDE = config_json.get("hyde", "disabled").lower()
+        self.QUERY_EXPANSION = config_json.get("generate_title", False)
+        self.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = int(
+            config_json.get("min_query_expansion_related_question_similarity_score", 90)
+        )
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):

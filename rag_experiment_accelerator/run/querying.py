@@ -134,83 +134,71 @@ def rerank_documents(
     return result
 
 
-def expand_query_and_search(
+def hyde(
     config: Config,
     response_generator: ResponseGenerator,
-    search_client: SearchClient,
-    embedding_model: EmbeddingModel,
-    query: str,
-    search_type: str,
+    queries: list[str],
 ):
-    if config.QUERY_EXPANSION == "generated_hypothetical_answer":
-        # Query expansion with generated answer (HyDE)
-        answer = response_generator.generate_response(
-            prompt_generated_hypothetical_answer,
-            query,
-        )
+    if config.HYDE == "disabled":
+        return queries
 
-        search_result = query_acs(
-            search_client=search_client,
-            embedding_model=embedding_model,
-            user_prompt=answer,
-            s_v=search_type,
-            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-        )
-
-    elif config.QUERY_EXPANSION == "generated_hypothetical_document_to_answer":
-        # Query expansion with generated document with contains the answer  (HyDE)
-        answer = response_generator.generate_response(
-            prompt_generated_hypothetical_document_to_answer,
-            query,
-        )
-
-        search_result = query_acs(
-            search_client=search_client,
-            embedding_model=embedding_model,
-            user_prompt=answer,
-            s_v=search_type,
-            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-        )
-
-    elif config.QUERY_EXPANSION == "generated_related_questions":
-        # Query expansion with generated questions
-        augmented_questions = response_generator.generate_response(
-            prompt_generated_related_questions,
-            query,
-        )
-
-        # filter out non related questions
-        questions = filter_non_related_questions(
-            query,
-            augmented_questions.split("\n"),
-            config.EMBEDDING_MODEL_NAME,
-            config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
-        )
-
-        doc_set = set()
-        score_dict = {}
-
-        for question in questions:
-            search_result = query_acs(
-                search_client=search_client,
-                embedding_model=embedding_model,
-                user_prompt=question,
-                s_v=search_type,
-                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+    generated_queries = []
+    for query in queries:
+        if config.HYDE == "generated_hypothetical_answer":
+            result = response_generator.generate_response(
+                prompt_generated_hypothetical_answer,
+                query,
             )
+        elif config.HYDE == "generated_hypothetical_document_to_answer":
+            result = response_generator.generate_response(
+                prompt_generated_hypothetical_document_to_answer,
+                query,
+            )
+        else:
+            raise NotImplementedError(
+                f"configuration for hyde with value of [{config.HYDE}] is not supported"
+            )
+        generated_queries.append(result)
+    return generated_queries
 
-            # deduplicate retrieved documents by using a set
-            for doc in search_result:
-                doc_set.add(doc["content"])
-                score_dict[doc["content"]] = doc["@search.score"]
 
-        search_result = list(doc_set)
-        search_result = [{"content": doc} for doc in search_result]
-        for doc in search_result:
-            doc["@search.score"] = score_dict[doc["content"]]
+def query_expansion(
+    config: Config,
+    response_generator: ResponseGenerator,
+    query: str,
+) -> list[str]:
+    # Query expansion with generated questions
+    augmented_questions = response_generator.generate_response(
+        prompt_generated_related_questions,
+        query,
+    )
 
-        search_result.sort(key=lambda x: x["@search.score"], reverse=True)
-        search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
+    # Filter out non related questions
+    questions = filter_non_related_questions(
+        query,
+        augmented_questions.split("\n"),
+        config.EMBEDDING_MODEL_NAME,
+        config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
+    )
+
+    return questions
+
+
+def dedupulicate_search_results(search_results: list[dict]) -> list[dict]:
+    doc_set = set()
+    score_dict = {}
+
+    # deduplicate retrieved documents by using a set
+    for doc in search_results:
+        doc_set.add(doc["content"])
+        score_dict[doc["content"]] = doc["@search.score"]
+
+    search_result = list(doc_set)
+    search_result = [{"content": doc} for doc in search_result]
+    for doc in search_result:
+        doc["@search.score"] = score_dict[doc["content"]]
+
+    search_result.sort(key=lambda x: x["@search.score"], reverse=True)
 
     return search_result
 
@@ -246,20 +234,30 @@ def query_and_eval_acs(
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
 
-    if config.QUERY_EXPANSION == "disabled":
+    if config.QUERY_EXPANSION:
+        generated_queries = query_expansion(config, response_generator, query)
+    else:
+        generated_queries = [query]
+
+    generated_queries = hyde(config, response_generator, generated_queries)
+    search_results = []
+    for generated_query in generated_queries:
         search_result = query_acs(
             search_client=search_client,
             embedding_model=embedding_model,
-            user_prompt=query,
+            user_prompt=generated_query,
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
         )
-    else:
-        search_result = expand_query_and_search()
+        search_results.append(search_result)
+
+    search_results = dedupulicate_search_results(search_results)
+    search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
 
     docs, evaluation = evaluate_search_result(
-        search_result, evaluation_content, evaluator
+        search_results, evaluation_content, evaluator
     )
+
     evaluation["query"] = query
     return docs, evaluation
 
@@ -407,7 +405,7 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
                 qna_context = data.get("context", "")
 
                 is_multi_question = do_we_need_multiple_questions(
-                    user_prompt, response_generator
+                    user_prompt, response_generator, config
                 )
                 if is_multi_question:
                     try:
