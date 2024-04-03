@@ -56,6 +56,7 @@ def test_run(
     mock_config.GENERATE_TITLE = False
     mock_config.GENERATE_SUMMARY = False
     mock_config.OVERRIDE_CONTENT_WITH_SUMMARY = False
+    mock_config.AZURE_DOCUMENT_INTELLIGENCE_MODEL = "prebuilt-read"
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
     mock_environment.azure_search_admin_key = "admin_key"
