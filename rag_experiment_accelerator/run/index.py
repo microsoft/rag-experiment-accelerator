@@ -61,6 +61,7 @@ def run(
         file_paths,
         index_config.chunk_size,
         index_config.overlap,
+        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
     )
 
     if config.SAMPLE_DATA:

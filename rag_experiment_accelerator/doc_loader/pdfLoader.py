@@ -42,6 +42,7 @@ def load_pdf_files(
     file_paths: list[str],
     chunk_size: int,
     overlap_size: int,
+    **kwargs: dict,
 ):
     """
     Load PDF files from a folder and split them into chunks of text.
@@ -51,6 +52,7 @@ def load_pdf_files(
         file_paths (list[str]): Sequence of paths to load.
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
+        **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of Document objects, each representing a chunk of text from a PDF file.

@@ -44,8 +44,8 @@ def is_supported_by_document_intelligence(format: str) -> bool:
 def load_with_azure_document_intelligence(
     environment: Environment,
     file_paths: list[str],
-    chunk_size: int,
-    overlap_size: int,
+    azure_document_intelligence_model: str,
+    **kwargs: dict,
 ) -> list[Document]:
     """
     Load pdf files from a folder using Azure Document Intelligence.
@@ -53,19 +53,21 @@ def load_with_azure_document_intelligence(
     Args:
         environment (Environment): The environment class
         file_paths (list[str]): Sequence of paths to load.
-        chunk_size (int): Unused.
-        overlap_size (int): Unused.
+        azure_document_intelligence_model (str): The model to use for Azure Document Intelligence.
+        **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of Document objects.
     """
-    documents: list[Document] = []
+    documents = []
+    logger.info(f"Using model {azure_document_intelligence_model}")
     for file_path in file_paths:
         try:
             loader = DocumentIntelligenceLoader(
                 file_path,
                 environment.azure_document_intelligence_endpoint,
                 environment.azure_document_intelligence_admin_key,
+                azure_document_intelligence_model,
                 glob_patterns=["*"],
                 excluded_paragraph_roles=[
                     "pageHeader",
@@ -78,7 +80,7 @@ def load_with_azure_document_intelligence(
         except Exception as e:
             logger.warning(f"Failed to load {file_path}: {e}")
 
-    return [{str(uuid.uuid4()): doc.page_content} for doc in documents]
+    return [{str(uuid.uuid4()): doc.__dict__} for doc in documents]
 
 
 class DocumentIntelligenceLoader(BaseLoader):
@@ -91,6 +93,7 @@ class DocumentIntelligenceLoader(BaseLoader):
         path: str,
         endpoint: str,
         key: str,
+        api_model: str,
         glob_patterns: List[str] = None,
         split_documents_by_page=False,
         excluded_paragraph_roles=[],
@@ -103,6 +106,7 @@ class DocumentIntelligenceLoader(BaseLoader):
             path: path of the document or directory to load from, when a directory path is provided a glob_pattern has to be provided as well
             end_point: Azure Document Intelligence endpoint
             key: Azure Document Intelligence key
+            api_model (str): The model to use for Azure Document Intelligence.
             glob_patterns: when the given path is a directory, glob_patterns is used to match the files that should be loaded
             split_documents_by_page: if True, each page in the document will be loaded into separate LangChain document, otherwise (default) the entire document will be loaded into a single LangChain document
             excluded_paragraph_roles: a list of paragraph roles to exclude. The full list of paragraph roles can be viewed here: https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0#paragraph-roles
@@ -114,6 +118,7 @@ class DocumentIntelligenceLoader(BaseLoader):
         self.path = path
         self.endpoint = endpoint
         self.key = key
+        self.api_model = api_model
         self.patterns_to_remove = patterns_to_remove
         self.glob_patterns = glob_patterns
         self.split_documents_by_page = split_documents_by_page
@@ -156,6 +161,9 @@ class DocumentIntelligenceLoader(BaseLoader):
         return [str(path) for path in file_paths]
 
     def _analyze_document(self, file_path: str):
+        if not self.api_model == "prebuilt-layout":
+            return self._load_with_langchain(file_path, self.api_model)
+
         documents = []
         try:
             result = self._call_document_intelligence(file_path)
@@ -191,7 +199,7 @@ class DocumentIntelligenceLoader(BaseLoader):
             logger.warning(
                 f"Failed to load {file_path} with Azure Document Intelligence using the 'prebuilt-layout' model: {exc}. Attempting to load using the simpler 'prebuilt-read' model..."
             )
-            return self._load_with_ocr(file_path)
+            return self._load_with_langchain(file_path, "prebuilt-read")
 
     def _call_document_intelligence(self, file_path):
         with open(file_path, "rb") as file:
@@ -390,21 +398,25 @@ class DocumentIntelligenceLoader(BaseLoader):
             paragraphs_by_page[page_number].append(paragraph)
         return paragraphs_by_page
 
-    def _load_with_ocr(self, file_path):
+    def _load_with_langchain(self, file_path, api_model):
         """
-        Loads a file with a simpler 'prebuilt-read' model which uses a simple OCR approach to load the file.
-        Some files may not be supported by the 'prebuilt-layout' model, but can be loaded with the 'prebuilt-read' model.
+        Loads a file with LangChain's simpler implementation which returns the raw response from Document Intelligence.
         """
 
-        document = []
+        documents = []
         try:
             loader = AzureAIDocumentIntelligenceLoader(
                 file_path=file_path,
                 api_key=self.key,
                 api_endpoint=self.endpoint,
-                api_model="prebuilt-read",
+                api_model=api_model,
             )
-            document += loader.load()
+            doc = loader.load()[0]
+            doc.metadata = {
+                "source": file_path,
+                "page": 0,  # Azure Document Intelligence always returns a single page so we set it to 0
+            }
+            documents.append(doc)
         except Exception as e:
             logger.error(
                 f"Failed to load {file_path} with Azure Document Intelligence using the 'prebuilt-read' model: {e}"
@@ -414,4 +426,4 @@ class DocumentIntelligenceLoader(BaseLoader):
         logger.info(
             f'Successfully loaded {file_path} with Azure Document Intelligence using the "prebuilt-read" model.'
         )
-        return document
+        return documents
