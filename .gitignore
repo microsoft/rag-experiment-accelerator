@@ -191,4 +191,4 @@ data/*
 conda.generated.yaml
 
 # User-defined config
-.config.json
+config.json
