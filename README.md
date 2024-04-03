@@ -273,7 +273,7 @@ The following configuration options turns on this experimantation approachs:
 }
 ```
 
-### Generate hypothertical document which includes an answer for the question in query
+### Generate hypothetical document which includes an answer for the question in query
 ```json
 {
     "query_expansion": "generated_hypothetical_document_to_answer"
