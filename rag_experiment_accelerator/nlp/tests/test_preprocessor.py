@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from rag_experiment_accelerator.nlp.preprocess import StopWordsPreprocess
+from rag_experiment_accelerator.nlp.stop_words_preprocess import StopWordsPreprocess
 
 
 @patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
