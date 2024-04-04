@@ -235,6 +235,8 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 }
 ```
 
+> NOTE: When changing the config, remember to change both the `config.sample.json` (the example config to be copied by others) and the [Github actions config file](.github/workflows/config.json) to be used by tests on CI.
+
 ## Description of embedding models config
 
 `embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models.
