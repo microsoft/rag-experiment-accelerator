@@ -1,4 +1,6 @@
 import ast
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import ExitStack
 import os
 import warnings
 
@@ -571,6 +573,54 @@ def compute_metrics(
     return score
 
 
+def evaluate_single_prompt(
+    data,
+    response_generator,
+    metric_types,
+    data_list,
+    total_precision_scores_by_search_type,
+    map_scores_by_search_type,
+    average_precision_for_search_type,
+):
+    actual = remove_spaces(lower(data.actual))
+    expected = remove_spaces(lower(data.expected))
+
+    metric_dic = {}
+
+    for metric_type in metric_types:
+        score = compute_metrics(
+            response_generator,
+            data.question,
+            actual,
+            expected,
+            data.context,
+            metric_type,
+        )
+        metric_dic[metric_type] = score
+    metric_dic["question"] = data.question
+    metric_dic["context"] = data.context
+    metric_dic["actual"] = actual
+    metric_dic["expected"] = expected
+    metric_dic["search_type"] = data.search_type
+    data_list.append(metric_dic)
+
+    if not total_precision_scores_by_search_type.get(data.search_type):
+        total_precision_scores_by_search_type[data.search_type] = {}
+        map_scores_by_search_type[data.search_type] = []
+        average_precision_for_search_type[data.search_type] = []
+    for eval in data.search_evals:
+        scores = eval.get("precision_scores")
+        if scores:
+            average_precision_for_search_type[data.search_type].append(mean(scores))
+        for i, score in enumerate(scores):
+            if total_precision_scores_by_search_type[data.search_type].get(i + 1):
+                total_precision_scores_by_search_type[data.search_type][i + 1].append(
+                    score
+                )
+            else:
+                total_precision_scores_by_search_type[data.search_type][i + 1] = [score]
+
+
 def evaluate_prompts(
     environment: Environment,
     config: Config,
@@ -606,46 +656,29 @@ def evaluate_prompts(
     )
 
     query_data_load = handler.load(index_config.index_name())
-    for data in query_data_load:
-        actual = remove_spaces(lower(data.actual))
-        expected = remove_spaces(lower(data.expected))
+    question_count = query_data_load[0].question_count
 
-        metric_dic = {}
-
-        for metric_type in metric_types:
-            score = compute_metrics(
+    with ExitStack() as stack:
+        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        futures = {
+            executor.submit(
+                evaluate_single_prompt,
+                data,
                 response_generator,
-                data.question,
-                actual,
-                expected,
-                data.context,
-                metric_type,
-            )
-            metric_dic[metric_type] = score
-        metric_dic["question"] = data.question
-        metric_dic["context"] = data.context
-        metric_dic["actual"] = actual
-        metric_dic["expected"] = expected
-        metric_dic["search_type"] = data.search_type
-        data_list.append(metric_dic)
+                metric_types,
+                data_list,
+                total_precision_scores_by_search_type,
+                map_scores_by_search_type,
+                average_precision_for_search_type,
+            ): data
+            for data in query_data_load
+        }
 
-        if not total_precision_scores_by_search_type.get(data.search_type):
-            total_precision_scores_by_search_type[data.search_type] = {}
-            map_scores_by_search_type[data.search_type] = []
-            average_precision_for_search_type[data.search_type] = []
-        for eval in data.search_evals:
-            scores = eval.get("precision_scores")
-            if scores:
-                average_precision_for_search_type[data.search_type].append(mean(scores))
-            for i, score in enumerate(scores):
-                if total_precision_scores_by_search_type[data.search_type].get(i + 1):
-                    total_precision_scores_by_search_type[data.search_type][
-                        i + 1
-                    ].append(score)
-                else:
-                    total_precision_scores_by_search_type[data.search_type][i + 1] = [
-                        score
-                    ]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as exc:
+                logger.error(f"Evaluate query line generated an exception: {exc}")
 
     eval_scores_df = {"search_type": [], "k": [], "score": [], "map_at_k": []}
 
@@ -684,7 +717,7 @@ def evaluate_prompts(
 
     if isinstance(num_search_type, str):
         num_search_type = [num_search_type]
-    sum_all_columns = temp_df.sum() / (data.question_count * len(num_search_type))
+    sum_all_columns = temp_df.sum() / (question_count * len(num_search_type))
     sum_df = pd.DataFrame([sum_all_columns], columns=temp_df.columns)
 
     sum_dict = {}
