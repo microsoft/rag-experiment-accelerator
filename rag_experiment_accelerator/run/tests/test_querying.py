@@ -8,9 +8,9 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import (
     query_acs,
+    query_and_eval_single_line,
     rerank_documents,
     query_and_eval_acs,
-    run,
     query_and_eval_acs_multi,
 )
 
@@ -253,8 +253,10 @@ class TestQuerying(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
     @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
+    @patch("rag_experiment_accelerator.run.querying.query_and_eval_single_line")
     def test_run_no_multi_no_rerank(
         self,
+        mock_query_and_eval_single_line,
         mock_query_and_eval_acs,
         mock_do_we_need_multiple_questions,
         mock_query_output,
@@ -284,17 +286,31 @@ class TestQuerying(unittest.TestCase):
         mock_config.RERANK = False
         mock_do_we_need_multiple_questions.return_value = False
         mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]
+        mock_search_client = MagicMock(SearchClient)
         index_config = IndexConfig(
             "prefix", 100, 100, self.mock_embedding_model, 400, 400
         )
         mock_config.index_configs.return_value = [index_config]
         # Act
-        run(mock_environment, mock_config, index_config)
+        with open(data_file_path, "r") as file:
+            line = file.readline()
+        query_and_eval_single_line(
+            line,
+            1,
+            mock_query_output_handler,
+            mock_environment,
+            mock_config,
+            index_config,
+            mock_response_generator,
+            mock_search_client,
+            mock_spacy_evaluator,
+            1,
+        )
 
         # Assert
         mock_query_and_eval_acs.assert_called()
-        mock_response_generator.return_value.generate_response.assert_called()
-        mock_query_output_handler.return_value.save.assert_called()
+        mock_query_output_handler.save.assert_called()
+        mock_response_generator.generate_response.assert_called()
 
 
 if __name__ == "__main__":
