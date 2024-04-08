@@ -34,29 +34,26 @@ param ApplicationInsightsName string = '${ResourcePrefix}ai'
 @description('Name of Azure Machine Learning Workspace')
 param MachineLearningName string = '${ResourcePrefix}aml'
 
-@description('Flag to deply network and other netwrook related resources')
-param DeployResourcesWithIsolatedNetwork bool = false
+@description('Flag to deploy resources in isolated network. Manual setup is required to access the deployed resources.')
+param DeployResourcesWithIsolatedNetwork bool
 
 @description('Name of the virtual network')
 param VirtualNetworkName string = '${ResourcePrefix}vnet'
 
 @description('Address space for the virtual network')
-param VnetAddressSpace string
+param VnetAddressSpace string = ''
 
 @description('Subnet name for the proxy server subnet')
-param ProxySubnetName string = '${ResourcePrefix}rmtasubnet'
+param ProxySubnetName string = 'AzureBastionSubnet'
 
 @description('Address space for the proxy server subnet')
-param ProxySubnetAddressSpace string
+param ProxySubnetAddressSpace string = ''
 
 @description('Subnet name for other azure resources')
 param AzureSubnetName string = '${ResourcePrefix}azrsubnet'
 
 @description('Address space for the other azure resources subnet')
 param AzureSubnetAddressSpace string
-
-@description('Public IP address for the bastion')
-param BastionPublicIpName string
 
 resource OpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: OpenAIName
@@ -141,29 +138,39 @@ resource MachineLearningWorkspace 'Microsoft.MachineLearningServices/workspaces@
   }
 }
 
-module network_resources 'network/network_isolation.bicep' = if (DeployResourcesWithIsolatedNetwork) {
-  name: 'network_isolation_resources'
-  params: {
-    vnetName: VirtualNetworkName
-    location: Location
-    vnetAddressSpace: VnetAddressSpace
-    proxySubnetName: ProxySubnetName
-    proxySubnetAddressSpace: ProxySubnetAddressSpace
-    azureSubnetName: AzureSubnetName
-    azureSubnetAddressSpace: AzureSubnetAddressSpace
+module network_resources 'network/network_isolation.bicep' =
+  if (DeployResourcesWithIsolatedNetwork) {
+    name: 'network_isolation_resources'
+    params: {
+      vnetName: VirtualNetworkName
+      location: Location
+      vnetAddressSpace: VnetAddressSpace
+      proxySubnetName: ProxySubnetName
+      proxySubnetAddressSpace: ProxySubnetAddressSpace
+      azureSubnetName: AzureSubnetName
+      azureSubnetAddressSpace: AzureSubnetAddressSpace
+      resourcePrefix: ResourcePrefix
+      azureResources: [
+        {
+          type: 'OpenAI'
+          id: OpenAI.id
+        }
+        {
+          type: 'search'
+          id: AISearch.id
+        }
+        {
+          type: 'blob'
+          id: StorageAccount.id
+        }
+        {
+          type: 'vault'
+          id: KeyVault.id
+        }
+        {
+          type: 'amlworkspace'
+          id: MachineLearningWorkspace.id
+        }
+      ]
+    }
   }
-}
-
-module bastionModule 'network/azure_bastion.bicep' = {
-  name: 'myBastionModule'
-  dependsOn: [
-    network_resources
-  ]
-  params: {
-    vnetName: VirtualNetworkName
-    bastionName: '${ResourcePrefix}azbastion'
-    bastionSubnetName: ProxySubnetName
-    location: Location
-    publicIpName: BastionPublicIpName
-  }
-}

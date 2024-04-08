@@ -5,6 +5,8 @@ param proxySubnetName string
 param proxySubnetAddressSpace string
 param azureSubnetName string
 param azureSubnetAddressSpace string
+param resourcePrefix string
+param azureResources array
 
 resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
   name: vnetName
@@ -31,3 +33,24 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
     ]
   }
 }
+
+resource privateEndpoints 'Microsoft.Network/privateEndpoints@2020-07-01' = [
+  for (resource, i) in azureResources: {
+    name: '${resourcePrefix}${resource.type}PrivateEndpoint'
+    location: location
+    properties: {
+      privateLinkServiceConnections: [
+        {
+          name: '${resourcePrefix}${resource.type}PLSConnection'
+          properties: {
+            privateLinkServiceId: resource.id
+            groupIds: [resource.type]
+          }
+        }
+      ]
+      subnet: {
+        id: '${vnet.id}/subnets/${azureSubnetName}'
+      }
+    }
+  }
+]
