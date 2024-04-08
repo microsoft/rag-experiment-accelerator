@@ -22,7 +22,7 @@ kaleido==0.2.1
 lxml==5.1.0
 matplotlib==3.8.3
 mlflow==2.11.3
-openai==1.14.2
+openai==1.16.2
 plotly==5.20.0
 pypdf==4.1.0
 pytesseract==0.3.10
