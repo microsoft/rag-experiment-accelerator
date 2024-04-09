@@ -1,57 +1,33 @@
-from rag_experiment_accelerator.config.config import Config
-from unittest.mock import MagicMock, patch
-
 import pytest
 import json
 import os
+from rag_experiment_accelerator.config.config import Config
+from unittest.mock import MagicMock, patch
 
 
 def get_test_config_dir():
     return os.path.join(os.path.dirname(__file__), "data")
 
 
-def mock_get_env_var(var_name: str, critical: bool, mask: bool) -> str:
-    if var_name == "AZURE_SEARCH_SERVICE_ENDPOINT":
-        return "test_search_endpoint"
-    elif var_name == "AZURE_SEARCH_ADMIN_KEY":
-        return "test_admin_key"
-    elif var_name == "AZURE_SUBSCRIPTION_ID":
-        return "test_subscription_id"
-    elif var_name == "AZURE_WORKSPACE_NAME":
-        return "test_workspace_name"
-    elif var_name == "AZURE_RESOURCE_GROUP_NAME":
-        return "test_resource_group_name"
-    elif var_name == "OPENAI_API_KEY":
-        return "test_api_key"
-    elif var_name == "OPENAI_API_VERSION":
-        return "test_api_version"
-    elif var_name == "OPENAI_ENDPOINT":
-        return "test_api_endpoint"
-    elif var_name == "OPENAI_API_TYPE":
-        return "azure"
-
-
 @patch(
-    "rag_experiment_accelerator.config.credentials._get_env_var",
-    new=mock_get_env_var,
+    "rag_experiment_accelerator.config.config.create_embedding_model",
 )
-@patch(
-    "rag_experiment_accelerator.config.config.EmbeddingModelFactory.create",
-)
-def test_config_init(mock_embedding_model_factory):
+def test_config_init(mock_create_embedding_model):
     # Load mock config data from a YAML file
-    with open(f"{get_test_config_dir()}/config.json", "r") as file:
+    config_path = f"{get_test_config_dir()}/config.json"
+    with open(config_path, "r") as file:
         mock_config_data = json.load(file)
 
     embedding_model_1 = MagicMock()
     embedding_model_2 = MagicMock()
+    environment = MagicMock()
     embedding_model_1.name.return_value = "all-MiniLM-L6-v2"
     embedding_model_1.dimension.return_value = 384
     embedding_model_2.name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
-    mock_embedding_model_factory.side_effect = [embedding_model_1, embedding_model_2]
+    mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
 
-    config = Config(get_test_config_dir())
+    config = Config(environment, config_path)
 
     config.embedding_models = [embedding_model_1, embedding_model_2]
 
@@ -80,7 +56,7 @@ def test_config_init(mock_embedding_model_factory):
     assert config.DATA_FORMATS == mock_config_data["data_formats"]
     assert (
         config.EVAL_DATA_JSONL_FILE_PATH
-        == f"{get_test_config_dir()}/{mock_config_data['eval_data_jsonl_file_path']}"
+        == f"{get_test_config_dir()}/artifacts/eval_data.jsonl"
     )
 
     assert config.embedding_models[0].name.return_value == "all-MiniLM-L6-v2"
@@ -88,6 +64,12 @@ def test_config_init(mock_embedding_model_factory):
 
     assert config.embedding_models[1].name.return_value == "text-embedding-ada-002"
     assert config.embedding_models[1].dimension.return_value == 1536
+
+    assert config.SAMPLE_DATA
+    assert config.SAMPLE_PERCENTAGE == mock_config_data["sampling"]["sample_percentage"]
+    assert config.SAMPLE_OPTIMUM_K == mock_config_data["sampling"]["optimum_k"]
+    assert config.SAMPLE_MIN_CLUSTER == mock_config_data["sampling"]["min_cluster"]
+    assert config.SAMPLE_MAX_CLUSTER == mock_config_data["sampling"]["max_cluster"]
 
 
 def test_chunk_size_greater_than_overlap_size():

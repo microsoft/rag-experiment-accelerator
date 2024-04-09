@@ -1,5 +1,12 @@
 {
     "name_prefix": "test_prefix",
+    "sampling": {
+        "sample_data": false,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
     "chunking": {
         "chunk_size": [512],
         "overlap_size": [128]
@@ -39,6 +46,8 @@
     "openai_temperature": 10,
     "search_relevancy_threshold": 0.11,
     "data_formats": "test_data_format",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
-    "chunking_strategy": "basic"
+    "chunking_strategy": "basic",
+    "generate_title": false,
+    "generate_summary": false,
+    "override_content_with_summary": false
 }

@@ -183,3 +183,12 @@ data/*
 .azure
 
 .vscode
+
+# AzureML config folder
+.azureml/*
+
+# Generated Conda file
+conda.generated.yaml
+
+# User-defined config
+config.json

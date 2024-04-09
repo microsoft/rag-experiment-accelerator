@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "rag_experiment_accelerator"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

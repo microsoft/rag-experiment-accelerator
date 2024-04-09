@@ -23,7 +23,7 @@ jobs:
       AZURE_SEARCH_ADMIN_KEY: ${{ secrets.AZURE_SEARCH_ADMIN_KEY }}
       AZURE_SEARCH_SERVICE_ENDPOINT: ${{ secrets.AZURE_SEARCH_SERVICE_ENDPOINT }}
       AZURE_LANGUAGE_SERVICE_KEY: ${{ secrets.AZURE_LANGUAGE_SERVICE_KEY }}
-      AZURE_LANGUAGE_SERVICE_ENDPOINT: ${{ secrets.AZURE_LANGUAGE_SERVICE_ENDPOINT }}      
+      AZURE_LANGUAGE_SERVICE_ENDPOINT: ${{ secrets.AZURE_LANGUAGE_SERVICE_ENDPOINT }}
       OPENAI_API_TYPE: "azure"
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout Actions
         uses: actions/checkout@v4
       - name: Azure login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.azure_credentials }}
       - name: Configure Azure ML Agent
@@ -47,16 +47,16 @@ jobs:
       - name: execute index creation step
         shell: bash
         run: |
-          python 01_index.py --data-directory-name='data-ci'
+          python 01_index.py --data_dir='data-ci' --config_path=${{ github.workspace }}/.github/workflows/config.json
       - name: execute qna step
         shell: bash
         run: |
-          python 02_qa_generation.py  
+          python 02_qa_generation.py --config_path=${{ github.workspace }}/.github/workflows/config.json
       - name: execute querying step
         shell: bash
         run: |
-          python 03_querying.py  
+          python 03_querying.py --config_path=${{ github.workspace }}/.github/workflows/config.json
       - name: execute evaluation step
         shell: bash
         run: |
-          python 04_evaluation.py
+          python 04_evaluation.py --config_path=${{ github.workspace }}/.github/workflows/config.json

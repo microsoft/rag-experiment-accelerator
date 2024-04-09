@@ -1,0 +1,55 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "1. Index",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "01_index",
+            "justMyCode": true,
+            "envFile": "${input:dotEnvFilePath}",
+        },
+        {
+            "name": "2. Generate QA",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "02_qa_generation",
+            "justMyCode": true,
+            "envFile": "${input:dotEnvFilePath}",
+        },
+        {
+            "name": "3. Querying",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "03_querying",
+            "justMyCode": true,
+            "envFile": "${input:dotEnvFilePath}",
+        },
+        {
+            "name": "4. Evaluate",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "04_evaluation",
+            "justMyCode": true,
+            "envFile": "${input:dotEnvFilePath}",
+        },
+        {
+            "name": "5. AzureML Pipleline",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "azureml.pipeline",
+            "justMyCode": true,
+            "envFile": "${input:dotEnvFilePath}",
+        }
+    ],
+    "inputs": [
+        {
+            "id": "dotEnvFilePath",
+            "type": "command",
+            "command": "azure-dev.commands.getDotEnvFilePath"
+        }
+    ]
+}

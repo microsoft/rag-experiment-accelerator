@@ -14,40 +14,86 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 - Find the best combination of hyperparameters.
 - Generate detailed reports and visualizations from experiment results.
 
+## Latest changes
+
+18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data. 
+
+This is done to ensure representative results in the sample that one would get across the entire dataset.
+
+**Note**: It is recommended to rebuild your environment if you have used this tool before due to new dependencies.
+
 ## Features
 
 The **RAG Experiment Accelerator** is config driven and offers a rich set of features to support its purpose:
 
 1. **Experiment Setup**: You can define and configure experiments by specifying a range of search engine parameters, search types, query sets, and evaluation metrics.
 
-2. **Integration**: It integrates seamlessly with Azure AI Search, Azure Machine Learning, MLFlow and Azure OpenAI.
+1. **Integration**: It integrates seamlessly with Azure AI Search, Azure Machine Learning, MLFlow and Azure OpenAI.
 
-3. **Rich Search Index**: It creates multiple search indexes based on hyperparameter configurations available in the config file.
+1. **Rich Search Index**: It creates multiple search indexes based on hyperparameter configurations available in the config file.
 
-4. **Multiple Document Chunking Strategies**: The tool supports multiple chunking strategies, including using Azure Document Intelligence and basic chunking using langchain. This gives you the flexibility to experiment with different chunking strategies and evaluate their effectiveness.
+1. **Multiple Document Chunking Strategies**: The tool supports multiple chunking strategies, including using Azure Document Intelligence and basic chunking using LangChain. This gives you the flexibility to experiment with different chunking strategies and evaluate their effectiveness.
 
-5. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
+1. **Custom Document Intelligence Loader** : When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallback when the 'prebuilt-layout' fails. Any other API model will utilize LangChain's implementation, which returns the raw response from Document Intelligence's API.
 
-6. **Multiple Search Types**: It supports multiple search types, including pure text, pure vector, cross-vector, multi-vector, hybrid, and more. This gives you the ability to conduct comprehensive analysis on search capabilities and results.
+1. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
 
-7. **Sub-Querying**: The pattern evaluates the user query and if it finds it complex enough, it breaks it down into smaller sub-queries to generate relevant context.
+1. **Multiple Search Types**: It supports multiple search types, including pure text, pure vector, cross-vector, multi-vector, hybrid, and more. This gives you the ability to conduct comprehensive analysis on search capabilities and results.
 
-8. **Re-Ranking**: The query responses from Azure AI Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
+1. **Sub-Querying**: The pattern evaluates the user query and if it finds it complex enough, it breaks it down into smaller sub-queries to generate relevant context.
 
-9. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
+1. **Re-Ranking**: The query responses from Azure AI Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
 
-10. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visualizations that make it easy to analyze and share experiment findings.
+1. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
 
-11. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
+1. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visualizations that make it easy to analyze and share experiment findings.
 
+1. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
-## Installation
+## Products used
 
-Two options are available, install locally or inside a development container.
+- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
+- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
+- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
 
-### 1. Local install
+## Compute setup
 
-To use the **RAG Experiment Accelerator**, follow these installation steps:
+At the moment, the RAG Experiment Accelerator runs on a desktop machine. There are two options available; run within a development container or install locally on your host machine.
+
+### 1. Run within a Development Container
+
+Using a development container will mean that all of the required software is installed for you. This will require WSL. For more information about development containers visit [containers.dev](https://containers.dev/)
+
+#### Install the Pre-Requisite Software
+
+Install the following software on the host machine you will perform the deployment from:
+
+>1. For Windows - [Windows Store Ubuntu 22.04.3 LTS](https://www.microsoft.com/store/productId/9pn20msr04dw)
+>2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
+>3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
+>4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
+
+#### Developing in a DevContainer
+
+Further guidance of setting up WSL can be found [here](./docs/wsl.md). Now you have the prerequisites, you can:
+1. **Clone the repository**: Clone the accelerator's repository in your WSL terminal.
+
+```bash
+git clone https://github.com/microsoft/rag-experiment-accelerator.git
+code .
+```
+
+Once the project opens in vscode it should ask you if you would like to "Reopen this in a development container". Say yes.
+
+#### Data
+
+Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
+
+---
+
+### 2. Local install
+
+You can of course run the **RAG Experiment Accelerator** on a Windows/Mac machine if you like; you are responsible for installing the correct tooling. Follow these installation steps:
 
 1. **Clone the repository**: Clone the accelerator's repository from [GitHub].
 
@@ -62,8 +108,12 @@ LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO
 3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
-conda create -n rag-test python=3.11
-conda activate rag-test
+conda create -n rag-experiment python=3.11
+conda init bash
+```
+Close your terminal, open a new one, and run:
+```bash
+conda activate rag-experiment
 pip install .
 ```
 
@@ -76,91 +126,33 @@ az account show
 
 5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
-### 2. Use inside a Development Container
+## Cloud setup
 
-#### Install the Pre-Requisite Software
+There are 3 options to install all the required azure services:
 
-Install the following software on the machine you will perform the deployment from:
-
->1. For Windows - [Windows Store Ubuntu 18.04 LTS](https://www.microsoft.com/store/productId/9N9TNGVNDL3Q)
->2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
->3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
->4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
-
-#### For Windows - Configure WSL2 Backend for Docker Containers
-
-To enable **Developing inside a Container** you must configure the integration between Docker Desktop and Ubuntu on your machine.
-
->1. Launch Docker Desktop
->2. Open **Settings > General**. Make sure the *Use the WSL 2 based engine" is enabled.
->3. Navigate to **Settings > Resources > WSL INTEGRATION**.
->      - Ensure *Enable Integration with my default WSL distro" is enabled.
->      - Enable the Ubuntu-18.04 option.
->4. Select **Apply & Restart**
-
-##### Connect to Ubuntu WSL with VSCode
-
-Now that Docker Desktop and Ubuntu are integrated, we want to Access the Ubuntu bash prompt from inside VSCode.
-
->1. Launch VSCode.
->2. Select **View > Terminal**. A new window should open along the bottom of the VSCode window.
->3. From this windows use the **Launch Profile** dropdown to open the **Ubuntu 18.04 (WSL)** terminal.
->4. A bash prompt should open in the format `{username}@{machine_name}:/mnt/c/Users/{username}$`
-
-Once this is complete, you are ready to configure Git for your Ubuntu WSL environment.
-
-##### Configure Git in Ubuntu WSL environment
-
-The next step is to configure Git for your Ubuntu WSL environment. We will use the bash prompt from the previous step to issue the following commands:
-
-Set Git User Name and Email
-
-``` bash
-git config --global user.name "Your Name"
-git config --global user.email "youremail@yourdomain.com"
+### 1. Install with Azure Developer CLI
+This project supports Azure Developer CLI.
+```sh
+azd provision
 ```
+- You can also use `azd up` if you prefer as this calls `az provision` anyway
+- Please use the up/down arrows to select your Subscription and Region
 
-Set Git [UseHttps](https://github.com/microsoft/Git-Credential-Manager-Core/blob/main/docs/configuration.md#credentialusehttppath)
+![azd](./docs/azd.png)
 
-``` bash
-git config --global credential.useHttpPath true
-```
+Once this has completed you can use the launch configuration to run, or debug the 4 steps and the current environment provisioned by `azd` will be loaded with the correct values.
 
-Configure Git to use the Windows Host Credential Manager
+![alt text](./docs/launch.png)
 
-``` bash
-git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-manager-core.exe"
-```
+### 2. One click Azure deployment via Azure portal UI
 
-##### Install Azure CLI On WSL
-
-In your Ubuntu 18.04(WSL) terminal from the previous step, follow the directions [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux) to install Azure CLI.
-
-
-Install Azure CLI and authorize:
-```bash
-az login
-az account set  --subscription="<your_subscription_guid>"
-az account show
-```
-
-#### Data
-
-Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
-
----
-
-## Pre-requisites
-
-- [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
-- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#how-do-i-get-access-to-azure-openai) or access to the [OpenAI API](https://platform.openai.com/docs/quickstart?context=python)
-- [Azure Machine Learning Resources](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-azure-ml-in-a-day?view=azureml-api-2)
-
-### One click Azure deployment
+If you want to deploy the infrastructure yourself from template you can also click here:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Frag-experiment-accelerator%2Fdevelopment%2Finfra%2Fmain.json)
 
-### Deploy with Azure CLI
+### 3. Deploy with Azure CLI
+
+If you dont want to use `azd` you can use the normal `az` cli too.
 
 ```bash
 az login
@@ -171,7 +163,7 @@ az deployment group create --subscription <subscription-id> --resource-group <re
 
 To use the **RAG Experiment Accelerator**, follow these steps:
 
-1. Modify the `config.json` file with the hyperparameters for your experiment.
+1. Copy the provided `config.sample.json` file to a file named `config.json` and change any hyperparameters to tailor to your experiment.
 2. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
   ```bash
   python 01_index.py
@@ -183,6 +175,7 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   ```bash
   python 02_qa_generation.py
   -d "The directory holding the configuration files and data. Defaults to current working directory"
+  -dd "The directory holding the data. Defaults to data"
   -cf "JSON config filename. Defaults to config.json"
   ```
 4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
@@ -197,11 +190,21 @@ To use the **RAG Experiment Accelerator**, follow these steps:
   -d "The directory holding the configuration files and data. Defaults to current working directory"
   -cf "JSON config filename. Defaults to config.json"
   ```
+
+Alternatively, you can run the above steps (apart from `02_qa_generation.py`) using an Azure ML pipeline. To do so, follow [the guide here](./docs/azureml-pipeline.md).
+
 # Description of configuration elements
 
 ```json
 {
     "name_prefix": "Name of experiment, search index name used for tracking and comparing jobs",
+    "sampling": {
+        "sample_data": "Set to true to enable sampling",
+        "sample_percentage": "Percentage of the document corpus to sample",
+        "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+        "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
+        "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30",
+    },
     "chunking": {
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]"
@@ -228,8 +231,11 @@ To use the **RAG Experiment Accelerator**, follow these steps:
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
     "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
+    "azure_document_intelligence_model": "represents the Azure Document Intelligence Model. Used when chunking strategy is 'azure-document-intelligence'. When set to 'prebuilt-layout', provides additional features (see above)", 
 }
 ```
+
+> NOTE: When changing the config, remember to change both the `config.sample.json` (the example config to be copied by others) and the [Github actions config file](.github/workflows/config.json) to be used by tests on CI.
 
 ## Description of embedding models config
 
@@ -268,7 +274,7 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 
 ### Hyper Parameters
 
-![Hyper Parameters](./images/hyper-parameters.png)
+![Hyper Parameters](./images/hyper_parameters.png)
 
 ### Sample Metrics
 
