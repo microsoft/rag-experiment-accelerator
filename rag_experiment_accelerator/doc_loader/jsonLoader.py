@@ -15,6 +15,7 @@ def load_json_files(
     file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
+    **kwargs: dict,
 ):
     """
     Load and process Json files from a given folder path.
@@ -24,6 +25,7 @@ def load_json_files(
         file_paths (list[str]): Sequence of paths to load.
         chunk_size (int): The size of each text chunk in characters.
         overlap_size (int): The size of the overlap between text chunks in characters.
+        **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of processed and split document chunks.

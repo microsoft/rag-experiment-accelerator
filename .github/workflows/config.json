@@ -1,5 +1,5 @@
 {
-    "name_prefix": "surface",
+    "name_prefix": "ci",
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200],
@@ -50,10 +50,13 @@
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
-    "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
     "chunking_strategy": "basic",
     "chain_of_thoughts": false,
     "hyde": "disabled",
     "query_expansion": false,
-    "min_query_expansion_related_question_similarity_score": 90
+    "min_query_expansion_related_question_similarity_score": 90,
+    "azure_document_intelligence_model": "prebuilt-read",
+    "generate_title": false,
+    "generate_summary": false,
+    "override_content_with_summary": false
 }

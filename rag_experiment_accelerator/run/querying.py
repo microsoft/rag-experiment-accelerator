@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import ExitStack
 import json
 
 from azure.search.documents import SearchClient
@@ -366,6 +368,124 @@ def query_and_eval_acs_multi(
     return context, evaluations
 
 
+def query_and_eval_single_line(
+    line: str,
+    line_number: int,
+    handler: QueryOutputHandler,
+    environment: Environment,
+    config: Config,
+    index_config: IndexConfig,
+    response_generator: ResponseGenerator,
+    search_client: SearchClient,
+    evaluator: SpacyEvaluator,
+    question_count: int,
+):
+    logger.info(f"Processing question {line_number + 1} out of {question_count}\n\n")
+    data = json.loads(line)
+    user_prompt = data.get("user_prompt")
+    output_prompt = data.get("output_prompt")
+    qna_context = data.get("context", "")
+
+    is_multi_question = do_we_need_multiple_questions(user_prompt, response_generator)
+    if is_multi_question:
+        try:
+            llm_response = we_need_multiple_questions(user_prompt, response_generator)
+            responses = json.loads(llm_response)
+            new_questions = []
+            if isinstance(responses, dict):
+                new_questions = responses["questions"]
+            else:
+                for response in responses:
+                    if "question" in response:
+                        new_questions.append(response["question"])
+            new_questions.append(user_prompt)
+        except ContentFilteredException as e:
+            logger.error(
+                f"Content Filtered. Unable to generate multiple questions for: {user_prompt}",
+                exc_info=e,
+            )
+            is_multi_question = False
+
+    evaluation_content = user_prompt + qna_context
+
+    try:
+        for s_v in config.SEARCH_VARIANTS:
+            search_evals = []
+            if is_multi_question:
+                (
+                    docs,
+                    search_evals,
+                ) = query_and_eval_acs_multi(
+                    search_client=search_client,
+                    embedding_model=index_config.embedding_model,
+                    questions=new_questions,
+                    original_prompt=user_prompt,
+                    output_prompt=output_prompt,
+                    search_type=s_v,
+                    evaluation_content=evaluation_content,
+                    environment=environment,
+                    config=config,
+                    evaluator=evaluator,
+                    main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
+                )
+            else:
+                (
+                    docs,
+                    evaluation,
+                ) = query_and_eval_acs(
+                    search_client=search_client,
+                    embedding_model=index_config.embedding_model,
+                    query=user_prompt,
+                    search_type=s_v,
+                    evaluation_content=evaluation_content,
+                    retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                    evaluator=evaluator,
+                )
+                search_evals.append(evaluation)
+            if config.RERANK and len(docs) > 0:
+                prompt_instruction_context = rerank_documents(
+                    docs,
+                    user_prompt,
+                    output_prompt,
+                    config,
+                )
+            else:
+                prompt_instruction_context = docs
+
+            full_prompt_instruction = (
+                config.MAIN_PROMPT_INSTRUCTION
+                + "\n"
+                + "\n".join(prompt_instruction_context)
+            )
+            openai_response = response_generator.generate_response(
+                full_prompt_instruction,
+                user_prompt,
+            )
+            logger.debug(openai_response)
+
+            output = QueryOutput(
+                rerank=config.RERANK,
+                rerank_type=config.RERANK_TYPE,
+                crossencoder_model=config.CROSSENCODER_MODEL,
+                llm_re_rank_threshold=config.LLM_RERANK_THRESHOLD,
+                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                crossencoder_at_k=config.CROSSENCODER_AT_K,
+                question_count=question_count,
+                actual=openai_response,
+                expected=output_prompt,
+                search_type=s_v,
+                search_evals=search_evals,
+                context=qna_context,
+                question=user_prompt,
+            )
+            handler.save(index_name=index_config.index_name(), data=output)
+    except BadRequestError as e:
+        logger.error(
+            "Invalid request. Skipping question: {user_prompt}",
+            exc_info=e,
+        )
+
+
 def run(environment: Environment, config: Config, index_config: IndexConfig):
     """
     Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
@@ -387,7 +507,6 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
     response_generator = ResponseGenerator(
         environment, config, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
     )
-
     for index_config in config.index_configs():
         logger.info(f"Processing index: {index_config.index_name()}")
 
@@ -399,116 +518,33 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
             environment.azure_search_admin_key,
         )
         with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
-            for i, line in enumerate(file):
-                logger.info(f"Processing question {i + 1} out of {question_count}\n\n")
-                data = json.loads(line)
-                user_prompt = data.get("user_prompt")
-                output_prompt = data.get("output_prompt")
-                qna_context = data.get("context", "")
-
-                is_multi_question = do_we_need_multiple_questions(
-                    user_prompt, response_generator, config
+            with ExitStack() as stack:
+                executor = stack.enter_context(
+                    ThreadPoolExecutor(config.MAX_WORKER_THREADS)
                 )
-                if is_multi_question:
+                futures = {
+                    executor.submit(
+                        query_and_eval_single_line,
+                        line,
+                        line_number,
+                        handler,
+                        environment,
+                        config,
+                        index_config,
+                        response_generator,
+                        search_client,
+                        evaluator,
+                        question_count,
+                    ): line
+                    for line_number, line in enumerate(file)
+                }
+
+                for future in as_completed(futures):
                     try:
-                        llm_response = we_need_multiple_questions(
-                            user_prompt, response_generator
-                        )
-                        responses = json.loads(llm_response)
-                        new_questions = []
-                        if isinstance(responses, dict):
-                            new_questions = responses["questions"]
-                        else:
-                            for response in responses:
-                                if "question" in response:
-                                    new_questions.append(response["question"])
-                        new_questions.append(user_prompt)
-                    except ContentFilteredException as e:
+                        future.result()
+                    except Exception as exc:
                         logger.error(
-                            f"Content Filtered. Unable to generate multiple questions for: {user_prompt}",
-                            exc_info=e,
+                            f"query generated an exception: {exc} for line {line}..."
                         )
-                        is_multi_question = False
 
-                evaluation_content = user_prompt + qna_context
-
-                try:
-                    for s_v in config.SEARCH_VARIANTS:
-                        search_evals = []
-                        if is_multi_question:
-                            (
-                                docs,
-                                search_evals,
-                            ) = query_and_eval_acs_multi(
-                                search_client=search_client,
-                                embedding_model=index_config.embedding_model,
-                                questions=new_questions,
-                                original_prompt=user_prompt,
-                                output_prompt=output_prompt,
-                                search_type=s_v,
-                                evaluation_content=evaluation_content,
-                                environment=environment,
-                                config=config,
-                                evaluator=evaluator,
-                                main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
-                            )
-                        else:
-                            (
-                                docs,
-                                evaluation,
-                            ) = query_and_eval_acs(
-                                search_client=search_client,
-                                embedding_model=index_config.embedding_model,
-                                query=user_prompt,
-                                search_type=s_v,
-                                evaluation_content=evaluation_content,
-                                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                                evaluator=evaluator,
-                                config=config,
-                                response_generator=response_generator,
-                            )
-                            search_evals.append(evaluation)
-                        if config.RERANK and len(docs) > 0:
-                            prompt_instruction_context = rerank_documents(
-                                docs,
-                                user_prompt,
-                                output_prompt,
-                                config,
-                            )
-                        else:
-                            prompt_instruction_context = docs
-
-                        full_prompt_instruction = (
-                            config.MAIN_PROMPT_INSTRUCTION
-                            + "\n"
-                            + "\n".join(prompt_instruction_context)
-                        )
-                        openai_response = response_generator.generate_response(
-                            full_prompt_instruction,
-                            user_prompt,
-                        )
-                        logger.debug(openai_response)
-
-                        output = QueryOutput(
-                            rerank=config.RERANK,
-                            rerank_type=config.RERANK_TYPE,
-                            crossencoder_model=config.CROSSENCODER_MODEL,
-                            llm_re_rank_threshold=config.LLM_RERANK_THRESHOLD,
-                            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                            crossencoder_at_k=config.CROSSENCODER_AT_K,
-                            question_count=question_count,
-                            actual=openai_response,
-                            expected=output_prompt,
-                            search_type=s_v,
-                            search_evals=search_evals,
-                            context=qna_context,
-                            question=user_prompt,
-                        )
-                        handler.save(index_name=index_config.index_name(), data=output)
-                except BadRequestError as e:
-                    logger.error(
-                        "Invalid request. Skipping question: {user_prompt}",
-                        exc_info=e,
-                    )
-                    continue
         search_client.close()

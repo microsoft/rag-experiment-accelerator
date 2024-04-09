@@ -56,6 +56,7 @@ def load_documents(
     file_paths: list[str],
     chunk_size: int,
     overlap_size: int,
+    azure_document_intelligence_model: str = None,
 ):
     """
     Load documents from a folder and process them into chunks.
@@ -67,6 +68,7 @@ def load_documents(
         folder_path (str): Path to the folder containing the documents.
         chunk_size (int): Size of each chunk.
         overlap_size (int): Size of overlap between adjacent chunks.
+        azure_document_intelligence_model (str): The model to use for Azure Document Intelligence.
 
     Returns:
         list: A list of dictionaries containing the processed chunks.
@@ -78,7 +80,8 @@ def load_documents(
     if allowed_formats == "all":
         allowed_formats = _FORMAT_VERSIONS.keys()
 
-    logger.debug(f"Loading documents with allowed formats {', '.join(allowed_formats)}")
+    logger.debug(
+        f"Loading documents with allowed formats {', '.join(allowed_formats)}")
 
     documents = {}
 
@@ -100,6 +103,7 @@ def load_documents(
             file_paths=matching_files,
             chunk_size=chunk_size,
             overlap_size=overlap_size,
+            azure_document_intelligence_model=azure_document_intelligence_model,
         )
 
     all_documents = []
