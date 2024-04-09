@@ -172,44 +172,6 @@ module storekeys './shared/storekeys.bicep' = {
   }
 }
 
-module network_resources 'network/network_isolation.bicep' = if (DeployResourcesWithIsolatedNetwork) {
-  name: 'network_isolation_resources'
-  scope: rg
-  params: {
-    vnetName: VirtualNetworkName
-    location: location
-    vnetAddressSpace: VnetAddressSpace
-    proxySubnetName: ProxySubnetName
-    proxySubnetAddressSpace: ProxySubnetAddressSpace
-    azureSubnetName: AzureSubnetName
-    azureSubnetAddressSpace: AzureSubnetAddressSpace
-    resourcePrefix: environmentName
-    azureResources: [
-      {
-        type: 'OpenAI'
-        id: openai.name
-      }
-      {
-        type: 'search'
-        id: search.name
-      }
-      {
-        type: 'blob'
-        id: storage.name
-      }
-      {
-        type: 'vault'
-        id: keyvault.name
-      }
-      {
-        type: 'amlworkspace'
-        id: machineLearning.name
-      }
-    ]
-  }
-}
-
-
 // Store secrets in a keyvault
 
 module keyvault './shared/keyvault.bicep' = {
@@ -223,6 +185,42 @@ params: {
 }
 }
 
+// module network_resources 'network/network_isolation.bicep' = if (DeployResourcesWithIsolatedNetwork) {
+//   name: 'network_isolation_resources'
+//   scope: rg
+//   params: {
+//     vnetName: VirtualNetworkName
+//     location: location
+//     vnetAddressSpace: VnetAddressSpace
+//     proxySubnetName: ProxySubnetName
+//     proxySubnetAddressSpace: ProxySubnetAddressSpace
+//     azureSubnetName: AzureSubnetName
+//     azureSubnetAddressSpace: AzureSubnetAddressSpace
+//     resourcePrefix: environmentName
+//     azureResources: [
+//       {
+//         type: 'OpenAI'
+//         id: openai.name
+//       }
+//       {
+//         type: 'search'
+//         id: search.name
+//       }
+//       {
+//         type: 'blob'
+//         id: storage.name
+//       }
+//       {
+//         type: 'vault'
+//         id: keyvault.name
+//       }
+//       {
+//         type: 'amlworkspace'
+//         id: machineLearning.name
+//       }
+//     ]
+//   }
+// }
 
 output USE_KEY_VAULT string = 'true'
 output AZURE_KEY_VAULT_ENDPOINT string = keyvault.outputs.endpoint
