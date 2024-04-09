@@ -31,6 +31,9 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.OVERLAP_SIZES = [1]
         self.mock_config.LLM_RERANK_THRESHOLD = 3
         self.mock_config.QUERY_EXPANSION = "disabled"
+        self.mock_config.EMBEDDING_MODEL_NAME = "test-embedding-model"
+        self.mock_config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = 90
+        self.mock_config.HYDE = "disabled"
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
@@ -82,7 +85,10 @@ class TestQuerying(unittest.TestCase):
         evaluation_content = "test evaluation content"
         retrieve_num_of_documents = 10
         mock_evaluator = MagicMock()
-        mock_search_result = MagicMock()
+        mock_search_result = [
+            {"content": "text1", "@search.score": 10},
+            {"content": "text2", "@search.score": 9},
+        ]
         mock_docs = ["doc1", "doc2"]
         mock_evaluation = {"score": 0.8}
 

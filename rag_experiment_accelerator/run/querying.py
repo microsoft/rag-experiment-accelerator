@@ -165,6 +165,7 @@ def hyde(
 def query_expansion(
     config: Config,
     response_generator: ResponseGenerator,
+    embedding_model: EmbeddingModel,
     query: str,
 ) -> list[str]:
     # Query expansion with generated questions
@@ -177,7 +178,7 @@ def query_expansion(
     questions = filter_non_related_questions(
         query,
         augmented_questions.split("\n"),
-        config.EMBEDDING_MODEL_NAME,
+        embedding_model,
         config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
     )
 
@@ -188,16 +189,15 @@ def dedupulicate_search_results(search_results: list[dict]) -> list[dict]:
     doc_set = set()
     score_dict = {}
 
-    # deduplicate retrieved documents by using a set
+    # deduplicate and sort retrieved documents by using a set
     for doc in search_results:
         doc_set.add(doc["content"])
         score_dict[doc["content"]] = doc["@search.score"]
 
     search_result = list(doc_set)
-    search_result = [{"content": doc} for doc in search_result]
-    for doc in search_result:
-        doc["@search.score"] = score_dict[doc["content"]]
-
+    search_result = [
+        {"content": doc, "@search.score": score_dict[doc]} for doc in search_result
+    ]
     search_result.sort(key=lambda x: x["@search.score"], reverse=True)
 
     return search_result
@@ -235,7 +235,9 @@ def query_and_eval_acs(
     """
 
     if config.QUERY_EXPANSION:
-        generated_queries = query_expansion(config, response_generator, query)
+        generated_queries = query_expansion(
+            config, response_generator, embedding_model, query
+        )
     else:
         generated_queries = [query]
 
@@ -249,7 +251,7 @@ def query_and_eval_acs(
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
         )
-        search_results.append(search_result)
+        search_results.extend(search_result)
 
     search_results = dedupulicate_search_results(search_results)
     search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
