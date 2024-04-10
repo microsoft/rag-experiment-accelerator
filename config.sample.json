@@ -52,5 +52,6 @@
     "azure_document_intelligence_model": "prebuilt-read",
     "generate_title": false,
     "generate_summary": false,
-    "override_content_with_summary": false
+    "override_content_with_summary": false,
+    "use_checkpoints": true
 }
