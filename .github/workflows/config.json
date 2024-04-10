@@ -52,7 +52,7 @@
     "data_formats": "all",
     "chunking_strategy": "basic",
     "chain_of_thoughts": true,
-    "hyde": "prompt_generated_hypothetical_answer",
+    "hyde": "generated_hypothetical_answer",
     "query_expansion": true,
     "min_query_expansion_related_question_similarity_score": 90,
     "azure_document_intelligence_model": "prebuilt-read"
