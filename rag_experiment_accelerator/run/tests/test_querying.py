@@ -8,9 +8,9 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import (
     query_acs,
+    query_and_eval_single_line,
     rerank_documents,
     query_and_eval_acs,
-    run,
     query_and_eval_acs_multi,
 )
 
@@ -30,6 +30,10 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.CHUNK_SIZES = [1]
         self.mock_config.OVERLAP_SIZES = [1]
         self.mock_config.LLM_RERANK_THRESHOLD = 3
+        self.mock_config.QUERY_EXPANSION = "disabled"
+        self.mock_config.EMBEDDING_MODEL_NAME = "test-embedding-model"
+        self.mock_config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = 90
+        self.mock_config.HYDE = "disabled"
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
@@ -71,14 +75,20 @@ class TestQuerying(unittest.TestCase):
 
     @patch("rag_experiment_accelerator.run.querying.query_acs")
     @patch("rag_experiment_accelerator.run.querying.evaluate_search_result")
-    def test_query_and_eval_acs(self, mock_evaluate_search_result, mock_query_acs):
+    @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
+    def test_query_and_eval_acs(
+        self, mock_response_generator, mock_evaluate_search_result, mock_query_acs
+    ):
         # Arrange
         query = "test query"
         search_type = "test search type"
         evaluation_content = "test evaluation content"
         retrieve_num_of_documents = 10
         mock_evaluator = MagicMock()
-        mock_search_result = MagicMock()
+        mock_search_result = [
+            {"content": "text1", "@search.score": 10},
+            {"content": "text2", "@search.score": 9},
+        ]
         mock_docs = ["doc1", "doc2"]
         mock_evaluation = {"score": 0.8}
 
@@ -94,6 +104,8 @@ class TestQuerying(unittest.TestCase):
             evaluation_content,
             retrieve_num_of_documents,
             mock_evaluator,
+            self.mock_config,
+            mock_response_generator(),
         )
 
         # Assert
@@ -166,6 +178,8 @@ class TestQuerying(unittest.TestCase):
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
+            config=self.mock_config,
+            response_generator=mock_response_generator(),
         )
         # mock_rerank_documents.assert_not_called()
         mock_rerank_documents.assert_called_with(
@@ -235,6 +249,8 @@ class TestQuerying(unittest.TestCase):
             evaluation_content=evaluation_content,
             retrieve_num_of_documents=self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS,
             evaluator=evaluator,
+            config=self.mock_config,
+            response_generator=mock_response_generator(),
         )
         mock_rerank_documents.assert_not_called()
         mock_response_generator.return_value.generate_response.assert_called_with(
@@ -253,8 +269,10 @@ class TestQuerying(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
     @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
+    @patch("rag_experiment_accelerator.run.querying.query_and_eval_single_line")
     def test_run_no_multi_no_rerank(
         self,
+        mock_query_and_eval_single_line,
         mock_query_and_eval_acs,
         mock_do_we_need_multiple_questions,
         mock_query_output,
@@ -284,17 +302,31 @@ class TestQuerying(unittest.TestCase):
         mock_config.RERANK = False
         mock_do_we_need_multiple_questions.return_value = False
         mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]
+        mock_search_client = MagicMock(SearchClient)
         index_config = IndexConfig(
             "prefix", 100, 100, self.mock_embedding_model, 400, 400
         )
         mock_config.index_configs.return_value = [index_config]
         # Act
-        run(mock_environment, mock_config, index_config)
+        with open(data_file_path, "r") as file:
+            line = file.readline()
+        query_and_eval_single_line(
+            line,
+            1,
+            mock_query_output_handler,
+            mock_environment,
+            mock_config,
+            index_config,
+            mock_response_generator,
+            mock_search_client,
+            mock_spacy_evaluator,
+            1,
+        )
 
         # Assert
         mock_query_and_eval_acs.assert_called()
-        mock_response_generator.return_value.generate_response.assert_called()
-        mock_query_output_handler.return_value.save.assert_called()
+        mock_query_output_handler.save.assert_called()
+        mock_response_generator.generate_response.assert_called()
 
 
 if __name__ == "__main__":

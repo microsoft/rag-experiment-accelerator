@@ -7,30 +7,33 @@ It is absolutely mandatory and non-compromising to add the filenames in your res
 context:
 """
 
-prompt_instruction_title = (
-    "Identify and provide an appropriate title for the given user text in a"
-    " single sentence with not more than 10-15 words. Do not provide output in"
-    " list format and do not output any additional text and metadata."
-)
+prompt_instruction_title = """Identify and provide an appropriate title for the given user text in a
+    single sentence with not more than 10-15 words. Do not provide output in
+    list format and do not output any additional text and metadata."""
 
 prompt_instruction_keywords = (
-    "provide unique keywords for the given user text. Format as comma"
-    " separated values."
+    "provide unique keywords for the given user text. Format as comma separated values."
 )
 
-prompt_instruction_summary = (
-    "Summarize the given user text in a single sentence using few words. Do"
-    " not provide output using multiple sentences or as a list."
-)
+prompt_instruction_summary = """Summarize the given user text in a single sentence using few words. Do
+    not provide output using multiple sentences or as a list."""
 
-prompt_instruction_entities = (
-    "Identify the key entities (person, organization, location, date, year,"
-    " brand, geography, proper nouns, month etc) with context for the given"
-    " user text. Format as comma separated and output only the entities. Do"
-    " not provide output in list format and do not output any additional text"
-    " and metadata."
-)
+prompt_instruction_entities = """Identify the key entities (person, organization, location, date, year,
+    brand, geography, proper nouns, month etc) with context for the given
+    user text. Format as comma separated and output only the entities. Do
+    not provide output in list format and do not output any additional text
+    and metadata."""
 
+
+prompt_generated_hypothetical_answer = "You are a helpful expert research assistant. Provide an example answer to the given question, that might be found in a document."
+
+prompt_generated_hypothetical_document_to_answer = "You are a helpful expert research assistant. Write a scientific paper to answer to the given question."
+
+prompt_generated_related_questions = """You are a helpful expert research assistant. Your users are asking questions
+  Suggest up to five additional related questions to help them find the information they need, for the provided question.
+  Suggest only short questions without compound sentences. Suggest a variety of questions that cover different aspects of the topic.
+  Make sure they are complete questions, and that they are related to the original question.
+  Output one question per line. Do not number the questions."""
 
 generate_qna_instruction_system_prompt = """
 you are a quiz creator and have ability to generate human like question-answer pairs from given CONTEXT.
