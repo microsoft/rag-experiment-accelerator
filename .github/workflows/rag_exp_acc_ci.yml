@@ -51,12 +51,12 @@ jobs:
       - name: execute qna step
         shell: bash
         run: |
-          python 02_qa_generation.py --config_path=${{ github.workspace }}/.github/workflows/config.json
+          python 02_qa_generation.py --data_dir='data-ci' --config_path=${{ github.workspace }}/.github/workflows/config.json
       - name: execute querying step
         shell: bash
         run: |
-          python 03_querying.py --config_path=${{ github.workspace }}/.github/workflows/config.json
+          python 03_querying.py --data_dir='data-ci' --config_path=${{ github.workspace }}/.github/workflows/config.json
       - name: execute evaluation step
         shell: bash
         run: |
-          python 04_evaluation.py --config_path=${{ github.workspace }}/.github/workflows/config.json
+          python 04_evaluation.py --data_dir='data-ci' --config_path=${{ github.workspace }}/.github/workflows/config.json

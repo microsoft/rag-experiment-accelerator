@@ -231,6 +231,8 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
     "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
+    "query_expansion": "this feature allows you to experiment with various query expansion approaches which may improve the retrieval metrics The possible values are 'disabled' (default), 'generated_hypothetical_answer', 'generated_hypothetical_document_to_answer', 'generated_related_questions' reference article - Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings) - https://arxiv.org/abs/2212.10496"
+    "min_query_expansion_related_question_similarity_score": "minimum similarity score in percentage between LLM generated related queries to the original query using cosine similarly score. default 90%"
     "azure_document_intelligence_model": "represents the Azure Document Intelligence Model. Used when chunking strategy is 'azure-document-intelligence'. When set to 'prebuilt-layout', provides additional features (see above)", 
 }
 ```
@@ -260,6 +262,43 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "dimension": "the dimension of the model. This field is not required if model name is one of ['all-MiniLM-L6-v2', 'all-mpnet-base-v2', 'bert-large-nli-mean-tokens]"
 }
 ```
+
+## Query Expansion
+
+Giving an example of an hypothetical answer for the question in query, an hypothetical passage which holds an answer to the query, or generate few alternative related question might improve retrieval and thus get more accurate chunks of docs to pass into LLM context.
+Based on the reference article - [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings)](https://arxiv.org/abs/2212.10496).
+
+The following configuration options turns on this experimantation approachs:
+
+
+### Generate hypothetical answer for the question in query
+```json
+{
+    "query_expansion": "generated_hypothetical_answer"
+}
+```
+
+### Generate hypothetical document which includes an answer for the question in query
+```json
+{
+    "query_expansion": "generated_hypothetical_document_to_answer"
+}
+```
+
+### Generate related question for the question in query
+
+This feature will generate fine related questions, filter out those which are less than `min_query_expansion_related_question_similarity_score` percent from the original query (using cosine similarity score), and search documents for each one of them along with the original query,
+deduplicate results and return them to the reranker and top k steps.
+
+default value for `min_query_expansion_related_question_similarity_score` is set to 90%, you may change this in the `config.json`
+
+```json
+{
+    "query_expansion": "generated_related_questions",
+    "min_query_expansion_related_question_similarity_score": 90
+}
+```
+
 ## Reports
 
 The solution integrates with Azure Machine Learning and uses MLFlow to manage experiments, jobs, and artifacts. You can view the following reports as part of the evaluation process:
@@ -294,12 +333,12 @@ This section outlines common gotchas or pitfalls that engineers/developers/data 
 ##### Description:
 To successfully utilize this solution, you must first authenticate yourself by logging in to your Azure account. This essential step ensures you have the required permissions to access and manage Azure resources used by it. You might errors related to storing QnA data into Azure Machine Learning Data Assets, executing the query and evaluation step as a result of inappropriate authorization and authentication to Azure. Refer to Point 4 in this document for authentication and authorization.
 
-There might be situations in which the solution would still generate errors inspite of valid authentication and authorization. In such cases, start a new session with a brand new terminal instance, login to Azure using steps mentioned in step 4 and also check if the user has contribute access to the Azure resources related to the solution.
+There might be situations in which the solution would still generate errors despite of valid authentication and authorization. In such cases, start a new session with a brand new terminal instance, login to Azure using steps mentioned in step 4 and also check if the user has contribute access to the Azure resources related to the solution.
 
 #### Configuration
 
 ##### Description
-This solution utilizes several configuration parameters in config.jsonthat directly impact its functionality and performance. Please pay close attention to these settings:
+This solution utilizes several configuration parameters in config.json that directly impact its functionality and performance. Please pay close attention to these settings:
 
 **retrieve_num_of_documents:** This config controls the initial number of documents retrieved for analysis. Excessively high or low values can lead to "index out of range" errors due to rank processing of Search AI results.
 **cross_encoder_at_k:** This config influences the ranking process. A high value might result in irrelevant documents being included in the final results.
