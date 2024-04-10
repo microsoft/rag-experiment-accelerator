@@ -42,6 +42,7 @@ class Config:
         CROSSENCODER_MODEL (str): The name of the crossencoder model to use.
         RERANK_TYPE (str): The type of reranking to use.
         LLM_RERANK_THRESHOLD (float): The threshold for reranking using LLM.
+        USE_CHECKPOINTS (bool): Whether or not to use checkpoints to load data and skip processing that was already done in previous executions.
         CROSSENCODER_AT_K (int): The number of documents to rerank using the crossencoder.
         CHUNKING_STRATEGY (ChunkingStrategy): The strategy to use for chunking documents.
         AZURE_DOCUMENT_INTELLIGENCE_MODEL (str): The model to use for Azure Document Intelligence extraction.
@@ -88,6 +89,7 @@ class Config:
         self.CROSSENCODER_MODEL = config_json["crossencoder_model"]
         self.RERANK_TYPE = config_json["rerank_type"]
         self.LLM_RERANK_THRESHOLD = config_json["llm_re_rank_threshold"]
+        self.USE_CHECKPOINTS = config_json.get("use_checkpoints", True)
         self.CROSSENCODER_AT_K = config_json["cross_encoder_at_k"]
         self.TEMPERATURE = config_json["openai_temperature"]
         self.RERANK = config_json["rerank"]

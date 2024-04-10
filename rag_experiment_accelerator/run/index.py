@@ -4,6 +4,7 @@ import ntpath
 
 from dotenv import load_dotenv
 
+from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
@@ -30,6 +31,7 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
+    checkpoint: Checkpoint,
 ) -> dict[str]:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -54,24 +56,34 @@ def run(
         )
     index_dict["indexes"].append(index_config.index_name())
 
-    docs = load_documents(
-        environment,
-        config.CHUNKING_STRATEGY,
-        config.DATA_FORMATS,
-        file_paths,
-        index_config.chunk_size,
-        index_config.overlap,
-        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
-    )
+    if checkpoint.exists():
+        logger.info("Loading documents from checkpoint")
+        docs_ready_to_index = sum(checkpoint.load(), [])
+    else:
+        docs = load_documents(
+            environment,
+            config.CHUNKING_STRATEGY,
+            config.DATA_FORMATS,
+            file_paths,
+            index_config.chunk_size,
+            index_config.overlap,
+            config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
+        )
 
-    if config.SAMPLE_DATA:
-        docs = cluster(docs, config)
+        if config.SAMPLE_DATA:
+            docs = cluster(docs, config)
 
-    docs_ready_to_index = convert_docs_to_vector_db_records(docs)
+        docs_ready_to_index = convert_docs_to_vector_db_records(docs)
+        checkpoint.save(docs_ready_to_index)
+
     embed_chunks(index_config, pre_process, docs_ready_to_index)
+    checkpoint.save(docs_ready_to_index)
 
     generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
+    checkpoint.save(docs_ready_to_index)
+
     generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
+    checkpoint.save(docs_ready_to_index)
 
     with TimeTook(
         f"load documents to Azure Search index {index_config.index_name()}",
@@ -183,6 +195,9 @@ def embed_chunk(pre_process, embedding_model, chunk):
     Returns:
         dict: The chunk dictionary with the added "content_vector" key.
     """
+    if "content_vector" in chunk:
+        return chunk
+
     chunk["content_vector"] = embedding_model.generate_embedding(
         str(pre_process.preprocess(chunk["content"]))
     )
@@ -211,7 +226,7 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
         executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
 
         futures = {
-            executor.submit(proccess_title, config, pre_process, chunk): chunk
+            executor.submit(process_title, config, pre_process, chunk): chunk
             for chunk in chunks
         }
 
@@ -221,7 +236,7 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
                 chunk = future.result()
             except Exception as exc:
                 logger.error(
-                    f"{proccess_title.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}..."
+                    f"{process_title.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}..."
                 )
 
 
@@ -244,7 +259,7 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
         executor = stack.enter_context(ThreadPoolExecutor())
 
         futures = {
-            executor.submit(proccess_summary, config, pre_process, chunk): chunk
+            executor.submit(process_summary, config, pre_process, chunk): chunk
             for chunk in chunks
         }
 
@@ -254,11 +269,11 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
                 chunk = future.result()
             except Exception as exc:
                 logger.error(
-                    f"{proccess_summary.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}...."
+                    f"{process_summary.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}...."
                 )
 
 
-def proccess_title(config: IndexConfig, pre_process, chunk):
+def process_title(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
 
@@ -273,6 +288,8 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
+    if "title" in chunk and "title_vector" in chunk:
+        return chunk
 
     if config.GENERATE_TITLE:
         title = generate_title(
@@ -291,7 +308,7 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
     return chunk
 
 
-def proccess_summary(config: IndexConfig, pre_process, chunk):
+def process_summary(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
 
@@ -308,6 +325,9 @@ def proccess_summary(config: IndexConfig, pre_process, chunk):
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
+    if "summary" in chunk and "summary_vector" in chunk:
+        return chunk
+
     if config.GENERATE_SUMMARY:
         summary = generate_summary(
             chunk["content"], config.CHAT_MODEL_NAME, config.TEMPERATURE

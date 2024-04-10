@@ -1,3 +1,4 @@
+from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
 import os
 import sys
 import argparse
@@ -38,11 +39,14 @@ def init():
     global config
     global environment
     global index_config
+    global checkpoint
 
     environment = Environment.from_keyvault(args.keyvault)
     config = Config(environment, args.config_path, args.data_dir)
 
     index_config = IndexConfig.from_index_name(args.index_name, config)
+
+    checkpoint = NullCheckpoint()
 
 
 def run(input_paths: List[str]) -> List[str]:
@@ -51,6 +55,6 @@ def run(input_paths: List[str]) -> List[str]:
     global environment
     global index_config
 
-    index_run(environment, config, index_config, input_paths)
+    index_run(environment, config, index_config, input_paths, checkpoint)
 
     return [args.index_name]

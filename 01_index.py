@@ -1,6 +1,10 @@
 import json
 import argparse
 
+from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
+    LocalStorageCheckpoint,
+)
+from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
@@ -19,7 +23,16 @@ if __name__ == "__main__":
 
     file_paths = get_all_file_paths(config.data_dir)
     for index_config in config.index_configs():
-        index_dict = run(environment, config, index_config, file_paths)
+        checkpoint = (
+            LocalStorageCheckpoint(
+                checkpoint_name="index",
+                config_name=index_config.index_name(),
+                config=config,
+            )
+            if config.USE_CHECKPOINTS
+            else NullCheckpoint()
+        )
+        index_dict = run(environment, config, index_config, file_paths, checkpoint)
 
     with open(config.GENERATED_INDEX_NAMES_FILE_PATH, "w") as index_name:
         json.dump(index_dict, index_name, indent=4)
