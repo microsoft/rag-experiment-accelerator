@@ -183,6 +183,9 @@ module storekeys './shared/storekeys.bicep' = {
   }
 }
 
+// More resources can be added here to deploy with private endpoints.
+// These resources should be added to the azureResources array in the network_resources module.
+// Part 2 of isolated network work includes adding private endpoints to other required resources.
 module network_resources 'network/network_isolation.bicep' =
   if (DeployResourcesWithIsolatedNetwork) {
     name: 'network_isolation_resources'
