@@ -4,7 +4,6 @@ import argparse
 import mlflow
 from mlflow import MlflowClient
 
-from rag_experiment_accelerator.evaluation.eval import get_run_tags
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
@@ -12,6 +11,7 @@ sys.path.append(project_dir)
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
+from rag_experiment_accelerator.evaluation.eval import get_run_tags  # noqa: E402
 from rag_experiment_accelerator.run.evaluation import run as eval_run  # noqa: E402
 
 

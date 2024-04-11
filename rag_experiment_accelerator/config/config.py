@@ -32,6 +32,9 @@ class Config:
     Attributes:
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
+        GENERATE_TITLE (bool): Whether or not to generate title for chunk content. Default is False.
+        GENERATE_SUMMARY (bool): Whether or not to generate summary for chunk content. Default is False.
+        OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
         INDEX_NAME_PREFIX (str): A prefix to use for the names of saved models.
@@ -46,6 +49,8 @@ class Config:
         RERANK_TYPE (str): The type of reranking to use.
         LLM_RERANK_THRESHOLD (float): The threshold for reranking using LLM.
         CROSSENCODER_AT_K (int): The number of documents to rerank using the crossencoder.
+        CHUNKING_STRATEGY (ChunkingStrategy): The strategy to use for chunking documents.
+        AZURE_DOCUMENT_INTELLIGENCE_MODEL (str): The model to use for Azure Document Intelligence extraction.
         TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
         RERANK (bool): Whether or not to perform reranking.
         SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
@@ -54,11 +59,12 @@ class Config:
         EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
         embedding_models: The embedding models used to generate embeddings
         MAX_WORKER_THREADS (int): Maximum number of worker threads.
-        GENERATE_TITLE (bool): Whether or not to generate title for chunk content. Default is False.
-        GENERATE_SUMMARY (bool): Whether or not to generate summary for chunk content. Default is False.
-        OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
         SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
         SAMPLE_PERCENTAGE (int): Percentage of dataset
+        CHAIN_OF_THOUGHTS (bool): Whether chain of thoughts is enabled or not. if enabled LLM will check if it's possible to split complex query to multiple queries and do so. else it will leave the original query as is. Default is False.
+        HYDE (str): Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM. Possible values are "disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer". Default is 'disabled'.
+        QUERY_EXPANSION (bool): Whether or not to perform query expansion and generate up to five related questions using LLM (depends on similairy score) and use those to retrieve documents. Default is False.
+        MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE (int): The minimum similarity score for query expansion generated related questions. Default is 90.
     """
 
     def __init__(
@@ -72,9 +78,14 @@ class Config:
             config_json = json.load(json_file)
 
         self._initialize_paths(config_json, config_path, data_dir)
-
-        self.CHUNK_SIZES = config_json["chunking"]["chunk_size"]
-        self.OVERLAP_SIZES = config_json["chunking"]["overlap_size"]
+        chunking_config = config_json["chunking"]
+        self.CHUNK_SIZES = chunking_config["chunk_size"]
+        self.OVERLAP_SIZES = chunking_config["overlap_size"]
+        self.GENERATE_TITLE = chunking_config.get("generate_title", False)
+        self.GENERATE_SUMMARY = chunking_config.get("generate_summary", False)
+        self.OVERRIDE_CONTENT_WITH_SUMMARY = chunking_config.get(
+            "override_content_with_summary", False
+        )
         self.EF_CONSTRUCTIONS = config_json["ef_construction"]
         self.EF_SEARCHES = config_json["ef_search"]
         self.INDEX_NAME_PREFIX = config_json["index_name_prefix"]
@@ -105,6 +116,9 @@ class Config:
             if "chunking_strategy" in config_json
             else ChunkingStrategy.BASIC
         )
+        self.AZURE_DOCUMENT_INTELLIGENCE_MODEL = config_json.get(
+            "azure_document_intelligence_model", "prebuilt-read"
+        )
         self.LANGUAGE = config_json.get("language", {})
 
         self.embedding_models: list[EmbeddingModel] = []
@@ -118,11 +132,6 @@ class Config:
         max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
         self.MAX_WORKER_THREADS = (
             int(max_worker_threads) if max_worker_threads else None
-        )
-        self.GENERATE_TITLE = config_json.get("generate_title", False)
-        self.GENERATE_SUMMARY = config_json.get("generate_summary", False)
-        self.OVERRIDE_CONTENT_WITH_SUMMARY = config_json.get(
-            "override_content_with_summary", False
         )
 
         self.validate_inputs(
@@ -150,6 +159,13 @@ class Config:
         # log all the configuration settings in debug mode
         for key, value in config_json.items():
             logger.debug(f"Configuration setting: {key} = {value}")
+
+        self.CHAIN_OF_THOUGHTS = config_json.get("chain_of_thoughts", False)
+        self.HYDE = config_json.get("hyde", "disabled").lower()
+        self.QUERY_EXPANSION = config_json.get("generate_title", False)
+        self.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = int(
+            config_json.get("min_query_expansion_related_question_similarity_score", 90)
+        )
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):

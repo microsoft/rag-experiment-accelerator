@@ -14,6 +14,7 @@ def load_html_files(
     file_paths: list[str],
     chunk_size: str,
     overlap_size: str,
+    **kwargs: dict,
 ):
     """
     Load and process HTML files from a given folder path.
@@ -24,6 +25,7 @@ def load_html_files(
         chunk_size (str): The size of the chunks to split the documents into.
         overlap_size (str): The size of the overlapping parts between chunks.
         glob_patterns (list[str]): List of file extensions to consider (e.g., ["html", "htm", ...]).
+        **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of processed and split document chunks.

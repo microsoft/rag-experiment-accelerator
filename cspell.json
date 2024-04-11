@@ -3,7 +3,10 @@
     "ignorePaths": [],
     "dictionaryDefinitions": [],
     "dictionaries": [],
-    "words": [],
+    "words": [
+        "azuretools",
+        "keyvault"
+    ],
     "ignoreWords": [
         "BLAS",
         "CNTK",
@@ -24,13 +27,16 @@
         "autograd",
         "azureml",
         "coveragerc",
+        "devcontainer",
         "distilbert",
         "distro",
         "htmlcov",
         "keyvault",
         "libuv",
+        "mlflow",
         "mpnet",
         "ndarray",
+        "promptflow",
         "ptrblck",
         "pytest",
         "rerank",
