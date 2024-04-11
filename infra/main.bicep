@@ -85,6 +85,18 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
+// Store secrets in a keyvault
+module keyvault './shared/keyvault.bicep' = {
+  name: 'keyvault'
+  scope: rg
+  params: {
+    name: keyVaultName
+    location: location
+    tags: tags
+    principalId: principalId
+  }
+}
+
 module search 'shared/search-services.bicep' = {
   name: azureAISearchName
   scope: rg
@@ -169,19 +181,6 @@ module storekeys './shared/storekeys.bicep' = {
     azureAISearchName: search.outputs.name
     rgName: rgName
   }
-}
-
-// Store secrets in a keyvault
-
-module keyvault './shared/keyvault.bicep' = {
-name: 'keyvault'
-scope: rg
-params: {
-  name: keyVaultName
-  location: location
-  tags: tags
-  principalId: principalId
-}
 }
 
 module network_resources 'network/network_isolation.bicep' =
