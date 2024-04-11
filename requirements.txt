@@ -15,7 +15,7 @@ evaluate==0.4.1
 fuzzywuzzy==0.18.0
 hnswlib==0.8.0
 langchain==0.1.13
-langchain-community==0.0.29
+langchain-community==0.0.31
 levenshtein==0.25.0
 umap-learn==0.5.5
 kaleido==0.2.1
