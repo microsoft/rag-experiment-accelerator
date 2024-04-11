@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
 from rag_experiment_accelerator.config.config import Config
 
 from rag_experiment_accelerator.run.index import run
@@ -87,7 +88,7 @@ def test_run(
 
     # Act
     for index_config in mock_config.index_configs():
-        run(mock_environment, mock_config, index_config, file_paths)
+        run(mock_environment, mock_config, index_config, file_paths, NullCheckpoint())
 
     # Assert
     assert mock_preprocess.call_count == 32
