@@ -197,16 +197,6 @@ module network_resources 'network/network_isolation.bicep' =
       azureSubnetAddressSpace: AzureSubnetAddressSpace
       resourcePrefix: environmentName
       azureResources: [
-        // {
-        //   type: 'account'
-        //   name: openai.name
-        //   resourceId: openai.outputs.id
-        // }
-        // {
-        //   type: 'search'
-        //   name: search.name
-        //   resourceId: search.outputs.id
-        // }
         {
           type: 'blob'
           name: storage.name
