@@ -2,7 +2,6 @@ import argparse
 
 import mlflow
 
-from rag_experiment_accelerator.evaluation.eval import get_run_tags
 from rag_experiment_accelerator.run.evaluation import run, initialise_mlflow_client
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
@@ -32,7 +31,6 @@ if __name__ == "__main__":
     name_suffix = formatted_datetime_suffix()
 
     with mlflow.start_run(run_name=mlflow_run_name(config, name_suffix)):
-        mlflow.set_tags(get_run_tags(config))
         for index_config in config.index_configs():
             run(
                 environment,

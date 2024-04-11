@@ -64,7 +64,7 @@ def main():
     mlflow_client = mlflow.MlflowClient()
     mlflow.set_experiment(config.EXPERIMENT_NAME)
 
-    mlflow.set_tags(get_run_tags(config))
+    mlflow.set_tags(get_run_tags(index_config))
     with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
         eval_run(
             environment, config, index_config, mlflow_client, name_suffix="_result"
