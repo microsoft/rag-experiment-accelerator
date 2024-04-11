@@ -43,7 +43,7 @@ resource privateEndpoints 'Microsoft.Network/privateEndpoints@2020-07-01' = [
         {
           name: '${resourcePrefix}${resource.type}PLSConnection'
           properties: {
-            privateLinkServiceId: resource.id
+            privateLinkServiceId: resource.resourceId
             groupIds: [resource.type]
           }
         }

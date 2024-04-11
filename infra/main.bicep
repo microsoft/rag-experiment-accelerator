@@ -53,7 +53,6 @@ param machineLearningName string = '${environmentName}-aml-${resourceToken}'
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
 
-
 @description('Flag to deploy resources in isolated network. Manual setup is required to access the deployed resources.')
 param DeployResourcesWithIsolatedNetwork bool
 
@@ -73,7 +72,7 @@ param ProxySubnetAddressSpace string = ''
 param AzureSubnetName string = '${environmentName}azrsubnet'
 
 @description('Address space for the other azure resources subnet')
-param AzureSubnetAddressSpace string
+param AzureSubnetAddressSpace string = ''
 
 var tags = { 'azd-env-name': environmentName }
 var rgName = 'rg-${environmentName}'
@@ -185,42 +184,48 @@ params: {
 }
 }
 
-// module network_resources 'network/network_isolation.bicep' = if (DeployResourcesWithIsolatedNetwork) {
-//   name: 'network_isolation_resources'
-//   scope: rg
-//   params: {
-//     vnetName: VirtualNetworkName
-//     location: location
-//     vnetAddressSpace: VnetAddressSpace
-//     proxySubnetName: ProxySubnetName
-//     proxySubnetAddressSpace: ProxySubnetAddressSpace
-//     azureSubnetName: AzureSubnetName
-//     azureSubnetAddressSpace: AzureSubnetAddressSpace
-//     resourcePrefix: environmentName
-//     azureResources: [
-//       {
-//         type: 'OpenAI'
-//         id: openai.name
-//       }
-//       {
-//         type: 'search'
-//         id: search.name
-//       }
-//       {
-//         type: 'blob'
-//         id: storage.name
-//       }
-//       {
-//         type: 'vault'
-//         id: keyvault.name
-//       }
-//       {
-//         type: 'amlworkspace'
-//         id: machineLearning.name
-//       }
-//     ]
-//   }
-// }
+module network_resources 'network/network_isolation.bicep' =
+  if (DeployResourcesWithIsolatedNetwork) {
+    name: 'network_isolation_resources'
+    scope: rg
+    params: {
+      vnetName: VirtualNetworkName
+      location: location
+      vnetAddressSpace: VnetAddressSpace
+      proxySubnetName: ProxySubnetName
+      proxySubnetAddressSpace: ProxySubnetAddressSpace
+      azureSubnetName: AzureSubnetName
+      azureSubnetAddressSpace: AzureSubnetAddressSpace
+      resourcePrefix: environmentName
+      azureResources: [
+        // {
+        //   type: 'account'
+        //   name: openai.name
+        //   resourceId: openai.outputs.id
+        // }
+        // {
+        //   type: 'search'
+        //   name: search.name
+        //   resourceId: search.outputs.id
+        // }
+        {
+          type: 'blob'
+          name: storage.name
+          resourceId: storage.outputs.id
+        }
+        {
+          type: 'vault'
+          name: keyvault.name
+          resourceId: keyvault.outputs.id
+        }
+        {
+          type: 'amlworkspace'
+          name: machineLearning.name
+          resourceId: machineLearning.outputs.workspaceId
+        }
+      ]
+    }
+  }
 
 output USE_KEY_VAULT string = 'true'
 output AZURE_KEY_VAULT_ENDPOINT string = keyvault.outputs.endpoint
@@ -229,7 +234,7 @@ output OPENAI_API_TYPE string = 'azure'
 output OPENAI_ENDPOINT string = openai.outputs.endpoint
 output OPENAI_API_VERSION string = '2023-03-15-preview'
 output AML_SUBSCRIPTION_ID string = subscription().subscriptionId
-output AML_WORKSPACE_NAME string = machineLearning.outputs.workspaceName  
+output AML_WORKSPACE_NAME string = machineLearning.outputs.workspaceName
 output AML_RESOURCE_GROUP_NAME string = rgName
 // output AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT string = 
 // output AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY string =
