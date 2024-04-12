@@ -198,9 +198,12 @@ def test_do_we_need_multiple_questions_true(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
     mock_response_generator.generate_response.return_value = '{"category": "complex"}'
+    mock_config = Mock()
 
     # Act
-    result = do_we_need_multiple_questions(question, mock_response_generator)
+    result = do_we_need_multiple_questions(
+        question, mock_response_generator, mock_config
+    )
 
     # Assert
     mock_response_generator.generate_response.assert_called_once()
@@ -215,9 +218,12 @@ def test_do_we_need_multiple_questions_false(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
     mock_response_generator.generate_response.return_value = '{"category": ""}'
+    mock_config = Mock()
 
     # Act
-    result = do_we_need_multiple_questions(question, mock_response_generator)
+    result = do_we_need_multiple_questions(
+        question, mock_response_generator, mock_config
+    )
 
     # Assert
     mock_response_generator.generate_response.assert_called_once()

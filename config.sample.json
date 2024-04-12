@@ -2,7 +2,10 @@
     "name_prefix": "surface",
     "chunking": {
         "chunk_size": [1000],
-        "overlap_size": [200]
+        "overlap_size": [200],
+        "generate_title": false,
+        "generate_summary": false,
+        "override_content_with_summary": false
     },
     "embedding_models": [
         {
@@ -23,7 +26,7 @@
         },
         "query_language": "en-us"
     },
-    "rerank": "TRUE",
+    "rerank": true,
     "rerank_type": "crossencoder",
     "llm_re_rank_threshold": 3,
     "cross_encoder_at_k": 4,
@@ -49,8 +52,9 @@
     "data_formats": "all",
     "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl",
     "chunking_strategy": "basic",
-    "azure_document_intelligence_model": "prebuilt-read",
-    "generate_title": false,
-    "generate_summary": false,
-    "override_content_with_summary": false
+    "chain_of_thoughts": true,
+    "hyde": "disabled",
+    "query_expansion": false,
+    "min_query_expansion_related_question_similarity_score": 90,
+    "azure_document_intelligence_model": "prebuilt-read"
 }

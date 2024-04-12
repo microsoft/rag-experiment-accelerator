@@ -45,7 +45,7 @@ eval: ## 👓 Evaluate metrics for all answers compared to ground truth
 
 azureml: ## 🚀 Run all steps in sequence on Azure ML
 	$(call target_title, "running on Azure ML")
-	python3 azureml/pipeline.py $(if $(dd),--data_dir $(dd), --data_dir ./data) 
+	python3 azureml/pipeline.py $(if $(dd),--data_dir $(dd), --data_dir ./data)  $(if $(cp),--config_path $(cp), --config_path ./config.json)
 
 
 clear_docs: ## ❌ Delete all downloaded documents from data folder
