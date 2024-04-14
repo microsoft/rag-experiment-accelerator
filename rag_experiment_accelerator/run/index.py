@@ -57,8 +57,9 @@ def run(
     index_dict["indexes"].append(index_config.index_name())
 
     if checkpoint.exists():
-        logger.info("Loading documents from checkpoint")
+        logger.info("Checkpoint found - skipping load documents")
         docs_ready_to_index = sum(checkpoint.load(), [])
+        logger.info("Loaded documents from checkpoint")
     else:
         docs = load_documents(
             environment,
