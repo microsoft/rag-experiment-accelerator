@@ -25,7 +25,7 @@ class IndexConfig:
 
     index_name_prefix: str
     chunk_size: int
-    overlap: int
+    overlap_size: int
     embedding_model: EmbeddingModel
     ef_construction: int
     ef_search: int
@@ -42,7 +42,7 @@ class IndexConfig:
         index_name = (
             f"{self.index_name_prefix}"
             f"_cs-{str(self.chunk_size)}"
-            f"_o-{str(self.overlap)}"
+            f"_o-{str(self.overlap_size)}"
             f"_efc-{str(self.ef_construction)}"
             f"_efs-{str(self.ef_search)}"
             f"_sp-{str(self.sampling_percentage)}"
@@ -67,7 +67,7 @@ class IndexConfig:
         return IndexConfig(
             index_name_prefix=values[0],
             chunk_size=int(values[1].split("-")[1].strip()),
-            overlap=int(values[2].split("-")[1].strip()),
+            overlap_size=int(values[2].split("-")[1].strip()),
             ef_construction=int(values[3].split("-")[1].strip()),
             ef_search=int(values[4].split("-")[1].strip()),
             sampling_percentage=int(values[5].split("-")[1].strip()),

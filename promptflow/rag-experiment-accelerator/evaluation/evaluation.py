@@ -18,10 +18,10 @@ def my_python_tool(config_path: str) -> bool:
     mlflow_client = initialise_mlflow_client(environment, config)
     name_suffix = formatted_datetime_suffix()
 
-    mlflow.set_tags(get_run_tags(config))
     with mlflow.start_run(run_name=mlflow_run_name(config, name_suffix)):
         mlflow.set_tags()
         for index_config in config.index_configs():
+            mlflow.set_tags(get_run_tags(config_path, index_config))
             run(
                 environment,
                 config,

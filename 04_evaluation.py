@@ -1,5 +1,4 @@
 import argparse
-
 import mlflow
 
 from rag_experiment_accelerator.evaluation.eval import get_run_tags
@@ -15,7 +14,10 @@ from rag_experiment_accelerator.config.paths import (
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--config_path", type=str, help="input: path to the config file"
+        "--config_path",
+        type=str,
+        help="input: path to the config file",
+        default=Config.default_config_path(),
     )
     parser.add_argument(
         "--data_dir",
@@ -32,8 +34,8 @@ if __name__ == "__main__":
     name_suffix = formatted_datetime_suffix()
 
     with mlflow.start_run(run_name=mlflow_run_name(config, name_suffix)):
-        mlflow.set_tags(get_run_tags(config))
         for index_config in config.index_configs():
+            mlflow.set_tags(get_run_tags(args.config_path, index_config))
             run(
                 environment,
                 config,

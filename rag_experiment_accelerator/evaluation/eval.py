@@ -1,6 +1,7 @@
 import ast
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
+import json
 import os
 import warnings
 
@@ -358,23 +359,68 @@ def llm_context_recall(
     ) * 100
 
 
-def get_run_tags(config: IndexConfig):
+def is_user_defined_instance(obj):
+    return obj.__class__.__module__ != "builtins"
+
+
+def flatten_config(
+    config: dict, skip_items: list = [], parent_key: str = "", sep: str = "_"
+):
     """
-    Returns the tags to be associated with the current run.
+    Flatten a nested dictionary into a flat dictionary.
 
     Args:
-        config (Config): The configuration settings to use for the tags.
+        config (dict): The nested dictionary to be flattened.
+        skip_items (list, optional): List of keys to skip during flattening. Defaults to [].
+        parent_key (str, optional): The parent key to be used for the flattened keys. Defaults to ''.
+        sep (str, optional): The separator to be used between parent and child keys. Defaults to '_'.
 
     Returns:
-        dict: The tags to be associated with the current run.
+        dict: The flattened dictionary.
     """
-    return {
-        "chunk_size": config.chunk_size,
-        "overlap": config.overlap,
-        "embedding_model": config.embedding_model.name,
-        "ef_construction": config.ef_construction,
-        "ef_search": config.ef_search,
-    }
+    items = []
+    for k, v in config.items():
+        if k in skip_items:
+            continue
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            result = flatten_config(v, skip_items, new_key, sep=sep).items()
+            items.extend(result)
+        elif isinstance(v, list) and all(isinstance(i, dict) for i in v):
+            for i, elem in enumerate(v):
+                result = flatten_config(
+                    elem, skip_items, f"{new_key}_{i}", sep=sep
+                ).items()
+                items.extend(result)
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+def get_run_tags(config_path: str, index_config: IndexConfig):
+    """
+    Retrieves the run tags based on the provided configuration path and index configuration.
+
+    Args:
+        config_path (str): The path to the configuration file.
+        index_config (IndexConfig): The index configuration object.
+
+    Returns:
+        dict: A dictionary containing the run tags.
+    """
+    tags = []
+    with open(config_path, "r") as json_file:
+        config = json.load(json_file)
+        index_config_tags = vars(index_config)
+        index_config_tags = {
+            k: v
+            for k, v in index_config_tags.items()
+            if not is_user_defined_instance(v)
+        }
+        index_config_keys = list(index_config_tags)
+        config_tags = flatten_config(config, index_config_keys)
+        tags = {**index_config_tags, **config_tags}
+    return tags
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -777,7 +823,7 @@ def evaluate_prompts(
     mlflow.log_param("llm_re_rank_threshold", common_data.llm_re_rank_threshold)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
     mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
-    mlflow.log_param("chunk_overlap", index_config.overlap)
+    mlflow.log_param("chunk_overlap", index_config.overlap_size)
     mlflow.log_param("embedding_dimension", index_config.embedding_model.dimension)
     mlflow.log_param("embedding_model_name", index_config.embedding_model.name)
     mlflow.log_param("ef_construction", index_config.ef_construction)

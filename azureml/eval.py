@@ -20,8 +20,8 @@ def _get_parent_mlflow_run_id(mlflow_client: MlflowClient):
     The MLFlow run will be already started by the parent pipeline,
     retrieve the run_id to collect metrics into the parent run
     """
-    with mlflow.start_run():
-        mlflow_run = mlflow_client.get_run(mlflow.active_run().info.run_id)
+    with mlflow.start_run() as active_run:
+        mlflow_run = mlflow_client.get_run(active_run.info.run_id)
         return mlflow_run.data.tags["azureml.pipeline"]
 
 
@@ -64,7 +64,7 @@ def main():
     mlflow_client = mlflow.MlflowClient()
     mlflow.set_experiment(config.EXPERIMENT_NAME)
 
-    mlflow.set_tags(get_run_tags(config))
+    mlflow.set_tags(get_run_tags(args.config_path, index_config))
     with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
         eval_run(
             environment, config, index_config, mlflow_client, name_suffix="_result"

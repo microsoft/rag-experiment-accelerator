@@ -106,7 +106,7 @@ def start_pipeline(
             "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
             "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
         },
-        tags=get_run_tags(index_config),
+        tags=get_run_tags(config_path, index_config),
     )
 
     query_pipeline_component = command(
@@ -131,7 +131,7 @@ def start_pipeline(
             "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
             "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
         },
-        tags=get_run_tags(index_config),
+        tags=get_run_tags(config_path, index_config),
     )
 
     eval_pipeline_component = command(
@@ -156,14 +156,14 @@ def start_pipeline(
             "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL", ""),
             "MAX_WORKER_THREADS": os.getenv("MAX_WORKER_THREADS", ""),
         },
-        tags=get_run_tags(index_config),
+        tags=get_run_tags(config_path, index_config),
     )
 
     @dsl.pipeline(
         name=mlflow_run_name(config),
         compute=environment.aml_compute_name,
         description="RAG Experiment Pipeline",
-        tags=get_run_tags(index_config),
+        tags=get_run_tags(config_path, index_config),
     )
     def rag_pipeline(config_path_input, data_input, eval_data_input):
         index_job = index_pipeline_component(

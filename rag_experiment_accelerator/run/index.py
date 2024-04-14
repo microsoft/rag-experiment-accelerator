@@ -60,7 +60,7 @@ def run(
         config.DATA_FORMATS,
         file_paths,
         index_config.chunk_size,
-        index_config.overlap,
+        index_config.overlap_size,
         config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
     )
 

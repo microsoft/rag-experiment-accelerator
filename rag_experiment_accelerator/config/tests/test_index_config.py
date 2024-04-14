@@ -10,7 +10,7 @@ def test_index_config_to_index_name():
     index_config = IndexConfig(
         index_name_prefix="prefix",
         chunk_size=1,
-        overlap=2,
+        overlap_size=2,
         embedding_model=mock_embedding_model,
         ef_construction=3,
         ef_search=4,
@@ -36,7 +36,7 @@ def test_index_name_to_index_config():
 
     assert index_config.index_name_prefix == "prefix"
     assert index_config.chunk_size == 1
-    assert index_config.overlap == 2
+    assert index_config.overlap_size == 2
     assert index_config.embedding_model.name == "modelname"
     assert index_config.ef_construction == 3
     assert index_config.ef_search == 4

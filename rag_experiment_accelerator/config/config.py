@@ -67,11 +67,13 @@ class Config:
         MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE (int): The minimum similarity score for query expansion generated related questions. Default is 90.
     """
 
+    @staticmethod
+    def default_config_path():
+        return os.path.join(os.getcwd(), "config.json")
+
     def __init__(
-        self, environment: Environment, config_path: str = None, data_dir: str = None
+        self, environment: Environment, config_path: str, data_dir: str = None
     ):
-        if not config_path:
-            config_path = os.path.join(os.getcwd(), "./config.json")
         if not data_dir:
             data_dir = os.path.join(os.getcwd(), "data/")
         with open(config_path.strip(), "r") as json_file:
@@ -190,7 +192,7 @@ class Config:
                             yield IndexConfig(
                                 index_name_prefix=self.INDEX_NAME_PREFIX,
                                 chunk_size=chunk_size,
-                                overlap=overlap,
+                                overlap_size=overlap,
                                 embedding_model=embedding_model,
                                 ef_construction=ef_construction,
                                 ef_search=ef_search,
