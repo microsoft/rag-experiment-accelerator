@@ -116,7 +116,7 @@ class Environment:
     @classmethod
     def _from_env(cls) -> "Environment":
         """
-        Initialize the Enivronment using hte environment variables.
+        Initialize the Enivronment using the environment variables.
         """
         values_dict = {
             name: _get_value_from_env(
