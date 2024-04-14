@@ -6,7 +6,7 @@ class NullCheckpoint(Checkpoint):
         pass
 
     def exists(self):
-        pass
+        return False
 
     def load(self):
         pass
