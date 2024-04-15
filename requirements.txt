@@ -32,7 +32,7 @@ PyPDF2~=3.0
 rouge-score==0.1.2
 tqdm==4.66.2
 scikit-learn==1.4.2
-sentence-transformers==2.6.0
+sentence-transformers==2.6.1
 spacy==3.7.4
 textdistance==4.6.1
 tiktoken==0.6.0
