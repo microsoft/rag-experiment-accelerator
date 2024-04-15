@@ -29,15 +29,17 @@ def init_clusting():
 
     """
     load_dotenv(override=True)
-    import en_core_web_lg
+    import spacy
+    from spacy.cli import download
 
-    parser = en_core_web_lg.load(disable=["ner"])
+    download("en_core_web_lg")
+    parser = spacy.load("en_core_web_lg", disable=["ner"])
     parser.max_length = 7000000
 
     punctuations = string.punctuation
-    stopwords = list(STOP_WORDS)
+    stop_words = list(STOP_WORDS)
 
-    return parser, punctuations, stopwords
+    return parser, punctuations, stop_words
 
 
 def spacy_tokenizer(sentence, parser):
