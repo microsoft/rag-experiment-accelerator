@@ -16,7 +16,7 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 
 ## Latest changes
 
-18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data. 
+18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data.
 
 This is done to ensure representative results in the sample that one would get across the entire dataset.
 
@@ -135,7 +135,7 @@ This project supports Azure Developer CLI.
 ```sh
 azd provision
 ```
-- You can also use `azd up` if you prefer as this calls `az provision` anyway
+- You can also use `azd up` if you prefer as this calls `azd provision` anyway
 - Please use the up/down arrows to select your Subscription and Region
 
 ![azd](./docs/azd.png)

@@ -1,4 +1,4 @@
-name: build_validation
+name: Build validation
 
 on:
   workflow_call:
