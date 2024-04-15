@@ -31,7 +31,7 @@ PyMuPDF==1.24.1
 PyPDF2~=3.0
 rouge-score==0.1.2
 tqdm==4.66.2
-scikit-learn==1.4.1post1
+scikit-learn==1.4.2
 sentence-transformers==2.6.0
 spacy==3.7.4
 textdistance==4.6.1
