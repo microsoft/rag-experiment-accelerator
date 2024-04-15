@@ -1,4 +1,4 @@
-name: rag_exp_acc_ci
+name: RAG Experiment Accelerator CI
 
 on:
   workflow_call:

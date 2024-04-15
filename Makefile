@@ -18,7 +18,7 @@ target_title = @echo -e "\n\e[34m»»» 🧩 \e[96m$(1)\e[0m..."
 help: ## 💬 This help message :)
 	@grep -E '[a-zA-Z_-]+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
-all: index qnagen query eval ## 🔠 Run all steps in sequence: load_env index qnagen query eval 
+all: index qnagen query eval ## 🔠 Run all steps in sequence: load_env index qnagen query eval
 query_eval: query eval ## 🔍👓 Run query and eval steps in sequence: load_env query eval
 
 load_env: ## 📃 Load .env file
@@ -34,7 +34,7 @@ qnagen: ## ❓ Generate questions and answers for all document chunks in configu
 	python3 02_qa_generation.py $(if $(dd),--data_dir $(dd), --data_dir ./data) $(if $(cp),--config_path $(cp))
 
 query: ## 🔍 Query the index for all questions in jsonl file configured in config.json and generate answers using LLM
-	$(call target_title, "querying") 
+	$(call target_title, "querying")
 	python3 03_querying.py $(if $(dd),--data_dir $(dd), --data_dir ./data) $(if $(cp),--config_path $(cp))
 
 eval: ## 👓 Evaluate metrics for all answers compared to ground truth
