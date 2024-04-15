@@ -1,15 +1,16 @@
 from unittest.mock import MagicMock, patch
-from rag_experiment_accelerator.nlp.stop_words_preprocess import StopWordsPreprocess
+
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
 
 
-@patch("rag_experiment_accelerator.nlp.stop_words_preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
 def test_sentence_tokenize(mock_nlp):
     mock_sent_1 = MagicMock()
     mock_sent_1.text = "This is a sentence."
     mock_sent_2 = MagicMock()
     mock_sent_2.text = "This is another sentence.   "
     mock_nlp().return_value.sents = [mock_sent_1, mock_sent_2]
-    preprocessor = StopWordsPreprocess()
+    preprocessor = Preprocess(True)
     expected = ["This is a sentence.", "This is another sentence."]
 
     actual = preprocessor.sentence_tokenize("text is mocked")
@@ -17,7 +18,7 @@ def test_sentence_tokenize(mock_nlp):
     assert actual == expected
 
 
-@patch("rag_experiment_accelerator.nlp.stop_words_preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
 def test_word_tokenize(mock_nlp):
     mock_sent_1 = MagicMock()
     mock_sent_1.text = "This"
@@ -28,13 +29,13 @@ def test_word_tokenize(mock_nlp):
     mock_sent_4 = MagicMock()
     mock_sent_4.text = "sentence"
     mock_nlp().return_value = [mock_sent_1, mock_sent_2, mock_sent_3, mock_sent_4]
-    preprocessor = StopWordsPreprocess()
+    preprocessor = Preprocess(True)
     expected = ["This", "is", "a", "sentence"]
     actual = preprocessor.word_tokenize("text is mocked")
     assert actual == expected
 
 
-@patch("rag_experiment_accelerator.nlp.stop_words_preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
 def test_remove_stopwords(mock_nlp):
     mock_token_1 = MagicMock()
     mock_token_1.text = "This"
@@ -59,14 +60,14 @@ def test_remove_stopwords(mock_nlp):
         mock_token_5,
     ]
 
-    preprocessor = StopWordsPreprocess()
+    preprocessor = Preprocess(True)
     sentence = "This is a sentence."
     expected = "sentence ."
-    actual = preprocessor.remove_stopwords(sentence)
+    actual = preprocessor.remove_stop_words(sentence)
     assert actual == expected
 
 
-@patch("rag_experiment_accelerator.nlp.stop_words_preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
 def test_lemmatize(mock_nlp):
     mock_token_1 = MagicMock()
     mock_token_1.lemma_ = "kite"
@@ -81,15 +82,15 @@ def test_lemmatize(mock_nlp):
     mock_token_4.lemma_ = "fly"
     mock_token_4.is_stop = False
     mock_nlp().return_value = [mock_token_1, mock_token_2, mock_token_3, mock_token_4]
-    preprocessor = StopWordsPreprocess()
+    preprocessor = Preprocess(True)
     text = "kites babies dogs flying"
     expected = "kite baby dog fly"
     assert preprocessor.lemmatize(text) == expected
 
 
-@patch("rag_experiment_accelerator.nlp.stop_words_preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
 def test_remove_punct(mock_nlp):
-    preprocessor = StopWordsPreprocess()
+    preprocessor = Preprocess(True)
     text = """this!" is*+,-. /a#$ sentence%& with'() a:;<= lot>?@[ of\\]^_ punctuation`{|}~"""
     expected = "this is a sentence with a lot of punctuation"
-    assert preprocessor.remove_punct(text) == expected
+    assert preprocessor.remove_punctuation(text) == expected

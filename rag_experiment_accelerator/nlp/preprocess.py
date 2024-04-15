@@ -1,6 +1,7 @@
 import re
 from string import punctuation
 from typing import Union
+import spacy
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -14,8 +15,6 @@ class Preprocess:
         self.__enabled = enabled
         if self.__enabled:
             try:
-                import spacy
-
                 self.nlp = spacy.load("en_core_web_lg")
             except OSError:
                 logger.info(f'Downloading spacy language model: {"en_core_web_lg"}')
