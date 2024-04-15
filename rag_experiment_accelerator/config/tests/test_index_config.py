@@ -9,6 +9,7 @@ def test_index_config_to_index_name():
 
     index_config = IndexConfig(
         index_name_prefix="prefix",
+        preprocess=False,
         chunk_size=1,
         overlap=2,
         embedding_model=mock_embedding_model,

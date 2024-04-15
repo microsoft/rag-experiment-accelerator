@@ -185,6 +185,7 @@ class Config:
                         for ef_search in self.EF_SEARCHES:
                             yield IndexConfig(
                                 index_name_prefix=self.NAME_PREFIX,
+                                preprocess=self.PREPROCESS,
                                 chunk_size=chunk_size,
                                 overlap=overlap,
                                 embedding_model=embedding_model,
