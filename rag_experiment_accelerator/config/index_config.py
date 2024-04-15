@@ -11,6 +11,8 @@ class IndexConfig:
     Attributes:
         index_name_prefix (str):
             Prefix to use for the index created in Azure Search.
+        preprocess (boo):
+            Whether to preprocess the text before indexing.
         chunk_size (int):
             Chunk size for chunking documents.
         overlap (int):
@@ -24,6 +26,7 @@ class IndexConfig:
     """
 
     index_name_prefix: str
+    preprocess: bool
     chunk_size: int
     overlap: int
     embedding_model: EmbeddingModel
@@ -41,6 +44,7 @@ class IndexConfig:
         """
         index_name = (
             f"{self.index_name_prefix}"
+            f"_ps-{int(self.preprocess)}"
             f"_cs-{str(self.chunk_size)}"
             f"_o-{str(self.overlap)}"
             f"_efc-{str(self.ef_construction)}"
@@ -54,6 +58,9 @@ class IndexConfig:
 
         return index_name
 
+    def __get_index_value(self, value: str) -> str:
+        return value.split("-")[1].strip()
+
     @classmethod
     def from_index_name(cls, index_name: str, config: Any) -> "IndexConfig":
         """
@@ -66,13 +73,16 @@ class IndexConfig:
 
         return IndexConfig(
             index_name_prefix=values[0],
-            chunk_size=int(values[1].split("-")[1].strip()),
-            overlap=int(values[2].split("-")[1].strip()),
-            ef_construction=int(values[3].split("-")[1].strip()),
-            ef_search=int(values[4].split("-")[1].strip()),
-            sampling_percentage=int(values[5].split("-")[1].strip()),
-            generate_title=bool(int(values[6].split("-")[1].strip())),
-            generate_summary=bool(int(values[7].split("-")[1].strip())),
-            override_content_with_summary=bool(int(values[8].split("-")[1].strip())),
-            embedding_model=config._find_embedding_model_by_name(values[9].strip()),
+            preprocess=bool(int(cls.__get_index_value(values[1]))),
+            chunk_size=int(cls.__get_index_value(values[2])),
+            overlap=int(cls.__get_index_value(values[3])),
+            ef_construction=int(cls.__get_index_value(values[4])),
+            ef_search=int(cls.__get_index_value(values[5])),
+            sampling_percentage=int(cls.__get_index_value(values[6])),
+            generate_title=bool(int(cls.__get_index_value(values[7]))),
+            generate_summary=bool(int(cls.__get_index_value(values[8]))),
+            override_content_with_summary=bool(int(cls.__get_index_value(values[9]))),
+            embedding_model=config._find_embedding_model_by_name(
+                cls.__get_index_value(values[10])
+            ),
         )
