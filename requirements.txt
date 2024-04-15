@@ -18,7 +18,7 @@ langchain==0.1.13
 langchain-community==0.0.32
 levenshtein==0.25.1
 umap-learn==0.5.6
-kaleido==0.2.1
+kaleido==0.2.1.post1
 lxml==5.2.1
 matplotlib==3.8.4
 mlflow==2.11.3
