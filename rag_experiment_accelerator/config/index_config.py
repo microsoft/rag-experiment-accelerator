@@ -44,7 +44,7 @@ class IndexConfig:
         """
         index_name = (
             f"{self.index_name_prefix}"
-            f"_ps-{int(self.preprocess)}"
+            f"_p-{int(self.preprocess)}"
             f"_cs-{str(self.chunk_size)}"
             f"_o-{str(self.overlap)}"
             f"_efc-{str(self.ef_construction)}"
@@ -58,7 +58,8 @@ class IndexConfig:
 
         return index_name
 
-    def __get_index_value(self, value: str) -> str:
+    @classmethod
+    def __get_index_value(cls, value: str) -> str:
         return value.split("-")[1].strip()
 
     @classmethod
@@ -68,7 +69,7 @@ class IndexConfig:
         Reverse of index_name().
         """
         values = index_name.split("_")
-        if len(values) != 10:
+        if len(values) != 11:
             raise (f"Invalid index name [{index_name}]")
 
         return IndexConfig(
@@ -82,7 +83,5 @@ class IndexConfig:
             generate_title=bool(int(cls.__get_index_value(values[7]))),
             generate_summary=bool(int(cls.__get_index_value(values[8]))),
             override_content_with_summary=bool(int(cls.__get_index_value(values[9]))),
-            embedding_model=config._find_embedding_model_by_name(
-                cls.__get_index_value(values[10])
-            ),
+            embedding_model=config._find_embedding_model_by_name(values[10]),
         )

@@ -22,12 +22,12 @@ def test_index_config_to_index_name():
 
     assert (
         index_config.index_name()
-        == "prefix_cs-1_o-2_efc-3_efs-4_sp-0_t-0_s-0_oc-0_modelname"
+        == "prefix_p-0_cs-1_o-2_efc-3_efs-4_sp-0_t-0_s-0_oc-0_modelname"
     )
 
 
 def test_index_name_to_index_config():
-    index_name = "prefix_cs-1_o-2_efc-3_efs-4_sp-0_t-0_s-0_oc-0_modelname"
+    index_name = "prefix_p-0_cs-1_o-2_efc-3_efs-4_sp-0_t-0_s-0_oc-0_modelname"
     mock_embedding_model = MagicMock()
     mock_embedding_model.name = "modelname"
     config = MagicMock()
