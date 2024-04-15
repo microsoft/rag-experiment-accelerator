@@ -83,5 +83,5 @@ class IndexConfig:
             generate_title=bool(int(cls.__get_index_value(values[7]))),
             generate_summary=bool(int(cls.__get_index_value(values[8]))),
             override_content_with_summary=bool(int(cls.__get_index_value(values[9]))),
-            embedding_model=config._find_embedding_model_by_name(values[10]),
+            embedding_model=config._find_embedding_model_by_name(values[10].strip()),
         )
