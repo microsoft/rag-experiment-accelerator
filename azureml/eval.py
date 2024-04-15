@@ -11,7 +11,6 @@ sys.path.append(project_dir)
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
-from rag_experiment_accelerator.evaluation.eval import get_run_tags  # noqa: E402
 from rag_experiment_accelerator.run.evaluation import run as eval_run  # noqa: E402
 
 
@@ -64,7 +63,6 @@ def main():
     mlflow_client = mlflow.MlflowClient()
     mlflow.set_experiment(config.EXPERIMENT_NAME)
 
-    mlflow.set_tags(get_run_tags(index_config))
     with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
         eval_run(
             environment, config, index_config, mlflow_client, name_suffix="_result"

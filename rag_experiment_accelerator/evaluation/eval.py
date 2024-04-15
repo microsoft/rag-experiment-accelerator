@@ -358,25 +358,6 @@ def llm_context_recall(
     ) * 100
 
 
-def get_run_tags(config: IndexConfig):
-    """
-    Returns the tags to be associated with the current run.
-
-    Args:
-        config (Config): The configuration settings to use for the tags.
-
-    Returns:
-        dict: The tags to be associated with the current run.
-    """
-    return {
-        "chunk_size": config.chunk_size,
-        "overlap": config.overlap,
-        "embedding_model": config.embedding_model.name,
-        "ef_construction": config.ef_construction,
-        "ef_search": config.ef_search,
-    }
-
-
 def generate_metrics(experiment_name, run_id, client):
     """
     Generates metrics for a given experiment and run ID.
