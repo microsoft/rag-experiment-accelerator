@@ -669,7 +669,7 @@ def test_search_for_match_pure_vector_cross(mock_vector_query):
         [
             call(
                 k=retrieve_num_of_documents,
-                fields="contentVector, title, summary",
+                fields="contentVector, titleVector, summaryVector",
                 vector=embedding,
             )
         ]
@@ -714,7 +714,7 @@ def test_search_for_match_pure_vector_cross_handles_exception(
     # Assert
     mock_vector_query.assert_called_once_with(
         k=retrieve_num_of_documents,
-        fields="contentVector, title, summary",
+        fields="contentVector, titleVector, summaryVector",
         vector=embedding,
     )
     client.search.assert_called_once_with(
