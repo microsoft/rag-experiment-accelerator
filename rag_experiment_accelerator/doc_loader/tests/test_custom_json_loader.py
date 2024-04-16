@@ -19,9 +19,6 @@ def test_load_json_files():
         {"content": "This is the content for item 5.", "title": "Title 5"},
         {"content": "This is the content for item 6.", "title": "Title 6"},
     ]
-    expected_metadata = {
-        "source": "/workspaces/rag-experiment-accelerator/rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
-    }
 
     docs = load_structured_files(
         file_format="JSON",
@@ -38,7 +35,9 @@ def test_load_json_files():
     )
     doc = list(docs[0].values())[0]
     assert doc["content"] == str(expected_content)
-    assert doc["metadata"] == expected_metadata
+    assert doc["metadata"]["source"].endswith(
+        "rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
+    )
 
 
 def test_load_json_files_raises_invalid_keys():
