@@ -20,7 +20,7 @@ def test_load_json_files():
         {"content": "This is the content for item 6.", "title": "Title 6"},
     ]
     expected_metadata = {
-        "source": "/rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
+        "source": "/workspaces/rag-experiment-accelerator/rag_experiment_accelerator/doc_loader/tests/test_data/json/data.valid.json"
     }
 
     docs = load_structured_files(
