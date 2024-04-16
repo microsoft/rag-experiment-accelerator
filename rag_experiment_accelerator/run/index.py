@@ -20,7 +20,7 @@ from rag_experiment_accelerator.sampling.clustering import cluster
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.utils.logging import get_logger
-
+import hashlib
 
 logger = get_logger(__name__)
 load_dotenv(override=True)
@@ -56,35 +56,24 @@ def run(
         )
     index_dict["indexes"].append(index_config.index_name())
 
-    if checkpoint.exists():
-        logger.info("Checkpoint found - skipping load documents")
-        docs_ready_to_index = sum(checkpoint.load(), [])
-        logger.info("Loaded documents from checkpoint")
-    else:
-        docs = load_documents(
-            environment,
-            config.CHUNKING_STRATEGY,
-            config.DATA_FORMATS,
-            file_paths,
-            index_config.chunk_size,
-            index_config.overlap,
-            config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
-        )
+    docs = load_documents(
+        environment,
+        config.CHUNKING_STRATEGY,
+        config.DATA_FORMATS,
+        file_paths,
+        index_config.chunk_size,
+        index_config.overlap,
+        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
+    )
 
-        if config.SAMPLE_DATA:
-            docs = cluster(docs, config)
+    if config.SAMPLE_DATA:
+        docs = cluster(docs, config)
 
-        docs_ready_to_index = convert_docs_to_vector_db_records(docs)
-        checkpoint.save(docs_ready_to_index)
+    docs_ready_to_index = convert_docs_to_vector_db_records(docs)
 
-    embed_chunks(index_config, pre_process, docs_ready_to_index)
-    checkpoint.save(docs_ready_to_index)
-
-    generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
-    checkpoint.save(docs_ready_to_index)
-
-    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
-    checkpoint.save(docs_ready_to_index)
+    embed_chunks(index_config, pre_process, docs_ready_to_index, checkpoint)
+    generate_titles_from_chunks(config, pre_process, docs_ready_to_index, checkpoint)
+    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index, checkpoint)
 
     with TimeTook(
         f"load documents to Azure Search index {index_config.index_name()}",
@@ -131,7 +120,7 @@ def convert_docs_to_vector_db_records(docs):
     return dicts
 
 
-def embed_chunks(config: IndexConfig, pre_process, chunks):
+def embed_chunks(config: IndexConfig, pre_process, chunks, checkpoint: Checkpoint):
     """
     Generates embeddings for chunks of documents.
 
@@ -150,7 +139,12 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
 
             futures = {
                 executor.submit(
-                    embed_chunk, pre_process, config.embedding_model, doc
+                    checkpoint.load_or_run,
+                    embed_chunk,
+                    hashlib.sha256(doc["content"].encode()).hexdigest(),
+                    pre_process,
+                    config.embedding_model,
+                    doc,
                 ): doc
                 for doc in chunks
             }
@@ -196,9 +190,6 @@ def embed_chunk(pre_process, embedding_model, chunk):
     Returns:
         dict: The chunk dictionary with the added "content_vector" key.
     """
-    if "content_vector" in chunk:
-        return chunk
-
     chunk["content_vector"] = embedding_model.generate_embedding(
         str(pre_process.preprocess(chunk["content"]))
     )
@@ -206,7 +197,9 @@ def embed_chunk(pre_process, embedding_model, chunk):
     return chunk
 
 
-def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
+def generate_titles_from_chunks(
+    config: IndexConfig, pre_process, chunks, checkpoint: Checkpoint
+):
     """
     Generates titles for each chunk of content in parallel using LLM and
     multithreading.
@@ -227,7 +220,14 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
         executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
 
         futures = {
-            executor.submit(process_title, config, pre_process, chunk): chunk
+            executor.submit(
+                checkpoint.load_or_run,
+                process_title,
+                hashlib.sha256(chunk["content"].encode()).hexdigest(),
+                config,
+                pre_process,
+                chunk,
+            ): chunk
             for chunk in chunks
         }
 
@@ -241,7 +241,9 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
                 )
 
 
-def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
+def generate_summaries_from_chunks(
+    config: IndexConfig, pre_process, chunks, checkpoint: Checkpoint
+):
     """
     Generates summaries for each chunk of content in parallel using multithreading.
 
@@ -260,7 +262,14 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
         executor = stack.enter_context(ThreadPoolExecutor())
 
         futures = {
-            executor.submit(process_summary, config, pre_process, chunk): chunk
+            executor.submit(
+                checkpoint.load_or_run,
+                process_summary,
+                hashlib.sha256(chunk["content"].encode()).hexdigest(),
+                config,
+                pre_process,
+                chunk,
+            ): chunk
             for chunk in chunks
         }
 
@@ -289,8 +298,6 @@ def process_title(config: IndexConfig, pre_process, chunk):
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if "title" in chunk and "title_vector" in chunk:
-        return chunk
 
     if config.GENERATE_TITLE:
         title = generate_title(
@@ -326,9 +333,6 @@ def process_summary(config: IndexConfig, pre_process, chunk):
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if "summary" in chunk and "summary_vector" in chunk:
-        return chunk
-
     if config.GENERATE_SUMMARY:
         summary = generate_summary(
             chunk["content"], config.CHAT_MODEL_NAME, config.TEMPERATURE
