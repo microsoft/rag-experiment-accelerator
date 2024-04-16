@@ -37,7 +37,7 @@ def run(
     Returns:
         Index dictionary containing the names of the indexes created.
     """
-    pre_process = Preprocess()
+    pre_process = Preprocess(True)
     index_dict = {"indexes": []}
 
     with TimeTook(

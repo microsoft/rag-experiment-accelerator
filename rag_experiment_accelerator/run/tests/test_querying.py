@@ -304,7 +304,7 @@ class TestQuerying(unittest.TestCase):
         mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]
         mock_search_client = MagicMock(SearchClient)
         index_config = IndexConfig(
-            "prefix", 100, 100, self.mock_embedding_model, 400, 400
+            "prefix", False, 100, 100, self.mock_embedding_model, 400, 400
         )
         mock_config.index_configs.return_value = [index_config]
         # Act

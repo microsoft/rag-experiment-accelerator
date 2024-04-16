@@ -1,5 +1,6 @@
 {
     "name_prefix": "test_prefix",
+    "preprocess": false,
     "sampling": {
         "sample_data": false,
         "sample_percentage": 5,
