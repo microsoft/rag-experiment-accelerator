@@ -11,7 +11,7 @@ class IndexConfig:
     Attributes:
         index_name_prefix (str):
             Prefix to use for the index created in Azure Search.
-        preprocess (boo):
+        preprocess (bool):
             Whether to preprocess the text before indexing.
         chunk_size (int):
             Chunk size for chunking documents.
