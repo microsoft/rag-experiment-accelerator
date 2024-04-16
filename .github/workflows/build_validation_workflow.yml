@@ -11,6 +11,8 @@ on:
     branches:
       - main
       - development
+  merge_group:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/development' && github.ref != 'refs/heads/main' }}
