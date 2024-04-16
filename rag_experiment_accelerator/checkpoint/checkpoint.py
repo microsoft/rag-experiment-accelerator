@@ -36,7 +36,7 @@ class Checkpoint(ABC):
         """
         if self._has_data(id, method):
             logger.info(
-                f"Checkpoint data found for '{method.__name__}' - skipped execution and loaded from checkpoint. ID:'{id}'"
+                f"Checkpoint data found for '{method.__name__}' - skipping execution and loading from checkpoint. ID:'{id}'"
             )
             return self._load(id, method)
         else:
