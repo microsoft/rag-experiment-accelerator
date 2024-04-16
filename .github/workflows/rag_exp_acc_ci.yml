@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - development
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
