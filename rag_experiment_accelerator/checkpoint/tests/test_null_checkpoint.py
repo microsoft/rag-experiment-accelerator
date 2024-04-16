@@ -4,17 +4,25 @@ from rag_experiment_accelerator.checkpoint.null_checkpoint import (
 )
 
 
-class TestNullCheckpoint(unittest.TestCase):
-    def test_save_does_not_do_anything(self):
-        checkpoint = NullCheckpoint()
-        checkpoint.save("test_data")
-        self.assertIsNone(checkpoint.load())
+def dummy(word):
+    return f"hello {word}"
 
-    def test_exists(self):
+
+class TestNullCheckpoint(unittest.TestCase):
+    def test_wrapped_method_is_not_cached(self):
         checkpoint = NullCheckpoint()
-        self.assertEqual(checkpoint.exists(), False)
-        checkpoint.save("test_data")
-        self.assertEqual(checkpoint.exists(), False)
+        data_id = "unique_id"
+        result1 = checkpoint.load_or_run(dummy, data_id, "first run")
+        result2 = checkpoint.load_or_run(dummy, data_id, "second run")
+        self.assertEqual(result1, "hello first run")
+        self.assertEqual(result2, "hello second run")
+
+    def test_no_ids_are_saved(self):
+        checkpoint = NullCheckpoint()
+        data_id = "unique_id"
+        checkpoint.load_or_run(dummy, data_id, "world")
+        ids = checkpoint.get_ids(dummy)
+        self.assertEqual(ids, set())
 
 
 if __name__ == "__main__":

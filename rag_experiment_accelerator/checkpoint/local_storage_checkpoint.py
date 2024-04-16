@@ -17,7 +17,9 @@ class LocalStorageCheckpoint(Checkpoint):
         self.internal_ids: Set[str] = self._get_existing_checkpoint_ids()
 
     def get_ids(self, method) -> Set[str]:
-        return [id.split("___")[1] for id in self.internal_ids if method in id]
+        return set(
+            [id.split("___")[1] for id in self.internal_ids if method.__name__ in id]
+        )
 
     def _has_data(self, id: str, method) -> bool:
         checkpoint_id = self._build_internal_id(id, method)
@@ -27,7 +29,7 @@ class LocalStorageCheckpoint(Checkpoint):
         file_path = self._get_checkpoint_file_path(id, method)
         with open(file_path, "rb") as file:
             data = pickle.load(file)
-            return [data]
+            return data
 
     def _save(self, data: Any, id: str, method):
         file_path = self._get_checkpoint_file_path(id, method)
