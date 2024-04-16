@@ -116,7 +116,7 @@ class Environment:
     @classmethod
     def _from_env(cls) -> "Environment":
         """
-        Initialize the Enivronment using hte environment variables.
+        Initialize the Environment using the environment variables.
         """
         values_dict = {
             name: _get_value_from_env(
@@ -143,7 +143,7 @@ class Environment:
     @classmethod
     def from_env_or_keyvault(cls) -> "Environment":
         """
-        Initialize the Enivronment using the environment variables and keyvault.
+        Initialize the Environment using the environment variables and keyvault.
 
         If USE_KEY_VAULT is set to True, this will use environment variables for those values that are set there.
         For those values that are not set in the environment, it will attempt to use the keyvault.
