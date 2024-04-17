@@ -16,13 +16,9 @@ from rag_experiment_accelerator.llm.prompts import (
     multiple_prompt_instruction,
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.config.environment import Environment
-
-pre_process = Preprocess()
-
 
 logger = get_logger(__name__)
 
