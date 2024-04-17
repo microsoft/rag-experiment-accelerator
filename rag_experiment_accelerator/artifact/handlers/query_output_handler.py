@@ -25,7 +25,9 @@ class QueryOutputHandler(ArtifactHandler):
         """
         super().__init__(data_location=data_location, writer=writer, loader=loader)
 
-    def _get_output_name(self, index_name: str) -> str:
+    def _get_output_name(
+        self, index_name: str, experiment_name: str, job_name: str
+    ) -> str:
         """
         Returns the output name for a given index name.
 
@@ -35,9 +37,11 @@ class QueryOutputHandler(ArtifactHandler):
         Returns:
             str: The output name.
         """
-        return f"eval_output_{index_name}.jsonl"
+        return f"eval_output_{index_name}_{experiment_name}_{job_name}.jsonl"
 
-    def get_output_path(self, index_name: str) -> str:
+    def get_output_path(
+        self, index_name: str, experiment_name: str, job_name: str
+    ) -> str:
         """
         Returns the output path for a given index name.
 
@@ -47,9 +51,11 @@ class QueryOutputHandler(ArtifactHandler):
         Returns:
             str: The output path.
         """
-        return f"{self.data_location}/{self._get_output_name(index_name)}"
+        return f"{self.data_location}/{self._get_output_name(index_name, experiment_name, job_name)}"
 
-    def load(self, index_name: str) -> list[QueryOutput]:
+    def load(
+        self, index_name: str, experiment_name: str, job_name: str
+    ) -> list[QueryOutput]:
         """
         Loads the query outputs for a given index name.
 
@@ -59,7 +65,7 @@ class QueryOutputHandler(ArtifactHandler):
         Returns:
             list[QueryOutput]: The loaded query outputs.
         """
-        output_name = self._get_output_name(index_name)
+        output_name = self._get_output_name(index_name, experiment_name, job_name)
 
         query_outputs = []
         data_load = super().load(output_name)
@@ -72,7 +78,9 @@ class QueryOutputHandler(ArtifactHandler):
 
         return query_outputs
 
-    def handle_archive_by_index(self, index_name: str) -> str | None:
+    def handle_archive_by_index(
+        self, index_name: str, experiment_name: str, job_name: str
+    ) -> str | None:
         """
         Handles archiving of query output for a given index name.
 
@@ -82,10 +90,12 @@ class QueryOutputHandler(ArtifactHandler):
         Returns:
             str | None: The output filename if successful, None otherwise.
         """
-        output_filename = self._get_output_name(index_name)
+        output_filename = self._get_output_name(index_name, experiment_name, job_name)
         return self.handle_archive(output_filename)
 
-    def save(self, data: QueryOutput, index_name: str):
+    def save(
+        self, data: QueryOutput, index_name: str, experiment_name: str, job_name: str
+    ):
         """
         Saves the query output for a given index name.
 
@@ -93,5 +103,5 @@ class QueryOutputHandler(ArtifactHandler):
             data (QueryOutput): The query output to be saved.
             index_name (str): The name of the index.
         """
-        output_filename = self._get_output_name(index_name)
+        output_filename = self._get_output_name(index_name, experiment_name, job_name)
         self.save_dict(data.__dict__, output_filename)

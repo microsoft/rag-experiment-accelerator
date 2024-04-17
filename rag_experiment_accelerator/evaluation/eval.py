@@ -644,6 +644,7 @@ def evaluate_prompts(
     metric_types = config.METRIC_TYPES
     num_search_type = config.SEARCH_VARIANTS
     data_list = []
+
     pd.set_option("display.max_columns", None)
 
     total_precision_scores_by_search_type = {}
@@ -651,11 +652,14 @@ def evaluate_prompts(
     average_precision_for_search_type = {}
 
     handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
+
     response_generator = ResponseGenerator(
         environment, config, config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
     )
 
-    query_data_load = handler.load(index_config.index_name())
+    query_data_load = handler.load(
+        index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+    )
     question_count = query_data_load[0].question_count
 
     with ExitStack() as stack:
@@ -766,7 +770,7 @@ def evaluate_prompts(
         os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv")
     )
     draw_hist_df(sum_df, run_id, client)
-    generate_metrics(config.NAME_PREFIX, run_id, client)
+    generate_metrics(config.INDEX_NAME_PREFIX, run_id, client)
     mlflow.end_run()
 
 

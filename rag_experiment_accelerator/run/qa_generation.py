@@ -9,7 +9,10 @@ from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
 from rag_experiment_accelerator.utils.logging import get_logger
-from rag_experiment_accelerator.sampling.clustering import dataframe_to_chunk_dict
+from rag_experiment_accelerator.sampling.clustering import (
+    dataframe_to_chunk_dict,
+    load_parser,
+)
 from rag_experiment_accelerator.sampling.clustering import cluster
 
 load_dotenv(override=True)
@@ -47,7 +50,8 @@ def run(
                 2000,
                 0,
             )
-            all_docs = cluster(all_docs, config.sampling_output_dir, config)
+            parser = load_parser()
+            all_docs = cluster(all_docs, config.sampling_output_dir, config, parser)
     else:
         all_docs = load_documents(
             environment,

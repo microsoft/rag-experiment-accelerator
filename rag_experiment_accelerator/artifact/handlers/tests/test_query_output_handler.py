@@ -13,30 +13,37 @@ from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 )
 def test_handle_archive_by_index(mock_artifact_handler_handle_archive):
     index_name = "index_name"
+    experiment_name = "experiment_name"
+    job_name = "job_name"
     data_location = "data_location"
     handler = QueryOutputHandler(data_location=data_location)
 
-    handler.handle_archive_by_index(index_name)
+    handler.handle_archive_by_index(index_name, experiment_name, job_name)
 
-    output_filename = handler._get_output_name(index_name)
+    output_filename = handler._get_output_name(index_name, experiment_name, job_name)
     mock_artifact_handler_handle_archive.assert_called_once_with(output_filename)
 
 
 def test_get_output_path():
     index_name = "index_name"
+    experiment_name = "experiment_name"
+    job_name = "job_name"
     dir = "/tmp"
     handler = QueryOutputHandler(dir)
-    dest = handler.get_output_path(index_name)
-    name = handler._get_output_name(index_name)
+    dest = handler.get_output_path(index_name, experiment_name, job_name)
+    name = handler._get_output_name(index_name, experiment_name, job_name)
     assert dest == f"{dir}/{name}"
 
 
 def test__get_output_name():
     index_name = "index_name"
+    experiment_name = "experiment_name"
+    job_name = "job_name"
+
     dir = "/tmp"
     handler = QueryOutputHandler(dir)
-    name = handler._get_output_name(index_name)
-    assert name == f"eval_output_{index_name}.jsonl"
+    name = handler._get_output_name(index_name, experiment_name, job_name)
+    assert name == f"eval_output_{index_name}_{experiment_name}_{job_name}.jsonl"
 
 
 @patch(
@@ -44,6 +51,9 @@ def test__get_output_name():
 )
 def test_save(mock_artifact_handler_save_dict):
     index_name = "index_name"
+    experiment_name = "experiment_name"
+    job_name = "job_name"
+
     test_data = QueryOutput(
         rerank="rerank1",
         rerank_type="rerank_type1",
@@ -61,9 +71,9 @@ def test_save(mock_artifact_handler_save_dict):
     )
 
     handler = QueryOutputHandler(data_location="data_location")
-    handler.save(test_data, index_name)
+    handler.save(test_data, index_name, experiment_name, job_name)
 
-    name = handler._get_output_name(index_name)
+    name = handler._get_output_name(index_name, experiment_name, job_name)
     handler.save_dict.assert_called_once_with(test_data.__dict__, name)
 
 
@@ -89,9 +99,11 @@ def test_load(mock_artifact_handler_load):
 
     mock_artifact_handler_load.return_value = [data.__dict__, data.__dict__]
     index_name = "index_name"
+    experiment_name = "experiment_name"
+    job_name = "job_name"
 
     handler = QueryOutputHandler(data_location="data_location")
-    loaded_data = handler.load(index_name)
+    loaded_data = handler.load(index_name, experiment_name, job_name)
 
     assert len(loaded_data) == 2
     for d in loaded_data:

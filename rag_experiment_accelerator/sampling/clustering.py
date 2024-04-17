@@ -2,17 +2,14 @@ import warnings
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import string
 import plotly.express as px
 import pandas as pd
 from tqdm import tqdm
-from spacy.lang.en.stop_words import STOP_WORDS
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from umap import UMAP
 from scipy.spatial.distance import cdist
 from rag_experiment_accelerator.utils.logging import get_logger
-from dotenv import load_dotenv
 
 matplotlib.use("Agg")
 plt.style.use("ggplot")
@@ -20,26 +17,21 @@ warnings.filterwarnings("ignore")
 logger = get_logger(__name__)
 
 
-def init_clusting():
-    """
-    Initialize the clustering process.
+def load_parser():
+    from spacy import load
 
-    Returns:
-        None
+    try:
+        parser = load("en_core_web_lg", disable=["ner"])
+    except OSError:
+        logger.info("Downloading spacy language model: en_core_web_lg")
+        from spacy.cli import download
 
-    """
-    load_dotenv(override=True)
-    import spacy
-    from spacy.cli import download
+        download("en_core_web_lg")
+        parser = load("en_core_web_lg", disable=["ner"])
 
-    download("en_core_web_lg")
-    parser = spacy.load("en_core_web_lg", disable=["ner"])
     parser.max_length = 7000000
 
-    punctuations = string.punctuation
-    stop_words = list(STOP_WORDS)
-
-    return parser, punctuations, stop_words
+    return parser
 
 
 def spacy_tokenizer(sentence, parser):
@@ -254,7 +246,7 @@ def cluster(all_chunks, config, parser):
     logger.info(f"Sampling - Original Document chunk length {len(all_chunks)}")
     df = chunk_dict_to_dataframe(all_chunks)
 
-    # Tokenise and remove punctuation and stopwords
+    # Tokenise and remove punctuation and stop words
     tqdm.pandas()
     df["processed_text"] = df["text"].progress_apply(
         lambda text: spacy_tokenizer(text, parser)

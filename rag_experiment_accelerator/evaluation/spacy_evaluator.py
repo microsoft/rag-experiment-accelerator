@@ -1,4 +1,4 @@
-import spacy
+from spacy import load
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -22,17 +22,15 @@ class SpacyEvaluator:
         is_relevant(doc1: str, doc2: str) -> bool: Determines whether two documents are relevant based on their similarity score.
     """
 
-    def __init__(
-        self, similarity_threshold=0.8, model="en_core_web_lg"
-    ) -> None:
+    def __init__(self, similarity_threshold=0.8, model="en_core_web_lg") -> None:
         try:
-            self.nlp = spacy.load(model)
+            self.nlp = load(model)
         except OSError:
             logger.info(f"Downloading spacy language model: {model}")
             from spacy.cli import download
 
             download(model)
-            self.nlp = spacy.load(model)
+            self.nlp = load(model)
         self.similarity_threshold = similarity_threshold
 
     def similarity(self, doc1: str, doc2: str):
