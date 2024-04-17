@@ -197,7 +197,17 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 
 ```json
 {
-    "index_name_prefix": "Search index name prefix used for tracking and comparing jobs",
+    "index_name_prefix": "Search index name prefix",
+    "experiment_name": "If provided, this will be the experiment name in Azure ML and it will group all job run under the same experiment, otherwise (if left empty) index_name_prefix will be used and there may be more than one experiment",
+    "job_name": "If provided, all jobs runs in Azure ML will be named with this property value plus timestamp, otherwise (if left empty) each job with be named only with timestamp",
+    "job_description": "You may provide a description for the current job run which describes in words what you are about to experiment with",
+    "sampling": {
+        "sample_data": "Set to true to enable sampling",
+        "sample_percentage": "Percentage of the document corpus to sample",
+        "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+        "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
+        "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30",
+    },
     "chunking": {
         "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
         "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]"
