@@ -6,7 +6,7 @@ from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 
 
 class LocalStorageCheckpoint(Checkpoint):
-    def __init__(self, checkpoint_name: str, directory: str):
+    def __init__(self, checkpoint_name: str, directory: str = "."):
         self.checkpoint_location = f"{directory}/checkpoints/{checkpoint_name}"
         os.makedirs(self.checkpoint_location, exist_ok=True)
         self.internal_ids: Set[str] = self._get_existing_checkpoint_ids()

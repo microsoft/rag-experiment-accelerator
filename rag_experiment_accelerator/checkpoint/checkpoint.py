@@ -7,15 +7,20 @@ logger = get_logger(__name__)
 
 class Checkpoint(ABC):
     """
-    A Checkpoint object is used to recover and continue the execution of previous executions.
-    A Checkpoint is identified by the checkpoint's name and the config (name) that it was created with.
-
-    A checkpoint object is used to wrap methods, so when the method is called with an ID that was called before,
-    instead of executing the method, the checkpoint will return the result of the previous execution.
+    A Checkpoint is used to cache the results of method calls, enabling the reuse of these results if the same method is called again with the same ID.
+    When a method wrapped by a Checkpoint object is called with an ID that was used before,
+    the Checkpoint returns the result of the previous execution instead of executing the method again.
     """
 
     @abstractmethod
     def __init__(self, checkpoint_name: str, directory: str):
+        """
+        Initializes the checkpoint object.
+
+        Parameters:
+        - checkpoint_name (str): The name of the checkpoint, the checkpoint is uniquely identified by its name.
+        - directory (str): The directory where the '/checkpoints' directory will be stored.
+        """
         pass
 
     def load_or_run(self, method, id: str, *args, **kwargs) -> Any:
