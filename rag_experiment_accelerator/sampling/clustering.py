@@ -18,11 +18,17 @@ logger = get_logger(__name__)
 
 
 def load_parser():
-    import spacy
-    from spacy.cli import download
+    from spacy import load
 
-    download("en_core_web_lg")
-    parser = spacy.load("en_core_web_lg", disable=["ner"])
+    try:
+        parser = load("en_core_web_lg", disable=["ner"])
+    except OSError:
+        logger.info("Downloading spacy language model: en_core_web_lg")
+        from spacy.cli import download
+
+        download("en_core_web_lg")
+        parser = load("en_core_web_lg", disable=["ner"])
+
     parser.max_length = 7000000
 
     return parser

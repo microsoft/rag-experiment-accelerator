@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e . -r requirements.txt -r dev-requirements.txt
 
-      - name: download spacy model
+      - name: Download spacy model
         shell: bash
         run: |
           python -m spacy download en_core_web_sm
