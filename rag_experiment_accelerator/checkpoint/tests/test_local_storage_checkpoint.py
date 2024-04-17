@@ -1,6 +1,5 @@
 import unittest
 import os
-from unittest.mock import MagicMock
 from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
     LocalStorageCheckpoint,
 )
@@ -14,18 +13,15 @@ def dummy(word):
 
 class TestLocalStorageCheckpoint(unittest.TestCase):
     def setUp(self):
-        temp_dir = tempfile.mkdtemp()
-        self.checkpoints_dir = f"{temp_dir}/checkpoints"
-        self.config = MagicMock()
-        self.config.artifacts_dir = temp_dir
+        self.temp_dir = tempfile.mkdtemp()
 
     def tearDown(self):
-        if os.path.exists(self.checkpoints_dir):
-            shutil.rmtree(self.checkpoints_dir)
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
 
     def test_wrapped_method_is_cached(self):
         checkpoint = LocalStorageCheckpoint(
-            "test_save_load", "test_config", self.config
+            checkpoint_name="test_save_load", directory=self.temp_dir
         )
         data_id = "unique_id"
         result1 = checkpoint.load_or_run(dummy, data_id, "first run")
@@ -34,7 +30,9 @@ class TestLocalStorageCheckpoint(unittest.TestCase):
         self.assertEqual(result2, "hello first run")
 
     def test_ids_are_saved(self):
-        checkpoint = LocalStorageCheckpoint("test_exists", "test_config", self.config)
+        checkpoint = LocalStorageCheckpoint(
+            checkpoint_name="test_exists", directory=self.temp_dir
+        )
         checkpoint.load_or_run(dummy, "id1", "one")
         checkpoint.load_or_run(dummy, "id1", "two")
         checkpoint.load_or_run(dummy, "id2", "three")

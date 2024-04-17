@@ -25,9 +25,8 @@ if __name__ == "__main__":
     for index_config in config.index_configs():
         checkpoint = (
             LocalStorageCheckpoint(
-                checkpoint_name="index",
-                config_name=index_config.index_name(),
-                config=config,
+                checkpoint_name=f"index_{index_config.index_name()}",
+                directory=config.artifacts_dir,
             )
             if config.USE_CHECKPOINTS
             else NullCheckpoint()

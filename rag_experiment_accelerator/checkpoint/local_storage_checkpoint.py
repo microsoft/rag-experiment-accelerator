@@ -3,16 +3,11 @@ import pickle
 
 from typing import Any, Dict, List, Set, Tuple
 from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
-from rag_experiment_accelerator.config.config import Config
 
 
 class LocalStorageCheckpoint(Checkpoint):
-    def __init__(self, checkpoint_name: str, config_name: str, config: Config):
-        self.config = config
-        self.checkpoint_name = f"{checkpoint_name}_{config_name}"
-        self.checkpoint_location = (
-            f"{self.config.artifacts_dir}/checkpoints/{self.checkpoint_name}"
-        )
+    def __init__(self, checkpoint_name: str, directory: str):
+        self.checkpoint_location = f"{directory}/checkpoints/{checkpoint_name}"
         os.makedirs(self.checkpoint_location, exist_ok=True)
         self.internal_ids: Set[str] = self._get_existing_checkpoint_ids()
 

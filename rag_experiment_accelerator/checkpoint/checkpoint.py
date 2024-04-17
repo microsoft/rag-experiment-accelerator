@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Any, Set
-from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -16,7 +15,7 @@ class Checkpoint(ABC):
     """
 
     @abstractmethod
-    def __init__(self, checkpoint_name: str, config_name: str, config: Config):
+    def __init__(self, checkpoint_name: str, directory: str):
         pass
 
     def load_or_run(self, method, id: str, *args, **kwargs) -> Any:
