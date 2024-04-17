@@ -11,6 +11,39 @@ param resourceToken string = toLower(uniqueString(subscription().id, environment
 param location string
 
 @description('Location for all resources. https://aka.ms/semanticsearchavailability for list of available regions.')
+@allowed([
+  'australiaeast'
+  'australiasoutheast'
+  'brazilsouth'
+  'canadacentral'
+  'canadaeast'
+  'centralindia'
+  'centralus'
+  'centraluseuap'
+  'eastasia'
+  'eastus'
+  'eastus2'
+  'eastus2euap'
+  'eastusstg'
+  'francecentral'
+  'japaneast'
+  'japanwest'
+  'koreacentral'
+  'koreasouth'
+  'northcentralus'
+  'northeurope'
+  'qatarcentral'
+  'southcentralus'
+  'southeastasia'
+  'switzerlandnorth'
+  'uksouth'
+  'ukwest'
+  'westcentralus'
+  'westeurope'
+  'westus'
+  'westus2'
+  'westus3'
+])
 param azureAISearchLocation string = location
 
 @description('Azure AI Search Resource')
