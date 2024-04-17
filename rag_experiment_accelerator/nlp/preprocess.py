@@ -1,6 +1,6 @@
 import re
 from string import punctuation
-
+from typing import Union
 import spacy
 
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -9,17 +9,44 @@ logger = get_logger(__name__)
 
 
 class Preprocess:
-    def __init__(self):
-        try:
-            self.nlp = spacy.load("en_core_web_lg")
-        except OSError:
-            logger.info(
-                f'Downloading spacy language model: {"en_core_web_lg"}'
-            )
-            from spacy.cli import download
+    __enabled: bool
 
-            download("en_core_web_lg")
-            self.nlp = spacy.load("en_core_web_lg")
+    def __init__(self, enabled=False):
+        self.__enabled = enabled
+        if self.__enabled:
+            try:
+                self.nlp = spacy.load("en_core_web_lg")
+            except OSError:
+                logger.info(f'Downloading spacy language model: {"en_core_web_lg"}')
+                from spacy.cli import download
+
+                download("en_core_web_lg")
+                self.nlp = spacy.load("en_core_web_lg")
+
+    def preprocess(self, text) -> Union[str, list[str]]:
+        """
+        Preprocess the input text by converting it to lowercase, removing punctuation and tags, removing stop words, and tokenizing the words.
+
+        Args:
+            text (str): The input text to preprocess (if enabled).
+
+        Returns:
+            Union[str, list[str]]:  If enabled - list of preprocessed words otherwise the original text.
+        """
+        if self.__enabled:
+            lower_text = self.to_lower(text).strip()
+            sentence_tokens = self.sentence_tokenize(lower_text)
+            word_list = []
+            for each_sent in sentence_tokens:
+                clean_text = self.remove_punctuation(each_sent)
+                clean_text = self.remove_tags(clean_text)
+                clean_text = self.remove_stop_words(clean_text)
+                word_tokens = self.word_tokenize(clean_text)
+                for i in word_tokens:
+                    word_list.append(i)
+            return word_list
+        else:
+            return text
 
     def to_lower(self, text):
         """
@@ -33,7 +60,19 @@ class Preprocess:
         """
         return text.lower()
 
-    def remove_punct(self, text):
+    def remove_spaces(self, text):
+        """
+        Removes leading and trailing spaces from a string.
+
+        Args:
+            text (str): The string to remove spaces from.
+
+        Returns:
+            str: The input string with leading and trailing spaces removed.
+        """
+        return text.strip()
+
+    def remove_punctuation(self, text):
         """
         Removes all punctuation from the given text and returns the result.
 
@@ -45,7 +84,7 @@ class Preprocess:
         """
         return "".join(c for c in text if c not in punctuation)
 
-    def remove_Tags(self, text):
+    def remove_tags(self, text):
         """
         Removes HTML tags from the given text.
 
@@ -60,7 +99,7 @@ class Preprocess:
 
     def sentence_tokenize(self, text):
         """
-        Tokenizes a given text into sentences using spacy.
+        Tokenize a given text into sentences using spacy.
 
         Args:
             text (str): The text to be tokenized.
@@ -73,7 +112,7 @@ class Preprocess:
 
     def word_tokenize(self, text):
         """
-        Tokenizes the input text into individual words.
+        Tokenize the input text into individual words.
 
         Args:
             text (str): The text to tokenize.
@@ -83,15 +122,15 @@ class Preprocess:
         """
         return [w.text for w in self.nlp(text)]
 
-    def remove_stopwords(self, sentence):
+    def remove_stop_words(self, sentence):
         """
-        Removes stopwords from a given sentence.
+        Removes stop words from a given sentence.
 
         Args:
-            sentence (str): The sentence to remove stopwords from.
+            sentence (str): The sentence to remove stop words from.
 
         Returns:
-            str: The sentence with stopwords removed.
+            str: The sentence with stop words removed.
         """
         doc = self.nlp(sentence)
         filtered_tokens = [token for token in doc if not token.is_stop]
@@ -110,25 +149,3 @@ class Preprocess:
         """
         doc = self.nlp(text)
         return " ".join([token.lemma_ for token in doc])
-
-    def preprocess(self, text):
-        """
-        Preprocesses the input text by converting it to lowercase, removing punctuation and tags, removing stopwords, and tokenizing the words.
-
-        Args:
-            text (str): The input text to preprocess.
-
-        Returns:
-            list: A list of preprocessed words.
-        """
-        lower_text = self.to_lower(text).strip()
-        sentence_tokens = self.sentence_tokenize(lower_text)
-        word_list = []
-        for each_sent in sentence_tokens:
-            clean_text = self.remove_punct(each_sent)
-            clean_text = self.remove_Tags(clean_text)
-            clean_text = self.remove_stopwords(clean_text)
-            word_tokens = self.word_tokenize(clean_text)
-            for i in word_tokens:
-                word_list.append(i)
-        return word_list

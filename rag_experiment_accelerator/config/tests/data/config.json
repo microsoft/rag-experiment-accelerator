@@ -3,6 +3,8 @@
     "experiment_name": "experiment_1",
     "job_name": "baseline",
     "job_description": "",
+    "name_prefix": "test_prefix",
+    "preprocess": false,
     "sampling": {
         "sample_data": false,
         "sample_percentage": 5,

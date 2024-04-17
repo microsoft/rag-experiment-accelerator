@@ -5,7 +5,8 @@
     "dictionaries": [],
     "words": [
         "azuretools",
-        "keyvault"
+        "keyvault",
+        "spacy"
     ],
     "ignoreWords": [
         "BLAS",

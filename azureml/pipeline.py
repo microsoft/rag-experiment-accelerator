@@ -137,13 +137,13 @@ def start_pipeline(
         description="Evaluate experiment",
         inputs={
             "index_name": Input(type="uri_file"),
-            "config": Input(type="uri_file"),
+            "config_path": Input(type="uri_file"),
             "query_result": Input(type="uri_folder"),
         },
         outputs=dict(eval_result=Output(type="uri_folder", mode="rw_mount")),
         code="./",
         command="""python ./azureml/eval.py \
-                --config_path ${{inputs.config}} \
+                --config_path ${{inputs.config_path}} \
                 --index_name_path ${{inputs.index_name}} \
                 --query_result_dir ${{inputs.query_result}} \
                 --eval_result_dir ${{outputs.eval_result}} """
@@ -173,7 +173,7 @@ def start_pipeline(
 
         eval_job = eval_pipeline_component(
             index_name=index_job.outputs.index_name,
-            config=config_path_input,
+            config_path=config_path_input,
             query_result=query_job.outputs.query_result,
         )
 
