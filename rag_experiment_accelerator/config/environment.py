@@ -37,7 +37,8 @@ def _get_value_from_env(var_name: str, is_optional: bool = False) -> Optional[st
 
 def init_keyvault(azure_key_vault_endpoint: str) -> SecretClient:
     """
-    Initialises keyvault client using the provided endpoint and default credentials.
+    Initializes keyvault client using the provided endpoint and default
+    credentials.
     """
     return SecretClient(
         azure_key_vault_endpoint,
@@ -86,6 +87,7 @@ class Environment:
     aml_compute_instances_number: Optional[str]
     azure_search_service_endpoint: str
     azure_search_admin_key: str
+    azure_search_use_semantic_search: str
     azure_language_service_endpoint: Optional[str]
     azure_language_service_key: Optional[str]
     azure_document_intelligence_endpoint: Optional[str]
@@ -103,13 +105,15 @@ class Environment:
     def _is_field_optional(cls, field_name: str) -> bool:
         """
         Returns whether a field is optional based on it's type
-        Fields with type Optional[str] are optional, fields with type str are required
+        Fields with type Optional[str] are optional, fields with type str are
+        required
         """
         return vars(cls)["__dataclass_fields__"][field_name].type == Optional[str]
 
     def fields(self) -> list[Tuple[str, str]]:
         """
-        Returns a list of tuples containing the field name and value of this class instance
+        Returns a list of tuples containing the field name and value of this
+        class instance
         """
         return list(vars(self).items())
 
@@ -143,22 +147,29 @@ class Environment:
     @classmethod
     def from_env_or_keyvault(cls) -> "Environment":
         """
-        Initialize the Environment using the environment variables and keyvault.
+        Initialize the Environment using the environment variables and
+        keyvault.
 
-        If USE_KEY_VAULT is set to True, this will use environment variables for those values that are set there.
-        For those values that are not set in the environment, it will attempt to use the keyvault.
+        If USE_KEY_VAULT is set to True, this will use environment variables
+        for those values that are set there.
+        For those values that are not set in the environment, it will attempt
+        to use the keyvault.
 
-        If USE_KEY_VAULT is not set to True, this will use the environment variables only.
+        If USE_KEY_VAULT is not set to True, this will use the environment
+        variables only.
 
-        Note that this method won't work from within AzureML compute, in that case you need to use from_keyvault().
+        Note that this method won't work from within AzureML compute, in that
+        case you need to use from_keyvault().
 
         Raises:
-            ValueError: If a required value is not found in the environment or keyvault.
+            ValueError: If a required value is not found in the environment or
+            keyvault.
         """
         use_key_vault = _get_value_from_env("USE_KEY_VAULT", is_optional=True)
 
         if use_key_vault and use_key_vault.lower() == "true":
-            # Most values will be found in env, but secrets will be found in keyvault
+            # Most values will be found in env, but secrets will be found in
+            # keyvault
             azure_key_vault_endpoint = _get_value_from_env(
                 "AZURE_KEY_VAULT_ENDPOINT", is_optional=False
             )
@@ -187,11 +198,13 @@ class Environment:
 
     def to_keyvault(self, azure_key_vault_endpoint: str = None) -> None:
         """
-        Serialises the environment to keyvault.
-        Note that for the optional fields that are not set, this will create the value 'None' in the keyvault.
+        Serializes the environment to keyvault.
+        Note that for the optional fields that are not set, this will create
+        the value 'None' in the keyvault.
 
         Raises:
-            ValueError if the keyvault endpoint is not provided and not set in the environment.
+            ValueError if the keyvault endpoint is not provided and not set in
+            the environment.
         """
         if not azure_key_vault_endpoint:
             if not self.azure_key_vault_endpoint:

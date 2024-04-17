@@ -10,6 +10,9 @@ param resourceToken string = toLower(uniqueString(subscription().id, environment
 @description('Location for all resources.')
 param location string
 
+@description('Whether to enable semantic search. If enabled, the service will use the semantic search capability to improve the relevance of search results.')
+param azureSearchUseSemanticSearch bool = true
+
 @description('Location for all resources. https://aka.ms/semanticsearchavailability for list of available regions.')
 @allowed([
   'australiaeast'
@@ -47,7 +50,7 @@ param location string
 param azureAISearchLocation string = location
 
 @description('Azure AI Search Resource')
-param azureAISearchName string = '${environmentName}-search-${resourceToken}'
+param azureAISearchName string = 'search-${resourceToken}'
 
 @description('The SKU of the search service you want to create. E.g. free or standard')
 @allowed([
@@ -60,7 +63,7 @@ param azureAISearchName string = '${environmentName}-search-${resourceToken}'
 param azureSearchSku string = 'standard'
 
 @description('Name of Azure OpenAI Resource')
-param azureOpenAIResourceName string = '${environmentName}-openai-${resourceToken}'
+param azureOpenAIResourceName string = 'openai-${resourceToken}'
 
 @description('Name of Azure OpenAI Resource SKU')
 param azureOpenAISkuName string = 'S0'
@@ -75,13 +78,13 @@ param azureOpenAIModelName string = 'gpt-35-turbo'
 param azureOpenAIModelVersion string = '0613'
 
 @description('Name of Azure Application Insights Resource')
-param applicationInsightsName string = '${environmentName}-appinsights-${resourceToken}'
+param applicationInsightsName string = 'appinsights-${resourceToken}'
 
 @description('Name of Storage Account')
 param storageAccountName string = 'str${resourceToken}'
 
 @description('Name of Azure Machine Learning Workspace')
-param machineLearningName string = '${environmentName}-aml-${resourceToken}'
+param machineLearningName string = 'aml-${resourceToken}'
 
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
@@ -118,7 +121,7 @@ module search 'shared/search-services.bicep' = {
     sku: {
       name: azureSearchSku
     }
-    semanticSearch: 'free'
+    semanticSearch: azureSearchUseSemanticSearch ? 'free' : 'disabled'
     tags: tags
   }
 }
@@ -198,6 +201,7 @@ module storekeys './shared/storekeys.bicep' = {
 output USE_KEY_VAULT string = 'true'
 output AZURE_KEY_VAULT_ENDPOINT string = keyvault.outputs.endpoint
 output AZURE_SEARCH_SERVICE_ENDPOINT string = search.outputs.endpoint
+output AZURE_SEARCH_USE_SEMANTIC_SEARCH bool = azureSearchUseSemanticSearch
 output OPENAI_API_TYPE string = 'azure'
 output OPENAI_ENDPOINT string = openai.outputs.endpoint
 output OPENAI_API_VERSION string = '2023-03-15-preview'
