@@ -45,7 +45,7 @@ class Checkpoint(ABC):
             return method_result
 
     @abstractmethod
-    def get_ids(self, method) -> Set[str]:
+    def get_saved_ids(self, method) -> Set[str]:
         """
         Returns a set of the IDs for which there are checkpoints available for the given method.
         """

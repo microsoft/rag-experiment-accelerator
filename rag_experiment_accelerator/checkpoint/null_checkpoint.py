@@ -6,7 +6,7 @@ class NullCheckpoint(Checkpoint):
     def __init__(self):
         pass
 
-    def get_ids(self, method) -> Set[str]:
+    def get_saved_ids(self, method) -> Set[str]:
         return set()
 
     def _has_data(self, id: str, method) -> bool:

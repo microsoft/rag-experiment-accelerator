@@ -21,7 +21,7 @@ class TestNullCheckpoint(unittest.TestCase):
         checkpoint = NullCheckpoint()
         data_id = "unique_id"
         checkpoint.load_or_run(dummy, data_id, "world")
-        ids = checkpoint.get_ids(dummy)
+        ids = checkpoint.get_saved_ids(dummy)
         self.assertEqual(ids, set())
 
 

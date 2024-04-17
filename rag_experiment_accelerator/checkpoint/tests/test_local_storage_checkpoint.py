@@ -41,7 +41,7 @@ class TestLocalStorageCheckpoint(unittest.TestCase):
         checkpoint.load_or_run(dummy, "id2", "four")
         checkpoint.load_or_run(dummy, "id3", "five")
 
-        checkpoint_ids = checkpoint.get_ids(dummy)
+        checkpoint_ids = checkpoint.get_saved_ids(dummy)
         self.assertEqual(checkpoint_ids, set(["id1", "id2", "id3"]))
 
 

@@ -16,7 +16,7 @@ class LocalStorageCheckpoint(Checkpoint):
         os.makedirs(self.checkpoint_location, exist_ok=True)
         self.internal_ids: Set[str] = self._get_existing_checkpoint_ids()
 
-    def get_ids(self, method) -> Set[str]:
+    def get_saved_ids(self, method) -> Set[str]:
         return set(
             [id.split("___")[1] for id in self.internal_ids if method.__name__ in id]
         )
