@@ -190,7 +190,7 @@ class Config:
                     for ef_construction in self.EF_CONSTRUCTIONS:
                         for ef_search in self.EF_SEARCHES:
                             yield IndexConfig(
-                                index_name_prefix=self.NAME_PREFIX,
+                                index_name_prefix=self.INDEX_NAME_PREFIX,
                                 preprocess=self.PREPROCESS,
                                 chunk_size=chunk_size,
                                 overlap=overlap,
