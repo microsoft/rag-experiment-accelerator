@@ -10,7 +10,6 @@ from sklearn.cluster import KMeans
 from umap import UMAP
 from scipy.spatial.distance import cdist
 from rag_experiment_accelerator.utils.logging import get_logger
-from dotenv import load_dotenv
 
 matplotlib.use("Agg")
 plt.style.use("ggplot")
@@ -19,7 +18,6 @@ logger = get_logger(__name__)
 
 
 def load_parser():
-    load_dotenv(override=True)
     import spacy
     from spacy.cli import download
 
