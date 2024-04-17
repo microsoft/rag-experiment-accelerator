@@ -33,6 +33,7 @@ def test_run(
 
     mock_config = Config()
     mock_config.artifacts_dir = "artifacts_dir"
+    mock_config.PREPROCESS = False
     mock_config.CHUNK_SIZES = [10, 20]
     mock_config.OVERLAP_SIZES = [5, 10]
 

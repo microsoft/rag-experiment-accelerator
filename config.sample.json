@@ -1,5 +1,6 @@
 {
     "name_prefix": "surface",
+    "preprocess": false,
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200],

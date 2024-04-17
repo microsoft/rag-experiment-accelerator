@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import string
-import en_core_web_lg
 import plotly.express as px
 import pandas as pd
 from tqdm import tqdm
@@ -18,16 +17,32 @@ from dotenv import load_dotenv
 matplotlib.use("Agg")
 plt.style.use("ggplot")
 warnings.filterwarnings("ignore")
-load_dotenv(override=True)
 logger = get_logger(__name__)
 
-punctuations = string.punctuation
-stopwords = list(STOP_WORDS)
-parser = en_core_web_lg.load(disable=["ner"])
-parser.max_length = 7000000
+
+def init_clusting():
+    """
+    Initialize the clustering process.
+
+    Returns:
+        None
+
+    """
+    load_dotenv(override=True)
+    import spacy
+    from spacy.cli import download
+
+    download("en_core_web_lg")
+    parser = spacy.load("en_core_web_lg", disable=["ner"])
+    parser.max_length = 7000000
+
+    punctuations = string.punctuation
+    stop_words = list(STOP_WORDS)
+
+    return parser, punctuations, stop_words
 
 
-def spacy_tokenizer(sentence):
+def spacy_tokenizer(sentence, parser):
     """
     Tokenizes a sentence using the Spacy library.
 
@@ -224,7 +239,7 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     return x, y, text, processed_text, chunk, prediction, prediction_values
 
 
-def cluster(all_chunks, config):
+def cluster(all_chunks, config, parser):
     """
     Clusters the given chunks of documents using TF-IDF and K-means clustering.
 
@@ -241,7 +256,9 @@ def cluster(all_chunks, config):
 
     # Tokenise and remove punctuation and stopwords
     tqdm.pandas()
-    df["processed_text"] = df["text"].progress_apply(spacy_tokenizer)
+    df["processed_text"] = df["text"].progress_apply(
+        lambda text: spacy_tokenizer(text, parser)
+    )
 
     # Run TF-IDF
     logger.info("Run TF-IDF")

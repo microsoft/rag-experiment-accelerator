@@ -30,6 +30,7 @@ class Config:
             Defaults to "./data".
 
     Attributes:
+        PREPROCESS (bool): Whether or not to preprocess the text (converting it to lowercase, removing punctuation and tags, removing stop words, and tokenizing the words).
         CHUNK_SIZES (list[int]): A list of integers representing the chunk sizes for chunking documents.
         OVERLAP_SIZES (list[int]): A list of integers representing the overlap sizes for chunking documents.
         GENERATE_TITLE (bool): Whether or not to generate title for chunk content. Default is False.
@@ -52,13 +53,13 @@ class Config:
         TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
         RERANK (bool): Whether or not to perform reranking.
         SEARCH_RELEVANCY_THRESHOLD (float): The threshold for search result relevancy.
-        DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded"
+        DATA_FORMATS (Union[list[str], str]): Allowed formats for input data, if "all", then all formats will be loaded.
         METRIC_TYPES (list[str]): A list of metric types to use.
-        EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script
-        embedding_models: The embedding models used to generate embeddings
+        EVAL_DATA_JSONL_FILE_PATH (str): File path for eval data jsonl file which is input for 03_querying script.
+        embedding_models: The embedding models used to generate embeddings.
         MAX_WORKER_THREADS (int): Maximum number of worker threads.
-        SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution,
-        SAMPLE_PERCENTAGE (int): Percentage of dataset
+        SAMPLE_DATA (bool): Sample the dataset in accordance to the content and structure distribution.
+        SAMPLE_PERCENTAGE (int): Percentage of dataset.
         CHAIN_OF_THOUGHTS (bool): Whether chain of thoughts is enabled or not. if enabled LLM will check if it's possible to split complex query to multiple queries and do so. else it will leave the original query as is. Default is False.
         HYDE (str): Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM. Possible values are "disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer". Default is 'disabled'.
         QUERY_EXPANSION (bool): Whether or not to perform query expansion and generate up to five related questions using LLM (depends on similairy score) and use those to retrieve documents. Default is False.
@@ -76,6 +77,7 @@ class Config:
             config_json = json.load(json_file)
 
         self._initialize_paths(config_json, config_path, data_dir)
+        self.PREPROCESS = config_json.get("preprocess", False)
         chunking_config = config_json["chunking"]
         self.CHUNK_SIZES = chunking_config["chunk_size"]
         self.OVERLAP_SIZES = chunking_config["overlap_size"]
@@ -185,6 +187,7 @@ class Config:
                         for ef_search in self.EF_SEARCHES:
                             yield IndexConfig(
                                 index_name_prefix=self.NAME_PREFIX,
+                                preprocess=self.PREPROCESS,
                                 chunk_size=chunk_size,
                                 overlap=overlap,
                                 embedding_model=embedding_model,
