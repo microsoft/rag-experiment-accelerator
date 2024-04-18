@@ -305,8 +305,8 @@ def search_for_match_pure_vector_multi(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for matching documents in the given client using the provided query and retrieves the
-    specified number of documents.
+    Searches for matching documents in the given client using the provided query and retrieves the specified number
+    of documents.
 
     Args:
         client: The client to search in.
