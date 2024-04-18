@@ -123,9 +123,8 @@ def search_for_match_Hybrid_multi(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for matching documents in Azure AI Search using a hybrid approach
-    that combines multiple vectors (contentVector, title, and summary) to
-    retrieve the most relevant
+    Searches for matching documents in Azure AI Search using a hybrid approach that combines
+    multiple vectors (contentVector, title, and summary) to retrieve the most relevant
     results.
 
     Args:
@@ -262,8 +261,7 @@ def search_for_match_pure_vector(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for documents in the client's database that match the given query
-    using pure vector search.
+    Searches for documents in the client's database that match the given query using pure vector search.
 
     Args:
         client (Client): The client object used to connect to the database.
@@ -272,8 +270,7 @@ def search_for_match_pure_vector(
         retrieve_num_of_documents (int): The number of documents to retrieve.
 
     Returns:
-        A list of dictionaries containing the search results, where each
-        dictionary represents a single document and
+        A list of dictionaries containing the search results, where each dictionary represents a single document and
         contains the following keys: 'title', 'content', and 'summary'.
     """
     # function body here
@@ -308,13 +305,12 @@ def search_for_match_pure_vector_multi(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for matching documents in the given client using the provided
-    query and retrieves the specified number of documents.
+    Searches for matching documents in the given client using the provided query and retrieves the
+    specified number of documents.
 
     Args:
         client: The client to search in.
-        embedding_model (EmbeddingModel): The model used to generate the
-        embeddings.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
 
@@ -367,8 +363,7 @@ def search_for_match_pure_vector_cross(
 
     Args:
         client: An instance of the search client.
-        embedding_model (EmbeddingModel): The model used to generate the
-        embeddings.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query: The query to search for.
         retrieve_num_of_documents: The number of documents to retrieve.
 

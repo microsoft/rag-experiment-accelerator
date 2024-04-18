@@ -38,10 +38,7 @@ class Config:
         OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
-        INDEX_NAME_PREFIX (str): A prefix to use for the names of saved models.
-        EXPERIMENT_NAME (str): The name of the experiment in Azure ML (optional, if not set INDEX_NAME_PREFIX will be used).
-        JOB_NAME (str): The name of the job in Azure ML (optional, if not set EXPERIMENT_NAME and current datetime will be used).
-        JOB_DESCRIPTION (str): The description of the job in Azure ML (optional).
+        NAME_PREFIX (str): A prefix to use for the names of saved models.
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
         AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.

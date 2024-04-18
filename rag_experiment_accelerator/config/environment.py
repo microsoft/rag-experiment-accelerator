@@ -154,8 +154,7 @@ class Environment:
         Note that this method won't work from within AzureML compute, in that case you need to use from_keyvault().
 
         Raises:
-            ValueError: If a required value is not found in the environment or
-            keyvault.
+            ValueError: If a required value is not found in the environment or keyvault.
         """
         use_key_vault = _get_value_from_env("USE_KEY_VAULT", is_optional=True)
 
@@ -190,12 +189,10 @@ class Environment:
     def to_keyvault(self, azure_key_vault_endpoint: str = None) -> None:
         """
         Serializes the environment to keyvault.
-        Note that for the optional fields that are not set, this will create
-        the value 'None' in the keyvault.
+        Note that for the optional fields that are not set, this will create the value 'None' in the keyvault.
 
         Raises:
-            ValueError if the keyvault endpoint is not provided and not set in
-            the environment.
+            ValueError if the keyvault endpoint is not provided and not set in the environment.
         """
         if not azure_key_vault_endpoint:
             if not self.azure_key_vault_endpoint:
