@@ -6,6 +6,10 @@ from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 
 
 class LocalStorageCheckpoint(Checkpoint):
+    """
+    A checkpoint implementation that stores the data in the local file system.
+    """
+
     def __init__(self, checkpoint_name: str, directory: str = "."):
         self.checkpoint_location = f"{directory}/checkpoints/{checkpoint_name}"
         os.makedirs(self.checkpoint_location, exist_ok=True)

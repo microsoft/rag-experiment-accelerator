@@ -3,6 +3,10 @@ from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 
 
 class NullCheckpoint(Checkpoint):
+    """
+    A dummy checkpoint implementation that does not do anything, used in cases where the checkpoints should be ignored.
+    """
+
     def __init__(self):
         pass
 
