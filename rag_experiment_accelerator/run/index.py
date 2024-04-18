@@ -68,7 +68,9 @@ def run(
 
     if config.SAMPLE_DATA:
         parser = load_parser()
-        docs = cluster(docs, config, parser)
+        docs = checkpoint.load_or_run(
+            cluster, index_config.index_name, docs, config, parser
+        )
 
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
 
