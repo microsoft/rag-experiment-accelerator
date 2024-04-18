@@ -29,19 +29,6 @@ class TestLocalStorageCheckpoint(unittest.TestCase):
         self.assertEqual(result1, "hello first run")
         self.assertEqual(result2, "hello first run")
 
-    def test_ids_are_saved(self):
-        checkpoint = LocalStorageCheckpoint(
-            checkpoint_name="test_exists", directory=self.temp_dir
-        )
-        checkpoint.load_or_run(dummy, "id1", "one")
-        checkpoint.load_or_run(dummy, "id1", "two")
-        checkpoint.load_or_run(dummy, "id2", "three")
-        checkpoint.load_or_run(dummy, "id2", "four")
-        checkpoint.load_or_run(dummy, "id3", "five")
-
-        checkpoint_ids = checkpoint.get_saved_ids(dummy)
-        self.assertEqual(checkpoint_ids, set(["id1", "id2", "id3"]))
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -17,13 +17,6 @@ class TestNullCheckpoint(unittest.TestCase):
         self.assertEqual(result1, "hello first run")
         self.assertEqual(result2, "hello second run")
 
-    def test_no_ids_are_saved(self):
-        checkpoint = NullCheckpoint()
-        data_id = "unique_id"
-        checkpoint.load_or_run(dummy, data_id, "world")
-        ids = checkpoint.get_saved_ids(dummy)
-        self.assertEqual(ids, set())
-
 
 if __name__ == "__main__":
     unittest.main()

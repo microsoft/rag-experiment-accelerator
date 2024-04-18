@@ -2,6 +2,7 @@ import os
 import pickle
 
 from typing import Any, Dict, List, Set, Tuple
+import hashlib
 from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 
 
@@ -14,11 +15,6 @@ class LocalStorageCheckpoint(Checkpoint):
         self.checkpoint_location = f"{directory}/checkpoints/{checkpoint_name}"
         os.makedirs(self.checkpoint_location, exist_ok=True)
         self.internal_ids: Set[str] = self._get_existing_checkpoint_ids()
-
-    def get_saved_ids(self, method) -> Set[str]:
-        return set(
-            [id.split("___")[1] for id in self.internal_ids if method.__name__ in id]
-        )
 
     def _has_data(self, id: str, method) -> bool:
         checkpoint_id = self._build_internal_id(id, method)
@@ -42,7 +38,8 @@ class LocalStorageCheckpoint(Checkpoint):
         return f"{self.checkpoint_location}/{checkpoint_id}.pkl"
 
     def _build_internal_id(self, id: str, method):
-        return f"{method.__name__}___{id}"
+        hashed_id = hashlib.sha256(id.encode()).hexdigest()
+        return f"{method.__name__}___{hashed_id}"
 
     def _get_existing_checkpoint_ids(self) -> Tuple[Dict[str, Set[str]], Set[str]]:
         ids = set()

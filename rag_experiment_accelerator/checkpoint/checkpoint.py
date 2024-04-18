@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Set
+from typing import Any
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -40,20 +40,13 @@ class Checkpoint(ABC):
         """
         if self._has_data(id, method):
             logger.info(
-                f"Checkpoint data found for '{method.__name__}' - skipping execution and loading from checkpoint. ID:'{id}'"
+                f"Checkpoint data found for '{method.__name__}' - skipping execution and loading from checkpoint."
             )
             return self._load(id, method)
         else:
             method_result = method(*args, **kwargs)
             self._save(method_result, id, method)
             return method_result
-
-    @abstractmethod
-    def get_saved_ids(self, method) -> Set[str]:
-        """
-        Returns a set of the IDs for which there are checkpoints available for the given method.
-        """
-        pass
 
     @abstractmethod
     def _has_data(self, id: str, method) -> bool:

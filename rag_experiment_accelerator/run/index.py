@@ -20,7 +20,6 @@ from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.utils.logging import get_logger
-import hashlib
 
 logger = get_logger(__name__)
 load_dotenv(override=True)
@@ -144,7 +143,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks, checkpoint: Checkpoin
                 executor.submit(
                     checkpoint.load_or_run,
                     embed_chunk,
-                    hashlib.sha256(doc["content"].encode()).hexdigest(),
+                    doc["content"],
                     pre_process,
                     config.embedding_model,
                     doc,
@@ -226,7 +225,7 @@ def generate_titles_from_chunks(
             executor.submit(
                 checkpoint.load_or_run,
                 process_title,
-                hashlib.sha256(chunk["content"].encode()).hexdigest(),
+                chunk["content"],
                 config,
                 pre_process,
                 chunk,
@@ -268,7 +267,7 @@ def generate_summaries_from_chunks(
             executor.submit(
                 checkpoint.load_or_run,
                 process_summary,
-                hashlib.sha256(chunk["content"].encode()).hexdigest(),
+                chunk["content"],
                 config,
                 pre_process,
                 chunk,
