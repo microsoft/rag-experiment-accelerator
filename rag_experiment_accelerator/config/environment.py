@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 def field_to_env_name(field_name: str) -> str:
     """
-    Convert from the name of a field to an enironment variable name.
+    Convert from the name of a field to an environment variable name.
     For example, openai_api_key becomes OPENAI_API_KEY.
     """
     return field_name.upper()
