@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from unittest.mock import MagicMock, patch
 
-from rag_experiment_accelerator.sampling.clustering import cluster, init_clusting
+from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 
 
 @pytest.fixture
@@ -115,8 +115,7 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         return_value=mock_df_concat,
     ):
         # Act
-        parser, _, _ = init_clusting()
-
+        parser = load_parser()
         result = cluster(all_chunks, config, parser)
         assert len(result) == 0
         # Assert

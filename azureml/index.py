@@ -50,7 +50,6 @@ def run(input_paths: List[str]) -> List[str]:
     global config
     global environment
     global index_config
-
     index_run(environment, config, index_config, input_paths)
 
     return [args.index_name]

@@ -1,6 +1,7 @@
 from promptflow import tool
 import mlflow
 
+from rag_experiment_accelerator.evaluation.eval import get_run_tags
 from rag_experiment_accelerator.run.evaluation import run, initialise_mlflow_client
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.config.config import Config
@@ -17,7 +18,9 @@ def my_python_tool(config_path: str) -> bool:
     mlflow_client = initialise_mlflow_client(environment, config)
     name_suffix = formatted_datetime_suffix()
 
+    mlflow.set_tags(get_run_tags(config))
     with mlflow.start_run(run_name=mlflow_run_name(config, name_suffix)):
+        mlflow.set_tags()
         for index_config in config.index_configs():
             run(
                 environment,

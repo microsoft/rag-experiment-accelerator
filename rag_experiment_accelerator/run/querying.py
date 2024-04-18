@@ -480,7 +480,12 @@ def query_and_eval_single_line(
                 context=qna_context,
                 question=user_prompt,
             )
-            handler.save(index_name=index_config.index_name(), data=output)
+            handler.save(
+                index_name=index_config.index_name(),
+                data=output,
+                experiment_name=config.EXPERIMENT_NAME,
+                job_name=config.JOB_NAME,
+            )
     except BadRequestError as e:
         logger.error(
             "Invalid request. Skipping question: {user_prompt}",
@@ -512,7 +517,9 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
     for index_config in config.index_configs():
         logger.info(f"Processing index: {index_config.index_name()}")
 
-        handler.handle_archive_by_index(index_config.index_name())
+        handler.handle_archive_by_index(
+            index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+        )
 
         search_client = create_client(
             environment.azure_search_service_endpoint,
