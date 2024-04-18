@@ -16,7 +16,7 @@ from rag_experiment_accelerator.llm.prompts import (
     prompt_instruction_title,
     prompt_instruction_summary,
 )
-from rag_experiment_accelerator.sampling.clustering import cluster
+from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -67,7 +67,8 @@ def run(
     )
 
     if config.SAMPLE_DATA:
-        docs = cluster(docs, config)
+        parser = load_parser()
+        docs = cluster(docs, config, parser)
 
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
 

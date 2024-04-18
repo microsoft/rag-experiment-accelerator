@@ -4,6 +4,7 @@ import argparse
 import mlflow
 from mlflow import MlflowClient
 
+
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
@@ -60,7 +61,7 @@ def main():
     config.EVAL_DATA_LOCATION = args.eval_result_dir
 
     mlflow_client = mlflow.MlflowClient()
-    mlflow.set_experiment(config.NAME_PREFIX)
+    mlflow.set_experiment(config.EXPERIMENT_NAME)
 
     with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
         eval_run(
