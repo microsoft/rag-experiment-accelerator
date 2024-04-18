@@ -3,7 +3,7 @@ import pickle
 import hashlib
 
 from typing import Any, List, Set
-from rag_experiment_accelerator.checkpoint import Checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 
 
 class LocalStorageCheckpoint(Checkpoint):
