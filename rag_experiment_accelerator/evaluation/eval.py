@@ -326,6 +326,10 @@ def llm_context_recall(
     should be attributable to the retrieved context. The formula for calculating context recall is as follows:
     context_recall = GT sentences that can be attributed to context / nr sentences in GT
 
+    Code adapted from https://github.com/explodinggradients/ragas
+    Copyright [2023] [Exploding Gradients]
+    under the Apache License (see evaluation folder)
+
     Args:
         question (str): The question being asked
         groundtruth_answer (str): The ground truth ("output_prompt")
