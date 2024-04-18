@@ -1,9 +1,9 @@
 import os
 import pickle
-
-from typing import Any, Dict, List, Set, Tuple
 import hashlib
-from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
+
+from typing import Any, List, Set
+from rag_experiment_accelerator.checkpoint import Checkpoint
 
 
 class LocalStorageCheckpoint(Checkpoint):
@@ -41,7 +41,7 @@ class LocalStorageCheckpoint(Checkpoint):
         hashed_id = hashlib.sha256(id.encode()).hexdigest()
         return f"{method.__name__}___{hashed_id}"
 
-    def _get_existing_checkpoint_ids(self) -> Tuple[Dict[str, Set[str]], Set[str]]:
+    def _get_existing_checkpoint_ids(self) -> Set[str]:
         ids = set()
         file_names = os.listdir(self.checkpoint_location)
 

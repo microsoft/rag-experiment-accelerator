@@ -1,5 +1,5 @@
 from typing import Any
-from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
+from rag_experiment_accelerator.checkpoint import Checkpoint
 
 
 class NullCheckpoint(Checkpoint):

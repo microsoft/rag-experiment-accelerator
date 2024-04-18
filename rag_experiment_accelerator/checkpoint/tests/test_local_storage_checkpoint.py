@@ -1,8 +1,6 @@
 import unittest
 import os
-from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
-    LocalStorageCheckpoint,
-)
+from rag_experiment_accelerator.checkpoint import LocalStorageCheckpoint
 import tempfile
 import shutil
 

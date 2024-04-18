@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
+from rag_experiment_accelerator.checkpoint import NullCheckpoint
 from rag_experiment_accelerator.config.config import Config
 
 from rag_experiment_accelerator.run.index import run

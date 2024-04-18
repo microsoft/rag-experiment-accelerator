@@ -1,10 +1,8 @@
 import json
 import argparse
 
-from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
-    LocalStorageCheckpoint,
-)
-from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
+from rag_experiment_accelerator.checkpoint import LocalStorageCheckpoint
+from rag_experiment_accelerator.checkpoint import NullCheckpoint
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment

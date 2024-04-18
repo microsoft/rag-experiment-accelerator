@@ -1,5 +1,5 @@
 from promptflow import tool
-from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
+from rag_experiment_accelerator.checkpoint import NullCheckpoint
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 from rag_experiment_accelerator.config.environment import Environment

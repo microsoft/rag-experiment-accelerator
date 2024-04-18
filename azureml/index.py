@@ -1,4 +1,3 @@
-from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
 import os
 import sys
 import argparse
@@ -7,6 +6,7 @@ from typing import List
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
+from rag_experiment_accelerator.checkpoint import NullCheckpoint  # noqa: E402
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
