@@ -148,6 +148,9 @@ Question: When is the scheduled launch date and time for the PSLV-C56 mission, a
 
 llm_context_precision_instruction = "Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer."
 
+# Context recall prompt taken from https://github.com/explodinggradients/ragas/blob/main/src/ragas/metrics/_context_recall.py
+# Copyright [2023] [Exploding Gradients]
+# under the Apache License (see evaluation folder)
 llm_context_recall_instruction = """ Given a context, and an answer, analyze each sentence in the answer and classify if the sentence can be attributed to the given context or not.
 
 question: What can you tell me about albert Albert Einstein?
