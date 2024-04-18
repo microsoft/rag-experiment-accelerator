@@ -45,17 +45,15 @@ def upload_data(
     """
     Uploads data to an Azure AI Search index.
 
-    This function uploads chunks of data to a specified index in Azure AI
-    Search. It uses the provided service endpoint, index name, and search key
-    to connect to the service. The function also converts the chunks into
-    index documents before uploading them. The upload process is done in
-    parallel using a ThreadPoolExecutor.
+    This function uploads chunks of data to a specified index in Azure AI Search.
+    It uses the provided service endpoint, index name, and search key to connect to the service.
+    The function also converts the chunks into index documents before uploading them.
+    The upload process is done in parallel using a ThreadPoolExecutor.
 
     Args:
         environment (Environment): The environment configuration.
         config (Config): The configuration object.
-        chunks (list): A list of dictionaries, each containing a chunk of
-        content to be uploaded.
+        chunks (list): A list of dictionaries, each containing a chunk of content to be uploaded.
         index_name (str): The name of the index to upload the data to.
 
     Returns:
@@ -201,10 +199,8 @@ def chunks_to_index_documents(chunks):
     """
     Converts chunks of content into index documents for Azure AI Search.
 
-    This function takes a list of chunks, where each chunk is a dictionary
-    containing various pieces of content. It then converts each chunk into
-    a dictionary that's suitable for use as an index document in Azure AI
-    Search.
+    This function takes a list of chunks, where each chunk is a dictionary containing various pieces of content.
+    It then converts each chunk into a dictionary that's suitable for use as an index document in Azure AI Search.
     The resulting list of index documents is then returned.
 
     Args:

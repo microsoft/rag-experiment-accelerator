@@ -28,8 +28,7 @@ def create_client(service_endpoint, index_name, key):
         key (str): The API key for the search service.
 
     Returns:
-        Tuple[SearchClient, SearchIndexClient]: A tuple containing the
-        SearchClient and SearchIndexClient objects.
+        Tuple[SearchClient, SearchIndexClient]: A tuple containing the SearchClient and SearchIndexClient objects.
     """
     credential = AzureKeyCredential(key)
     client = SearchClient(
@@ -40,15 +39,13 @@ def create_client(service_endpoint, index_name, key):
 
 def format_results(results):
     """
-    Formats the search results by extracting the score and content fields from
-    each result.
+    Formats the search results by extracting the score and content fields from each result.
 
     Args:
         results (list): A list of search results.
 
     Returns:
-        list: A list of dictionaries, where each dictionary contains the score
-        and content fields of a search result.
+        list: A list of dictionaries, where each dictionary contains the score and content fields of a search result.
     """
     formatted_results = []
     for result in results:
@@ -67,13 +64,11 @@ def search_for_match_semantic(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for documents in the Azure AI Search index that match the given
-    query using semantic search.
+    Searches for documents in the Azure AI Search index that match the given query using semantic search.
 
     Args:
         client (SearchClient): The Azure AI Search client.
-        embedding_model (EmbeddingModel): The model used to generate the
-        embeddings.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
 
@@ -135,8 +130,7 @@ def search_for_match_Hybrid_multi(
 
     Args:
         client (SearchClient): The Azure AI Search client.
-        embedding_model (EmbeddingModel): The model used to generate the
-        embeddings.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The search query.
         retrieve_num_of_documents (int): The number of documents to retrieve.
 
@@ -190,8 +184,7 @@ def search_for_match_Hybrid_cross(
 
     Args:
         client: An instance of the Azure AI Search client.
-        embedding_model (EmbeddingModel): The model used to generate the
-        embeddings.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
 
@@ -274,8 +267,7 @@ def search_for_match_pure_vector(
 
     Args:
         client (Client): The client object used to connect to the database.
-        embedding_model (EmbeddingModel): The model used to generate the
-        embeddings.
+        embedding_model (EmbeddingModel): The model used to generate the embeddings.
         query (str): The query string to search for.
         retrieve_num_of_documents (int): The number of documents to retrieve.
 
@@ -371,8 +363,7 @@ def search_for_match_pure_vector_cross(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for documents that match the given query using pure vector cross
-    search method.
+    Searches for documents that match the given query using pure vector cross search method.
 
     Args:
         client: An instance of the search client.
@@ -413,8 +404,7 @@ def search_for_match_pure_vector_cross(
 
 def search_for_manual_hybrid(**kwargs):
     """
-    Searches for documents using a combination of text, vector, and semantic
-    matching.
+    Searches for documents using a combination of text, vector, and semantic matching.
 
     Args:
         client: Elasticsearch client object.
