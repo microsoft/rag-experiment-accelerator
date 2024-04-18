@@ -5,6 +5,22 @@ from rag_experiment_accelerator.config.config import Config
 from unittest.mock import MagicMock, patch
 
 
+class ConfigNoInit(Config):
+    """
+    This class represents a configuration object without an initializer.
+
+    It inherits from the `Config` class.
+
+    Usage:
+    ```
+    config = ConfigNoInit()
+    ```
+    """
+
+    def __init__(self) -> None:
+        pass
+
+
 def get_test_config_dir():
     return os.path.join(os.path.dirname(__file__), "data")
 
@@ -114,3 +130,38 @@ def test_validate_ef_construction():
         str(low_info.value)
         == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
     )
+
+
+def test_validate_semantic_search_config():
+    config = ConfigNoInit()
+
+    # Test case 1: use_semantic_search is False, but semantic search is
+    # required
+    config.SEARCH_VARIANTS = ["search_for_match_semantic"]
+    use_semantic_search = False
+    with pytest.raises(ValueError) as info:
+        config.validate_semantic_search_config(use_semantic_search)
+    assert (
+        str(info.value)
+        == "Semantic search is required for search variants 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
+    )
+
+    # Test case 2: use_semantic_search is True, and semantic search is required
+    config.SEARCH_VARIANTS = ["search_for_match_semantic"]
+    use_semantic_search = True
+    # No exception should be raised
+    config.validate_semantic_search_config(use_semantic_search)
+
+    # Test case 3: use_semantic_search is False, and semantic search is not
+    # required
+    config.SEARCH_VARIANTS = ["search_for_exact_match"]
+    use_semantic_search = False
+    # No exception should be raised
+    config.validate_semantic_search_config(use_semantic_search)
+
+    # Test case 4: use_semantic_search is True, and semantic search is not
+    # required
+    config.SEARCH_VARIANTS = ["search_for_exact_match"]
+    use_semantic_search = True
+    # No exception should be raised
+    config.validate_semantic_search_config(use_semantic_search)

@@ -136,6 +136,7 @@ def test_to_keyvault(mock_init_keyvault):
         azure_language_service_endpoint=None,
         azure_language_service_key=None,
         azure_key_vault_endpoint="test_endpoint",
+        azure_search_use_semantic_search="True",
     )
     environment.to_keyvault()
 
