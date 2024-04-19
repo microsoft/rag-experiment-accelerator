@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 def field_to_env_name(field_name: str) -> str:
     """
-    Convert from the name of a field to an enironment variable name.
+    Convert from the name of a field to an environment variable name.
     For example, openai_api_key becomes OPENAI_API_KEY.
     """
     return field_name.upper()
@@ -37,7 +37,7 @@ def _get_value_from_env(var_name: str, is_optional: bool = False) -> Optional[st
 
 def init_keyvault(azure_key_vault_endpoint: str) -> SecretClient:
     """
-    Initialises keyvault client using the provided endpoint and default credentials.
+    Initializes keyvault client using the provided endpoint and default credentials.
     """
     return SecretClient(
         azure_key_vault_endpoint,
@@ -86,6 +86,7 @@ class Environment:
     aml_compute_instances_number: Optional[str]
     azure_search_service_endpoint: str
     azure_search_admin_key: str
+    azure_search_use_semantic_search: str
     azure_language_service_endpoint: Optional[str]
     azure_language_service_key: Optional[str]
     azure_document_intelligence_endpoint: Optional[str]
@@ -187,7 +188,7 @@ class Environment:
 
     def to_keyvault(self, azure_key_vault_endpoint: str = None) -> None:
         """
-        Serialises the environment to keyvault.
+        Serializes the environment to keyvault.
         Note that for the optional fields that are not set, this will create the value 'None' in the keyvault.
 
         Raises:

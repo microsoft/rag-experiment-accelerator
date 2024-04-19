@@ -45,7 +45,7 @@ def upload_data(
     """
     Uploads data to an Azure AI Search index.
 
-    This function uploads chunks of data to a specified index in Azure Cognitive Search.
+    This function uploads chunks of data to a specified index in Azure AI Search.
     It uses the provided service endpoint, index name, and search key to connect to the service.
     The function also converts the chunks into index documents before uploading them.
     The upload process is done in parallel using a ThreadPoolExecutor.
@@ -70,7 +70,7 @@ def upload_data(
     documents = chunks_to_index_documents(chunks)
 
     with ExitStack() as stack:
-        with TimeTook("uploading data to Azure Cognitive Search", logger=logger):
+        with TimeTook("uploading data to Azure AI Search", logger=logger):
             executor = stack.enter_context(
                 ThreadPoolExecutor(config.MAX_WORKER_THREADS)
             )
@@ -197,10 +197,10 @@ def do_we_need_multiple_questions(
 
 def chunks_to_index_documents(chunks):
     """
-    Converts chunks of content into index documents for Azure Cognitive Search.
+    Converts chunks of content into index documents for Azure AI Search.
 
     This function takes a list of chunks, where each chunk is a dictionary containing various pieces of content.
-    It then converts each chunk into a dictionary that's suitable for use as an index document in Azure Cognitive Search.
+    It then converts each chunk into a dictionary that's suitable for use as an index document in Azure AI Search.
     The resulting list of index documents is then returned.
 
     Args:
