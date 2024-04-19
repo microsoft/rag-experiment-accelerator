@@ -29,6 +29,7 @@ pytesseract==0.3.10
 python-dotenv==1.0.1
 PyMuPDF==1.24.2
 PyPDF2~=3.0
+ragas==0.1.7
 rouge-score==0.1.2
 tqdm==4.66.2
 scikit-learn==1.4.2
