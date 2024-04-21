@@ -28,6 +28,8 @@ def mock_get_value_from_env_with_keyvault(
         return "test_resource_group_name"
     elif var_name == "AZURE_SEARCH_SERVICE_ENDPOINT":
         return "test_search_endpoint"
+    elif var_name == "AZURE_SEARCH_USE_SEMANTIC_SEARCH":
+        return "True"
     else:
         return None
 
@@ -55,6 +57,8 @@ def mock_get_any_value_from_keyvault(field_name: str) -> Optional[str]:
         return_value.value = "test_api_endpoint"
     elif field_name == "azure-search-service-endpoint":
         return_value.value = "test_search_endpoint"
+    elif field_name == "azure-search-use-semantic-search":
+        return_value.value = "True"
     elif field_name == "azure-search-admin-key":
         return_value.value = "test_admin_key"
     elif field_name == "aml-subscription-id":
@@ -136,7 +140,8 @@ def test_to_keyvault(mock_init_keyvault):
         azure_language_service_endpoint=None,
         azure_language_service_key=None,
         azure_key_vault_endpoint="test_endpoint",
+        azure_search_use_semantic_search="True",
     )
     environment.to_keyvault()
 
-    assert mock_keyvault.set_secret.call_count == 16
+    assert mock_keyvault.set_secret.call_count == 17

@@ -111,8 +111,11 @@ def search_for_match_semantic(
     return formatted_search_results
 
 
-# TODO: Figure out what is going on here. For some of these search functions, I cannot itterate over the results after it leaves this python file, so calling format_results on search_results which enables me to do so
-# This also will provide the same format that somes back from search_for_manual_hybrid
+# TODO: Figure out what is going on here. For some of these search functions,
+# I cannot iterate over the results after it leaves this python file, so
+# calling format_results on search_results which enables me to do so
+# This also will provide the same format that comes back from
+# search_for_manual_hybrid
 def search_for_match_Hybrid_multi(
     client: SearchClient,
     embedding_model: EmbeddingModel,
@@ -302,7 +305,8 @@ def search_for_match_pure_vector_multi(
     retrieve_num_of_documents: int,
 ):
     """
-    Searches for matching documents in the given client using the provided query and retrieves the specified number of documents.
+    Searches for matching documents in the given client using the provided query and retrieves the specified number
+    of documents.
 
     Args:
         client: The client to search in.

@@ -170,6 +170,9 @@ class Config:
         self.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = int(
             config_json.get("min_query_expansion_related_question_similarity_score", 90)
         )
+        self.validate_semantic_search_config(
+            environment.azure_search_use_semantic_search.lower() == "true"
+        )
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
@@ -183,6 +186,15 @@ class Config:
         if max(overlap_size) > min(chunk_size):
             raise ValueError(
                 "Config param validation error: overlap_size must be less than chunk_size"
+            )
+
+    def validate_semantic_search_config(self, use_semantic_search: bool):
+        if (
+            "search_for_match_semantic" in self.SEARCH_VARIANTS
+            or "search_for_manual_hybrid" in self.SEARCH_VARIANTS
+        ) and not use_semantic_search:
+            raise ValueError(
+                "Semantic search is required for search variants 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
             )
 
     def index_configs(self) -> Generator[IndexConfig, None, None]:
