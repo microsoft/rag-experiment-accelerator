@@ -32,7 +32,16 @@ from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
 from datasets import Dataset
-from ragas.metrics import context_recall
+from ragas.metrics import (
+    faithfulness,
+    answer_relevancy,
+    context_precision,
+    context_relevancy,
+    context_recall,
+    context_entity_recall,
+    answer_similarity,
+    answer_correctness,
+)
 from ragas import evaluate as ragas_evaluate
 
 from langchain_openai.chat_models import AzureChatOpenAI
@@ -45,6 +54,17 @@ load_dotenv()
 warnings.filterwarnings("ignore")
 
 algs = textdistance.algorithms
+
+RAGAS_METRICS_BY_NAME = {
+    "ragas_faithfulness": faithfulness,
+    "ragas_answer_relevancy": answer_relevancy,
+    "ragas_context_precision": context_precision,
+    "ragas_context_relevancy": context_relevancy,
+    "ragas_context_recall": context_recall,
+    "ragas_context_entity_recall": context_entity_recall,
+    "ragas_answer_correctness": answer_correctness,
+    "ragas_answer_similarity": answer_similarity,
+}
 
 
 def lower(text):
@@ -372,14 +392,15 @@ def setup_ragas(
     environment: Environment,
     config: Config,
 ):
-    """ "
+    """
     Sets up the chat model and embedding model instances to be used for evaluation
 
     Args:
         config (Config): The configuration of the experiment.
 
     Returns:
-        tbd
+        azure_model (AzureChatOpenAI): the chat model instance to be used by RAGAS
+        azure_embeddings (AzureOpenAIEmbeddings): the embedding model instance to be used by RAGAS
     """
 
     azure_configs = {
@@ -406,37 +427,10 @@ def setup_ragas(
         model=azure_configs["embedding_name"],
     )
 
+    # init answer correctness
+    answer_correctness.answer_similarity = answer_similarity
+
     return azure_model, azure_embeddings
-
-
-def ragas_context_recall(
-    question, retrieved_contexts, answer, ground_truth, azure_model, azure_embeddings
-):
-    """ "
-    Computes context recall using RAGAS evaluation framework
-
-    Args:
-        question (str): The question being asked.
-        retrieved_contexts (list): The retrieved contexts.
-        answer (str): The generated answer.
-        ground_truth (str): The expected answer.
-
-    Returns:
-        double: context recall score
-    """
-
-    data_to_score = {
-        "question": [question],
-        "contexts": [retrieved_contexts],
-        "answer": [answer],
-        "ground_truth": [ground_truth],
-    }
-    dataset = Dataset.from_dict(data_to_score)
-
-    score = ragas_evaluate(
-        dataset, metrics=[context_recall], llm=azure_model, embeddings=azure_embeddings
-    )
-    return score["context_recall"]
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -559,10 +553,7 @@ def compute_metrics(
     actual,
     expected,
     context,
-    retrieved_contexts,
     metric_type,
-    environment: Environment,
-    config: Config,
 ):
     """
     Computes a score for the similarity between two strings using a specified metric.
@@ -588,7 +579,6 @@ def compute_metrics(
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
             - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
-        config (Config): The configuration of the experiment.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -651,19 +641,50 @@ def compute_metrics(
         score = llm_context_precision(response_generator, actual, context)
     elif metric_type == "llm_context_recall":
         score = llm_context_recall(response_generator, question, expected, context)
-    elif metric_type == "ragas_context_recall":
-        azure_model, azure_embeddings = setup_ragas(environment, config)
-        score = ragas_context_recall(
-            question,
-            retrieved_contexts,
-            actual,
-            expected,
-            azure_model,
-            azure_embeddings,
-        )
     else:
         pass
     return score
+
+
+def compute_ragas_metrics(
+    metrics,
+    question,
+    actual,
+    expected,
+    retrieved_contexts,
+    environment: Environment,
+    config: Config,
+):
+    """
+    Computes the chosen RAGAS metrics.
+
+    Args:
+        metrics (list): The list of metrics to use for evaluation.
+        question (str): The question being asked.
+        actual (str): The generated answer.
+        expected (str): The ground truth answer.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query.
+        environment (Environment): Initialised Environment class containing environment configuration.
+        config (Config): The configuration settings to use for evaluation.
+
+    Returns:
+        dict: A dictionary with the RAGAS scores for each metric.
+    """
+
+    azure_model, azure_embeddings = setup_ragas(environment, config)
+
+    data_to_score = {
+        "question": [question],
+        "contexts": [retrieved_contexts],
+        "answer": [actual],
+        "ground_truth": [expected],
+    }
+    dataset = Dataset.from_dict(data_to_score)
+
+    ragas_scores = ragas_evaluate(
+        dataset, metrics=metrics, llm=azure_model, embeddings=azure_embeddings
+    )
+    return {f"ragas_{metric}": 100 * score for metric, score in ragas_scores.items()}
 
 
 def evaluate_single_prompt(
@@ -682,7 +703,17 @@ def evaluate_single_prompt(
 
     metric_dic = {}
 
-    for metric_type in metric_types:
+    ragas_metrics = [
+        RAGAS_METRICS_BY_NAME.get(metric)
+        for metric in metric_types
+        if metric.startswith("ragas_") and RAGAS_METRICS_BY_NAME.get(metric) is not None
+    ]
+
+    similarity_metrics = [
+        metric for metric in metric_types if not metric.startswith("ragas_")
+    ]
+
+    for metric_type in similarity_metrics:
         score = compute_metrics(
             response_generator,
             data.question,
@@ -695,6 +726,17 @@ def evaluate_single_prompt(
             config,
         )
         metric_dic[metric_type] = score
+
+    ragas_scores = compute_ragas_metrics(
+        ragas_metrics,
+        data.question,
+        actual,
+        expected,
+        data.retrieved_contexts,
+        environment,
+        config,
+    )
+    metric_dic.update(ragas_scores)
     metric_dic["question"] = data.question
     metric_dic["context"] = data.context
     metric_dic["actual"] = actual
