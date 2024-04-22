@@ -25,10 +25,12 @@ class AOAIEmbeddingModel(EmbeddingModel):
         deployment_name: str,
         environment: Environment,
         dimension: int = 1536,
+        shorten_dimensions: bool = False,
         **kwargs
     ) -> None:
         super().__init__(name=deployment_name, dimension=dimension, **kwargs)
         self.deployment_name = deployment_name
+        self.shorten_dimensions = shorten_dimensions
         self._client: AzureOpenAI = self._initialize_client(environment=environment)
 
     def _initialize_client(self, environment: Environment) -> AzureOpenAI:
@@ -60,8 +62,12 @@ class AOAIEmbeddingModel(EmbeddingModel):
 
         """
 
+        kwargs = {}
+        if self.shorten_dimensions:
+            kwargs["dimensions"] = self.dimension
+
         response = self._client.embeddings.create(
-            input=chunk, model=self.deployment_name
+            input=chunk, model=self.deployment_name, **kwargs
         )
 
         return response.data[0].embedding

@@ -316,6 +316,27 @@ Every array will produce the combinations of flat configurations when the method
 }
 ```
 
+If you are using another model than `text-embedding-ada-002`, you can specify the dimension of the model in the `dimension` field; for example:
+
+```json
+{
+    "type": "azure",
+    "deployment_name": "text-embedding-3-large",
+    "dimension": 3072
+}
+```
+
+When using [newer embeddings models](https://openai.com/blog/new-embedding-models-and-api-updates), you can also leverage their support for shortening embeddings. In this case, specify the number of dimensions you require, and add the `shorten_dimensions` flag to indicate that you want to shorten the embeddings. For example:
+
+```json
+{
+    "type": "azure",
+    "deployment_name": "text-embedding-3-large",
+    "dimension": 256,
+    "shorten_dimensions": true
+}
+```
+
 ### Sentence Transformer embedding model
 
 ```json
