@@ -31,6 +31,14 @@ from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
+from datasets import Dataset
+from ragas.metrics import context_recall
+from ragas import evaluate as ragas_evaluate
+
+from langchain_openai.chat_models import AzureChatOpenAI
+from langchain_openai.embeddings import AzureOpenAIEmbeddings
+
+
 logger = get_logger(__name__)
 
 load_dotenv()
@@ -316,7 +324,6 @@ def llm_context_recall(
     question,
     groundtruth_answer,
     context,
-    temperature: int,
 ):
     """
     Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
@@ -350,7 +357,6 @@ def llm_context_recall(
     result = response_generator.generate_response(
         sys_message=llm_context_recall_instruction,
         prompt=prompt,
-        temperature=temperature,
     )
     print(result)
     good_response = '"Attributed": "1"'
@@ -360,6 +366,77 @@ def llm_context_recall(
         result.count(good_response)
         / (result.count(good_response) + result.count(bad_response))
     ) * 100
+
+
+def setup_ragas(
+    environment: Environment,
+    config: Config,
+):
+    """ "
+    Sets up the chat model and embedding model instances to be used for evaluation
+
+    Args:
+        config (Config): The configuration of the experiment.
+
+    Returns:
+        tbd
+    """
+
+    azure_configs = {
+        "base_url": environment.openai_endpoint,
+        "model_deployment": config.AZURE_OAI_EVAL_DEPLOYMENT_NAME,
+        "model_name": config.AZURE_OAI_EVAL_DEPLOYMENT_NAME,
+        "embedding_deployment": config.AZURE_OAI_EVAL_EMBEDDING_DEPLOYMENT_NAME,
+        "embedding_name": config.AZURE_OAI_EVAL_EMBEDDING_MODEL_NAME,
+    }
+
+    azure_model = AzureChatOpenAI(
+        openai_api_version=environment.openai_api_version,
+        azure_endpoint=azure_configs["base_url"],
+        azure_deployment=azure_configs["model_deployment"],
+        model=azure_configs["model_name"],
+        validate_base_url=False,
+    )
+
+    # init the embeddings for answer_relevancy, answer_correctness and answer_similarity
+    azure_embeddings = AzureOpenAIEmbeddings(
+        openai_api_version=environment.openai_api_version,
+        azure_endpoint=azure_configs["base_url"],
+        azure_deployment=azure_configs["embedding_deployment"],
+        model=azure_configs["embedding_name"],
+    )
+
+    return azure_model, azure_embeddings
+
+
+def ragas_context_recall(
+    question, retrieved_contexts, answer, ground_truth, azure_model, azure_embeddings
+):
+    """ "
+    Computes context recall using RAGAS evaluation framework
+
+    Args:
+        question (str): The question being asked.
+        retrieved_contexts (list): The retrieved contexts.
+        answer (str): The generated answer.
+        ground_truth (str): The expected answer.
+
+    Returns:
+        double: context recall score
+    """
+
+    data_to_score = {
+        "question": [question],
+        "contexts": [retrieved_contexts],
+        "answer": [answer],
+        "ground_truth": [ground_truth],
+    }
+    dataset = Dataset.from_dict(data_to_score)
+
+    score = ragas_evaluate(
+        dataset, metrics=[context_recall], llm=azure_model, embeddings=azure_embeddings
+    )
+    return score["context_recall"]
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -482,7 +559,10 @@ def compute_metrics(
     actual,
     expected,
     context,
+    retrieved_contexts,
     metric_type,
+    environment: Environment,
+    config: Config,
 ):
     """
     Computes a score for the similarity between two strings using a specified metric.
@@ -571,9 +651,18 @@ def compute_metrics(
         score = llm_context_precision(response_generator, actual, context)
     elif metric_type == "llm_context_recall":
         score = llm_context_recall(response_generator, question, expected, context)
+    elif metric_type == "ragas_context_recall":
+        azure_model, azure_embeddings = setup_ragas(environment, config)
+        score = ragas_context_recall(
+            question,
+            retrieved_contexts,
+            actual,
+            expected,
+            azure_model,
+            azure_embeddings,
+        )
     else:
         pass
-
     return score
 
 
@@ -585,6 +674,8 @@ def evaluate_single_prompt(
     total_precision_scores_by_search_type,
     map_scores_by_search_type,
     average_precision_for_search_type,
+    environment: Environment,
+    config: Config,
 ):
     actual = remove_spaces(lower(data.actual))
     expected = remove_spaces(lower(data.expected))
@@ -598,7 +689,10 @@ def evaluate_single_prompt(
             actual,
             expected,
             data.context,
+            data.retrieved_contexts,
             metric_type,
+            environment,
+            config,
         )
         metric_dic[metric_type] = score
     metric_dic["question"] = data.question
@@ -678,6 +772,8 @@ def evaluate_prompts(
                 total_precision_scores_by_search_type,
                 map_scores_by_search_type,
                 average_precision_for_search_type,
+                environment,
+                config,
             ): data
             for data in query_data_load
         }
