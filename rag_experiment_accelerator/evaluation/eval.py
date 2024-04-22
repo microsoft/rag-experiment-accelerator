@@ -870,7 +870,7 @@ def evaluate_prompts(
         os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv")
     )
     draw_hist_df(sum_df, run_id, client)
-    generate_metrics(config.INDEX_NAME_PREFIX, run_id, client)
+    generate_metrics(config.EXPERIMENT_NAME, run_id, client)
     mlflow.end_run()
 
 
