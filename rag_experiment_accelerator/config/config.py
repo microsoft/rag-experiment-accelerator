@@ -101,6 +101,12 @@ class Config:
         self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = config_json.get(
             "azure_oai_eval_deployment_name", None
         )
+        self.AZURE_OAI_EVAL_EMBEDDING_MODEL_NAME = config_json.get(
+            "azure_oai_eval_embedding_model_name", None
+        )
+        self.AZURE_OAI_EVAL_EMBEDDING_DEPLOYMENT_NAME = config_json.get(
+            "azure_oai_eval_embedding_deployment_name", None
+        )
         self.RETRIEVE_NUM_OF_DOCUMENTS = config_json["retrieve_num_of_documents"]
         self.CROSSENCODER_MODEL = config_json["crossencoder_model"]
         self.RERANK_TYPE = config_json["rerank_type"]
