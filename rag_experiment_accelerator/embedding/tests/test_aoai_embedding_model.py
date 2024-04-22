@@ -38,3 +38,40 @@ def test_can_set_embedding_dimension():
     environment = MagicMock()
     model = AOAIEmbeddingModel("text-embedding-ada-002", environment, 123)
     assert model.dimension == 123
+
+
+@patch(
+    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initilize_client"
+)
+def test_generate_embeddings_no_shortening(mock_client):
+    mock_client().embeddings.create.return_value = MagicMock()
+    environment = MagicMock()
+
+    model = AOAIEmbeddingModel(
+        "text-embedding-3-large", environment=environment, dimension=3072
+    )
+    model.generate_embedding("Hello world")
+
+    mock_client().embeddings.create.assert_called_with(
+        input="Hello world", model="text-embedding-3-large"
+    )
+
+
+@patch(
+    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initilize_client"
+)
+def test_generate_embeddings_with_shortening(mock_client):
+    mock_client().embeddings.create.return_value = MagicMock()
+    environment = MagicMock()
+
+    model = AOAIEmbeddingModel(
+        "text-embedding-3-large",
+        environment=environment,
+        dimension=256,
+        shorten_dimensions=True,
+    )
+    model.generate_embedding("Hello world")
+
+    mock_client().embeddings.create.assert_called_with(
+        input="Hello world", model="text-embedding-3-large", dimensions=256
+    )
