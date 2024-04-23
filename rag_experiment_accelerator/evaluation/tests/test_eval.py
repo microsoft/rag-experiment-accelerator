@@ -200,7 +200,6 @@ def test_compute_ragas_metrics(
         "answer_correctness": 0.789104,
         "answer_similarity": 0.951007,
     }
-    mock_setup_ragas.return_value = (MagicMock(), MagicMock())
     mock_Environment.return_value = MagicMock()
     mock_Config.return_value = MagicMock()
     metrics = [

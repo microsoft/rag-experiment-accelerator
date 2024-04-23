@@ -43,6 +43,8 @@ from ragas.metrics import (
     answer_correctness,
 )
 from ragas import evaluate as ragas_evaluate
+from ragas.llms.base import LangchainLLMWrapper
+from ragas.embeddings.base import LangchainEmbeddingsWrapper
 
 from langchain_openai.chat_models import AzureChatOpenAI
 from langchain_openai.embeddings import AzureOpenAIEmbeddings
@@ -388,20 +390,17 @@ def llm_context_recall(
     ) * 100
 
 
-def setup_ragas(
-    environment: Environment,
-    config: Config,
-):
+def setup_ragas(metrics, environment: Environment, config: Config):
     """
-    Sets up the chat model and embedding model instances to be used for evaluation
+    Initialises the llm model and embedding model instances to be used for evaluation
 
     Args:
+        metrics (list): The list of metrics to use for evaluation.
         environment (Environment): Initialised Environment class containing environment configuration.
         config (Config): The configuration of the experiment.
 
     Returns:
-        azure_model (AzureChatOpenAI): the chat model instance to be used by RAGAS
-        azure_embeddings (AzureOpenAIEmbeddings): the embedding model instance to be used by RAGAS
+        None
     """
 
     azure_configs = {
@@ -419,19 +418,32 @@ def setup_ragas(
         model=azure_configs["model_name"],
         validate_base_url=False,
     )
+    ragas_azure_model = LangchainLLMWrapper(azure_model)
 
-    # init the embeddings for answer_relevancy, answer_correctness and answer_similarity
     azure_embeddings = AzureOpenAIEmbeddings(
         openai_api_version=environment.openai_api_version,
         azure_endpoint=azure_configs["base_url"],
         azure_deployment=azure_configs["embedding_deployment"],
         model=azure_configs["embedding_name"],
     )
+    ragas_azure_embeddings = LangchainEmbeddingsWrapper(azure_embeddings)
+
+    # init llm attribute
+    for metric in metrics:
+        metric.__setattr__("llm", ragas_azure_model)
+
+    # init the embeddings for answer_relevancy, answer_correctness and answer_similarity
+    metrics_requiring_embeddings = [
+        metric
+        for metric in metrics
+        if metric in [answer_relevancy, answer_correctness, answer_similarity]
+    ]
+    for metric in metrics_requiring_embeddings:
+        metric.__setattr__("embeddings", ragas_azure_embeddings)
 
     # init answer correctness
-    answer_correctness.answer_similarity = answer_similarity
-
-    return azure_model, azure_embeddings
+    if answer_correctness in metrics:
+        answer_correctness.answer_similarity = answer_similarity
 
 
 def generate_metrics(experiment_name, run_id, client):
@@ -672,7 +684,7 @@ def compute_ragas_metrics(
         dict: A dictionary with the RAGAS scores for each metric.
     """
 
-    azure_model, azure_embeddings = setup_ragas(environment, config)
+    setup_ragas(metrics, environment, config)
 
     data_to_score = {
         "question": [question],
@@ -682,9 +694,7 @@ def compute_ragas_metrics(
     }
     dataset = Dataset.from_dict(data_to_score)
 
-    ragas_scores = ragas_evaluate(
-        dataset, metrics=metrics, llm=azure_model, embeddings=azure_embeddings
-    )
+    ragas_scores = ragas_evaluate(dataset, metrics=metrics)
     return {
         f"ragas_{metric}": round(100 * score, 2)
         for metric, score in ragas_scores.items()
