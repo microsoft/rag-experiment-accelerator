@@ -70,15 +70,13 @@ flake: ## 🧹 Run flake8
 updatekv: ## 🔄 Update keyvault secrets
 	$(call target_title, "updating keyvault secrets")
 	python3 env_to_keyvault.py
-include .env
-export
 
-deploy:
+deploy: ## 🚀 Deploy Azure resources (without isolated network)
 	az deployment sub create \
 		--location $(LOCATION) \
 		--template-file $(MAIN_BICEP_FILE)
 
-deploy_with_isolated_network:
+deploy_with_isolated_network: ## 🚀 Deploy Azure resources with isolated network
 	az deployment sub create \
 		--location $(LOCATION) \
 		--template-file "$(MAIN_BICEP_FILE)" \

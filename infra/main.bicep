@@ -92,9 +92,6 @@ param principalId string = ''
 @description('Flag to deploy resources in isolated network. Manual setup is required to access the deployed resources.')
 param DeployResourcesWithIsolatedNetwork bool
 
-@description('Name of the virtual network')
-param VirtualNetworkName string = '${environmentName}vnet'
-
 @description('Address space for the virtual network')
 param VnetAddressSpace string = ''
 
@@ -104,12 +101,11 @@ param ProxySubnetName string = 'AzureBastionSubnet'
 @description('Address space for the proxy server subnet')
 param ProxySubnetAddressSpace string = ''
 
-@description('Subnet name for other azure resources')
-param AzureSubnetName string = '${environmentName}azrsubnet'
-
 @description('Address space for the other azure resources subnet')
 param AzureSubnetAddressSpace string = ''
 
+var VirtualNetworkName = '${environmentName}vnet'
+var AzureSubnetName = '${environmentName}azrsubnet'
 var tags = { 'azd-env-name': environmentName }
 var rgName = 'rg-${environmentName}'
 var keyVaultName = 'kv-${resourceToken}'
@@ -221,7 +217,7 @@ module storekeys './shared/storekeys.bicep' = {
 
 // More resources can be added here to deploy with private endpoints.
 // These resources should be added to the azureResources array in the network_resources module.
-// Part 2 of isolated network work includes adding private endpoints to other required resources.
+// TODO: Add private endpoints to other required resources.
 module network_resources 'network/network_isolation.bicep' =
   if (DeployResourcesWithIsolatedNetwork) {
     name: 'network_isolation_resources'
