@@ -723,10 +723,7 @@ def evaluate_single_prompt(
             actual,
             expected,
             data.context,
-            data.retrieved_contexts,
             metric_type,
-            environment,
-            config,
         )
         metric_dic[metric_type] = score
 
