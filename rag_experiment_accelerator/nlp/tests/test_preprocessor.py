@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 
 
-@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.load")
 def test_sentence_tokenize(mock_nlp):
     mock_sent_1 = MagicMock()
     mock_sent_1.text = "This is a sentence."
@@ -18,7 +18,7 @@ def test_sentence_tokenize(mock_nlp):
     assert actual == expected
 
 
-@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.load")
 def test_word_tokenize(mock_nlp):
     mock_sent_1 = MagicMock()
     mock_sent_1.text = "This"
@@ -35,7 +35,7 @@ def test_word_tokenize(mock_nlp):
     assert actual == expected
 
 
-@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.load")
 def test_remove_stopwords(mock_nlp):
     mock_token_1 = MagicMock()
     mock_token_1.text = "This"
@@ -67,7 +67,7 @@ def test_remove_stopwords(mock_nlp):
     assert actual == expected
 
 
-@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.load")
 def test_lemmatize(mock_nlp):
     mock_token_1 = MagicMock()
     mock_token_1.lemma_ = "kite"
@@ -88,7 +88,7 @@ def test_lemmatize(mock_nlp):
     assert preprocessor.lemmatize(text) == expected
 
 
-@patch("rag_experiment_accelerator.nlp.preprocess.spacy.load")
+@patch("rag_experiment_accelerator.nlp.preprocess.load")
 def test_remove_punct(mock_nlp):
     preprocessor = Preprocess(True)
     text = """this!" is*+,-. /a#$ sentence%& with'() a:;<= lot>?@[ of\\]^_ punctuation`{|}~"""

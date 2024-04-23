@@ -4,14 +4,14 @@ from rag_experiment_accelerator.evaluation.spacy_evaluator import (
 )
 
 
-@patch("rag_experiment_accelerator.evaluation.spacy_evaluator.spacy.load")
+@patch("rag_experiment_accelerator.evaluation.spacy_evaluator.load")
 def test_evaluator_init(mock_nlp):
     similarity_threshold = 0.4
     evaluator = SpacyEvaluator(similarity_threshold=similarity_threshold)
     assert similarity_threshold == evaluator.similarity_threshold
 
 
-@patch("rag_experiment_accelerator.evaluation.spacy_evaluator.spacy.load")
+@patch("rag_experiment_accelerator.evaluation.spacy_evaluator.load")
 def test_similarity_returns_similar(mock_nlp):
     mock_doc_1 = MagicMock()
     mock_doc_1.similarity.return_value = 1
@@ -28,7 +28,7 @@ def test_similarity_returns_similar(mock_nlp):
 @patch(
     "rag_experiment_accelerator.evaluation.spacy_evaluator.SpacyEvaluator.similarity"
 )
-@patch("rag_experiment_accelerator.evaluation.spacy_evaluator.spacy.load")
+@patch("rag_experiment_accelerator.evaluation.spacy_evaluator.load")
 def test_is_relevant_returns_valid(mock_nlp, mock_similarity):
     mock_similarity.side_effect = [1, 0.05]
 

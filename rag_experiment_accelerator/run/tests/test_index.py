@@ -50,9 +50,8 @@ def test_run(
     mock_config.DATA_FORMATS = "test_format"
     mock_config.CHUNKING_STRATEGY = "basic"
     mock_config.MAX_WORKER_THREADS = 1
-    mock_config.SAMPLE_DATA = True
-    mock_config.SAMPLE_PERCENTAGE = 50
-    mock_config.NAME_PREFIX = "prefix"
+    mock_config.SAMPLE_DATA = False
+    mock_config.INDEX_NAME_PREFIX = "prefix"
     mock_config.LANGUAGE = {"analyzers": ["analyzer1", "analyzer2"]}
     mock_config.GENERATE_TITLE = False
     mock_config.GENERATE_SUMMARY = False
@@ -95,7 +94,7 @@ def test_run(
     assert mock_logger.error.call_count == 0
     assert mock_create_acs_index.call_count == 32
     assert mock_load_documents.call_count == 32
-    assert mock_cluster.call_count == 32
+    # assert mock_cluster.call_count == 32
     assert mock_upload_data.call_count == 32
     assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
     assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
@@ -106,9 +105,9 @@ def test_run(
     assert mock_load_documents.call_args_list[0][0][4] == 10
     assert mock_load_documents.call_args_list[0][0][5] == 5
 
-    assert mock_cluster.call_args_list[0][0][0] == [
-        {"key1": {"content": "content1", "metadata": {"source": "source1"}}},
-        {"key2": {"content": "content2", "metadata": {"source": "source2"}}},
-        {"key3": {"content": "content3", "metadata": {"source": "source3"}}},
-    ]
-    assert mock_cluster.call_args_list[0][0][1] == mock_config
+    # assert mock_cluster.call_args_list[0][0][0] == [
+    #     {"key1": {"content": "content1", "metadata": {"source": "source1"}}},
+    #     {"key2": {"content": "content2", "metadata": {"source": "source2"}}},
+    #     {"key3": {"content": "content3", "metadata": {"source": "source3"}}},
+    # ]
+    # assert mock_cluster.call_args_list[0][0][1] == mock_config

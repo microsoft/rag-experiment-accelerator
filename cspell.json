@@ -32,6 +32,7 @@
         "distilbert",
         "distro",
         "htmlcov",
+        "keyvault",
         "libuv",
         "mlflow",
         "mpnet",

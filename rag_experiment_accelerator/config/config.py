@@ -38,7 +38,10 @@ class Config:
         OVERRIDE_CONTENT_WITH_SUMMARY (bool): Whether or not to override chunk content with generated summary. Default is False.
         EF_CONSTRUCTIONS (list[int]): The number of ef_construction to use for HNSW index.
         EF_SEARCHES (list[int]): The number of ef_search to use for HNSW index.
-        NAME_PREFIX (str): A prefix to use for the names of saved models.
+        INDEX_NAME_PREFIX (str): A prefix to use for the names of saved models.
+        EXPERIMENT_NAME (str): The name of the experiment in Azure ML (optional, if not set INDEX_NAME_PREFIX will be used).
+        JOB_NAME (str): The name of the job in Azure ML (optional, if not set EXPERIMENT_NAME and current datetime will be used).
+        JOB_DESCRIPTION (str): The description of the job in Azure ML (optional).
         SEARCH_VARIANTS (list[str]): A list of search types to use.
         AZURE_OAI_CHAT_DEPLOYMENT_NAME (str): The name of the Azure deployment to use.
         AZURE_OAI_EVAL_DEPLOYMENT_NAME (str): The name of the deployment to use for evaluation.
@@ -87,7 +90,10 @@ class Config:
         )
         self.EF_CONSTRUCTIONS = config_json["ef_construction"]
         self.EF_SEARCHES = config_json["ef_search"]
-        self.NAME_PREFIX = config_json["name_prefix"]
+        self.INDEX_NAME_PREFIX = config_json["index_name_prefix"]
+        self.EXPERIMENT_NAME = config_json["experiment_name"] or self.INDEX_NAME_PREFIX
+        self.JOB_NAME = config_json["job_name"]
+        self.JOB_DESCRIPTION = config_json["job_description"]
         self.SEARCH_VARIANTS = config_json["search_types"]
         self.AZURE_OAI_CHAT_DEPLOYMENT_NAME = config_json.get(
             "azure_oai_chat_deployment_name", None
@@ -162,6 +168,9 @@ class Config:
         self.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = int(
             config_json.get("min_query_expansion_related_question_similarity_score", 90)
         )
+        self.validate_semantic_search_config(
+            environment.azure_search_use_semantic_search.lower() == "true"
+        )
 
     def validate_inputs(self, chunk_size, overlap_size, ef_constructions, ef_searches):
         if any(val < 100 or val > 1000 for val in ef_constructions):
@@ -177,6 +186,15 @@ class Config:
                 "Config param validation error: overlap_size must be less than chunk_size"
             )
 
+    def validate_semantic_search_config(self, use_semantic_search: bool):
+        if (
+            "search_for_match_semantic" in self.SEARCH_VARIANTS
+            or "search_for_manual_hybrid" in self.SEARCH_VARIANTS
+        ) and not use_semantic_search:
+            raise ValueError(
+                "Semantic search is required for search variants 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
+            )
+
     def index_configs(self) -> Generator[IndexConfig, None, None]:
         for chunk_size in self.CHUNK_SIZES:
             for overlap in self.OVERLAP_SIZES:
@@ -184,7 +202,7 @@ class Config:
                     for ef_construction in self.EF_CONSTRUCTIONS:
                         for ef_search in self.EF_SEARCHES:
                             yield IndexConfig(
-                                index_name_prefix=self.NAME_PREFIX,
+                                index_name_prefix=self.INDEX_NAME_PREFIX,
                                 preprocess=self.PREPROCESS,
                                 chunk_size=chunk_size,
                                 overlap=overlap,

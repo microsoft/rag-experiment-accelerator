@@ -223,7 +223,10 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 
 ```json
 {
-    "name_prefix": "Name of experiment, search index name used for tracking and comparing jobs",
+    "index_name_prefix": "Search index name prefix",
+    "experiment_name": "If provided, this will be the experiment name in Azure ML and it will group all job run under the same experiment, otherwise (if left empty) index_name_prefix will be used and there may be more than one experiment",
+    "job_name": "If provided, all jobs runs in Azure ML will be named with this property value plus timestamp, otherwise (if left empty) each job with be named only with timestamp",
+    "job_description": "You may provide a description for the current job run which describes in words what you are about to experiment with",
     "sampling": {
         "sample_data": "Set to true to enable sampling",
         "sample_percentage": "Percentage of the document corpus to sample",
@@ -244,6 +247,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
         "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
     },
+    "experiment_name": "name of the experiment",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
     "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
