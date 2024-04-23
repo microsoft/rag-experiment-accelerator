@@ -396,6 +396,7 @@ def setup_ragas(
     Sets up the chat model and embedding model instances to be used for evaluation
 
     Args:
+        environment (Environment): Initialised Environment class containing environment configuration.
         config (Config): The configuration of the experiment.
 
     Returns:
