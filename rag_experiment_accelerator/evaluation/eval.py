@@ -406,7 +406,7 @@ def setup_ragas(
     azure_configs = {
         "base_url": environment.openai_endpoint,
         "model_deployment": config.AZURE_OAI_EVAL_DEPLOYMENT_NAME,
-        "model_name": config.AZURE_OAI_EVAL_DEPLOYMENT_NAME,
+        "model_name": config.AZURE_OAI_EVAL_MODEL_NAME,
         "embedding_deployment": config.AZURE_OAI_EVAL_EMBEDDING_DEPLOYMENT_NAME,
         "embedding_name": config.AZURE_OAI_EVAL_EMBEDDING_MODEL_NAME,
     }
@@ -684,7 +684,10 @@ def compute_ragas_metrics(
     ragas_scores = ragas_evaluate(
         dataset, metrics=metrics, llm=azure_model, embeddings=azure_embeddings
     )
-    return {f"ragas_{metric}": 100 * score for metric, score in ragas_scores.items()}
+    return {
+        f"ragas_{metric}": round(100 * score, 2)
+        for metric, score in ragas_scores.items()
+    }
 
 
 def evaluate_single_prompt(
