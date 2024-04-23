@@ -101,6 +101,9 @@ class Config:
         self.AZURE_OAI_EVAL_DEPLOYMENT_NAME = config_json.get(
             "azure_oai_eval_deployment_name", None
         )
+        self.AZURE_OAI_EVAL_MODEL_NAME = config_json.get(
+            "azure_oai_eval_model_name", None
+        )
         self.AZURE_OAI_EVAL_EMBEDDING_MODEL_NAME = config_json.get(
             "azure_oai_eval_embedding_model_name", None
         )

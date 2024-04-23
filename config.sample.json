@@ -44,10 +44,16 @@
         "cosine",
         "bert_distilbert_base_nli_stsb_mean_tokens",
         "llm_answer_relevance",
-        "llm_context_precision"
+        "llm_context_precision",
+        "ragas_faithfulness",
+        "ragas_context_relevancy",
+        "ragas_answer_correctness"
     ],
     "azure_oai_chat_deployment_name": "gpt-35-turbo",
     "azure_oai_eval_deployment_name": "gpt-35-turbo",
+    "azure_oai_eval_model_name": "gpt-35-turbo",
+    "azure_oai_eval_embedding_model_name": "text-embedding-ada-002",
+    "azure_oai_eval_embedding_deployment_name": "text-embedding-ada-002",
     "openai_temperature": 0,
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
