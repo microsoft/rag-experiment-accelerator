@@ -18,6 +18,7 @@ from rag_experiment_accelerator.evaluation.eval import (
     llm_answer_relevance,
     llm_context_precision,
     llm_context_recall,
+    compute_ragas_metrics,
 )
 
 
@@ -180,3 +181,60 @@ def test_llm_context_recall(mock_generate_response):
 
     score = llm_context_recall(mock_generate_response, question, answer, context, 5)
     assert score == 75
+
+
+@patch("rag_experiment_accelerator.evaluation.eval.ragas_evaluate")
+@patch("rag_experiment_accelerator.evaluation.eval.setup_ragas")
+@patch("rag_experiment_accelerator.config.environment.Environment")
+@patch("rag_experiment_accelerator.config.config.Config")
+def test_compute_ragas_metrics(
+    mock_Config, mock_Environment, mock_setup_ragas, mock_ragas_evaluate
+):
+    mock_ragas_evaluate.return_value = {
+        "faithfulness": 0.85725,
+        "answer_relevancy": 0.62436,
+        "context_precision": 0.71447,
+        "context_relevancy": 0.25831,
+        "context_recall": 0.8540047,
+        "context_entity_recall": 0.548247,
+        "answer_correctness": 0.789104,
+        "answer_similarity": 0.951007,
+    }
+    mock_setup_ragas.return_value = (MagicMock(), MagicMock())
+    mock_Environment.return_value = MagicMock()
+    mock_Config.return_value = MagicMock()
+    metrics = [
+        "faithfulness",
+        "answer_relevancy",
+        "context_precision",
+        "context_relevancy",
+        "context_recall",
+        "context_entity_recall",
+        "answer_correctness",
+        "answer_similarity",
+    ]
+    question = "Test question"
+    actual = "Test generated answer"
+    expected = "Test ground truth answer"
+    retrieved_contexts = ["Test retrieved context 1.", "Test retrieved context 2."]
+
+    result = compute_ragas_metrics(
+        metrics,
+        question,
+        actual,
+        expected,
+        retrieved_contexts,
+        mock_Environment,
+        mock_Config,
+    )
+
+    assert result == {
+        "ragas_faithfulness": 85.72,
+        "ragas_answer_relevancy": 62.44,
+        "ragas_context_precision": 71.45,
+        "ragas_context_relevancy": 25.83,
+        "ragas_context_recall": 85.40,
+        "ragas_context_entity_recall": 54.82,
+        "ragas_answer_correctness": 78.91,
+        "ragas_answer_similarity": 95.10,
+    }
