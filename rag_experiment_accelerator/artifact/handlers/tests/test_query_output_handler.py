@@ -67,6 +67,7 @@ def test_save(mock_artifact_handler_save_dict):
         search_type="search_type1",
         search_evals=[],
         context="context1",
+        retrieved_contexts=["retrievedcontext1"],
         question="question1",
     )
 
@@ -94,6 +95,7 @@ def test_load(mock_artifact_handler_load):
         search_type="search_type1",
         search_evals=[],
         context="context1",
+        retrieved_contexts=["retrievedcontext1"],
         question="question1",
     )
 

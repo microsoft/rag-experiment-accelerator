@@ -179,7 +179,7 @@ def test_llm_context_recall(mock_generate_response):
     context = 'According to the Cleveland Clinic, "The femur is the largest and strongest bone in the human body. It can support as much as 30 times the weight of your body. The average adult male femur is 48 cm (18.9 in) in length and 2.34 cm (0.92 in) in diameter. The average weight among adult males in the United States is 196 lbs (872 N). Therefore, the adult male femur can support roughly 6,000 lbs of compressive force."'
     answer = "The largest bone in the human body is the femur, also known as the thigh bone. It is about 19.4 inches (49.5 cm) long on average and can support up to 30 times the weight of a person’s body."
 
-    score = llm_context_recall(mock_generate_response, question, answer, context, 5)
+    score = llm_context_recall(mock_generate_response, question, answer, context)
     assert score == 75
 
 
