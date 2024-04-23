@@ -95,15 +95,13 @@ param DeployResourcesWithIsolatedNetwork bool
 @description('Address space for the virtual network')
 param VnetAddressSpace string = ''
 
-@description('Subnet name for the proxy server subnet')
-param ProxySubnetName string = 'AzureBastionSubnet'
-
 @description('Address space for the proxy server subnet')
 param ProxySubnetAddressSpace string = ''
 
 @description('Address space for the other azure resources subnet')
 param AzureSubnetAddressSpace string = ''
 
+var ProxySubnetName = 'AzureBastionSubnet'
 var VirtualNetworkName = '${environmentName}vnet'
 var AzureSubnetName = '${environmentName}azrsubnet'
 var tags = { 'azd-env-name': environmentName }
