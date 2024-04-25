@@ -916,7 +916,6 @@ def evaluate_prompts(
     mlflow.log_param("embedding_model_name", index_config.embedding_model.name)
     mlflow.log_param("ef_construction", index_config.ef_construction)
     mlflow.log_param("ef_search", index_config.ef_search)
-    mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"))
     mlflow.log_artifact(
