@@ -167,7 +167,11 @@ To deploy with isolated network use following command. (Replace the parameter va
 
 ```bash
 az login
-az deployment sub create --location <location> --template-file infra/main.bicep --parameters DeployResourcesWithIsolatedNetwork=true --parameters VnetAddressSpace=<vnet-address-space> --parameters ProxySubnetAddressSpace=<proxy-subnet-address-space> --parameters AzureSubnetAddressSpace=<azure-subnet-address-space>
+az deployment sub create --location <location> --template-file infra/main.bicep \
+--parameters DeployResourcesWithIsolatedNetwork=true \
+--parameters VnetAddressSpace=<vnet-address-space> \
+--parameters ProxySubnetAddressSpace=<proxy-subnet-address-space> \
+--parameters AzureSubnetAddressSpace=<azure-subnet-address-space>
 ```
 
 here is an example with parameter values:
