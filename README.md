@@ -176,13 +176,25 @@ AZURE_RESOURCES_SUBNET_ADDRESS_SPACE
 make deploy_with_isolated_network
 ```
 
-### 4. Deploy with Azure CLI
+### 3. Deploy with Azure CLI
 
 If you dont want to use `azd` you can use the normal `az` cli too.
+
+Use following command to deploy.
 
 ```bash
 az login
 az deployment group create --subscription <subscription-id> --resource-group <resource-group>  --template-file infra/main.bicep
+```
+
+Or
+
+To deploy with isolated network use following command.
+
+
+```bash
+az login
+az deployment sub create --location <location> --template-file infra/main.bicep --parameters DeployResourcesWithIsolatedNetwork=true --parameters VnetAddressSpace=<vnet-address-space> --parameters ProxySubnetAddressSpace=<proxy-subnet-address-space> --parameters AzureSubnetAddressSpace=<azure-subnet-address-space>
 ```
 
 ## How to use

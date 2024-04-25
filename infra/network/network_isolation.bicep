@@ -1,9 +1,15 @@
 param vnetName string
 param location string
+
+@minLength(1)
 param vnetAddressSpace string
 param proxySubnetName string
+
+@minLength(1)
 param proxySubnetAddressSpace string
 param azureSubnetName string
+
+@minLength(1)
 param azureSubnetAddressSpace string
 param resourcePrefix string
 param azureResources array

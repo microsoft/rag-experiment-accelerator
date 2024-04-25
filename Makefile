@@ -14,7 +14,6 @@ endif
 
 SHELL := /bin/bash
 target_title = @echo -e "\n\e[34m»»» 🧩 \e[96m$(1)\e[0m..."
-MAIN_BICEP_FILE = "./infra/main.bicep"
 
 help: ## 💬 This help message :)
 	@grep -E '[a-zA-Z_-]+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
@@ -70,17 +69,3 @@ flake: ## 🧹 Run flake8
 updatekv: ## 🔄 Update keyvault secrets
 	$(call target_title, "updating keyvault secrets")
 	python3 env_to_keyvault.py
-
-deploy: ## 🚀 Deploy Azure resources (without isolated network)
-	az deployment sub create \
-		--location $(LOCATION) \
-		--template-file $(MAIN_BICEP_FILE)
-
-deploy_with_isolated_network: ## 🚀 Deploy Azure resources with isolated network
-	az deployment sub create \
-		--location $(LOCATION) \
-		--template-file "$(MAIN_BICEP_FILE)" \
-		--parameters DeployResourcesWithIsolatedNetwork=true \
-		--parameters VnetAddressSpace=$(VIRTUAL_NETWORK_ADDRESS_SPACE) \
-		--parameters ProxySubnetAddressSpace=$(PROXY_SERVER_SUBNET_ADDRESS_SPACE) \
-		--parameters AzureSubnetAddressSpace=$(AZURE_RESOURCES_SUBNET_ADDRESS_SPACE)
