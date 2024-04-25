@@ -128,7 +128,7 @@ az account show
 
 ## Cloud setup
 
-There are 4 options to install all the required azure services:
+There are 3 options to install all the required azure services:
 
 ### 1. Install with Azure Developer CLI
 This project supports Azure Developer CLI.
