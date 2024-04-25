@@ -150,32 +150,6 @@ If you want to deploy the infrastructure yourself from template you can also cli
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Frag-experiment-accelerator%2Fdevelopment%2Finfra%2Fmain.json)
 
-### 3. Deploy with Make command (with option to deploy in isolated network)
-
-If you want to use make command you can use following command to deploy resources (without private network).
-
-```
-make deploy
-```
-
-If you want to deploy resources in isolated network with private endpoints, use following instructions.
-
-*** Note: This work is in progress and manual setup is needed for access of these resources for now.
-
-1. Ensure following environment variables are set
-
-```
-VIRTUAL_NETWORK_ADDRESS_SPACE
-PROXY_SERVER_SUBNET_ADDRESS_SPACE
-AZURE_RESOURCES_SUBNET_ADDRESS_SPACE
-```
-
-2. Run following make command.
-
-```
-make deploy_with_isolated_network
-```
-
 ### 3. Deploy with Azure CLI
 
 If you dont want to use `azd` you can use the normal `az` cli too.
