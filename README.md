@@ -163,11 +163,17 @@ az deployment sub create --subscription <subscription-id> --location <location> 
 
 Or
 
-To deploy with isolated network use following command.
+To deploy with isolated network use following command. (Replace the parameter values where needed)
 
 ```bash
 az login
 az deployment sub create --location <location> --template-file infra/main.bicep --parameters DeployResourcesWithIsolatedNetwork=true --parameters VnetAddressSpace=<vnet-address-space> --parameters ProxySubnetAddressSpace=<proxy-subnet-address-space> --parameters AzureSubnetAddressSpace=<azure-subnet-address-space>
+```
+
+here is an example with parameter values:
+
+```bash
+az deployment sub create --location uksouth --template-file infra/main.bicep --parameters DeployResourcesWithIsolatedNetwork=true --parameters VnetAddressSpace='10.0.0.0/16' --parameters ProxySubnetAddressSpace='10.0.1.0/24' --parameters AzureSubnetAddressSpace='10.0.2.0/24'
 ```
 
 ## How to use
