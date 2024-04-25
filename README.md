@@ -184,7 +184,7 @@ Use following command to deploy.
 
 ```bash
 az login
-az deployment group create --subscription <subscription-id> --resource-group <resource-group>  --template-file infra/main.bicep
+az deployment sub create --subscription <subscription-id> --location <location>  --template-file infra/main.bicep
 ```
 
 Or
