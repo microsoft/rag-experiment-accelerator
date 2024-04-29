@@ -19,6 +19,7 @@ Below are the required environment variables, to be added to a local .env file a
 |-------------------------------|--------------------------------------------|--------------------------------------------------------------------------|
 | AZURE_SEARCH_SERVICE_ENDPOINT |                                            | Azure AI Search API Endpoint                                      |
 | AZURE_SEARCH_ADMIN_KEY        |                                            | Azure AI Search Key                                               |
+| AZURE_SEARCH_USE_SEMANTIC_SEARCH         | True / False                                             | Whether to use semantic search (not all regions support this feature)                                               |
 | OPENAI_API_KEY                |                                            | OpenAI API key                                                           |
 | OPENAI_API_TYPE               | azure, open_ai                             | Must be `azure` for Azure OpenAI or `open_ai` for OpenAI.                |
 | OPENAI_ENDPOINT               |                                            | Azure OpenAI API endpoint.                                               |
