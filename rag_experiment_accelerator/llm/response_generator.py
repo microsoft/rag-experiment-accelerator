@@ -87,12 +87,14 @@ class ResponseGenerator:
 
         if self.json_object_supported and PromptTag.JSON in prompt.tags:
             kwargs["response_format"] = {"type": "json_object"}
-    
+
         try:
             response = self.client.chat.completions.create(
                 model=self.deployment_name,
                 messages=messages,
-                temperature=temperature if temperature is not None else self.temperature,
+                temperature=temperature
+                if temperature is not None
+                else self.temperature,
                 **kwargs,
             )
         except openai.BadRequestError as e:
@@ -107,6 +109,8 @@ class ResponseGenerator:
             raise ContentFilteredException("Content was filtered.")
 
         response_text = response.choices[0].message.content
+
+        print(response_text)
 
         formatted_response = self._interpret_response(response_text, prompt)
 
