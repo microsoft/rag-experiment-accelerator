@@ -9,6 +9,8 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
+from rag_experiment_accelerator.llm.prompt.instructurion_prompts import main_instruction_short
+
 
 logger = get_logger(__name__)
 
@@ -146,6 +148,8 @@ class Config:
             if "main_prompt_instruction" in config_json
             else "main_instruction_short.txt"
         )
+        main_instruction_short.update_system_prompt(self.MAIN_PROMPT_INSTRUCTION)
+        
         self.SAMPLE_DATA = "sampling" in config_json
         if self.SAMPLE_DATA:
             self.SAMPLE_PERCENTAGE = config_json["sampling"]["sample_percentage"]
