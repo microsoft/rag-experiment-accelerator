@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "12432953680684304440"
+      "templateHash": "9389500488197858567"
     }
   },
   "parameters": {
@@ -24,7 +24,7 @@
     "location": {
       "type": "string",
       "metadata": {
-        "description": "Location for all resources."
+        "description": "Location for all resources. Test this"
       }
     },
     "azureSearchUseSemanticSearch": {

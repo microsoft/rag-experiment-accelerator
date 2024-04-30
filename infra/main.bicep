@@ -7,7 +7,7 @@ param environmentName string
 
 param resourceToken string = toLower(uniqueString(subscription().id, environmentName, location))
 
-@description('Location for all resources.')
+@description('Location for all resources. Test this')
 param location string
 
 @description('Whether to enable semantic search. If enabled, the service will use the semantic search capability to improve the relevance of search results.')
