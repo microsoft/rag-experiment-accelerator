@@ -62,12 +62,9 @@ class Prompt:
 
     @staticmethod
     def _try_load_prompt_file(prompt_file: str) -> str:
-        logger.info(f"Trying to load prompt from file: {prompt_file}")
         if re.match(r'^[^\/:*?"<>|\r\n]+\.txt$', prompt_file):
-            logger.info(f"Prompt file is a valid file name: {prompt_file}")
             prompt_file = Prompt._get_prompt_file_path(prompt_file)
             if os.path.isfile(prompt_file):
-                logger.info(f"Reading prompt from file: {prompt_file}")
                 logger.debug(f"Reading prompt from file: {prompt_file}")
                 with open(prompt_file, "r") as f:
                     return f.read()

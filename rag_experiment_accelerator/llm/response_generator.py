@@ -90,8 +90,6 @@ class ResponseGenerator:
         if self.json_object_supported and PromptTag.JSON in prompt.tags:
             kwargs["response_format"] = {"type": "json_object"}
 
-        logger.info(f"Requesting response with messages:\n {messages}")
-
         try:
             response = self.client.chat.completions.create(
                 model=self.deployment_name,
@@ -114,11 +112,7 @@ class ResponseGenerator:
 
         response_text = response.choices[0].message.content
 
-        logger.info(f"Response: {response_text}")
-
-        formatted_response = self._interpret_response(response_text, prompt)
-
-        return formatted_response
+        return self._interpret_response(response_text, prompt)
 
     def generate_response(
         self, prompt: Prompt, temperature: float | None = None, **kwargs
@@ -134,11 +128,9 @@ class ResponseGenerator:
         sys_message = prompt.system_message.format(
             **{key: value for key, value in kwargs.items() if key in system_arguments}
         )
-        logger.info(f"System message:\n {sys_message}")
         user_template = prompt.user_template.format(
             **{key: value for key, value in kwargs.items() if key in user_arguments}
         )
-        logger.info(f"User template:\n {user_template}")
 
         messages = [
             {"role": "system", "content": sys_message},
