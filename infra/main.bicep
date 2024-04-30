@@ -89,21 +89,18 @@ param machineLearningName string = 'aml-${resourceToken}'
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
 
-@description('Flag to deploy resources in isolated network. Manual setup is required to access the deployed resources.')
-param DeployResourcesWithIsolatedNetwork bool
-
 @description('Address space for the virtual network')
-param VnetAddressSpace string = ''
+param vnetAddressSpace string = ''
 
 @description('Address space for the proxy server subnet')
-param ProxySubnetAddressSpace string = ''
+param proxySubnetAddressSpace string = ''
 
 @description('Address space for the other azure resources subnet')
-param AzureSubnetAddressSpace string = ''
+param subnetAddressSpace string = ''
 
-var ProxySubnetName = 'AzureBastionSubnet'
-var VirtualNetworkName = '${environmentName}vnet'
-var AzureSubnetName = '${environmentName}azrsubnet'
+var proxySubnetName = 'AzureBastionSubnet'
+var virtualNetworkName = 'vnet-${resourceToken}'
+var subnetName = 'subnet-${resourceToken}'
 var tags = { 'azd-env-name': environmentName }
 var rgName = 'rg-${environmentName}'
 var keyVaultName = 'kv-${resourceToken}'
@@ -217,17 +214,17 @@ module storekeys './shared/storekeys.bicep' = {
 // These resources should be added to the azureResources array in the network_resources module.
 // TODO: Add private endpoints to other required resources.
 module network_resources 'network/network_isolation.bicep' =
-  if (DeployResourcesWithIsolatedNetwork) {
+  if (vnetAddressSpace != '' && proxySubnetAddressSpace != '' && subnetAddressSpace != '') {
     name: 'network_isolation_resources'
     scope: rg
     params: {
-      vnetName: VirtualNetworkName
+      vnetName: virtualNetworkName
       location: location
-      vnetAddressSpace: VnetAddressSpace
-      proxySubnetName: ProxySubnetName
-      proxySubnetAddressSpace: ProxySubnetAddressSpace
-      azureSubnetName: AzureSubnetName
-      azureSubnetAddressSpace: AzureSubnetAddressSpace
+      vnetAddressSpace: vnetAddressSpace
+      proxySubnetName: proxySubnetName
+      proxySubnetAddressSpace: proxySubnetAddressSpace
+      azureSubnetName: subnetName
+      azureSubnetAddressSpace: subnetAddressSpace
       resourcePrefix: environmentName
       azureResources: [
         {

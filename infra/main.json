@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.25.53.49325",
-      "templateHash": "4997696920706548532"
+      "version": "0.26.170.59819",
+      "templateHash": "14273384520214979046"
     }
   },
   "parameters": {
@@ -27,16 +27,56 @@
         "description": "Location for all resources."
       }
     },
+    "azureSearchUseSemanticSearch": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to enable semantic search. If enabled, the service will use the semantic search capability to improve the relevance of search results."
+      }
+    },
     "azureAISearchLocation": {
       "type": "string",
       "defaultValue": "[parameters('location')]",
+      "allowedValues": [
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "centraluseuap",
+        "eastasia",
+        "eastus",
+        "eastus2",
+        "eastus2euap",
+        "eastusstg",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "qatarcentral",
+        "southcentralus",
+        "southeastasia",
+        "switzerlandnorth",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westus",
+        "westus2",
+        "westus3"
+      ],
       "metadata": {
         "description": "Location for all resources. https://aka.ms/semanticsearchavailability for list of available regions."
       }
     },
     "azureAISearchName": {
       "type": "string",
-      "defaultValue": "[format('{0}-search-{1}', parameters('environmentName'), parameters('resourceToken'))]",
+      "defaultValue": "[format('search-{0}', parameters('resourceToken'))]",
       "metadata": {
         "description": "Azure AI Search Resource"
       }
@@ -57,7 +97,7 @@
     },
     "azureOpenAIResourceName": {
       "type": "string",
-      "defaultValue": "[format('{0}-openai-{1}', parameters('environmentName'), parameters('resourceToken'))]",
+      "defaultValue": "[format('openai-{0}', parameters('resourceToken'))]",
       "metadata": {
         "description": "Name of Azure OpenAI Resource"
       }
@@ -92,7 +132,7 @@
     },
     "applicationInsightsName": {
       "type": "string",
-      "defaultValue": "[format('{0}-appinsights-{1}', parameters('environmentName'), parameters('resourceToken'))]",
+      "defaultValue": "[format('appinsights-{0}', parameters('resourceToken'))]",
       "metadata": {
         "description": "Name of Azure Application Insights Resource"
       }
@@ -106,7 +146,7 @@
     },
     "machineLearningName": {
       "type": "string",
-      "defaultValue": "[format('{0}-aml-{1}', parameters('environmentName'), parameters('resourceToken'))]",
+      "defaultValue": "[format('aml-{0}', parameters('resourceToken'))]",
       "metadata": {
         "description": "Name of Azure Machine Learning Workspace"
       }
@@ -117,9 +157,33 @@
       "metadata": {
         "description": "Id of the user or app to assign application roles"
       }
+    },
+    "vnetAddressSpace": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Address space for the virtual network"
+      }
+    },
+    "proxySubnetAddressSpace": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Address space for the proxy server subnet"
+      }
+    },
+    "subnetAddressSpace": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Address space for the other azure resources subnet"
+      }
     }
   },
   "variables": {
+    "proxySubnetName": "AzureBastionSubnet",
+    "virtualNetworkName": "[format('vnet-{0}', parameters('resourceToken'))]",
+    "subnetName": "[format('subnet-{0}', parameters('resourceToken'))]",
     "tags": {
       "azd-env-name": "[parameters('environmentName')]"
     },
@@ -164,8 +228,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "14884193696362060011"
+              "version": "0.26.170.59819",
+              "templateHash": "2144895217405179275"
             }
           },
           "parameters": {
@@ -184,7 +248,7 @@
               "type": "string",
               "defaultValue": "",
               "metadata": {
-                "description": "Service principal that should be granted read access to the KeyVault. If unset, no service principal is granted access by default"
+                "description": "Service principal will be granted read access to the KeyVault. If unset, no service principal is granted access by default"
               }
             }
           },
@@ -251,9 +315,7 @@
               "name": "[parameters('azureSearchSku')]"
             }
           },
-          "semanticSearch": {
-            "value": "free"
-          },
+          "semanticSearch": "[if(parameters('azureSearchUseSemanticSearch'), createObject('value', 'free'), createObject('value', 'disabled'))]",
           "tags": {
             "value": "[variables('tags')]"
           }
@@ -264,8 +326,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "5434998258420532507"
+              "version": "0.26.170.59819",
+              "templateHash": "295197739825834822"
             },
             "description": "Creates an Azure AI Search instance."
           },
@@ -434,8 +496,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "4323404314272769013"
+              "version": "0.26.170.59819",
+              "templateHash": "16884678060833239913"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -573,8 +635,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "262159418746831316"
+              "version": "0.26.170.59819",
+              "templateHash": "246951497570111474"
             },
             "description": "Creates an Azure storage account."
           },
@@ -797,8 +859,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "10518908304769171542"
+              "version": "0.26.170.59819",
+              "templateHash": "17106390582722715244"
             }
           },
           "parameters": {
@@ -907,8 +969,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "5366982923684200000"
+              "version": "0.26.170.59819",
+              "templateHash": "16886330728560920883"
             },
             "description": "Creates an Azure Machine Learning Workspace."
           },
@@ -1000,8 +1062,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.53.49325",
-              "templateHash": "462918528232412581"
+              "version": "0.26.170.59819",
+              "templateHash": "10780223516248415530"
             }
           },
           "parameters": {
@@ -1023,11 +1085,11 @@
             },
             "openAIKeyName": {
               "type": "string",
-              "defaultValue": "openai_api_key"
+              "defaultValue": "openai-api-key"
             },
             "searchKeyName": {
               "type": "string",
-              "defaultValue": "azure_search_admin_key"
+              "defaultValue": "azure-search-admin-key"
             }
           },
           "resources": [
@@ -1068,9 +1130,178 @@
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureAISearchName'))]"
       ]
+    },
+    {
+      "condition": "[and(and(not(equals(parameters('vnetAddressSpace'), '')), not(equals(parameters('proxySubnetAddressSpace'), ''))), not(equals(parameters('subnetAddressSpace'), '')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "network_isolation_resources",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('virtualNetworkName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vnetAddressSpace": {
+            "value": "[parameters('vnetAddressSpace')]"
+          },
+          "proxySubnetName": {
+            "value": "[variables('proxySubnetName')]"
+          },
+          "proxySubnetAddressSpace": {
+            "value": "[parameters('proxySubnetAddressSpace')]"
+          },
+          "azureSubnetName": {
+            "value": "[variables('subnetName')]"
+          },
+          "azureSubnetAddressSpace": {
+            "value": "[parameters('subnetAddressSpace')]"
+          },
+          "resourcePrefix": {
+            "value": "[parameters('environmentName')]"
+          },
+          "azureResources": {
+            "value": [
+              {
+                "type": "blob",
+                "name": "[parameters('storageAccountName')]",
+                "resourceId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('storageAccountName')), '2022-09-01').outputs.id.value]"
+              },
+              {
+                "type": "vault",
+                "name": "keyvault",
+                "resourceId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'keyvault'), '2022-09-01').outputs.id.value]"
+              },
+              {
+                "type": "amlworkspace",
+                "name": "[parameters('machineLearningName')]",
+                "resourceId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('machineLearningName')), '2022-09-01').outputs.workspaceId.value]"
+              }
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.26.170.59819",
+              "templateHash": "15313621382123983055"
+            }
+          },
+          "parameters": {
+            "vnetName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "vnetAddressSpace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "proxySubnetName": {
+              "type": "string"
+            },
+            "proxySubnetAddressSpace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "azureSubnetName": {
+              "type": "string"
+            },
+            "azureSubnetAddressSpace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resourcePrefix": {
+              "type": "string"
+            },
+            "azureResources": {
+              "type": "array"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-06-01",
+              "name": "[parameters('vnetName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('vnetAddressSpace')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('proxySubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('proxySubnetAddressSpace')]"
+                    }
+                  },
+                  {
+                    "name": "[parameters('azureSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('azureSubnetAddressSpace')]"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "copy": {
+                "name": "privateEndpoints",
+                "count": "[length(parameters('azureResources'))]"
+              },
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2020-07-01",
+              "name": "[format('{0}{1}PrivateEndpoint', parameters('resourcePrefix'), parameters('azureResources')[copyIndex()].type)]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}{1}PLSConnection', parameters('resourcePrefix'), parameters('azureResources')[copyIndex()].type)]",
+                    "properties": {
+                      "privateLinkServiceId": "[parameters('azureResources')[copyIndex()].resourceId]",
+                      "groupIds": [
+                        "[parameters('azureResources')[copyIndex()].type]"
+                      ]
+                    }
+                  }
+                ],
+                "subnet": {
+                  "id": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('azureSubnetName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'keyvault')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('machineLearningName'))]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('storageAccountName'))]"
+      ]
     }
   ],
   "outputs": {
+    "USE_KEY_VAULT": {
+      "type": "string",
+      "value": "true"
+    },
     "AZURE_KEY_VAULT_ENDPOINT": {
       "type": "string",
       "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'keyvault'), '2022-09-01').outputs.endpoint.value]"
@@ -1078,6 +1309,10 @@
     "AZURE_SEARCH_SERVICE_ENDPOINT": {
       "type": "string",
       "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureAISearchName')), '2022-09-01').outputs.endpoint.value]"
+    },
+    "AZURE_SEARCH_USE_SEMANTIC_SEARCH": {
+      "type": "bool",
+      "value": "[parameters('azureSearchUseSemanticSearch')]"
     },
     "OPENAI_API_TYPE": {
       "type": "string",
