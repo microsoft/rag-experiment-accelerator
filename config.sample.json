@@ -1,5 +1,8 @@
 {
-    "name_prefix": "surface",
+    "index_name_prefix": "idx",
+    "experiment_name": "",
+    "job_name": "",
+    "job_description": "",
     "preprocess": false,
     "chunking": {
         "chunk_size": [1000],

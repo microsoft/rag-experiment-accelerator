@@ -154,9 +154,32 @@ If you want to deploy the infrastructure yourself from template you can also cli
 
 If you dont want to use `azd` you can use the normal `az` cli too.
 
+Use following command to deploy.
+
 ```bash
 az login
-az deployment group create --subscription <subscription-id> --resource-group <resource-group>  --template-file infra/main.bicep
+az deployment sub create --subscription <subscription-id> --location <location>  --template-file infra/main.bicep
+```
+
+Or
+
+To deploy with isolated network use following command. (Replace the parameter values where needed). If you do not fill in all three, the deployment will not deploy this to an isolated network.
+
+```bash
+az login
+az deployment sub create --location <location> --template-file infra/main.bicep \
+--parameters vnetAddressSpace=<vnet-address-space> \
+--parameters proxySubnetAddressSpace=<proxy-subnet-address-space> \
+--parameters subnetAddressSpace=<azure-subnet-address-space>
+```
+
+here is an example with parameter values:
+
+```bash
+az deployment sub create --location uksouth --template-file infra/main.bicep \
+--parameters vnetAddressSpace='10.0.0.0/16' \
+--parameters proxySubnetAddressSpace='10.0.1.0/24' \
+--parameters subnetAddressSpace='10.0.2.0/24'
 ```
 
 ## How to use

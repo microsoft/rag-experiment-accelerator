@@ -89,6 +89,18 @@ param machineLearningName string = 'aml-${resourceToken}'
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
 
+@description('Address space for the virtual network')
+param vnetAddressSpace string = ''
+
+@description('Address space for the proxy server subnet')
+param proxySubnetAddressSpace string = ''
+
+@description('Address space for the other azure resources subnet')
+param subnetAddressSpace string = ''
+
+var proxySubnetName = 'AzureBastionSubnet'
+var virtualNetworkName = 'vnet-${resourceToken}'
+var subnetName = 'subnet-${resourceToken}'
 var tags = { 'azd-env-name': environmentName }
 var rgName = 'rg-${environmentName}'
 var keyVaultName = 'kv-${resourceToken}'
@@ -198,6 +210,42 @@ module storekeys './shared/storekeys.bicep' = {
   }
 }
 
+// More resources can be added here to deploy with private endpoints.
+// These resources should be added to the azureResources array in the network_resources module.
+// TODO: Add private endpoints to other required resources.
+module network_resources 'network/network_isolation.bicep' =
+  if (vnetAddressSpace != '' && proxySubnetAddressSpace != '' && subnetAddressSpace != '') {
+    name: 'network_isolation_resources'
+    scope: rg
+    params: {
+      vnetName: virtualNetworkName
+      location: location
+      vnetAddressSpace: vnetAddressSpace
+      proxySubnetName: proxySubnetName
+      proxySubnetAddressSpace: proxySubnetAddressSpace
+      azureSubnetName: subnetName
+      azureSubnetAddressSpace: subnetAddressSpace
+      resourcePrefix: environmentName
+      azureResources: [
+        {
+          type: 'blob'
+          name: storage.name
+          resourceId: storage.outputs.id
+        }
+        {
+          type: 'vault'
+          name: keyvault.name
+          resourceId: keyvault.outputs.id
+        }
+        {
+          type: 'amlworkspace'
+          name: machineLearning.name
+          resourceId: machineLearning.outputs.workspaceId
+        }
+      ]
+    }
+  }
+
 output USE_KEY_VAULT string = 'true'
 output AZURE_KEY_VAULT_ENDPOINT string = keyvault.outputs.endpoint
 output AZURE_SEARCH_SERVICE_ENDPOINT string = search.outputs.endpoint
@@ -206,7 +254,7 @@ output OPENAI_API_TYPE string = 'azure'
 output OPENAI_ENDPOINT string = openai.outputs.endpoint
 output OPENAI_API_VERSION string = '2023-03-15-preview'
 output AML_SUBSCRIPTION_ID string = subscription().subscriptionId
-output AML_WORKSPACE_NAME string = machineLearning.outputs.workspaceName  
+output AML_WORKSPACE_NAME string = machineLearning.outputs.workspaceName
 output AML_RESOURCE_GROUP_NAME string = rgName
 // output AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT string = 
 // output AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY string =
