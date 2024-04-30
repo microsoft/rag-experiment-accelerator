@@ -166,7 +166,6 @@ def do_we_need_multiple_questions(
     if not config.CHAIN_OF_THOUGHTS:
         return False
 
-
     response: str | None = response_generator.generate_response(
         do_need_multiple_prompt_instruction,
         text=question,
@@ -199,12 +198,12 @@ def chunks_to_index_documents(chunks):
             "content": str(chunk["content"]),
             "filename": chunk["filename"],
             "sourceDisplayName": chunk["source_display_name"],
-            "contentVector": chunk["content_vector"]
-            if "content_vector" in chunk
-            else [],
-            "summaryVector": chunk["summary_vector"]
-            if "summary_vector" in chunk
-            else [],
+            "contentVector": (
+                chunk["content_vector"] if "content_vector" in chunk else []
+            ),
+            "summaryVector": (
+                chunk["summary_vector"] if "summary_vector" in chunk else []
+            ),
             "titleVector": chunk["title_vector"] if "title_vector" in chunk else [],
         }
         for chunk in chunks

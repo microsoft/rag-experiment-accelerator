@@ -255,7 +255,9 @@ def lcsstr(value1, value2):
     return score
 
 
-def llm_answer_relevance(response_generator: ResponseGenerator, question, answer) -> float:
+def llm_answer_relevance(
+    response_generator: ResponseGenerator, question, answer
+) -> float:
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -270,11 +272,10 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
 
     """
     result = response_generator.generate_response(
-        llm_answer_relevance_instruction, 
-        text=answer
+        llm_answer_relevance_instruction, text=answer
     )
     if result is None:
-        logger.warning(f"Unable to generate answer relevance score")
+        logger.warning("Unable to generate answer relevance score")
         return 0.0
 
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
@@ -286,7 +287,9 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
     return float(similarity_score[0][0] * 100)
 
 
-def llm_context_precision(response_generator: ResponseGenerator, question, context) -> float:
+def llm_context_precision(
+    response_generator: ResponseGenerator, question, context
+) -> float:
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -303,9 +306,9 @@ def llm_context_precision(response_generator: ResponseGenerator, question, conte
         question=question,
     )
     if result is None:
-        logger.warning(f"Unable to generate context precision score")
+        logger.warning("Unable to generate context precision score")
         return 0.0
-    
+
     # Since we're only asking for one response, the result is always a boolean 1 or 0
     if result.lower().strip() == "yes":
         return 100.0

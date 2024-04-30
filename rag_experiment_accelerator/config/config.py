@@ -9,7 +9,9 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
-from rag_experiment_accelerator.llm.prompt.instructurion_prompts import main_instruction_short
+from rag_experiment_accelerator.llm.prompt.instructurion_prompts import (
+    main_instruction_short,
+)
 
 
 logger = get_logger(__name__)
@@ -149,7 +151,7 @@ class Config:
             else "main_instruction_short.txt"
         )
         main_instruction_short.update_system_prompt(self.MAIN_PROMPT_INSTRUCTION)
-        
+
         self.SAMPLE_DATA = "sampling" in config_json
         if self.SAMPLE_DATA:
             self.SAMPLE_PERCENTAGE = config_json["sampling"]["sample_percentage"]
@@ -212,9 +214,9 @@ class Config:
                                 embedding_model=embedding_model,
                                 ef_construction=ef_construction,
                                 ef_search=ef_search,
-                                sampling_percentage=self.SAMPLE_PERCENTAGE
-                                if self.SAMPLE_DATA
-                                else 0,
+                                sampling_percentage=(
+                                    self.SAMPLE_PERCENTAGE if self.SAMPLE_DATA else 0
+                                ),
                                 generate_title=self.GENERATE_TITLE,
                                 generate_summary=self.GENERATE_SUMMARY,
                                 override_content_with_summary=self.OVERRIDE_CONTENT_WITH_SUMMARY,

@@ -57,7 +57,7 @@ class IndexConfig:
         )
         if index_name.startswith("_") or index_name.startswith("-"):
             index_name = "i" + index_name
-            
+
         index_name = index_name[:127]
 
         return index_name
