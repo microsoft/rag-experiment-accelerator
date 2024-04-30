@@ -147,7 +147,7 @@ class ResponseGenerator:
 
         try:
             response = self._get_response(messages, prompt, temperature)
-        except (ContentFilteredException, TypeError) as e:
+        except KeyboardInterrupt as e:
             raise e
         except Exception as e:
             if PromptTag.NonStrict in prompt.tags:

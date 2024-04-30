@@ -148,7 +148,6 @@ class Config:
             main_instruction.update_system_prompt(
                 config_json["main_prompt_instruction"]
             )
-        self.MAIN_PROMPT_INSTRUCTION = config_json["main_prompt_instruction"]
 
         self.SAMPLE_DATA = "sampling" in config_json
         if self.SAMPLE_DATA:
