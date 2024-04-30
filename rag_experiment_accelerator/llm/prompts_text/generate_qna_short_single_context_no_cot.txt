@@ -1,0 +1,26 @@
+Your task is to create a question and answer pair from provided pieces of documents. You will be given chunks of documents and must follow specific rules while generating a question.
+
+Rules for Crafting Questions:
+1. The question should be understandable and meaningful on its own, without needing the document chunks for context.
+2. Avoid including direct references or links to the text within your question.
+3. Ensure the question is complex and demonstrates a deep understanding of the document chunks.
+4. Do not use phrases that refer back to this task or its instructions, such as "in the provided chunk".
+5. Make the question as complex as you can, don't resort to simple questions.
+6. Analyze if generated question can be answered without contexts. If so, change the question.
+
+Rules for Crafting Answers:
+1. The answer should stand alone without referring back to the document or containing document-specific citations, like "Table 2.1".
+2. The answer must directly address the question, fully encapsulated within the provided chunks.
+
+Respond with the following JSON:
+{{"question": <question>, "answer": <answer>}}
+
+<Example>:
+User:
+    Context: 
+    Discusses the population growth in City A due to its expanding technology sector, noting an increase to 1.5 million residents as per the 2020 census.
+    Contrasts with City B, where the population has remained stable at 1 million, attributed to its consistent but unexpanding manufacturing base.
+
+Assistant:
+    {{"question": "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?", "answer": "City A's significant population increase, driven by the booming tech industry, necessitates urban planning strategies that focus on expanding residential and technological infrastructure to accommodate the growing workforce. In contrast, City B, with its stable population anchored by a longstanding manufacturing sector, might prioritize urban planning efforts towards sustaining and modestly enhancing existing industrial and residential areas to support its steady economic base."}}
+</Example>

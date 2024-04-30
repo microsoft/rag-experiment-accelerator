@@ -10,7 +10,7 @@ from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.llm.prompt import (
     do_need_multiple_prompt_instruction,
     multiple_prompt_instruction,
-    generate_qna_long_single_context_instruction_prompt,
+    generate_qna_short_single_context_no_cot_instruction_prompt,
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.timetook import TimeTook
@@ -112,7 +112,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
         chunk = list(doc.values())[0]
         if len(chunk["content"]) > 50:
             response = response_generator.generate_response(
-                generate_qna_long_single_context_instruction_prompt,
+                generate_qna_short_single_context_no_cot_instruction_prompt,
                 context=chunk["content"],
             )
 

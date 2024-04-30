@@ -1,6 +1,7 @@
 import json
 from rag_experiment_accelerator.llm.prompt.prompt import (
     StructuredWithCoTPrompt,
+    StructuredPrompt,
     PromptTag,
 )
 
@@ -46,6 +47,14 @@ generate_qna_long_multiple_context_instruction_prompt = StructuredWithCoTPrompt(
 # TODO: Add selector for usage of long/short prompts
 generate_qna_short_multiple_context_instruction_prompt = StructuredWithCoTPrompt(
     system_message="generate_qna_short_multi_context.txt",
+    user_template=_response_template,
+    tags=[PromptTag.JSON],
+    validator=qna_generation_validate,
+)
+
+# TODO: Add selector for usage of long/short prompts
+generate_qna_short_single_context_no_cot_instruction_prompt = StructuredPrompt(
+    system_message="generate_qna_short_single_context_no_cot.txt",
     user_template=_response_template,
     tags=[PromptTag.JSON],
     validator=qna_generation_validate,
