@@ -199,4 +199,4 @@ Assistant:
     {{"question": "Given the 15% decrease in car usage during peak hours in cities with bike-sharing and a 10% increase in physical activity levels, what specific urban planning strategies are being formulated to capitalize on these trends, particularly the 30% expansion in green spaces and cycling infrastructure?", "answer": "The observed 15% reduction in car usage and the corresponding 10% increase in physical activity in cities with bike-sharing programs underscore the programs' effectiveness in promoting sustainable transportation and healthier lifestyles. In response, urban planners are formulating strategies to further encourage these trends, including a significant 30% expansion in green spaces and cycling infrastructure over the next five years. These initiatives aim not only to enhance the urban environment and resident well-being but also to sustain the momentum towards more eco-friendly and active urban lifestyles."}}
 </Example 5>
 
-USE ${separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON
+USE ${separator} TO SEPARATE ANALYTICAL PROCESS FROM THE RESULTING JSON

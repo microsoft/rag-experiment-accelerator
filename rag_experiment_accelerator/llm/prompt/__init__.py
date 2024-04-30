@@ -14,7 +14,7 @@ from rag_experiment_accelerator.llm.prompt.hyde_prompts import (
     prompt_generate_hypothetical_questions,
 )
 
-from rag_experiment_accelerator.llm.prompt.instructurion_prompts import (
+from rag_experiment_accelerator.llm.prompt.instruction_prompts import (
     prompt_instruction_entities,
     prompt_instruction_keywords,
     prompt_instruction_title,

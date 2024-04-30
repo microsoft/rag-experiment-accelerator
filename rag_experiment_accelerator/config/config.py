@@ -9,9 +9,7 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
-from rag_experiment_accelerator.llm.prompt.instructurion_prompts import (
-    main_instruction_short,
-)
+from rag_experiment_accelerator.llm.prompt import main_instruction
 
 
 logger = get_logger(__name__)
@@ -145,12 +143,12 @@ class Config:
             self.EF_CONSTRUCTIONS,
             self.EF_SEARCHES,
         )
-        self.MAIN_PROMPT_INSTRUCTION = (
-            config_json["main_prompt_instruction"]
-            if "main_prompt_instruction" in config_json
-            else "main_instruction_short.txt"
-        )
-        main_instruction_short.update_system_prompt(self.MAIN_PROMPT_INSTRUCTION)
+
+        if "main_prompt_instruction" in config_json:
+            main_instruction.update_system_prompt(
+                config_json["main_prompt_instruction"]
+            )
+        self.MAIN_PROMPT_INSTRUCTION = config_json["main_prompt_instruction"]
 
         self.SAMPLE_DATA = "sampling" in config_json
         if self.SAMPLE_DATA:
