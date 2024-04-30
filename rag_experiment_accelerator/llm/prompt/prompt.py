@@ -1,5 +1,5 @@
 import os
-import pkg_resources
+from importlib import resources
 import string
 import re
 
@@ -50,8 +50,8 @@ class Prompt:
 
     @staticmethod
     def _get_prompt_file_path(prompt_file: str) -> str:
-        base_path = f"llm/prompts_text/{prompt_file}"
-        return pkg_resources.resource_filename(__name__, base_path)
+        base_path = os.path.join("llm", "prompts_text", prompt_file)
+        return resources.files('rag_experiment_accelerator').joinpath(base_path).resolve()
 
     @staticmethod
     def _try_load_prompt_file(prompt_file: str) -> str:

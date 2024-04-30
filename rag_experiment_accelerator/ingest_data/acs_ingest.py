@@ -1,8 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import hashlib
-import json
-import traceback
 
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
