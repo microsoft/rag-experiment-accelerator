@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "12432953680684304440"
+      "templateHash": "14273384520214979046"
     }
   },
   "parameters": {
@@ -229,7 +229,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.26.170.59819",
-              "templateHash": "14632940777771929108"
+              "templateHash": "2144895217405179275"
             }
           },
           "parameters": {
@@ -248,7 +248,7 @@
               "type": "string",
               "defaultValue": "",
               "metadata": {
-                "description": "Service principal that should be granted read access to the KeyVault. If unset, no service principal is granted access by default"
+                "description": "Service principal will be granted read access to the KeyVault. If unset, no service principal is granted access by default"
               }
             }
           },
