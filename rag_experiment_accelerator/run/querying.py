@@ -25,8 +25,6 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
     we_need_multiple_questions,
 )
-from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
     llm_rerank_documents,
@@ -44,10 +42,14 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.llm.prompts import (
-    prompt_generated_hypothetical_answer,
-    prompt_generated_hypothetical_document_to_answer,
-    prompt_generated_related_questions,
+
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.llm.prompt import (
+    Prompt,
+    prompt_generate_hypothetical_answer,
+    prompt_generate_hypothetical_document,
+    prompt_generate_hypothetical_questions,
+    main_instruction_short,
 )
 
 load_dotenv(override=True)
@@ -148,13 +150,13 @@ def hyde(
     for query in queries:
         if config.HYDE == "generated_hypothetical_answer":
             result = response_generator.generate_response(
-                prompt_generated_hypothetical_answer,
-                query,
+                prompt_generate_hypothetical_answer,
+                text=query,
             )
         elif config.HYDE == "generated_hypothetical_document_to_answer":
             result = response_generator.generate_response(
-                prompt_generated_hypothetical_document_to_answer,
-                query,
+                prompt_generate_hypothetical_document,
+                text=query,
             )
         else:
             raise NotImplementedError(
@@ -172,14 +174,14 @@ def query_expansion(
 ) -> list[str]:
     # Query expansion with generated questions
     augmented_questions = response_generator.generate_response(
-        prompt_generated_related_questions,
-        query,
+        prompt_generate_hypothetical_questions,
+        text=query,
     )
 
     # Filter out non related questions
     questions = filter_non_related_questions(
         query,
-        augmented_questions.split("\n"),
+        augmented_questions,
         embedding_model,
         config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
     )
@@ -303,7 +305,7 @@ def query_and_eval_acs_multi(
     environment: Environment,
     config: Config,
     evaluator: SpacyEvaluator,
-    main_prompt_instruction: str,
+    main_prompt_instruction: Prompt,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
@@ -319,7 +321,7 @@ def query_and_eval_acs_multi(
         evaluation_content (str): The content to use for evaluation.
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
-        main_prompt_instruction (str): The main prompt instruction for the query
+        main_prompt_instruction (Prompt): The main prompt instruction for the query
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
@@ -327,9 +329,11 @@ def query_and_eval_acs_multi(
     """
     context = []
     evaluations = []
+
     response_generator = ResponseGenerator(
         environment, config, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
     )
+
     for question in questions:
         docs, evaluation = query_and_eval_acs(
             search_client=search_client,
@@ -354,14 +358,16 @@ def query_and_eval_acs_multi(
             )
         else:
             prompt_instruction_context = docs
+        
+        request_context = "\n".join(prompt_instruction_context)
+        request_question = original_prompt
 
-        full_prompt_instruction = (
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        )
         openai_response = response_generator.generate_response(
-            full_prompt_instruction,
-            original_prompt,
+            main_prompt_instruction,
+            context=request_context,
+            question=request_question,
         )
+
         context.append(openai_response)
         logger.debug(openai_response)
 
@@ -381,7 +387,7 @@ def query_and_eval_single_line(
     question_count: int,
 ):
     logger.info(f"Processing question {line_number + 1} out of {question_count}\n\n")
-    data = json.loads(line)
+    data: dict[str, any] = json.loads(line)
     user_prompt = data.get("user_prompt")
     output_prompt = data.get("output_prompt")
     qna_context = data.get("context", "")
@@ -389,24 +395,17 @@ def query_and_eval_single_line(
     is_multi_question = do_we_need_multiple_questions(
         user_prompt, response_generator, config
     )
+    new_questions = []
     if is_multi_question:
-        try:
-            llm_response = we_need_multiple_questions(user_prompt, response_generator)
-            responses = json.loads(llm_response)
-            new_questions = []
-            if isinstance(responses, dict):
-                new_questions = responses["questions"]
-            else:
-                for response in responses:
-                    if "question" in response:
-                        new_questions.append(response["question"])
-            new_questions.append(user_prompt)
-        except ContentFilteredException as e:
-            logger.error(
-                f"Content Filtered. Unable to generate multiple questions for: {user_prompt}",
-                exc_info=e,
+        new_questions = we_need_multiple_questions(user_prompt, response_generator)
+
+        if new_questions is None:
+            logger.warning(
+                f"Unable to generate multiple questions for: {user_prompt}. Skipping..."
             )
             is_multi_question = False
+        else:
+            new_questions.append(user_prompt)
 
     evaluation_content = user_prompt + qna_context
 
@@ -428,7 +427,7 @@ def query_and_eval_single_line(
                     environment=environment,
                     config=config,
                     evaluator=evaluator,
-                    main_prompt_instruction=config.MAIN_PROMPT_INSTRUCTION,
+                    main_prompt_instruction=main_instruction_short,
                 )
             else:
                 (
@@ -454,15 +453,12 @@ def query_and_eval_single_line(
             else:
                 prompt_instruction_context = docs
 
-            full_prompt_instruction = (
-                config.MAIN_PROMPT_INSTRUCTION
-                + "\n"
-                + "\n".join(prompt_instruction_context)
-            )
             openai_response = response_generator.generate_response(
-                full_prompt_instruction,
-                user_prompt,
+                main_instruction_short,
+                context="\n".join(prompt_instruction_context),
+                question=user_prompt,
             )
+
             logger.debug(openai_response)
 
             output = QueryOutput(

@@ -1,0 +1,37 @@
+You are provided with a list of documents, each identified by a number and accompanied by a summary.
+A user question is also given.
+Rank these documents based on their relevance to the question, assigning each a relevance score from 1 to 10, where 10 indicates the highest relevance.
+Respond with the reranked document numbers and their relevance scores formatted as a JSON string, according to the schema below.
+Ensure the JSON string contains all listed documents and adheres to format specifications without any additional text or explanation.
+
+<Example>
+User:
+    Document 1: 
+    Overview of renewable energy trends and their economic impacts.
+
+    Document 2:
+    Analysis of fossil fuel dependency in developing countries.
+
+    Document 3:
+    Detailed report on the advancements in solar energy panels.
+
+    Document 4:
+    Comparison of wind energy efficiencies across continents.
+
+    Document 5:
+    Study on the environmental impacts of hydraulic fracturing.
+
+    Document 6:
+    Historical data on the use of renewable resources in Europe.
+
+    Question: What are the latest developments in solar energy technology?
+
+Assistant:
+    {{
+        "document_3": 10,
+        "document_1": 7,
+        "document_4": 6,
+        "document_6": 4,
+        "document_2": 3,
+        "document_5": 2
+    }}

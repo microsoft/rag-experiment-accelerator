@@ -13,6 +13,7 @@ from rag_experiment_accelerator.run.querying import (
     query_and_eval_acs,
     query_and_eval_acs_multi,
 )
+from rag_experiment_accelerator.llm.prompt import Prompt
 
 
 class TestQuerying(unittest.TestCase):
@@ -37,6 +38,10 @@ class TestQuerying(unittest.TestCase):
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
+        self.prompt = MagicMock(spec=Prompt)
+        self.prompt.tags = []
+        self.prompt.system_message = "system message"
+        self.prompt.user_template = "user template"
 
     @patch("rag_experiment_accelerator.run.querying.search_mapping")
     def test_query_acs(self, mock_search_mapping):
@@ -189,8 +194,9 @@ class TestQuerying(unittest.TestCase):
             self.mock_config,
         )
         mock_response_generator.return_value.generate_response.assert_called_with(
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context),
-            original_prompt,
+            main_prompt_instruction,
+            context="\n".join(prompt_instruction_context),
+            question=original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
@@ -254,8 +260,9 @@ class TestQuerying(unittest.TestCase):
         )
         mock_rerank_documents.assert_not_called()
         mock_response_generator.return_value.generate_response.assert_called_with(
-            main_prompt_instruction + "\n" + "\n".join(mock_docs),
-            original_prompt,
+            main_prompt_instruction,
+            context="\n".join(mock_docs),
+            question=original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])

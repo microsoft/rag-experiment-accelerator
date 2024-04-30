@@ -1,0 +1,207 @@
+Your task is to create a question and answer pair from provided pieces of documents. You will be given chunks of documents and must follow specific rules while generating a question.
+
+Rules for Crafting Questions:
+1. The question should be understandable and meaningful on its own, without needing the document chunks for context.
+2. The question must require information from at least two different chunks for a comprehensive answer.
+3. Avoid including direct references or links to the text within your question.
+4. Ensure the question is complex and demonstrates a deep understanding of the document chunks.
+5. Do not use phrases that refer back to this task or its instructions, such as "in the provided chunk".
+6. Make the question as complex as you can, don't resort to simple questions.
+7. Analyze if generated question can be answered without contexts. If so, change the question.
+
+Rules for Crafting Answers:
+1. The answer should stand alone without referring back to the document or containing document-specific citations, like "Table 2.1".
+2. The answer must directly address the question, fully encapsulated within the provided chunks.
+
+Task Execution:
+ - Start by analyzing the provided chunks to identify key themes, relationships, and insights across multiple contexts.
+ - Construct a question that connects information from at least two chunks, ensuring it meets the criteria for complexity and independence.
+ - Develop a comprehensive answer based on your analysis, directly addressing the question without referring back to the chunks.
+
+Expected Response:
+ - Begin with reasoning steps, highlighting important things and logic behind a potential question.
+ - In reasoning steps mention, which contexts are being used to generate the question.
+ - Propose a potential question
+ - Evaluate the question against question generation rules.
+ - If question does not comply with one or more rules, propose a modification of the question
+ - Check modified question against rules
+ - If the question does not comply, repeat prevuious two steps
+ - If the question complies, generate an answer and check it agains answer generation rules.
+ - Provide your question-and-answer pair, clearly separated from the thought process.
+This revision aims to preserve the original intent of your prompt while enhancing clarity, specificity, and engagement. The example is aligned with the task requirements, demonstrating how to interlink information from multiple contexts to formulate a complex question and a comprehensive answer.
+Respond with the following structure:
+<analythical process>
+{separator}
+{{"question": <question>, "answer": <answer>}}
+
+In this structure <analythical process> is your chain-of-thought reasoning, <question> is a generated question, <answer> is a generated answer.
+
+<Example 1>:
+User:
+    Chunks:
+    Context 1: Discusses the population growth in City A due to its expanding technology sector, noting an increase to 1.5 million residents as per the 2020 census.
+    Context 2: Contrasts with City B, where the population has remained stable at 1 million, attributed to its consistent but unexpanding manufacturing base.
+
+Assistant:
+    Reasoning Steps:
+    1. Highlight City A's significant population growth linked to the tech industry.
+    2. Note the stability in City B's population due to a steady manufacturing sector.
+
+    Question: "In the context provided above, how does City A's tech-driven population boom contrast with City B's stable manufacturing-dependent demographic in shaping their urban planning?"
+
+    Analysis if question complies with rules:
+    - Rule 1: The question is clear and related to the content.
+    - Rule 2: Integrates information from both contexts.
+    - Rule 3: No direct references are made to the chunks.
+    - Rule 4: Shows an understanding of the economic-demographic relationship.
+    - Rule 5: Violated. The question explicitly refers to "the context provided above," tying it directly to the task setup.
+    - Rule 6: The complexity of the urban-economic interplay is addressed.
+    - Rule 7: The question requires specific context to answer, hence not violated.
+
+    Modification to Comply with Rule 5:
+    Remove any reference to "the context provided above" to ensure the question stands alone and does not refer back to the task or instructions.
+
+    Modified Question: "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?"
+
+    Revised Analysis for Compliance:
+    - Rule 1: The question remains clear and understandable.
+    - Rule 2: Still requires integration of both contexts for a full answer.
+    - Rule 3: Maintains no direct chunk references.
+    - Rule 4: Continues to demonstrate deep understanding.
+    - Rule 5: Now complies by not referring back to the task or its context.
+    - Rule 6: The complexity is preserved in discussing the impact on urban planning.
+    - Rule 7: Specific context is still needed for an accurate answer, so not violated.
+
+    {separator}
+    {{"question": "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?", "answer": "City A's significant population increase, driven by the booming tech industry, necessitates urban planning strategies that focus on expanding residential and technological infrastructure to accommodate the growing workforce. In contrast, City B, with its stable population anchored by a longstanding manufacturing sector, might prioritize urban planning efforts towards sustaining and modestly enhancing existing industrial and residential areas to support its steady economic base."}}
+</Example 1>
+
+<Example 2>:
+User:
+    Chunks:
+    Context 1: Details how the increasing adoption of remote work is leading to a significant decrease in demand for office spaces within city centers, with a noted 20% decline in office rentals over the past year.
+    Context 2: Highlights the shift in consumer behavior towards online shopping, resulting in a 30% increase in e-commerce sales and prompting the repurposing of traditional retail spaces into distribution hubs and experiential centers.
+
+Assistant:
+    Reasoning Steps:
+    1. Link the specific decrease in demand for office spaces due to remote work adoption to the broader implications for commercial real estate.
+    2. Connect the increase in e-commerce sales with the transformation of retail spaces, emphasizing the specific percentages to underscore the significant shifts.
+    3. Formulate a question that explicitly requires an understanding of these specific changes and their combined effect on urban development and space utilization.
+
+    Question: "With a 20% decrease in office space rentals and a 30% increase in e-commerce sales over the past year, how are cities adapting urban development strategies to repurpose commercial and retail spaces?"
+
+    Analysis if question complies with rules:
+    - Rule 1: The question is clear and addresses the specific changes in office and retail space usage due to remote work and e-commerce growth.
+    - Rule 2: It integrates data from both contexts to provide a comprehensive view of the urban adaptation required.
+    - Rule 3: Avoids direct references to document chunks while using specific data to anchor the question.
+    - Rule 4: Demonstrates an in-depth understanding of the implications of these trends on urban planning.
+    - Rule 5: The question doesn't refer back to the task or instructions.
+    - Rule 6: It's sufficiently complex, considering specific data and the need for strategic urban repurposing.
+    - Rule 7: The inclusion of specific data points (20% decrease, 30% increase) ensures the question cannot be answered without the provided contexts, thus adhering to Rule 7.
+
+    {separator}
+    {{"question": "With a 20% decrease in office space rentals and a 30% increase in e-commerce sales over the past year, how are cities adapting urban development strategies to repurpose commercial and retail spaces?", "answer": "In response to the significant shifts in workplace and shopping behaviors, cities are reevaluating their urban development strategies to accommodate the new landscape. The marked decrease in office space demand has prompted a reimagining of city centers, with a focus on converting underutilized office buildings into residential units, co-working spaces, or community centers. Simultaneously, the surge in e-commerce has transformed traditional retail locations into distribution hubs or experiential centers, catering to the new consumer preferences. These adaptations reflect a broader move towards flexible, mixed-use urban environments that can respond dynamically to changing economic and social trends."}}
+</Example 2>
+
+<Example 3>:
+User:
+    Chunks:
+    Context 1: Describes the innovative approaches to waste management in City X, focusing on recycling programs and the conversion of waste to energy.
+    Context 2: Highlights the advancements in public transportation in City Y, including the introduction of electric buses and expanded bike-sharing systems.
+    Context 3: Discusses the challenges faced by City Z's educational system, particularly the lack of resources and overcrowded classrooms.
+    Context 4: Details the implementation of smart city technologies in City W, such as IoT sensors for monitoring traffic and air quality.
+    Context 5: Explores the revival of local agriculture in City V, emphasizing community gardens and urban farms' role in enhancing food security.
+
+Assistant:
+    Reasoning Steps:
+    1. Connect City X's waste management innovations and City Y's public transportation advancements as key contributors to environmental sustainability.
+    2. Evaluate the role of smart city technologies in City W in complementing these sustainability efforts, particularly in terms of traffic and air quality management.
+    3. Deliberately exclude the educational challenges in City Z and the agricultural revival in City V to focus on urban sustainability and technology.
+
+    Potential Question: "How do the waste management and public transportation initiatives in Cities X and Y, along with the smart city technologies in City W, contribute to establishing a new paradigm for urban living quality?"
+
+    Analysis if question complies with rules:
+    - Rule 1: The question is independently meaningful, addressing urban sustainability and technology's impact on living quality.
+    - Rule 2: Requires integration of information from contexts about waste management, public transportation, and smart city technologies.
+    - Rule 3: Does not directly reference the document chunks or specific data points.
+    - Rule 4: Demonstrates deep understanding by linking sustainability efforts with technological advancements in urban settings.
+    - Rule 5: Avoids mentioning the task or instructions.
+    - Rule 6: The question's complexity arises from connecting multiple urban initiatives across different cities.
+    - Rule 7: Without specifics from the contexts, the question might still be answerable through general knowledge on urban sustainability.
+
+    Given the potential compliance issue with Rule 7, the question needs refinement to explicitly necessitate the provided contexts.
+
+    Modified Question: "Considering City X's waste-to-energy programs, City Y's adoption of electric buses, and City W's IoT-based traffic and air quality monitoring, how are these specific initiatives redefining standards for urban living quality?"
+
+    Revised Analysis for Rule 7:
+    - By specifying the initiatives, the question now directly ties to the unique context provided, making it less likely to be answered accurately without this specific information.
+
+    {separator}
+    {{"question": "Considering City X's waste-to-energy programs, City Y's adoption of electric buses, and City W's IoT-based traffic and air quality monitoring, how are these specific initiatives redefining standards for urban living quality?", "answer": "The integration of City X's waste-to-energy programs and City Y's electric buses represents a significant step towards reducing urban pollution and carbon footprint, thereby enhancing environmental sustainability. Coupled with City W's implementation of IoT technologies for real-time traffic and air quality management, these initiatives collectively contribute to a substantial improvement in urban living standards. They not only ensure a cleaner and more efficient urban environment but also demonstrate the potential of combining green technologies and smart city solutions to create more livable, sustainable cities for future generations."}}
+</Example 3>
+
+<Example 4>:
+User:
+    Chunks:
+    Context 1: Explores the correlation between urban population density and the usage of public transportation systems.
+    Context 2: Presents data on the average daily water consumption per capita in various urban areas, with specific figures for cities like Metroville (350 liters), Aquacity (300 liters), Rapidsville (250 liters), Streamtown (400 liters), and Lakecity (450 liters).
+    Context 3: Reviews the impact of water conservation campaigns on reducing average water usage in cities, with some cities reporting up to a 20% reduction in per capita water consumption following targeted campaigns.
+
+Assistant:
+    Reasoning Steps:
+    1. Correlate the specific figures of water consumption with urban population density to understand the underlying patterns.
+    2. Assess the influence of targeted water conservation campaigns on these consumption patterns, especially considering the reported reductions.
+
+    Potential Question: "How does the interplay between urban population density and targeted water conservation campaigns affect per capita water consumption in cities like Metroville and Lakecity?"
+
+    Analysis if question complies with rules:
+    - Rule 1: The question is clear and addresses the relationship between population density, conservation efforts, and water consumption.
+    - Rule 2: Requires synthesizing data on water consumption and the impact of conservation campaigns.
+    - Rule 3: Avoids mentioning "tabular data" or other document-specific references, making it compliant.
+    - Rule 4: Demonstrates a complex understanding of environmental and urban planning issues.
+    - Rule 5: Does not refer back to the task or instructions.
+    - Rule 6: It's complex, requiring an analysis of data and conservation impact.
+    - Rule 7: The specific mention of cities and the effect of conservation campaigns ensure the question can't be answered without the provided contexts.
+
+    Since the question now complies with all the rules, we can proceed to generate the answer.
+
+    {separator}
+    {{"question": "How does the interplay between urban population density and targeted water conservation campaigns affect per capita water consumption in cities like Metroville and Lakecity?", "answer": "In cities with high urban population densities like Metroville and Lakecity, per capita water consumption tends to be higher due to the concentrated demand. However, the implementation of targeted water conservation campaigns has been shown to significantly reduce these consumption rates. For instance, cities that have introduced such campaigns report up to a 20% reduction in water usage per capita. This suggests that effective conservation efforts, tailored to the specific needs and challenges of densely populated urban areas, can mitigate the higher water demands typically associated with such locales."}}
+</Example 4>
+
+The following example shows how to modify the question in case it doesn't comply with the rules.
+<Example 5>:
+User:
+    Chunks:
+    Context 1: Analyzes a recent study which found that in urban areas with populations over 500,000, the introduction of bike-sharing programs led to a 15% decrease in car usage during peak traffic hours.
+    Context 2: Reviews data from a national health survey indicating that cities with extensive bike-sharing programs saw a 10% increase in reported physical activity levels among residents.
+    Context 3: Discusses a policy initiative in several large cities aiming to expand green spaces and cycling infrastructure by 30% over the next five years, in response to the positive outcomes of bike-sharing programs.
+
+Assistant:
+    Reasoning Steps:
+    1. Correlate the reduction in car usage due to bike-sharing programs with the increase in physical activity among urban residents.
+    2. Consider the policy implications and future initiatives inspired by the success of bike-sharing programs.
+
+    Potential Question: "How does the reduction in car usage attributed to bike-sharing programs correlate with the increase in physical activity, and what future urban planning initiatives are being considered in response?"
+
+    Analysis if question complies with rules:
+    - Rule 1: The question is clear, addressing the relationship between bike-sharing programs, car usage, and physical activity.
+    - Rule 2: Integrates specific data from the study on car usage, health survey data on physical activity, and policy initiatives.
+    - Rule 3: Avoids direct references to the document chunks.
+    - Rule 4: Demonstrates an in-depth understanding of the interconnected impacts of bike-sharing.
+    - Rule 5: No reference to the task or instructions.
+    - Rule 6: Complex, linking data-driven insights with urban planning futures.
+    - Rule 7: Analysis indicates that the question might still be answerable with general knowledge on bike-sharing benefits and urban policies.
+
+    Given the potential compliance issue with Rule 7, the question needs more specificity to necessitate the provided contexts.
+
+    Modified Question: "Given the 15% decrease in car usage during peak hours in cities with bike-sharing and a 10% increase in physical activity levels, what specific urban planning strategies are being formulated to capitalize on these trends, particularly the 30% expansion in green spaces and cycling infrastructure?"
+
+    Revised Analysis for Rule 7:
+    - This question now specifically requires the contextual data provided, making it unlikely to be answered accurately without the detailed contexts.
+
+    {separator}
+    {{"question": "Given the 15% decrease in car usage during peak hours in cities with bike-sharing and a 10% increase in physical activity levels, what specific urban planning strategies are being formulated to capitalize on these trends, particularly the 30% expansion in green spaces and cycling infrastructure?", "answer": "The observed 15% reduction in car usage and the corresponding 10% increase in physical activity in cities with bike-sharing programs underscore the programs' effectiveness in promoting sustainable transportation and healthier lifestyles. In response, urban planners are formulating strategies to further encourage these trends, including a significant 30% expansion in green spaces and cycling infrastructure over the next five years. These initiatives aim not only to enhance the urban environment and resident well-being but also to sustain the momentum towards more eco-friendly and active urban lifestyles."}}
+</Example 5>
+
+USE {separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON

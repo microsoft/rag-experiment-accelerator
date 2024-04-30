@@ -8,14 +8,12 @@ import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.config.config import Config
-from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
-from rag_experiment_accelerator.llm.prompts import (
-    do_need_multiple_prompt_instruction,
-    generate_qna_instruction_system_prompt,
-    generate_qna_instruction_user_prompt,
-    multiple_prompt_instruction,
-)
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.llm.prompt import (
+    do_need_multiple_prompt_instruction,
+    multiple_prompt_instruction,
+    generate_qna_long_single_context_instruction_prompt,
+)
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.config.environment import Environment
@@ -115,30 +113,18 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
         # But we aren't explicitly saying that stating that, should we?
         chunk = list(doc.values())[0]
         if len(chunk["content"]) > 50:
-            response = ""
-            try:
-                response = response_generator.generate_response(
-                    generate_qna_instruction_system_prompt,
-                    generate_qna_instruction_user_prompt + chunk["content"],
-                )
-                response_dict = json.loads(
-                    response.replace("\n", "").replace("'", "").replace("\\", "")
-                )
-                for item in response_dict:
-                    data = {
-                        "user_prompt": item["question"],
-                        "output_prompt": item["answer"],
-                        "context": chunk["content"],
-                    }
-                    new_df = new_df._append(data, ignore_index=True)
+            response = response_generator.generate_response(
+                generate_qna_long_single_context_instruction_prompt,
+                context=chunk["content"],
+            )
 
-            except Exception as e:
-                logger.error(
-                    f"could not generate a valid json so moving over to next "
-                    f"question! Error message: {str(e)}"
-                )
-                logger.error(traceback.format_exc())
-                logger.debug(f"LLM Response: {response}")
+            for item in response:
+                data = {
+                    "user_prompt": item["question"],
+                    "output_prompt": item["answer"],
+                    "context": chunk["content"],
+                }
+                new_df = new_df._append(data, ignore_index=True)
 
     return new_df
 
@@ -154,10 +140,10 @@ def we_need_multiple_questions(question, response_generator: ResponseGenerator):
     Returns:
         str: The generated response.
     """
-    full_prompt_instruction = (
-        multiple_prompt_instruction + "\n" + "question: " + question + "\n"
+    response = response_generator.generate_response(
+        multiple_prompt_instruction,
+        text=question,
     )
-    response = response_generator.generate_response(full_prompt_instruction, "")
     return response
 
 
@@ -177,22 +163,14 @@ def do_we_need_multiple_questions(
     if not config.CHAIN_OF_THOUGHTS:
         return False
 
-    full_prompt_instruction = (
-        do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
+
+    response: str | None = response_generator.generate_response(
+        do_need_multiple_prompt_instruction,
+        text=question,
     )
-    try:
-        response = response_generator.generate_response(full_prompt_instruction, "")
 
-        json_output = json.loads(response)
-        question_complexity = json_output.get("category", "")
-
-        if question_complexity == "" or question_complexity.lower() == "simple":
-            return False
-        else:
-            return True
-    except ContentFilteredException as e:
-        logger.error(e)
-        return False
+    result = response is not None and response.lower().strip() == "complex"
+    return result
 
 
 def chunks_to_index_documents(chunks):

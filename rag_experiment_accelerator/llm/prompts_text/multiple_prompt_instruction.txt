@@ -1,0 +1,25 @@
+Your task is to take a question as input and generate a maximum of three sub-questions that cover all aspects of the original question.
+The output should be in strict JSON format, containing the list of sub-questions.
+
+Requirements:
+1. Analyze the original question to identify key aspects or components.
+2. Generate sub-questions that address each identified aspect.
+3. Ensure the sub-questions collectively cover the entire scope of the original question.
+4. Output the sub-questions as a JSON object with the key "questions" holding an array of the sub-questions.
+5. Each sub-question should be a string within the "questions" array.
+6. Produce a JSON output that is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks.
+7. Format the JSON with proper indentation for readability.
+8. Ensure there is no trailing comma after the last element in the array.
+
+<Example 1>
+User:
+  What are the impacts of global warming on polar regions?
+
+Assistant:
+  ["How is global warming affecting the ice melt rates in polar regions?", "What are the consequences of global warming on polar wildlife?", "What changes are occurring in the weather patterns of polar regions due to global warming?"]
+
+<Example 2>
+User:
+  How can small businesses leverage social media for marketing?
+Assistant:
+  ["What are effective social media strategies for small businesses?", "How can small businesses measure the success of their social media marketing?", "What are common challenges small businesses face with social media marketing?"]

@@ -1,0 +1,77 @@
+Your task is to create a question and answer pair from provided pieces of documents. You will be given chunks of documents and must follow specific rules while generating a question.
+
+Rules for Crafting Questions:
+1. The question should be understandable and meaningful on its own, without needing the document chunks for context.
+2. Avoid including direct references or links to the text within your question.
+3. Ensure the question is complex and demonstrates a deep understanding of the document chunks.
+4. Do not use phrases that refer back to this task or its instructions, such as "in the provided chunk".
+5. Make the question as complex as you can, don't resort to simple questions.
+6. Analyze if generated question can be answered without contexts. If so, change the question.
+
+Rules for Crafting Answers:
+1. The answer should stand alone without referring back to the document or containing document-specific citations, like "Table 2.1".
+2. The answer must directly address the question, fully encapsulated within the provided chunks.
+
+Task Execution:
+ - Start by analyzing the provided chunks to identify key themes, relationships, and insights across multiple contexts.
+ - Construct a question that connects information from at least two chunks, ensuring it meets the criteria for complexity and independence.
+ - Develop a comprehensive answer based on your analysis, directly addressing the question without referring back to the chunks.
+
+Expected Response:
+ - Begin with reasoning steps, highlighting important things and logic behind a potential question.
+ - In reasoning steps mention, which contexts are being used to generate the question.
+ - Propose a potential question
+ - Evaluate the question against question generation rules.
+ - If question does not comply with one or more rules, propose a modification of the question
+ - Check modified question against rules
+ - If the question does not comply, repeat prevuious two steps
+ - If the question complies, generate an answer and check it agains answer generation rules.
+ - Provide your question-and-answer pair, clearly separated from the thought process.
+This revision aims to preserve the original intent of your prompt while enhancing clarity, specificity, and engagement. The example is aligned with the task requirements, demonstrating how to interlink information from multiple contexts to formulate a complex question and a comprehensive answer.
+
+Respond with the following structure:
+<analythical process>
+{separator}
+{{"question": <question>, "answer": <answer>}}
+
+In this structure <analythical process> is your chain-of-thought reasoning, <question> is a generated question, <answer> is a generated answer.
+
+<Example>:
+User:
+    Context: 
+    Discusses the population growth in City A due to its expanding technology sector, noting an increase to 1.5 million residents as per the 2020 census.
+    Contrasts with City B, where the population has remained stable at 1 million, attributed to its consistent but unexpanding manufacturing base.
+
+Assistant:
+    Reasoning Steps:
+    1. Highlight City A's significant population growth linked to the tech industry.
+    2. Note the stability in City B's population due to a steady manufacturing sector.
+
+    Question: "In the context provided above, how does City A's tech-driven population boom contrast with City B's stable manufacturing-dependent demographic in shaping their urban planning?"
+
+    Analysis if question complies with rules:
+    - Rule 1: The question is clear and related to the content.
+    - Rule 2: No direct references are made to the chunks.
+    - Rule 3: Shows an understanding of the economic-demographic relationship.
+    - Rule 4: Violated. The question explicitly refers to "the context provided above," tying it directly to the task setup.
+    - Rule 5: The complexity of the urban-economic interplay is addressed.
+    - Rule 6: The question requires specific context to answer, hence not violated.
+
+    Modification to Comply with Rule 4:
+    Remove any reference to "the context provided above" to ensure the question stands alone and does not refer back to the task or instructions.
+
+    Modified Question: "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?"
+
+    Revised Analysis for Compliance:
+    - Rule 1: The question remains clear and understandable.
+    - Rule 2: Maintains no direct chunk references.
+    - Rule 3: Continues to demonstrate deep understanding.
+    - Rule 4: Now complies by not referring back to the task or its context.
+    - Rule 5: The complexity is preserved in discussing the impact on urban planning.
+    - Rule 6: Specific context is still needed for an accurate answer, so not violated.
+
+    {separator}
+    {{"question": "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?", "answer": "City A's significant population increase, driven by the booming tech industry, necessitates urban planning strategies that focus on expanding residential and technological infrastructure to accommodate the growing workforce. In contrast, City B, with its stable population anchored by a longstanding manufacturing sector, might prioritize urban planning efforts towards sustaining and modestly enhancing existing industrial and residential areas to support its steady economic base."}}
+</Example>
+
+USE {separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON
