@@ -78,7 +78,9 @@ class ResponseGenerator:
         after=after_log(logger, logging.CRITICAL),
         wait=wait_random_exponential(min=1, max=60),
         stop=stop_after_attempt(6),
-        retry=retry_if_not_exception_type((ContentFilteredException, TypeError)),
+        retry=retry_if_not_exception_type(
+            (ContentFilteredException, TypeError, KeyboardInterrupt)
+        ),
     )
     def _get_response(
         self, messages, prompt: Prompt, temperature: float | None = None
@@ -87,6 +89,8 @@ class ResponseGenerator:
 
         if self.json_object_supported and PromptTag.JSON in prompt.tags:
             kwargs["response_format"] = {"type": "json_object"}
+
+        logger.info(f"Requesting response with messages:\n {messages}")
 
         try:
             response = self.client.chat.completions.create(

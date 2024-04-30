@@ -113,6 +113,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
         if len(chunk["content"]) > 50:
             response = response_generator.generate_response(
                 qna_generation_prompt,
+                temperature=1.0,
                 context=chunk["content"],
             )
             if response is None:
