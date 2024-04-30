@@ -110,7 +110,7 @@ class ResponseGenerator:
 
         response_text = response.choices[0].message.content
 
-        print(response_text)
+        logger.info(f"Response: {response_text}")
 
         formatted_response = self._interpret_response(response_text, prompt)
 
@@ -130,9 +130,11 @@ class ResponseGenerator:
         sys_message = prompt.system_message.format(
             **{key: value for key, value in kwargs.items() if key in system_arguments}
         )
+        logger.info(f"System message:\n {sys_message}")
         user_template = prompt.user_template.format(
             **{key: value for key, value in kwargs.items() if key in user_arguments}
         )
+        logger.info(f"User template:\n {user_template}")
 
         messages = [
             {"role": "system", "content": sys_message},
