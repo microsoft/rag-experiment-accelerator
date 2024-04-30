@@ -1,4 +1,3 @@
-import json
 import re
 
 from sentence_transformers import CrossEncoder
@@ -64,7 +63,6 @@ def llm_rerank_documents(
         rerank_context += "\ndocument " + str(index) + ":\n"
         rerank_context += docs + "\n"
 
-
     response: dict[str, int] | None = response_generator.generate_response(
         rerank_prompt_instruction,
         documents=rerank_context,
@@ -78,7 +76,7 @@ def llm_rerank_documents(
 
     result = []
     for key, _ in sorted(response.items(), key=lambda x: x[1], reverse=True):
-        document_index = int(re.search(r'document_(\d+)', key))
+        document_index = int(re.search(r"document_(\d+)", key))
         result.append(documents[document_index])
 
     return result

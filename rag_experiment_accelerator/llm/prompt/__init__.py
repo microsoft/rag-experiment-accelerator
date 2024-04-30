@@ -1,3 +1,5 @@
+# flake8: noqa
+
 from rag_experiment_accelerator.llm.prompt.prompt import (
     Prompt,
     StructuredPrompt,

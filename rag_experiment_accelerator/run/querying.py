@@ -358,7 +358,7 @@ def query_and_eval_acs_multi(
             )
         else:
             prompt_instruction_context = docs
-        
+
         request_context = "\n".join(prompt_instruction_context)
         request_question = original_prompt
 
