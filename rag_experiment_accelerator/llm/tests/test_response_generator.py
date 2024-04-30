@@ -18,6 +18,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.generator.temperature = 0.5
         self.generator.deployment_name = "deployment_name"
         self.generator.client = Mock()
+        self.generator.json_object_supported = False
         self.prompt = Mock(spec=Prompt)
         self.prompt.tags = []
 

@@ -176,7 +176,6 @@ def test_do_we_need_multiple_questions_true(mock_response_generator):
     result = do_we_need_multiple_questions(
         question, mock_response_generator, mock_config
     )
-    print(result)
 
     # Assert
     mock_response_generator.generate_response.assert_called_once()

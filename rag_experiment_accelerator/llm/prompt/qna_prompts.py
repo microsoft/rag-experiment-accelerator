@@ -24,7 +24,7 @@ Context:
 generate_qna_long_single_context_instruction_prompt = StructuredWithCoTPrompt(
     system_message="generate_qna_long_single_context.txt",
     user_template=_response_template,
-    tags=[PromptTag.JSON],
+    tags=[PromptTag.JSON, PromptTag.NonStrict],
     validator=qna_generation_validate,
 )
 
@@ -32,7 +32,7 @@ generate_qna_long_single_context_instruction_prompt = StructuredWithCoTPrompt(
 generate_qna_short_single_context_instruction_prompt = StructuredWithCoTPrompt(
     system_message="generate_qna_short_single_context.txt",
     user_template=_response_template,
-    tags=[PromptTag.JSON],
+    tags=[PromptTag.JSON, PromptTag.NonStrict],
     validator=qna_generation_validate,
 )
 
@@ -40,7 +40,7 @@ generate_qna_short_single_context_instruction_prompt = StructuredWithCoTPrompt(
 generate_qna_long_multiple_context_instruction_prompt = StructuredWithCoTPrompt(
     system_message="generate_qna_long_multi_context.txt",
     user_template=_response_template,
-    tags=[PromptTag.JSON],
+    tags=[PromptTag.JSON, PromptTag.NonStrict],
     validator=qna_generation_validate,
 )
 
@@ -48,7 +48,7 @@ generate_qna_long_multiple_context_instruction_prompt = StructuredWithCoTPrompt(
 generate_qna_short_multiple_context_instruction_prompt = StructuredWithCoTPrompt(
     system_message="generate_qna_short_multi_context.txt",
     user_template=_response_template,
-    tags=[PromptTag.JSON],
+    tags=[PromptTag.JSON, PromptTag.NonStrict],
     validator=qna_generation_validate,
 )
 
@@ -56,6 +56,8 @@ generate_qna_short_multiple_context_instruction_prompt = StructuredWithCoTPrompt
 generate_qna_short_single_context_no_cot_instruction_prompt = StructuredPrompt(
     system_message="generate_qna_short_single_context_no_cot.txt",
     user_template=_response_template,
-    tags=[PromptTag.JSON],
+    tags=[PromptTag.JSON, PromptTag.NonStrict],
     validator=qna_generation_validate,
 )
+
+qna_generation_prompt = generate_qna_short_single_context_no_cot_instruction_prompt

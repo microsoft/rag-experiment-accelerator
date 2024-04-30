@@ -27,11 +27,12 @@ Expected Response:
  - If the question does not comply, repeat prevuious two steps
  - If the question complies, generate an answer and check it agains answer generation rules.
  - Provide your question-and-answer pair, clearly separated from the thought process.
+ - Do not use characters " or ' in question or answer since it will break JSON formatting!
 This revision aims to preserve the original intent of your prompt while enhancing clarity, specificity, and engagement. The example is aligned with the task requirements, demonstrating how to interlink information from multiple contexts to formulate a complex question and a comprehensive answer.
 
 Respond with the following structure:
 <analythical process>
-{separator}
+${separator}
 {{"question": <question>, "answer": <answer>}}
 
 In this structure <analythical process> is your chain-of-thought reasoning, <question> is a generated question, <answer> is a generated answer.
@@ -70,8 +71,8 @@ Assistant:
     - Rule 5: The complexity is preserved in discussing the impact on urban planning.
     - Rule 6: Specific context is still needed for an accurate answer, so not violated.
 
-    {separator}
+    ${separator}
     {{"question": "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?", "answer": "City A's significant population increase, driven by the booming tech industry, necessitates urban planning strategies that focus on expanding residential and technological infrastructure to accommodate the growing workforce. In contrast, City B, with its stable population anchored by a longstanding manufacturing sector, might prioritize urban planning efforts towards sustaining and modestly enhancing existing industrial and residential areas to support its steady economic base."}}
 </Example>
 
-USE {separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON
+USE ${separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON

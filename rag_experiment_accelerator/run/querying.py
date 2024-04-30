@@ -49,7 +49,7 @@ from rag_experiment_accelerator.llm.prompt import (
     prompt_generate_hypothetical_answer,
     prompt_generate_hypothetical_document,
     prompt_generate_hypothetical_questions,
-    main_instruction_short,
+    main_instruction,
 )
 
 load_dotenv(override=True)
@@ -427,7 +427,7 @@ def query_and_eval_single_line(
                     environment=environment,
                     config=config,
                     evaluator=evaluator,
-                    main_prompt_instruction=main_instruction_short,
+                    main_prompt_instruction=main_instruction,
                 )
             else:
                 (
@@ -454,7 +454,7 @@ def query_and_eval_single_line(
                 prompt_instruction_context = docs
 
             openai_response = response_generator.generate_response(
-                main_instruction_short,
+                main_instruction,
                 context="\n".join(prompt_instruction_context),
                 question=user_prompt,
             )

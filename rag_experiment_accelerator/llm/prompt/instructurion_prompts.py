@@ -61,3 +61,5 @@ main_instruction_long = Prompt(
     system_message="main_instruction_long.txt",
     user_template=_main_response_template,
 )
+
+main_instruction = main_instruction_short

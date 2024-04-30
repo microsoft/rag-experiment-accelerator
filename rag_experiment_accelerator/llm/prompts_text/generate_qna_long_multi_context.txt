@@ -28,10 +28,11 @@ Expected Response:
  - If the question does not comply, repeat prevuious two steps
  - If the question complies, generate an answer and check it agains answer generation rules.
  - Provide your question-and-answer pair, clearly separated from the thought process.
+ - Do not use characters " or ' in question or answer since it will break JSON formatting!
 This revision aims to preserve the original intent of your prompt while enhancing clarity, specificity, and engagement. The example is aligned with the task requirements, demonstrating how to interlink information from multiple contexts to formulate a complex question and a comprehensive answer.
 Respond with the following structure:
 <analythical process>
-{separator}
+${separator}
 {{"question": <question>, "answer": <answer>}}
 
 In this structure <analythical process> is your chain-of-thought reasoning, <question> is a generated question, <answer> is a generated answer.
@@ -72,7 +73,7 @@ Assistant:
     - Rule 6: The complexity is preserved in discussing the impact on urban planning.
     - Rule 7: Specific context is still needed for an accurate answer, so not violated.
 
-    {separator}
+    ${separator}
     {{"question": "How are City A's technological sector growth and City B's consistent manufacturing base differently influencing their urban planning strategies in light of their divergent population trends?", "answer": "City A's significant population increase, driven by the booming tech industry, necessitates urban planning strategies that focus on expanding residential and technological infrastructure to accommodate the growing workforce. In contrast, City B, with its stable population anchored by a longstanding manufacturing sector, might prioritize urban planning efforts towards sustaining and modestly enhancing existing industrial and residential areas to support its steady economic base."}}
 </Example 1>
 
@@ -99,7 +100,7 @@ Assistant:
     - Rule 6: It's sufficiently complex, considering specific data and the need for strategic urban repurposing.
     - Rule 7: The inclusion of specific data points (20% decrease, 30% increase) ensures the question cannot be answered without the provided contexts, thus adhering to Rule 7.
 
-    {separator}
+    ${separator}
     {{"question": "With a 20% decrease in office space rentals and a 30% increase in e-commerce sales over the past year, how are cities adapting urban development strategies to repurpose commercial and retail spaces?", "answer": "In response to the significant shifts in workplace and shopping behaviors, cities are reevaluating their urban development strategies to accommodate the new landscape. The marked decrease in office space demand has prompted a reimagining of city centers, with a focus on converting underutilized office buildings into residential units, co-working spaces, or community centers. Simultaneously, the surge in e-commerce has transformed traditional retail locations into distribution hubs or experiential centers, catering to the new consumer preferences. These adaptations reflect a broader move towards flexible, mixed-use urban environments that can respond dynamically to changing economic and social trends."}}
 </Example 2>
 
@@ -136,7 +137,7 @@ Assistant:
     Revised Analysis for Rule 7:
     - By specifying the initiatives, the question now directly ties to the unique context provided, making it less likely to be answered accurately without this specific information.
 
-    {separator}
+    ${separator}
     {{"question": "Considering City X's waste-to-energy programs, City Y's adoption of electric buses, and City W's IoT-based traffic and air quality monitoring, how are these specific initiatives redefining standards for urban living quality?", "answer": "The integration of City X's waste-to-energy programs and City Y's electric buses represents a significant step towards reducing urban pollution and carbon footprint, thereby enhancing environmental sustainability. Coupled with City W's implementation of IoT technologies for real-time traffic and air quality management, these initiatives collectively contribute to a substantial improvement in urban living standards. They not only ensure a cleaner and more efficient urban environment but also demonstrate the potential of combining green technologies and smart city solutions to create more livable, sustainable cities for future generations."}}
 </Example 3>
 
@@ -165,7 +166,7 @@ Assistant:
 
     Since the question now complies with all the rules, we can proceed to generate the answer.
 
-    {separator}
+    ${separator}
     {{"question": "How does the interplay between urban population density and targeted water conservation campaigns affect per capita water consumption in cities like Metroville and Lakecity?", "answer": "In cities with high urban population densities like Metroville and Lakecity, per capita water consumption tends to be higher due to the concentrated demand. However, the implementation of targeted water conservation campaigns has been shown to significantly reduce these consumption rates. For instance, cities that have introduced such campaigns report up to a 20% reduction in water usage per capita. This suggests that effective conservation efforts, tailored to the specific needs and challenges of densely populated urban areas, can mitigate the higher water demands typically associated with such locales."}}
 </Example 4>
 
@@ -200,8 +201,8 @@ Assistant:
     Revised Analysis for Rule 7:
     - This question now specifically requires the contextual data provided, making it unlikely to be answered accurately without the detailed contexts.
 
-    {separator}
+    ${separator}
     {{"question": "Given the 15% decrease in car usage during peak hours in cities with bike-sharing and a 10% increase in physical activity levels, what specific urban planning strategies are being formulated to capitalize on these trends, particularly the 30% expansion in green spaces and cycling infrastructure?", "answer": "The observed 15% reduction in car usage and the corresponding 10% increase in physical activity in cities with bike-sharing programs underscore the programs' effectiveness in promoting sustainable transportation and healthier lifestyles. In response, urban planners are formulating strategies to further encourage these trends, including a significant 30% expansion in green spaces and cycling infrastructure over the next five years. These initiatives aim not only to enhance the urban environment and resident well-being but also to sustain the momentum towards more eco-friendly and active urban lifestyles."}}
 </Example 5>
 
-USE {separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON
+USE ${separator} TO SEPARATE ANALYTHICAL PROCESS FROM THE RESULTING JSON

@@ -1,6 +1,7 @@
 import logging
 
 import json
+import openai
 
 from openai import AzureOpenAI
 from tenacity import (
@@ -33,6 +34,7 @@ class ResponseGenerator:
         self.temperature = self.config.TEMPERATURE
         self.use_long_prompt = True
         self.client = self._initialize_azure_openai_client(environment)
+        self.json_object_supported = True
 
     def _initialize_azure_openai_client(self, environment: Environment):
         return AzureOpenAI(
@@ -81,11 +83,22 @@ class ResponseGenerator:
     def _get_response(
         self, messages, prompt: Prompt, temperature: float | None = None
     ) -> any:
-        response = self.client.chat.completions.create(
-            model=self.deployment_name,
-            messages=messages,
-            temperature=temperature if temperature is not None else self.temperature,
-        )
+        kwargs = {}
+
+        if self.json_object_supported and PromptTag.JSON in prompt.tags:
+            kwargs["response_format"] = {"type": "json_object"}
+    
+        try:
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                temperature=temperature if temperature is not None else self.temperature,
+                **kwargs,
+            )
+        except openai.BadRequestError as e:
+            if e.param == "response_format":
+                self.json_object_supported = False
+            raise e
 
         if response.choices[0].finish_reason == "content_filter":
             logger.error(
@@ -95,7 +108,9 @@ class ResponseGenerator:
 
         response_text = response.choices[0].message.content
 
-        return self._interpret_response(response_text, prompt)
+        formatted_response = self._interpret_response(response_text, prompt)
+
+        return formatted_response
 
     def generate_response(
         self, prompt: Prompt, temperature: float | None = None, **kwargs

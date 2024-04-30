@@ -55,6 +55,10 @@ class IndexConfig:
             f"_oc-{int(self.override_content_with_summary)}"
             f"_{str(self.embedding_model.name.lower())}"
         )
+        if index_name.startswith("_") or index_name.startswith("-"):
+            index_name = "i" + index_name
+            
+        index_name = index_name[:127]
 
         return index_name
 

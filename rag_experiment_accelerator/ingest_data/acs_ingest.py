@@ -10,7 +10,7 @@ from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.llm.prompt import (
     do_need_multiple_prompt_instruction,
     multiple_prompt_instruction,
-    generate_qna_short_single_context_no_cot_instruction_prompt,
+    qna_generation_prompt,
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.utils.timetook import TimeTook
@@ -112,17 +112,22 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
         chunk = list(doc.values())[0]
         if len(chunk["content"]) > 50:
             response = response_generator.generate_response(
-                generate_qna_short_single_context_no_cot_instruction_prompt,
+                qna_generation_prompt,
                 context=chunk["content"],
             )
+            if response is None:
+                continue
 
-            for item in response:
-                data = {
-                    "user_prompt": item["question"],
-                    "output_prompt": item["answer"],
-                    "context": chunk["content"],
-                }
-                new_df = new_df._append(data, ignore_index=True)
+            data = {
+                "user_prompt": response["question"],
+                "output_prompt": response["answer"],
+                "context": chunk["content"],
+            }
+            new_df = new_df._append(data, ignore_index=True)
+
+    if new_df.empty:
+        logger.error("No questions generated")
+        raise ValueError("No questions generated")
 
     return new_df
 

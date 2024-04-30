@@ -3,6 +3,8 @@ from importlib import resources
 import string
 import re
 
+from string import Template
+
 from enum import StrEnum
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -39,6 +41,9 @@ class Prompt:
                 PromptTag.Structured in self.tags
             ), "Structured tag must be present for JSON prompts"
 
+        self.system_message = self._try_load_prompt_file(self.system_message)
+        self.user_template = self._try_load_prompt_file(self.user_template)
+
     @staticmethod
     def arguments_in_prompt(prompt: str) -> set[str]:
         formatter = string.Formatter()
@@ -67,10 +72,6 @@ class Prompt:
         else:
             return prompt_file
 
-    def __post_init__(self):
-        self.system_message = self._try_load_prompt_file(self.system_message)
-        self.user_template = self._try_load_prompt_file(self.user_template)
-
     def update_system_prompt(self, system_message: str) -> "Prompt":
         system_message = self._try_load_prompt_file(system_message)
         self.system_message = system_message
@@ -98,6 +99,18 @@ class CoTPrompt(Prompt):
         ), "CoTPrompt must have ChainOfThought tag"
 
         self.separator = separator
+
+        has_system, has_user = self._check_separator_declaration(
+            self.system_message, self.user_template
+        )
+
+        if has_system:
+            template = Template(self.system_message)
+            self.system_message = template.safe_substitute(separator=self.separator)
+
+        if has_user:
+            template = Template(self.user_template)
+            self.user_template = template.safe_substitute(separator=self.separator)
 
     @staticmethod
     def _check_separator_declaration(
@@ -128,23 +141,6 @@ class CoTPrompt(Prompt):
             system_message = system_message.format(separator=self.separator)
 
         self.system_message = system_message
-
-    def __post_init__(self):
-        super().__post_init__()
-
-        has_system, has_user = self._check_separator_declaration(
-            self.system_message, self.user_template
-        )
-        self.system_message = (
-            self.system_message.format(separator=self.separator)
-            if has_system
-            else self.system_message
-        )
-        self.user_template = (
-            self.user_template.format(separator=self.separator)
-            if has_user
-            else self.user_template
-        )
 
 
 class StructuredPrompt(Prompt):
@@ -177,17 +173,17 @@ class StructuredWithCoTPrompt(CoTPrompt, StructuredPrompt):
         validator: callable = _default_validation,
         separator: str = "##RESPONSE##",
     ) -> None:
-        CoTPrompt.__init__(
-            self,
-            system_message=system_message,
-            user_template=user_template,
-            tags=tags,
-            separator=separator,
-        )
         StructuredPrompt.__init__(
             self,
             system_message=system_message,
             user_template=user_template,
             tags=tags,
             validator=validator,
+        )
+        CoTPrompt.__init__(
+            self,
+            system_message=system_message,
+            user_template=user_template,
+            tags=tags,
+            separator=separator,
         )
