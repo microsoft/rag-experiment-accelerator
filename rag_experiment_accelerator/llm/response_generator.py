@@ -3,6 +3,8 @@ import logging
 import json
 import openai
 
+from string import Template
+
 from openai import AzureOpenAI
 from tenacity import (
     after_log,
@@ -127,10 +129,13 @@ class ResponseGenerator:
         for key in user_arguments:
             assert key in kwargs, f"Missing argument {key} in user template."
 
-        sys_message = prompt.system_message.format(
+        sys_template = Template(prompt.system_message)
+        sys_message = sys_template.safe_substitute(
             **{key: value for key, value in kwargs.items() if key in system_arguments}
         )
-        user_template = prompt.user_template.format(
+
+        user_template = Template(prompt.user_template)
+        user_template = user_template.safe_substitute(
             **{key: value for key, value in kwargs.items() if key in user_arguments}
         )
 

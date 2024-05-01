@@ -16,9 +16,9 @@ def validate_rerank(text: str) -> bool:
 
 
 _rerank_template: str = """
-{documents}
+${documents}
 
-Question: {question}
+Question: ${question}
 """
 
 rerank_prompt_instruction = StructuredPrompt(

@@ -29,21 +29,21 @@ def validate_context_recall(text: str) -> bool:
 
 _context_precision_input = """
 Context:
-{context}
+${context}
 
 Question:
-{question}
+${question}
 """
 
 _context_recall_input = """
-question: {question}
-context: {context}
-answer: {answer}
+question: ${question}
+context: ${context}
+answer: ${answer}
 """
 
 llm_answer_relevance_instruction = Prompt(
     system_message="llm_answer_relevance_instruction.txt",
-    user_template="{text}",
+    user_template="${text}",
     tags=[PromptTag.NonStrict],
 )
 

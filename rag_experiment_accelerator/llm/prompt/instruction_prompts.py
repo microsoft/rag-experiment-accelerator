@@ -20,34 +20,34 @@ def validate_instruction_entities(text: str) -> bool:
 
 _main_response_template: str = """
 Context:
-{context}
+${context}
 
 Question:
-{question}
+${question}
 """
 
 prompt_instruction_entities = StructuredPrompt(
     system_message="prompt_instruction_entities.txt",
-    user_template="{text}",
+    user_template="${text}",
     validator=validate_instruction_entities,
     tags=[PromptTag.JSON],
 )
 
 prompt_instruction_keywords = StructuredPrompt(
     system_message="prompt_instruction_keywords.txt",
-    user_template="{text}",
+    user_template="${text}",
     validator=validate_instruction_keyword,
     tags=[PromptTag.JSON],
 )
 
 prompt_instruction_title = Prompt(
     system_message="prompt_instruction_title.txt",
-    user_template="{text}",
+    user_template="${text}",
 )
 
 prompt_instruction_summary = Prompt(
     system_message="prompt_instruction_summary.txt",
-    user_template="{text}",
+    user_template="${text}",
 )
 
 # TODO: Add selector for usage of long/short prompts

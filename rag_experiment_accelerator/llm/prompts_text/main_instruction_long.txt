@@ -6,10 +6,10 @@ Cite specific sources by filename whenever you reference data or excerpts from t
 Input format:
 
 Context:
-{{context}}
+{context}
 
 Question:
-{{question}}
+{question}
 
 <Example 1>:
 User:

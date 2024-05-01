@@ -17,7 +17,7 @@ def qna_generation_validate(response: str) -> bool:
 
 _response_template: str = """
 Context:
-{context}
+${context}
 """
 
 # TODO: Add selector for usage of long/short prompts

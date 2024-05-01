@@ -8,25 +8,25 @@ User:
 
 Assistant:
     [
-        {{  "statement_1":"Albert Einstein, born on 14 March 1879, was a German-born theoretical physicist, widely held to be one of the greatest and most influential scientists of all time.",
+        {  "statement_1":"Albert Einstein, born on 14 March 1879, was a German-born theoretical physicist, widely held to be one of the greatest and most influential scientists of all time.",
             "reason": "The date of birth of Einstein is mentioned clearly in the context.",
             "attributed": "1"
-        }},
-        {{
+        },
+        {
             "statement_2":"He received the 1921 Nobel Prize in Physics 'for his services to theoretical physics.",
             "reason": "The exact sentence is present in the given context.",
             "attributed": "1"
-        }},
-        {{
+        },
+        {
             "statement_3": "He published 4 papers in 1905.",
             "reason": "There is no mention about papers he wrote in the given context.",
             "attributed": "0"
-        }},
-        {{
+        },
+        {
             "statement_4":"Einstein moved to Switzerland in 1895.",
             "reason": "There is no supporting evidence for this in the given context.",
             "attributed": "0"
-        }}
+        }
     ]
 </Example 1>
 <Example 2>
@@ -36,10 +36,10 @@ User:
     answer: England
 Assistant:
     [
-        {{
+        {
             "statement_1":"England won the 2022 ICC Men's T20 World Cup.",
             "reason": "From context it is clear that England defeated Pakistan to win the World Cup.",
             "attributed": "1"
-        }}
+        }
     ]
 </Example 2>

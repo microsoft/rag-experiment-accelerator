@@ -1,6 +1,5 @@
 import os
 from importlib import resources
-import string
 import re
 
 from string import Template
@@ -46,8 +45,9 @@ class Prompt:
 
     @staticmethod
     def arguments_in_prompt(prompt: str) -> set[str]:
-        formatter = string.Formatter()
-        return {fname for _, fname, _, _ in formatter.parse(prompt) if fname}
+        pattern = re.compile(r"\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
+        matches = pattern.findall(prompt)
+        return set(matches)
 
     @staticmethod
     def check_formatting_argument(text: str, field: str) -> bool:
@@ -140,7 +140,8 @@ class CoTPrompt(Prompt):
     def update_system_prompt(self, system_message: str) -> Prompt:
         system_message = self._try_load_prompt_file(system_message)
         if CoTPrompt.check_formatting_argument(system_message, "separator"):
-            system_message = system_message.format(separator=self.separator)
+            template = Template(system_message)
+            system_message = template.safe_substitute(separator=self.separator)
 
         self.system_message = system_message
 
