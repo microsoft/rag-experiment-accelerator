@@ -118,7 +118,7 @@ class TestResponseGenerator(unittest.TestCase):
     def test_generate_response_full_system_message(self, mock_get_response):
         # Setup
         mock_get_response.return_value = "valid response"
-        prompt = Prompt("{argument_1} {argument_2}", "", [])
+        prompt = Prompt("${argument_1} ${argument_2}", "", [])
         kwargs = {"argument_1": 1, "argument_2": 2}
 
         # Action
@@ -134,7 +134,7 @@ class TestResponseGenerator(unittest.TestCase):
     def test_generate_response_full_user_template(self, mock_get_response):
         # Setup
         mock_get_response.return_value = "valid response"
-        prompt = Prompt("", "{argument_1} {argument_2}", [])
+        prompt = Prompt("", "${argument_1} ${argument_2}", [])
         kwargs = {"argument_1": 1, "argument_2": 2}
 
         # Action
@@ -150,7 +150,7 @@ class TestResponseGenerator(unittest.TestCase):
     def test_generate_response_mixed_messages(self, mock_get_response):
         # Setup
         mock_get_response.return_value = "valid response"
-        prompt = Prompt("{argument_1}", "{argument_2}", [])
+        prompt = Prompt("${argument_1}", "${argument_2}", [])
         kwargs = {"argument_1": 1, "argument_2": 2}
 
         # Action
@@ -165,7 +165,7 @@ class TestResponseGenerator(unittest.TestCase):
     )
     def test_generate_response_missing_system_argument(self, mock_get_response):
         # Setup
-        prompt = Prompt("{argument_1}", "{argument_2}", [])
+        prompt = Prompt("${argument_1}", "${argument_2}", [])
         kwargs = {"argument_1": 1}
 
         # Action & Assert
@@ -180,7 +180,7 @@ class TestResponseGenerator(unittest.TestCase):
     ):
         # Setup
         mock_get_response.side_effect = Exception("Random failure")
-        prompt = Prompt("{argument_1}", "{argument_2}", [PromptTag.NonStrict])
+        prompt = Prompt("${argument_1}", "${argument_2}", [PromptTag.NonStrict])
         kwargs = {"argument_1": 1, "argument_2": 2}
 
         # Action
@@ -195,7 +195,7 @@ class TestResponseGenerator(unittest.TestCase):
     )
     def test_generate_response_exception_handling_strict(self, mock_get_response):
         # Setup
-        prompt = Prompt("{argument_1}", "{argument_2}", [])
+        prompt = Prompt("${argument_1}", "${argument_2}", [])
         kwargs = {"argument_1": 1, "argument_2": 2}
 
         # Action & Assert
