@@ -163,7 +163,7 @@ az deployment sub create --subscription <subscription-id> --location <location> 
 
 Or
 
-To deploy with isolated network use following command. (Replace the parameter values where needed). If you do not fill in all three, the deployment will not deploy this to an isolated network.
+To deploy with isolated network use following command. Replace the parameter values with the specifics of your isolated network. You **must** supply all three parameters (i.e. `vnetAddressSpace`, `proxySubnetAddressSpace` and `subnetAddressSpace`) if you wish to deploy to an isolated network.
 
 ```bash
 az login
