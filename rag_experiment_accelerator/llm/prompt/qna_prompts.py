@@ -54,7 +54,7 @@ generate_qna_short_multiple_context_instruction_prompt = StructuredWithCoTPrompt
 
 # TODO: Add selector for usage of long/short prompts
 generate_qna_short_single_context_no_cot_instruction_prompt = StructuredPrompt(
-    system_message="generate_qna_short_single_context_no_cot.txt",
+    system_message="outdated_generate_qna_short_single_context_no_cot.txt",
     user_template=_response_template,
     tags=[PromptTag.JSON, PromptTag.NonStrict],
     validator=qna_generation_validate,
