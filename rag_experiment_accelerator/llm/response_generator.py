@@ -112,6 +112,8 @@ class ResponseGenerator:
 
         response_text = response.choices[0].message.content
 
+        logger.info(f"Raw response: {response_text}")
+
         return self._interpret_response(response_text, prompt)
 
     def generate_response(
