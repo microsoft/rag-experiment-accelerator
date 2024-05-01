@@ -172,11 +172,14 @@ class DocumentIntelligenceLoader(BaseLoader):
                 result.paragraphs, result.tables
             )
 
-            relevant_paragraphs = [
-                paragraph
-                for paragraph in paragraphs
-                if paragraph["role"] not in self.excluded_paragraph_roles
-            ]
+            relevant_paragraphs = []
+            for paragraph in paragraphs:
+                if "role" in paragraph.keys():
+                    if paragraph["role"] not in self.excluded_paragraph_roles:
+                        relevant_paragraphs.append(paragraph)
+                else:
+                    relevant_paragraphs.append(paragraph)
+
             paragraphs_by_role = self._get_paragraphs_by_role(result)
 
             if self.split_documents_by_page:
@@ -228,16 +231,15 @@ class DocumentIntelligenceLoader(BaseLoader):
     def _get_paragraphs_by_role(self, result):
         dict = {}
         for paragraph in result.paragraphs:
-            if (
-                not paragraph["role"]
-                or paragraph["role"] in self.excluded_paragraph_roles
-            ):
-                continue
-            paragraph_item = {
-                "content": paragraph.content,
-                "page": paragraph.bounding_regions[0].get("pageNumber"),
-            }
-            dict[paragraph["role"]] = dict.get(paragraph["role"], []) + [paragraph_item]
+            if "role" in paragraph.keys():
+                if paragraph["role"] not in self.excluded_paragraph_roles:
+                    paragraph_item = {
+                        "content": paragraph.content,
+                        "page": paragraph.bounding_regions[0].get("pageNumber"),
+                    }
+                    dict[paragraph["role"]] = dict.get(paragraph["role"], []) + [
+                        paragraph_item
+                    ]
 
         tables = []
         for table in result.tables:
