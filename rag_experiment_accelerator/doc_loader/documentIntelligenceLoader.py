@@ -86,14 +86,17 @@ def load_with_azure_document_intelligence(
             logger.warning(f"Failed to load {file_path}: {e}")
 
     logger.debug(f"Loaded {len(documents)} documents using Azure Document Intelligence")
+
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=overlap_size,
+        separators=["\n\n", "\n"],
     )
 
     logger.debug(
         f"Splitting extracted documents into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
     )
+
     docs = text_splitter.split_documents(documents)
 
     return [{str(uuid.uuid4()): doc.__dict__} for doc in docs]
@@ -184,9 +187,12 @@ class DocumentIntelligenceLoader(BaseLoader):
         try:
             result = self._call_document_intelligence(file_path)
 
-            paragraphs = self._substitute_table_paragraphs(
-                result.paragraphs, result.tables
-            )
+            if result.tables:
+                paragraphs = self._substitute_table_paragraphs(
+                    result.paragraphs, result.tables
+                )
+            else:
+                paragraphs = result.paragraphs
 
             relevant_paragraphs = []
             for paragraph in paragraphs:
@@ -247,10 +253,7 @@ class DocumentIntelligenceLoader(BaseLoader):
         clean_content = self._clean_content(content)
         return Document(
             page_content=clean_content,
-            metadata={
-                "source": file_path,
-                "page": page_number - 1,
-            },
+            metadata={"source": file_path, "page": page_number - 1},
         )
 
     def _is_intersecting_regions(self, bounding_region1, bounding_region2):
