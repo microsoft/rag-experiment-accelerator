@@ -15,6 +15,8 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
 
     environment = Environment.from_env_or_keyvault()
+    print(environment.openai_api_version)
     config = Config(environment, args.config_path, args.data_dir)
+    print(config.AZURE_OAI_CHAT_DEPLOYMENT_NAME)
 
     run(environment, config, get_all_file_paths(config.data_dir))
