@@ -1,8 +1,51 @@
 from abc import ABC, abstractmethod
 from typing import Any
+from rag_experiment_accelerator.config.config import Config, ExecutionEnvironment
 from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+global _checkpoint_instance
+
+
+def get_checkpoint():
+    """
+    Returns the current checkpoint instance.
+    """
+    global _checkpoint_instance
+    if not _checkpoint_instance:
+        raise RuntimeError(
+            "Checkpoint not initialized yet. Call init_checkpoint() first."
+        )
+    return _checkpoint_instance
+
+
+def init_checkpoint(checkpoint_name, config: Config):
+    """
+    Initializes the checkpoint instance based on the provided configuration.
+    """
+    global _checkpoint_instance
+    _checkpoint_instance = _get_checkpoint_base_on_config(checkpoint_name, config)
+
+
+def _get_checkpoint_base_on_config(checkpoint_name, config: Config):
+    # import inside the method to avoid circular dependencies
+    from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
+    from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
+        LocalStorageCheckpoint,
+    )
+
+    if not config.USE_CHECKPOINTS:
+        return NullCheckpoint()
+
+    if config.EXECUTION_ENVIRONMENT == ExecutionEnvironment.AZURE_ML:
+        # currently not supposed for Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
+        return NullCheckpoint()
+
+    return LocalStorageCheckpoint(
+        checkpoint_name=checkpoint_name,
+        directory=config.artifacts_dir,
+    )
 
 
 class Checkpoint(ABC):
@@ -10,18 +53,9 @@ class Checkpoint(ABC):
     A Checkpoint is used to cache the results of method calls, enabling the reuse of these results if the same method is called again with the same ID.
     When a method wrapped by a Checkpoint object is called with an ID that was used before,
     the Checkpoint returns the result of the previous execution instead of executing the method again.
+
+    Initialize a Checkpoint using the `init_checkpoint` method, and use the `get_checkpoint` method to get the Checkpoint object.
     """
-
-    @abstractmethod
-    def __init__(self, checkpoint_name: str, directory: str):
-        """
-        Initializes the checkpoint object.
-
-        Parameters:
-        - checkpoint_name (str): The name of the checkpoint, the checkpoint is uniquely identified by its name.
-        - directory (str): The directory where the '/checkpoints' directory will be stored.
-        """
-        pass
 
     def load_or_run(self, method, id: str, *args, **kwargs) -> Any:
         """

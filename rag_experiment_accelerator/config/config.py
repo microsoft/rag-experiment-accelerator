@@ -19,6 +19,11 @@ class ChunkingStrategy(StrEnum):
     AZURE_DOCUMENT_INTELLIGENCE = "azure-document-intelligence"
 
 
+class ExecutionEnvironment(StrEnum):
+    LOCAL = "local"
+    AZURE_ML = "azure-ml"
+
+
 class Config:
     """
     A class for storing configuration settings for the RAG Experiment Accelerator.
@@ -52,6 +57,7 @@ class Config:
         USE_CHECKPOINTS (bool): Whether or not to use checkpoints to load data and skip processing that was already done in previous executions.
         CROSSENCODER_AT_K (int): The number of documents to rerank using the crossencoder.
         CHUNKING_STRATEGY (ChunkingStrategy): The strategy to use for chunking documents.
+        EXECUTION_ENVIRONMENT (ExecutionEnvironment): The environment where the experiment is running.
         AZURE_DOCUMENT_INTELLIGENCE_MODEL (str): The model to use for Azure Document Intelligence extraction.
         TEMPERATURE (float): The temperature to use for OpenAI's GPT-3 model.
         RERANK (bool): Whether or not to perform reranking.
@@ -123,6 +129,7 @@ class Config:
         self.AZURE_DOCUMENT_INTELLIGENCE_MODEL = config_json.get(
             "azure_document_intelligence_model", "prebuilt-read"
         )
+        self.EXECUTION_ENVIRONMENT = ExecutionEnvironment.LOCAL
         self.LANGUAGE = config_json.get("language", {})
 
         self.embedding_models: list[EmbeddingModel] = []

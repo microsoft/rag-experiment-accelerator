@@ -4,7 +4,7 @@ import ntpath
 
 from dotenv import load_dotenv
 
-from rag_experiment_accelerator.checkpoint import Checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint import get_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
@@ -30,7 +30,6 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
-    checkpoint: Checkpoint,
 ) -> dict[str]:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -67,15 +66,15 @@ def run(
 
     if config.SAMPLE_DATA:
         parser = load_parser()
-        docs = checkpoint.load_or_run(
+        docs = get_checkpoint().load_or_run(
             cluster, index_config.index_name, docs, config, parser
         )
 
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
 
-    embed_chunks(index_config, pre_process, docs_ready_to_index, checkpoint)
-    generate_titles_from_chunks(config, pre_process, docs_ready_to_index, checkpoint)
-    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index, checkpoint)
+    embed_chunks(index_config, pre_process, docs_ready_to_index)
+    generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
+    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
 
     with TimeTook(
         f"load documents to Azure Search index {index_config.index_name()}",
@@ -122,7 +121,7 @@ def convert_docs_to_vector_db_records(docs):
     return dicts
 
 
-def embed_chunks(config: IndexConfig, pre_process, chunks, checkpoint: Checkpoint):
+def embed_chunks(config: IndexConfig, pre_process, chunks):
     """
     Generates embeddings for chunks of documents.
 
@@ -141,7 +140,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks, checkpoint: Checkpoin
 
             futures = {
                 executor.submit(
-                    checkpoint.load_or_run,
+                    get_checkpoint().load_or_run,
                     embed_chunk,
                     doc["content"],
                     pre_process,
@@ -199,9 +198,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
     return chunk
 
 
-def generate_titles_from_chunks(
-    config: IndexConfig, pre_process, chunks, checkpoint: Checkpoint
-):
+def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
     """
     Generates titles for each chunk of content in parallel using LLM and
     multithreading.
@@ -223,7 +220,7 @@ def generate_titles_from_chunks(
 
         futures = {
             executor.submit(
-                checkpoint.load_or_run,
+                get_checkpoint().load_or_run,
                 process_title,
                 chunk["content"],
                 config,
@@ -243,9 +240,7 @@ def generate_titles_from_chunks(
                 )
 
 
-def generate_summaries_from_chunks(
-    config: IndexConfig, pre_process, chunks, checkpoint: Checkpoint
-):
+def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
     """
     Generates summaries for each chunk of content in parallel using multithreading.
 
@@ -265,7 +260,7 @@ def generate_summaries_from_chunks(
 
         futures = {
             executor.submit(
-                checkpoint.load_or_run,
+                get_checkpoint().load_or_run,
                 process_summary,
                 chunk["content"],
                 config,
