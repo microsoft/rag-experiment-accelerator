@@ -39,7 +39,6 @@ def init():
     global config
     global environment
     global index_config
-    global checkpoint
 
     environment = Environment.from_keyvault(args.keyvault)
     config = Config(environment, args.config_path, args.data_dir)

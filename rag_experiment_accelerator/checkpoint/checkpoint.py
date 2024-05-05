@@ -6,6 +6,7 @@ from rag_experiment_accelerator.utils.logging import get_logger
 logger = get_logger(__name__)
 
 global _checkpoint_instance
+_checkpoint_instance = None
 
 
 def get_checkpoint():
@@ -14,9 +15,7 @@ def get_checkpoint():
     """
     global _checkpoint_instance
     if not _checkpoint_instance:
-        raise RuntimeError(
-            "Checkpoint not initialized yet. Call init_checkpoint() first."
-        )
+        raise Exception("Checkpoint not initialized yet. Call init_checkpoint() first.")
     return _checkpoint_instance
 
 
