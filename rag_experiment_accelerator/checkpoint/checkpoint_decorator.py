@@ -1,18 +1,18 @@
 from rag_experiment_accelerator.checkpoint.checkpoint import get_checkpoint
 
 
-def run_with_checkpoint(id=None):
+def cache_with_checkpoint(id=None):
     """
-    A decorator that can be used to cache the results of a method call using a Checkpoint object.
+    A decorator that can be used to cache the results of a method call using the globally initialized Checkpoint object.
     An id must be provided to the decorator, which is used to identify the cached result.
-    If the method is called with the same id again, the cached result is returned instead of executing the method again.
+    If the method is called with the same id again, the cached result is returned instead of executing the method.
     """
 
     def decorator(func):
         def wrapper(*args, **kwargs):
             if id is None:
                 raise ValueError(
-                    "'id' must be provided to the run_with_checkpoint decorator"
+                    "'id' must be provided to the cache_with_checkpoint decorator"
                 )
 
             eval_context = {**globals(), **locals(), **kwargs}

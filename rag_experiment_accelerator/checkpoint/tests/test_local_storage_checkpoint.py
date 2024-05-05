@@ -9,14 +9,14 @@ from rag_experiment_accelerator.checkpoint.checkpoint import (
     init_checkpoint,
 )
 from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
-    run_with_checkpoint,
+    cache_with_checkpoint,
 )
 from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
     LocalStorageCheckpoint,
 )
 
 
-@run_with_checkpoint(id="call_identifier")
+@cache_with_checkpoint(id="call_identifier")
 def dummy(word, call_identifier):
     return f"hello {word}"
 

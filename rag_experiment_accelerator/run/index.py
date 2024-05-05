@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 from rag_experiment_accelerator.checkpoint.checkpoint import get_checkpoint
 from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
-    run_with_checkpoint,
+    cache_with_checkpoint,
 )
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
@@ -172,7 +172,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
     return embedded_chunks
 
 
-@run_with_checkpoint(id="chunk['content']")
+@cache_with_checkpoint(id="chunk['content']")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -265,7 +265,7 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
                 )
 
 
-@run_with_checkpoint(id="chunk['content']")
+@cache_with_checkpoint(id="chunk['content']")
 def process_title(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
@@ -299,7 +299,7 @@ def process_title(config: IndexConfig, pre_process, chunk):
     return chunk
 
 
-@run_with_checkpoint(id="chunk['content']")
+@cache_with_checkpoint(id="chunk['content']")
 def process_summary(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
