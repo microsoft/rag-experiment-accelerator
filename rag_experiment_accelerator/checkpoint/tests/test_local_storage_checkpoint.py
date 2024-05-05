@@ -1,11 +1,23 @@
 import unittest
 import os
-from rag_experiment_accelerator.checkpoint import LocalStorageCheckpoint
 import tempfile
 import shutil
+from unittest.mock import MagicMock
+
+from rag_experiment_accelerator.checkpoint.checkpoint import (
+    get_checkpoint,
+    init_checkpoint,
+)
+from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
+    run_with_checkpoint,
+)
+from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
+    LocalStorageCheckpoint,
+)
 
 
-def dummy(word):
+@run_with_checkpoint(id="call_identifier")
+def dummy(word, call_identifier):
     return f"hello {word}"
 
 
@@ -18,12 +30,16 @@ class TestLocalStorageCheckpoint(unittest.TestCase):
             shutil.rmtree(self.temp_dir)
 
     def test_wrapped_method_is_cached(self):
-        checkpoint = LocalStorageCheckpoint(
-            checkpoint_name="test_save_load", directory=self.temp_dir
-        )
-        data_id = "unique_id"
-        result1 = checkpoint.load_or_run(dummy, data_id, "first run")
-        result2 = checkpoint.load_or_run(dummy, data_id, "second run")
+        config = MagicMock()
+        config.USE_CHECKPOINTS = True
+        config.artifacts_dir = self.temp_dir
+        init_checkpoint("test_save_load", config)
+        checkpoint = get_checkpoint()
+        assert isinstance(checkpoint, LocalStorageCheckpoint)
+
+        data_id = "same_id"
+        result1 = dummy("first run", data_id)
+        result2 = dummy("second run", data_id)
         self.assertEqual(result1, "hello first run")
         self.assertEqual(result2, "hello first run")
 

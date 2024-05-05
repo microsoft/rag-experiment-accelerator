@@ -5,6 +5,9 @@ import ntpath
 from dotenv import load_dotenv
 
 from rag_experiment_accelerator.checkpoint.checkpoint import get_checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
+    run_with_checkpoint,
+)
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
@@ -67,7 +70,7 @@ def run(
     if config.SAMPLE_DATA:
         parser = load_parser()
         docs = get_checkpoint().load_or_run(
-            cluster, index_config.index_name, docs, config, parser
+            cluster, index_config.index_name(), docs, config, parser
         )
 
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
@@ -140,9 +143,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
 
             futures = {
                 executor.submit(
-                    get_checkpoint().load_or_run,
                     embed_chunk,
-                    doc["content"],
                     pre_process,
                     config.embedding_model,
                     doc,
@@ -174,6 +175,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
     return embedded_chunks
 
 
+@run_with_checkpoint(id="chunk['content']")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -220,9 +222,7 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
 
         futures = {
             executor.submit(
-                get_checkpoint().load_or_run,
                 process_title,
-                chunk["content"],
                 config,
                 pre_process,
                 chunk,
@@ -260,9 +260,7 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
 
         futures = {
             executor.submit(
-                get_checkpoint().load_or_run,
                 process_summary,
-                chunk["content"],
                 config,
                 pre_process,
                 chunk,
@@ -280,6 +278,7 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
                 )
 
 
+@run_with_checkpoint(id="chunk['content']")
 def process_title(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
@@ -313,6 +312,7 @@ def process_title(config: IndexConfig, pre_process, chunk):
     return chunk
 
 
+@run_with_checkpoint(id="chunk['content']")
 def process_summary(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
