@@ -143,10 +143,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
 
             futures = {
                 executor.submit(
-                    embed_chunk,
-                    pre_process,
-                    config.embedding_model,
-                    doc,
+                    embed_chunk, pre_process, config.embedding_model, doc
                 ): doc
                 for doc in chunks
             }
@@ -221,12 +218,7 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
         executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
 
         futures = {
-            executor.submit(
-                process_title,
-                config,
-                pre_process,
-                chunk,
-            ): chunk
+            executor.submit(process_title, config, pre_process, chunk): chunk
             for chunk in chunks
         }
 
@@ -259,12 +251,7 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
         executor = stack.enter_context(ThreadPoolExecutor())
 
         futures = {
-            executor.submit(
-                process_summary,
-                config,
-                pre_process,
-                chunk,
-            ): chunk
+            executor.submit(process_summary, config, pre_process, chunk): chunk
             for chunk in chunks
         }
 
