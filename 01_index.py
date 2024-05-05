@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     file_paths = get_all_file_paths(config.data_dir)
     for index_config in config.index_configs():
-        checkpoint = init_checkpoint(f"index_{index_config.index_name()}", config)
+        init_checkpoint(f"index_{index_config.index_name()}", config)
         index_dict = run(environment, config, index_config, file_paths)
 
     with open(config.GENERATED_INDEX_NAMES_FILE_PATH, "w") as index_name:

@@ -1,3 +1,4 @@
+from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
 import os
 import sys
 import argparse
@@ -6,7 +7,6 @@ from typing import List
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
-from rag_experiment_accelerator.checkpoint import NullCheckpoint  # noqa: E402
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
@@ -46,7 +46,7 @@ def init():
 
     index_config = IndexConfig.from_index_name(args.index_name, config)
 
-    checkpoint = NullCheckpoint()
+    init_checkpoint(f"index_{index_config.index_name()}", config)
 
 
 def run(input_paths: List[str]) -> List[str]:
@@ -54,6 +54,6 @@ def run(input_paths: List[str]) -> List[str]:
     global config
     global environment
     global index_config
-    index_run(environment, config, index_config, input_paths, checkpoint)
+    index_run(environment, config, index_config, input_paths)
 
     return [args.index_name]

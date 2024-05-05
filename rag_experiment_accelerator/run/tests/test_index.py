@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from rag_experiment_accelerator.checkpoint import NullCheckpoint
+from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
 from rag_experiment_accelerator.config.config import Config
 
 from rag_experiment_accelerator.run.index import run
@@ -70,6 +70,7 @@ def test_run(
     mock_config.data_dir = "data_dir"
     mock_config.CHUNKING_STRATEGY = "chunking_strategy"
     mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "oai_deployment_name"
+    mock_config.USE_CHECKPOINTS = False
 
     mock_preprocess.return_value.preprocess.return_value = "preprocessed_value"
 
@@ -88,7 +89,8 @@ def test_run(
 
     # Act
     for index_config in mock_config.index_configs():
-        run(mock_environment, mock_config, index_config, file_paths, NullCheckpoint())
+        init_checkpoint(f"index_{index_config.index_name()}", mock_config)
+        run(mock_environment, mock_config, index_config, file_paths)
 
     # Assert
     assert mock_preprocess.call_count == 32
