@@ -1,5 +1,6 @@
 import unittest
-from rag_experiment_accelerator.checkpoint import NullCheckpoint
+
+from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
 
 
 def dummy(word):
