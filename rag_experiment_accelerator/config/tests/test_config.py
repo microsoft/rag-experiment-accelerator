@@ -83,6 +83,7 @@ def test_config_init(mock_create_embedding_model):
     assert config.embedding_models[1].dimension.return_value == 1536
 
     assert config.SAMPLE_DATA
+    assert config.ONLY_RUN_SAMPLING
     assert config.SAMPLE_PERCENTAGE == mock_config_data["sampling"]["sample_percentage"]
     assert config.SAMPLE_OPTIMUM_K == mock_config_data["sampling"]["optimum_k"]
     assert config.SAMPLE_MIN_CLUSTER == mock_config_data["sampling"]["min_cluster"]
