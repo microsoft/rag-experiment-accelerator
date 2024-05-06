@@ -5,13 +5,13 @@ from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 
 
-@patch("rag_experiment_accelerator.config.config.os.makedirs")
+@patch("rag_experiment_accelerator.run.index.mlflow")
+@patch("rag_experiment_accelerator.run.index.mlflow.MlflowClient")
 @patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
 @patch("rag_experiment_accelerator.run.index.upload_data")
 @patch("rag_experiment_accelerator.run.index.cluster")
 @patch("rag_experiment_accelerator.run.index.load_documents")
 @patch("rag_experiment_accelerator.run.index.create_acs_index")
-@patch("rag_experiment_accelerator.run.index.logger")
 @patch("rag_experiment_accelerator.run.index.Preprocess")
 @patch("rag_experiment_accelerator.run.index.Config.__init__", return_value=None)
 @patch("rag_experiment_accelerator.run.index.Environment")
@@ -19,12 +19,12 @@ def test_run(
     mock_environment,
     _,
     mock_preprocess,
-    mock_logger,
     mock_create_acs_index,
     mock_load_documents,
     mock_cluster,
     mock_upload_data,
     mock_embedding_model,
+    mock_mlflow_client,
     __,
 ):
     # Arrange
@@ -87,7 +87,7 @@ def test_run(
 
     # Act
     for index_config in mock_config.index_configs():
-        run(mock_environment, mock_config, index_config, file_paths)
+        run(mock_environment, mock_config, index_config, file_paths, mock_mlflow_client)
 
     # Assert
     assert mock_preprocess.call_count == 32
