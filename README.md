@@ -50,7 +50,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 1. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
-1. **Sampling**: If you have a large dataset and/or want to speed up the experimentation, a sampling process is available to create a small but representative sample of the data for the percentage specified. The data will be clustered by content and a percentage of each cluster will be selected as part of the sample. Results obtained should be roughly indicative of the full dataset within a ~10% margin. This allows for quicker results and keeps costs down. Once an approach has been identified, running on the full dataset is recommended for accurate results.
+1. **Sampling**: If you have a large dataset and/or want to speed up the experimentation, a sampling process is available to create a small but representative sample of the data for the percentage specified. The data will be clustered by content and a percentage of each cluster will be selected as part of the sample. Results obtained should be roughly indicative of the full dataset within a ~10% margin. Once an approach has been identified, running on the full dataset is recommended for accurate results.
 
 ## Products used
 
@@ -220,9 +220,9 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 
 ### Running with sampling
 
-Sampling will be run locally to create a small but representative slice of the data. This helps with rapid experimentation and keeps costs down. Results obtained should be roughly indicative of the full dataset within a ~10% margin. This allows for quicker results and keeps costs down. Once an approach has been identified, running on the full dataset is recommended for accurate results.
+Sampling will be run locally to create a small but representative slice of the data. This helps with rapid experimentation and keeps costs down. Results obtained should be roughly indicative of the full dataset within a ~10% margin. Once an approach has been identified, running on the full dataset is recommended for accurate results.
 
-**Note**: Sampling can only be run locally, at this stage it is not supported on a distributed AML compute cluster. So the process would be, run sampling locally and then use the generated dataset to run on AML.
+**Note**: Sampling can only be run locally, at this stage it is not supported on a distributed AML compute cluster. So the process would be to run sampling locally and then use the generated sample dataset to run on AML.
 
 If you have a very large dataset and want to run a similar approach to sample the data, you can use the pyspark in-memory distributed implementation in the [Data Discovery Toolkit](https://github.com/microsoft/Data-Discovery-Toolkit) for [Microsoft Fabric](https://learn.microsoft.com/en-us/fabric/get-started/microsoft-fabric-overview) or [Azure Synapse Analytics](https://learn.microsoft.com/en-gb/azure/synapse-analytics/).  
 
