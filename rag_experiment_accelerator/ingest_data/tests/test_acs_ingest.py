@@ -119,7 +119,7 @@ def test_upload_data(
     mock_environment.azure_search_service_endpoint = "test_endpoint"
     mock_environment.azure_search_admin_key = "test_key"
     mock_config = Mock()
-    mock_config.MAX_WORKER_THREADS = None
+    mock_config.max_worker_threads = None
 
     # Act
     upload_data(

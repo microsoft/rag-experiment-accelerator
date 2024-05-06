@@ -66,3 +66,6 @@ class AOAIEmbeddingModel(EmbeddingModel):
 
         embedding = response.data[0].embedding
         return embedding
+
+    def to_dict(self) -> dict:
+        return super().to_dict()

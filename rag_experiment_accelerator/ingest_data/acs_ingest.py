@@ -72,7 +72,7 @@ def upload_data(
     with ExitStack() as stack:
         with TimeTook("uploading data to Azure AI Search", logger=logger):
             executor = stack.enter_context(
-                ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+                ThreadPoolExecutor(config.max_worker_threads)
             )
 
             futures = {
@@ -174,7 +174,7 @@ def do_we_need_multiple_questions(
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    if not config.CHAIN_OF_THOUGHTS:
+    if not config.chain_of_thoughts:
         return False
 
     full_prompt_instruction = (

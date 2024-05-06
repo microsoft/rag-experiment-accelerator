@@ -1,8 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import ntpath
-
 from dotenv import load_dotenv
+import mlflow
 
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
@@ -30,6 +30,7 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
+    mlflow_client: mlflow.MlflowClient,
 ) -> dict[str]:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -50,27 +51,28 @@ def run(
             index_config.embedding_model.dimension,
             index_config.ef_construction,
             index_config.ef_search,
-            config.LANGUAGE["analyzers"],
+            config.language["analyzers"],
         )
     index_dict["indexes"].append(index_config.index_name())
 
     docs = load_documents(
         environment,
-        config.CHUNKING_STRATEGY,
-        config.DATA_FORMATS,
+        config.chunking_strategy,
+        config.data_formats,
         file_paths,
         index_config.chunk_size,
-        index_config.overlap,
-        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
+        index_config.overlap_size,
+        config.azure_document_intelligence_model,
     )
 
-    if config.SAMPLE_DATA:
+    if config.sampling:
         parser = load_parser()
         docs = cluster(docs, config, parser)
 
+    mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
+    mlflow.log_metric("Number of document chunks", len(docs_ready_to_index))
     embed_chunks(index_config, pre_process, docs_ready_to_index)
-
     generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
     generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
 
@@ -209,7 +211,7 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
         chunks (list): A list of dictionaries, each containing a chunk of content to be processed.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(proccess_title, config, pre_process, chunk): chunk
