@@ -756,7 +756,6 @@ def evaluate_prompts(
     common_data = query_data_load[0]
     mlflow.log_param("question_count", common_data.question_count)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
-    mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(os.path.join(config.eval_data_location, f"{name_suffix}.csv"))
     mlflow.log_artifact(

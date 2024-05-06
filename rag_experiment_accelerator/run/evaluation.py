@@ -51,6 +51,14 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
         "embedding_models",
         "main_prompt_instruction",
         "max_worker_threads",
+        "_config_dir",
+        "artifacts_dir",
+        "data_dir",
+        "eval_data_jsonl_file_path",
+        "generated_index_names_file_path",
+        "query_data_location",
+        "eval_data_location",
+        "sampling_output_dir",
     ]:
         config_dict.__delitem__(param)
 
