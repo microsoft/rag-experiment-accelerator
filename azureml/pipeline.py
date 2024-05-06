@@ -1,6 +1,12 @@
 from rag_experiment_accelerator.config.paths import (
     formatted_datetime_suffix,
 )  # noqa: E402
+from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
+from rag_experiment_accelerator.config.config import Config  # noqa: E402
+from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
+
+from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
+from rag_experiment_accelerator.utils.logging import get_logger  # noqa: E402
 
 import os
 import sys
@@ -14,14 +20,6 @@ import warnings
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
-
-
-from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
-from rag_experiment_accelerator.config.config import Config  # noqa: E402
-from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
-
-from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
-from rag_experiment_accelerator.utils.logging import get_logger  # noqa: E402
 
 
 logger = get_logger(__name__)
