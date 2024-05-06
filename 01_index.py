@@ -1,5 +1,6 @@
 import json
 import argparse
+import sys
 
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.config import Config
@@ -17,9 +18,14 @@ if __name__ == "__main__":
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
 
+    # Are we running locally and not in AML? We do not want to run sampling on the distributed compute at this stage
+    local = False
+    if "01_index.py" in str(sys.argv[0]):
+        local = True
+
     file_paths = get_all_file_paths(config.data_dir)
     for index_config in config.index_configs():
-        index_dict = run(environment, config, index_config, file_paths)
+        index_dict = run(environment, config, index_config, file_paths, local)
 
     with open(config.GENERATED_INDEX_NAMES_FILE_PATH, "w") as index_name:
         json.dump(index_dict, index_name, indent=4)
