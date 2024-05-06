@@ -38,7 +38,7 @@ def _get_checkpoint_base_on_config(checkpoint_name, config: Config):
         return NullCheckpoint()
 
     if config.EXECUTION_ENVIRONMENT == ExecutionEnvironment.AZURE_ML:
-        # currently not supposed for Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
+        # Currently not supported in Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
         return NullCheckpoint()
 
     return LocalStorageCheckpoint(
