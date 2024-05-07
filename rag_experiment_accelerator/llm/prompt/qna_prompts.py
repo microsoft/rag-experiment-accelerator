@@ -60,4 +60,5 @@ generate_qna_short_single_context_no_cot_instruction_prompt = StructuredPrompt(
     validator=qna_generation_validate,
 )
 
+
 qna_generation_prompt = generate_qna_short_single_context_no_cot_instruction_prompt
