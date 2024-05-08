@@ -53,7 +53,7 @@ class Checkpoint(ABC):
     When a method wrapped by a Checkpoint object is called with an ID that was used before,
     the Checkpoint returns the result of the previous execution instead of executing the method again.
 
-    Initialize a Checkpoint using the `init_checkpoint` method, and use the `get_checkpoint` method to get the Checkpoint object.
+    Initialize the Checkpoint using the `init_checkpoint` method, and use the `get_checkpoint` method to get the Checkpoint object.
     """
 
     def load_or_run(self, method, id: str, *args, **kwargs) -> Any:
