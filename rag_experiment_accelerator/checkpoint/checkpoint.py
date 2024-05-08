@@ -72,8 +72,14 @@ class Checkpoint(ABC):
         - Any: The result of the method execution.
         """
         if self._has_data(id, method):
+            max_id_length = 20
+            trimmed_id = (
+                str(id)[:max_id_length] + "..."
+                if len(str(id)) > max_id_length
+                else str(id)
+            )
             logger.info(
-                f"Checkpoint data found for '{method.__name__}' - skipping execution and loading from checkpoint."
+                f"Checkpoint data found for '{method.__name__}' and id '{trimmed_id}' - skipping execution and loading from checkpoint."
             )
             return self._load(id, method)
         else:
