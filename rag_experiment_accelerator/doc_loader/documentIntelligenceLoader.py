@@ -5,6 +5,7 @@ import os
 import uuid
 from azure.ai.documentintelligence import DocumentIntelligenceClient
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rag_experiment_accelerator.config.environment import Environment
 from azure.core.credentials import AzureKeyCredential
 from langchain_core.documents import Document
@@ -44,6 +45,8 @@ def is_supported_by_document_intelligence(format: str) -> bool:
 def load_with_azure_document_intelligence(
     environment: Environment,
     file_paths: list[str],
+    chunk_size: int,
+    overlap_size: int,
     azure_document_intelligence_model: str,
     **kwargs: dict,
 ) -> list[Document]:
@@ -53,6 +56,8 @@ def load_with_azure_document_intelligence(
     Args:
         environment (Environment): The environment class
         file_paths (list[str]): Sequence of paths to load.
+        chunk_size (int): The size of each text chunk in characters.
+        overlap_size (int): The size of the overlap between text chunks in characters.
         azure_document_intelligence_model (str): The model to use for Azure Document Intelligence.
         **kwargs (dict): Unused.
 
@@ -80,7 +85,21 @@ def load_with_azure_document_intelligence(
         except Exception as e:
             logger.warning(f"Failed to load {file_path}: {e}")
 
-    return [{str(uuid.uuid4()): doc.__dict__} for doc in documents]
+    logger.debug(f"Loaded {len(documents)} documents using Azure Document Intelligence")
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=overlap_size,
+        separators=["\n\n", "\n"],
+    )
+
+    logger.debug(
+        f"Splitting extracted documents into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
+    )
+
+    docs = text_splitter.split_documents(documents)
+
+    return [{str(uuid.uuid4()): doc.__dict__} for doc in docs]
 
 
 class DocumentIntelligenceLoader(BaseLoader):
@@ -168,29 +187,33 @@ class DocumentIntelligenceLoader(BaseLoader):
         try:
             result = self._call_document_intelligence(file_path)
 
-            paragraphs = self._substitute_table_paragraphs(
-                result.paragraphs, result.tables
-            )
+            if result.tables:
+                paragraphs = self._substitute_table_paragraphs(
+                    result.paragraphs, result.tables
+                )
+            else:
+                paragraphs = result.paragraphs
 
-            relevant_paragraphs = [
-                paragraph
-                for paragraph in paragraphs
-                if paragraph["role"] not in self.excluded_paragraph_roles
-            ]
-            paragraphs_by_role = self._get_paragraphs_by_role(result)
+            relevant_paragraphs = []
+            for paragraph in paragraphs:
+                if "role" in paragraph.keys():
+                    if paragraph["role"] not in self.excluded_paragraph_roles:
+                        relevant_paragraphs.append(paragraph)
+                else:
+                    relevant_paragraphs.append(paragraph)
 
             if self.split_documents_by_page:
                 paragraphs_by_page = self._split_paragraphs_by_page(relevant_paragraphs)
                 for page_number, page_paragraphs in paragraphs_by_page.items():
                     documents.append(
                         self._convert_to_langchain_document(
-                            page_paragraphs, file_path, paragraphs_by_role, page_number
+                            page_paragraphs, file_path, page_number
                         )
                     )
             else:
                 documents.append(
                     self._convert_to_langchain_document(
-                        relevant_paragraphs, file_path, paragraphs_by_role, 1
+                        relevant_paragraphs, file_path, 1
                     )
                 )
 
@@ -225,43 +248,12 @@ class DocumentIntelligenceLoader(BaseLoader):
 
         return content
 
-    def _get_paragraphs_by_role(self, result):
-        dict = {}
-        for paragraph in result.paragraphs:
-            if (
-                not paragraph["role"]
-                or paragraph["role"] in self.excluded_paragraph_roles
-            ):
-                continue
-            paragraph_item = {
-                "content": paragraph.content,
-                "page": paragraph.bounding_regions[0].get("pageNumber"),
-            }
-            dict[paragraph["role"]] = dict.get(paragraph["role"], []) + [paragraph_item]
-
-        tables = []
-        for table in result.tables:
-            table_item = {
-                "cells": table.cells,
-                "page": table.bounding_regions[0].get("pageNumber"),
-            }
-            tables.append(table_item)
-        dict["tables"] = tables
-
-        return dict
-
-    def _convert_to_langchain_document(
-        self, paragraphs, file_path, paragraphs_by_role, page_number
-    ):
+    def _convert_to_langchain_document(self, paragraphs, file_path, page_number):
         content = "\n\n".join([paragraph.content for paragraph in paragraphs])
         clean_content = self._clean_content(content)
         return Document(
             page_content=clean_content,
-            metadata={
-                "source": file_path,
-                "paragraphs_by_role": paragraphs_by_role,
-                "page": page_number - 1,
-            },
+            metadata={"source": file_path, "page": page_number - 1},
         )
 
     def _is_intersecting_regions(self, bounding_region1, bounding_region2):
