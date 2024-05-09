@@ -442,6 +442,8 @@ def query_and_eval_single_line(
                     evaluation_content=evaluation_content,
                     retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
                     evaluator=evaluator,
+                    config=config,
+                    response_generator=response_generator,
                 )
                 search_evals.append(evaluation)
             if config.RERANK and len(docs) > 0:
