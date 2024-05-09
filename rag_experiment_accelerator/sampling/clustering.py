@@ -47,7 +47,11 @@ def spacy_tokenizer(sentence, parser):
         str: The tokenized sentence.
 
     """
-    mytokens = parser(sentence["content"])
+    if isinstance(sentence, str):
+        mytokens = parser(sentence)
+    else:
+        mytokens = parser(sentence["content"])
+
     mytokens = [
         word.lemma_.lower().strip() if word.lemma_ != "-PRON-" else word.lower_
         for word in mytokens
