@@ -7,9 +7,7 @@ import traceback
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
-from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
-    cache_with_checkpoint,
-)
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.prompts import (
