@@ -1,4 +1,4 @@
-from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 import os
 import sys
 import argparse
