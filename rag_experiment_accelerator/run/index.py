@@ -4,10 +4,7 @@ import ntpath
 
 from dotenv import load_dotenv
 
-from rag_experiment_accelerator.checkpoint.checkpoint import get_checkpoint
-from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
-    cache_with_checkpoint,
-)
+from rag_experiment_accelerator.checkpoint import get_checkpoint, cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment

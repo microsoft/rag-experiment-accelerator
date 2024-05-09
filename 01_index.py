@@ -1,7 +1,8 @@
 import json
 import argparse
 
-from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
+
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
