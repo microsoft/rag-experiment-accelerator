@@ -25,10 +25,11 @@ def _flatten_dict_gen(d, parent_key, sep):
 
 
 def convert_to_dict(dictionary):
+    new_dictionary = dict()
     for key, value in dictionary.items():
-        dictionary[key] = value.to_dict() if hasattr(value, "to_dict") else value
+        new_dictionary[key] = value.to_dict() if hasattr(value, "to_dict") else value
 
-    return dictionary
+    return new_dictionary
 
 
 def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
@@ -40,7 +41,7 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
     Returns the hyper parameters for the current job.
     """
     params = dict()
-    config_dict = vars(copy.deepcopy(config))
+    config_dict = vars(copy.copy(config))
 
     # Remove combination of hyper parameters and other not needed parameters
     for param in [
@@ -66,7 +67,7 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
     params.update(flatten_dict(convert_to_dict(config_dict)))
 
     # Add the index config parameters by converting to dict
-    params.update(flatten_dict(convert_to_dict(vars(copy.deepcopy(index_config)))))
+    params.update(flatten_dict(convert_to_dict(vars(index_config))))
 
     return params
 

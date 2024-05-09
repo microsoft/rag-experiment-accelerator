@@ -94,7 +94,9 @@ class Config:
         self.ef_constructions = config_json["ef_construction"]
         self.ef_searches = config_json["ef_search"]
         self.index_name_prefix = config_json["index_name_prefix"]
-        self.experiment_name = config_json["experiment_name"] or self.index_name_prefix
+        self.experiment_name = (
+            config_json.get("experiment_name", "") or self.index_name_prefix
+        )
         self.job_name = config_json["job_name"]
         self.job_description = config_json["job_description"]
         self.search_types = config_json["search_types"]
