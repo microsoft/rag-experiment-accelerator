@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import json
-
+import numpy as np
 from azure.search.documents import SearchClient
 from dotenv import load_dotenv
 import mlflow
@@ -282,7 +282,11 @@ def filter_non_related_questions(
             generated_question
         )
         similarity_score_array = (
-            cosine_similarity(query_vector, generated_question_vector) * 100
+            cosine_similarity(
+                np.array(query_vector).reshape(1, -1),
+                np.array(generated_question_vector).reshape(1, -1),
+            )
+            * 100
         )
         similarity_score = int(
             sum(similarity_score_array) / len(similarity_score_array)
