@@ -229,6 +229,7 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     )
 
     # Save
+    filenames = []
     x = embeddings_2d[:, 0].tolist()
     y = embeddings_2d[:, 1].tolist()
     text = df["text"].tolist()
