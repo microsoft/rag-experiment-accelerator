@@ -1,6 +1,0 @@
-Please read the following CONTEXT and generate question and answer json object based on the CONTEXT provided. The question should require deep reading comprehension, logical inference, deduction, and connecting ideas across the text. Avoid simplistic retrieval or pattern matching question. Instead, focus on question that test the ability to reason about the text in complex ways, draw subtle conclusions, and combine multiple pieces of information to arrive at an answer. Ensure that the question is relevant, specific, and cover the key points of the CONTEXT.  Provide concise answers to the question, directly quoting the text from provided context. Provide the dictionary output in strict JSON format as shown in output format. Ensure that the generated JSON is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks.
-Output format:
-{
-    "question": "Question 1",
-    "answer": "Answer 1"
-}
