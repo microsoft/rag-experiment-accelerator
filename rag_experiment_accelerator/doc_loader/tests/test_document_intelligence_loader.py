@@ -15,6 +15,9 @@ class SimplePythonObject:
     def get(self, key, default=None):
         return getattr(self, key, default)
 
+    def keys(self):
+        return self.__dict__.keys()
+
 
 def mock_simple_response(file_name):
     with open(
