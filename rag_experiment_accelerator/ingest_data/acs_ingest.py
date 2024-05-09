@@ -7,6 +7,9 @@ import traceback
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
+    cache_with_checkpoint,
+)
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.llm.prompts import (
@@ -111,36 +114,48 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
     )
 
     for doc in docs:
-        # what happens with < 50 ? Currently we are skipping them
-        # But we aren't explicitly saying that stating that, should we?
         chunk = list(doc.values())[0]
-        if len(chunk["content"]) > 50:
-            response = ""
-            try:
-                response = response_generator.generate_response(
-                    generate_qna_instruction_system_prompt,
-                    generate_qna_instruction_user_prompt + chunk["content"],
-                )
-                response_dict = json.loads(
-                    response.replace("\n", "").replace("'", "").replace("\\", "")
-                )
-                for item in response_dict:
-                    data = {
-                        "user_prompt": item["question"],
-                        "output_prompt": item["answer"],
-                        "context": chunk["content"],
-                    }
-                    new_df = new_df._append(data, ignore_index=True)
-
-            except Exception as e:
-                logger.error(
-                    f"could not generate a valid json so moving over to next "
-                    f"question! Error message: {str(e)}"
-                )
-                logger.error(traceback.format_exc())
-                logger.debug(f"LLM Response: {response}")
+        if len(chunk["content"]) < 50:
+            logger.info(
+                f"Skipping chunk with less than 50 characters: {chunk['filename']}"
+            )
+            continue
+        try:
+            qna = generate_qna_for_chunk(chunk, response_generator)
+            new_df = new_df._append(qna, ignore_index=True)
+        except Exception as e:
+            logger.error(
+                f"could not generate a valid json so moving over to next "
+                f"question! Error message: {str(e)}"
+            )
+            logger.error(traceback.format_exc())
 
     return new_df
+
+
+@cache_with_checkpoint(id="chunk['content']")
+def generate_qna_for_chunk(chunk, response_generator):
+    qna = []
+
+    response = response_generator.generate_response(
+        generate_qna_instruction_system_prompt,
+        generate_qna_instruction_user_prompt + chunk["content"],
+    )
+
+    logger.debug(f"LLM Response: {response}")
+
+    response_dict = json.loads(
+        response.replace("\n", "").replace("'", "").replace("\\", "")
+    )
+    for item in response_dict:
+        data = {
+            "user_prompt": item["question"],
+            "output_prompt": item["answer"],
+            "context": chunk["content"],
+        }
+        qna.append(data)
+
+    return qna
 
 
 def we_need_multiple_questions(question, response_generator: ResponseGenerator):
