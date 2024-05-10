@@ -30,7 +30,7 @@ python-dotenv==1.0.1
 PyMuPDF==1.24.2
 PyPDF2~=3.0
 rouge-score==0.1.2
-tqdm==4.66.2
+tqdm==4.66.4
 scikit-learn==1.4.2
 sentence-transformers==2.7.0
 spacy==3.7.4

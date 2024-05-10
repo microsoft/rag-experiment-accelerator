@@ -443,6 +443,8 @@ def query_and_eval_single_line(
                     evaluator=evaluator,
                     response_generator=response_generator,
                     config=config,
+                    config=config,
+                    response_generator=response_generator,
                 )
                 search_evals.append(evaluation)
             if config.RERANK and len(docs) > 0:
