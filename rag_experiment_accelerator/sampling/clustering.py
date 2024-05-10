@@ -336,11 +336,17 @@ def cluster(all_chunks, config, parser):
 
     # Preserve the sampled files into directory
     for filename in filenames:
-        fn = os.path.basename(filename)
-        os.makedirs(config.sampling_output_dir + "/" + config.JOB_NAME, exist_ok=True)
-        shutil.copy2(
-            filename, config.sampling_output_dir + "/" + config.JOB_NAME + "/" + fn
-        )
+        try:
+            fn = os.path.basename(filename)
+            os.makedirs(
+                config.sampling_output_dir + "/" + config.JOB_NAME, exist_ok=True
+            )
+            shutil.copy2(
+                filename, config.sampling_output_dir + "/" + config.JOB_NAME + "/" + fn
+            )
+        except OSError as e:
+            logger.info(f"file {filename} could not be copied with metadata {e}")
+            continue
     logger.info(
         f"Sampled Documents have been copied to {config.sampling_output_dir + '/' + config.JOB_NAME + '/'}"
     )
