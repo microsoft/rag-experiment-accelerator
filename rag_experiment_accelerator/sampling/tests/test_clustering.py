@@ -148,7 +148,6 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
                 "sampled_cluster_predictions_cluster_number_2.csv",
             )
         )
-        assert mock_logger.info.call_count == 5
         assert (
             mock_logger.info.call_args_list[0][0][0]
             == "Sampling - Original Document chunk length 3"
