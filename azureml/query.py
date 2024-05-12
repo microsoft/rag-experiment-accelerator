@@ -5,6 +5,7 @@ import argparse
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
 
+from rag_experiment_accelerator.checkpoint import init_checkpoint  # noqa: E402
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
@@ -47,6 +48,7 @@ def main():
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
     index_config = IndexConfig.from_index_name(index_name, config)
+    init_checkpoint(f"querying_{index_config.index_name()}", config)
 
     query_run(environment, config, index_config)
 

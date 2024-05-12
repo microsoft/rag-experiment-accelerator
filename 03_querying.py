@@ -1,5 +1,6 @@
 import argparse
 
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import run
@@ -30,6 +31,7 @@ if __name__ == "__main__":
 
     handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
     for index_config in config.index_configs():
+        init_checkpoint(f"querying_{index_config.index_name()}", config)
         run(environment, config, index_config)
 
         create_data_asset(
