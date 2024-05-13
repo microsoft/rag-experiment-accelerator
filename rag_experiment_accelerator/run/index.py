@@ -193,7 +193,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
     return chunk
 
 
-def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
+def generate_titles_from_chunks(config: Config, pre_process, chunks):
     """
     Generates titles for each chunk of content in parallel using LLM and
     multithreading.
@@ -228,7 +228,7 @@ def generate_titles_from_chunks(config: IndexConfig, pre_process, chunks):
                 )
 
 
-def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
+def generate_summaries_from_chunks(config: Config, pre_process, chunks):
     """
     Generates summaries for each chunk of content in parallel using multithreading.
 
@@ -261,7 +261,7 @@ def generate_summaries_from_chunks(config: IndexConfig, pre_process, chunks):
                 )
 
 
-def proccess_title(config: IndexConfig, pre_process, chunk):
+def proccess_title(config: Config, pre_process, chunk):
     """
     Processes the title of a chunk of content.
 
@@ -278,9 +278,7 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
     """
 
     if config.generate_title:
-        title = generate_title(
-            chunk["content"], config.CHAT_MODEL_NAME, config.TEMPERATURE
-        )
+        title = generate_title(chunk["content"], config.azure_oai_chat_deployment_name)
         title_vector = config.embedding_model.generate_embedding(
             str(pre_process.preprocess(title))
         )
@@ -294,7 +292,7 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
     return chunk
 
 
-def proccess_summary(config: IndexConfig, pre_process, chunk):
+def proccess_summary(config: Config, pre_process, chunk):
     """
     Processes the title of a chunk of content.
 
@@ -313,7 +311,7 @@ def proccess_summary(config: IndexConfig, pre_process, chunk):
     """
     if config.generate_summary:
         summary = generate_summary(
-            chunk["content"], config.CHAT_MODEL_NAME, config.TEMPERATURE
+            chunk["content"], config.azure_oai_chat_deployment_name
         )
         summaryVector = config.embedding_model.generate_embedding(
             str(pre_process.preprocess(summary))
