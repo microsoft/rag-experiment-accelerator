@@ -395,6 +395,12 @@ def query_and_eval_single_line(
     is_multi_question = do_we_need_multiple_questions(
         user_prompt, response_generator, config
     )
+
+    is_multi_question = True
+
+    print(f" --- User prompt: {user_prompt}")
+    print(f" --- Is multi question: {is_multi_question}")
+
     new_questions = []
     if is_multi_question:
         new_questions = we_need_multiple_questions(user_prompt, response_generator)

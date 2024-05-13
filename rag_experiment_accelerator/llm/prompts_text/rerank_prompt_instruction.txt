@@ -28,10 +28,10 @@ User:
 
 Assistant:
     {
-        "document_3": 10,
         "document_1": 7,
-        "document_4": 6,
-        "document_6": 4,
         "document_2": 3,
-        "document_5": 2
+        "document_3": 10,
+        "document_4": 6,
+        "document_5": 2,
+        "document_6": 4
     }
