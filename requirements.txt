@@ -9,7 +9,7 @@ azure.ai.documentintelligence==1.0.0b3
 azureml-core==1.55.0.post2
 azureml-mlflow==1.56.0
 beautifulsoup4==4.12.3
-datasets==2.19.0
+datasets==2.19.1
 docx2txt==0.8
 evaluate==0.4.2
 fuzzywuzzy==0.18.0
