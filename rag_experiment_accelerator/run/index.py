@@ -73,6 +73,7 @@ def run(
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
     mlflow.log_metric("Number of document chunks", len(docs_ready_to_index))
     embed_chunks(index_config, pre_process, docs_ready_to_index)
+
     generate_titles_from_chunks(
         config, index_config, pre_process, docs_ready_to_index, environment
     )
@@ -258,7 +259,7 @@ def generate_summaries_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor())
+        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
 
         futures = {
             executor.submit(
