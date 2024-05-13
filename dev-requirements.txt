@@ -3,5 +3,5 @@ promptflow-tools==1.4.0
 pytest==8.2.0
 pytest-cov==5.0.0
 flake8==7.0.0
-pre-commit==3.7.0
+pre-commit==3.7.1
 black==24.4.2
