@@ -265,7 +265,7 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
 
-    If the GENERATE_TITLE configuration is set to True, a title is generated for the chunk of content and an embedding is created for it.
+    If the generate_title configuration is set to True, a title is generated for the chunk of content and an embedding is created for it.
     If it's set to False, the title is set to an empty string and the title vector is set to an empty list.
 
     Args:
@@ -277,7 +277,7 @@ def proccess_title(config: IndexConfig, pre_process, chunk):
         dict: The chunk dictionary with the added title and title vector.
     """
 
-    if config.GENERATE_TITLE:
+    if config.generate_title:
         title = generate_title(
             chunk["content"], config.CHAT_MODEL_NAME, config.TEMPERATURE
         )
@@ -298,7 +298,7 @@ def proccess_summary(config: IndexConfig, pre_process, chunk):
     """
     Processes the title of a chunk of content.
 
-    If the GENERATE_SUMMARY configuration is set to True,
+    If the generate_summary configuration is set to True,
     a summary is generated for the chunk of content and an embedding is
     created for it.
     If it's set to False, the summary is set to an empty string and the summary vector is set to an empty list.
@@ -311,7 +311,7 @@ def proccess_summary(config: IndexConfig, pre_process, chunk):
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_SUMMARY:
+    if config.generate_summary:
         summary = generate_summary(
             chunk["content"], config.CHAT_MODEL_NAME, config.TEMPERATURE
         )
