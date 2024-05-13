@@ -73,8 +73,12 @@ def run(
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
     mlflow.log_metric("Number of document chunks", len(docs_ready_to_index))
     embed_chunks(index_config, pre_process, docs_ready_to_index)
-    generate_titles_from_chunks(config, pre_process, docs_ready_to_index)
-    generate_summaries_from_chunks(config, pre_process, docs_ready_to_index)
+    generate_titles_from_chunks(
+        config, index_config, pre_process, docs_ready_to_index, environment
+    )
+    generate_summaries_from_chunks(
+        config, index_config, pre_process, docs_ready_to_index, environment
+    )
 
     with TimeTook(
         f"load documents to Azure Search index {index_config.index_name()}",
@@ -193,7 +197,9 @@ def embed_chunk(pre_process, embedding_model, chunk):
     return chunk
 
 
-def generate_titles_from_chunks(config: Config, pre_process, chunks):
+def generate_titles_from_chunks(
+    config: Config, index_config: IndexConfig, pre_process, chunks, environment
+):
     """
     Generates titles for each chunk of content in parallel using LLM and
     multithreading.
@@ -207,14 +213,18 @@ def generate_titles_from_chunks(config: Config, pre_process, chunks):
 
     Args:
         config (object): A configuration object that holds various settings.
+        index_config (object): An object that holds the index configuration settings.
         pre_process (object): An object with a method for preprocessing text.
         chunks (list): A list of dictionaries, each containing a chunk of content to be processed.
+        environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
         executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
-            executor.submit(proccess_title, config, pre_process, chunk): chunk
+            executor.submit(
+                process_title, config, index_config, pre_process, chunk, environment
+            ): chunk
             for chunk in chunks
         }
 
@@ -224,11 +234,13 @@ def generate_titles_from_chunks(config: Config, pre_process, chunks):
                 chunk = future.result()
             except Exception as exc:
                 logger.error(
-                    f"{proccess_title.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}..."
+                    f"{process_title.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}..."
                 )
 
 
-def generate_summaries_from_chunks(config: Config, pre_process, chunks):
+def generate_summaries_from_chunks(
+    config: Config, index_config: IndexConfig, pre_process, chunks, environment
+):
     """
     Generates summaries for each chunk of content in parallel using multithreading.
 
@@ -240,14 +252,18 @@ def generate_summaries_from_chunks(config: Config, pre_process, chunks):
 
     Args:
         config (object): A configuration object that holds various settings.
+        index_config (object): An object that holds the index configuration settings.
         pre_process (object): An object with a method for preprocessing text.
         chunks (list): A list of dictionaries, each containing a chunk of content to be processed.
+        environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
         executor = stack.enter_context(ThreadPoolExecutor())
 
         futures = {
-            executor.submit(proccess_summary, config, pre_process, chunk): chunk
+            executor.submit(
+                process_summary, config, index_config, pre_process, chunk, environment
+            ): chunk
             for chunk in chunks
         }
 
@@ -257,11 +273,13 @@ def generate_summaries_from_chunks(config: Config, pre_process, chunks):
                 chunk = future.result()
             except Exception as exc:
                 logger.error(
-                    f"{proccess_summary.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}...."
+                    f"{process_summary.__name__} generated an exception: {exc} for chunk {chunk['content'][0:20]}...."
                 )
 
 
-def proccess_title(config: Config, pre_process, chunk):
+def process_title(
+    config: Config, index_config: IndexConfig, pre_process, chunk, environment
+):
     """
     Processes the title of a chunk of content.
 
@@ -276,10 +294,11 @@ def proccess_title(config: Config, pre_process, chunk):
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-
     if config.generate_title:
-        title = generate_title(chunk["content"], config.azure_oai_chat_deployment_name)
-        title_vector = config.embedding_model.generate_embedding(
+        title = generate_title(
+            chunk["content"], config.azure_oai_chat_deployment_name, environment, config
+        )
+        title_vector = index_config.embedding_model.generate_embedding(
             str(pre_process.preprocess(title))
         )
     else:
@@ -292,7 +311,9 @@ def proccess_title(config: Config, pre_process, chunk):
     return chunk
 
 
-def proccess_summary(config: Config, pre_process, chunk):
+def process_summary(
+    config: Config, index_config: IndexConfig, pre_process, chunk, environment
+):
     """
     Processes the title of a chunk of content.
 
@@ -305,15 +326,16 @@ def proccess_summary(config: Config, pre_process, chunk):
         config (object): A configuration object that holds various settings.
         pre_process (object): An object with a method for preprocessing text.
         chunk (dict): A dictionary that contains the content to be processed.
+        environment (object): An object that holds the environment settings.
 
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
     if config.generate_summary:
         summary = generate_summary(
-            chunk["content"], config.azure_oai_chat_deployment_name
+            chunk["content"], config.azure_oai_chat_deployment_name, environment, config
         )
-        summaryVector = config.embedding_model.generate_embedding(
+        summaryVector = index_config.embedding_model.generate_embedding(
             str(pre_process.preprocess(summary))
         )
     else:
@@ -326,24 +348,27 @@ def proccess_summary(config: Config, pre_process, chunk):
     return chunk
 
 
-def generate_title(chunk, azure_oai_deployment_name):
+def generate_title(chunk, azure_oai_deployment_name, environment, config):
     """
     Generates a title for a given chunk of text using a language model.
 
     Args:
         chunk (str): The input text to generate a title for.
         azure_oai_deployment_name (str): The name of Azure Open AI deployment to use.
-
+        environment (object): An object that holds the environment settings.
+        config (object): An object that holds the configuration settings.
     Returns:
         str: The generated title.
     """
     response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
+        environment=environment,
+        config=config,
+        deployment_name=azure_oai_deployment_name,
     ).generate_response(prompt_instruction_title, chunk)
     return response
 
 
-def generate_summary(chunk, azure_oai_deployment_name):
+def generate_summary(chunk, azure_oai_deployment_name, environment, config):
     """
     Generates a summary of the given chunk of text using the specified
     language model.
@@ -352,10 +377,14 @@ def generate_summary(chunk, azure_oai_deployment_name):
         chunk (str): The text to summarize.
         azure_oai_deployment_name (str): The name of Azure Open AI deployment
         to use.
+        environment (object): An object that holds the environment settings.
+        config (object): An object that holds the configuration settings.
     Returns:
         str: The generated summary.
     """
     response = ResponseGenerator(
-        deployment_name=azure_oai_deployment_name
+        environment=environment,
+        config=config,
+        deployment_name=azure_oai_deployment_name,
     ).generate_response(prompt_instruction_summary, chunk)
     return response
