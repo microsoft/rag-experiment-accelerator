@@ -65,9 +65,13 @@ def test_generate_title(mock_response_generator):
     mock_chunk = "This is a test chunk of text."
     mock_deployment_name = "TestDeployment"
     mock_response_generator().generate_response.return_value = mock_response
+    mock_config = Mock()
+    mock_environment = Mock()
 
     # Act
-    result = generate_title(mock_chunk, mock_deployment_name)
+    result = generate_title(
+        mock_chunk, mock_deployment_name, mock_environment, mock_config
+    )
 
     # Assert
     mock_response_generator().generate_response.assert_called_once_with(
@@ -83,9 +87,13 @@ def test_generate_summary(mock_response_generator):
     mock_chunk = "This is a test chunk of text."
     mock_deployment_name = "TestDeployment"
     mock_response_generator().generate_response.return_value = mock_summary
+    mock_config = Mock()
+    mock_environment = Mock()
 
     # Act
-    result = generate_summary(mock_chunk, mock_deployment_name)
+    result = generate_summary(
+        mock_chunk, mock_deployment_name, mock_environment, mock_config
+    )
 
     # Assert
     mock_response_generator().generate_response.assert_called_once_with(
