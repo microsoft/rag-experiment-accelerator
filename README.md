@@ -259,7 +259,8 @@ Two options exist for running sampling, namely:
 
 Set the following values to run the indexing process locally:
 
-```json "sampling": {
+```json
+    "sampling": {
         "sample_data": true,
         "only_run_sampling": false,
         "sample_percentage": 10,
