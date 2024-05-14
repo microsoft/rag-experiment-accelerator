@@ -80,7 +80,7 @@ class IndexConfig:
             index_name_prefix=values[0],
             preprocess=bool(int(cls.__get_index_value(values[1]))),
             chunk_size=int(cls.__get_index_value(values[2])),
-            chunking_strategy=int(cls.__get_index_value(values[3])),
+            chunking_strategy=values[3],
             overlap=int(cls.__get_index_value(values[4])),
             ef_construction=int(cls.__get_index_value(values[5])),
             ef_search=int(cls.__get_index_value(values[6])),
