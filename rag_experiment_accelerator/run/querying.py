@@ -386,9 +386,11 @@ def query_and_eval_single_line(
     output_prompt = data.get("output_prompt")
     qna_context = data.get("context", "")
 
-    is_multi_question = do_we_need_multiple_questions(
-        user_prompt, response_generator, config
+    is_multi_question = (
+        config.EXPAND_TO_MULTIPLE_QUESTIONS
+        and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
+
     if is_multi_question:
         try:
             llm_response = we_need_multiple_questions(user_prompt, response_generator)
