@@ -99,7 +99,15 @@ def load_with_azure_document_intelligence(
 
     docs = text_splitter.split_documents(documents)
 
-    return [{str(uuid.uuid4()): doc.__dict__} for doc in docs]
+    return [
+        {
+            str(uuid.uuid4()): {
+                "content": doc.__dict__["page_content"],
+                "metadata": doc.__dict__["metadata"],
+            }
+        }
+        for doc in docs
+    ]
 
 
 class DocumentIntelligenceLoader(BaseLoader):
