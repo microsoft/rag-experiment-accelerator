@@ -169,6 +169,9 @@ class Config:
         self.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = int(
             config_json.get("min_query_expansion_related_question_similarity_score", 90)
         )
+        self.EXPAND_TO_MULTIPLE_QUESTIONS = config_json.get(
+            "expand_to_multiple_questions", False
+        )
         self.validate_semantic_search_config(
             environment.azure_search_use_semantic_search.lower() == "true"
         )
