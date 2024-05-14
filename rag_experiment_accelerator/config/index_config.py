@@ -15,6 +15,8 @@ class IndexConfig:
             Whether to preprocess the text before indexing.
         chunk_size (int):
             Chunk size for chunking documents.
+        chunking_strategy (str):
+            Chunking strategy to use for chunking documents.
         overlap (int):
             Overlap size for chunking documents.
         embedding_model (int):
@@ -28,6 +30,7 @@ class IndexConfig:
     index_name_prefix: str
     preprocess: bool
     chunk_size: int
+    chunking_strategy: str
     overlap: int
     embedding_model: EmbeddingModel
     ef_construction: int
@@ -46,6 +49,7 @@ class IndexConfig:
             f"{self.index_name_prefix}"
             f"_p-{int(self.preprocess)}"
             f"_cs-{str(self.chunk_size)}"
+            f"_cs-{str(self.chunking_strategy)}"
             f"_o-{str(self.overlap)}"
             f"_efc-{str(self.ef_construction)}"
             f"_efs-{str(self.ef_search)}"
@@ -69,19 +73,20 @@ class IndexConfig:
         Reverse of index_name().
         """
         values = index_name.split("_")
-        if len(values) != 11:
+        if len(values) != 12:
             raise (f"Invalid index name [{index_name}]")
 
         return IndexConfig(
             index_name_prefix=values[0],
             preprocess=bool(int(cls.__get_index_value(values[1]))),
             chunk_size=int(cls.__get_index_value(values[2])),
-            overlap=int(cls.__get_index_value(values[3])),
-            ef_construction=int(cls.__get_index_value(values[4])),
-            ef_search=int(cls.__get_index_value(values[5])),
-            sampling_percentage=int(cls.__get_index_value(values[6])),
-            generate_title=bool(int(cls.__get_index_value(values[7]))),
-            generate_summary=bool(int(cls.__get_index_value(values[8]))),
-            override_content_with_summary=bool(int(cls.__get_index_value(values[9]))),
-            embedding_model=config._find_embedding_model_by_name(values[10].strip()),
+            chunking_strategy=int(cls.__get_index_value(values[3])),
+            overlap=int(cls.__get_index_value(values[4])),
+            ef_construction=int(cls.__get_index_value(values[5])),
+            ef_search=int(cls.__get_index_value(values[6])),
+            sampling_percentage=int(cls.__get_index_value(values[7])),
+            generate_title=bool(int(cls.__get_index_value(values[8]))),
+            generate_summary=bool(int(cls.__get_index_value(values[9]))),
+            override_content_with_summary=bool(int(cls.__get_index_value(values[10]))),
+            embedding_model=config._find_embedding_model_by_name(values[11].strip()),
         )

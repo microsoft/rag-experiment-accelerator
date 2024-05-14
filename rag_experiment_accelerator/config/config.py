@@ -208,6 +208,7 @@ class Config:
                                 index_name_prefix=self.INDEX_NAME_PREFIX,
                                 preprocess=self.PREPROCESS,
                                 chunk_size=chunk_size,
+                                chunking_strategy=self.CHUNKING_STRATEGY,
                                 overlap=overlap,
                                 embedding_model=embedding_model,
                                 ef_construction=ef_construction,
