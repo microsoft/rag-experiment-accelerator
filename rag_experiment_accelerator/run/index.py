@@ -259,7 +259,7 @@ def generate_summaries_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(

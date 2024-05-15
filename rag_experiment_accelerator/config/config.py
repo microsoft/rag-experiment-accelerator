@@ -65,7 +65,7 @@ class Config:
         max_worker_threads (int): Maximum number of worker threads.
         sampling (bool): Sample the dataset in accordance to the content and structure distribution.
         sample_percentage (int): Percentage of dataset.
-        chain_of_thoughts (bool): Whether chain of thoughts is enabled or not. if enabled LLM will check if it's possible to split complex query to multiple queries and do so. else it will leave the original query as is. Default is False.
+        expand_to_multiple_questions (bool): Whether expanding to multiple questions is enabled or not. if enabled LLM will check if it's possible to split complex query to multiple queries and do so. else it will leave the original query as is. Default is False.
         hyde (str): Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM. Possible values are "disabled", "generated_hypothetical_answer", "generated_hypothetical_document_to_answer". Default is 'disabled'.
         query_expansion (bool): Whether or not to perform query expansion and generate up to five related questions using LLM (depends on similairy score) and use those to retrieve documents. Default is False.
         min_query_expansion_related_question_similarity_score (int): The minimum similarity score for query expansion generated related questions. Default is 90.
@@ -163,13 +163,12 @@ class Config:
             self.sample_min_cluster = config_json["sampling"]["min_cluster"]
             self.sample_max_cluster = config_json["sampling"]["max_cluster"]
 
-        self.chain_of_thoughts = config_json.get("chain_of_thoughts", False)
         self.hyde = config_json.get("hyde", "disabled").lower()
         self.query_expansion = config_json.get("query_expansion", False)
         self.min_query_expansion_related_question_similarity_score = int(
             config_json.get("min_query_expansion_related_question_similarity_score", 90)
         )
-        self.EXPAND_TO_MULTIPLE_QUESTIONS = config_json.get(
+        self.expand_to_multiple_questions = config_json.get(
             "expand_to_multiple_questions", False
         )
         self.validate_semantic_search_config(

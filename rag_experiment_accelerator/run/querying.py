@@ -392,7 +392,7 @@ def query_and_eval_single_line(
     qna_context = data.get("context", "")
 
     is_multi_question = (
-        config.EXPAND_TO_MULTIPLE_QUESTIONS
+        config.expand_to_multiple_questions
         and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
 

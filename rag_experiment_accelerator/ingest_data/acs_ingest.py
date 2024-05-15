@@ -178,9 +178,6 @@ def do_we_need_multiple_questions(
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    if not config.chain_of_thoughts:
-        return False
-
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )

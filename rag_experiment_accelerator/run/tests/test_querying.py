@@ -34,7 +34,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.embedding_model_name = "test-embedding-model"
         self.mock_config.min_query_expansion_related_question_similarity_score = 90
         self.mock_config.hyde = "disabled"
-        self.EXPAND_TO_MULTIPLE_QUESTIONS = True
+        self.mock_config.expand_to_multiple_questions = True
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
