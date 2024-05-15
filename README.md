@@ -32,9 +32,10 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 1. **Rich Search Index**: It creates multiple search indexes based on hyperparameter configurations available in the config file.
 
-1. **Multiple Document Chunking Strategies**: The tool supports multiple chunking strategies, including using Azure Document Intelligence and basic chunking using LangChain. This gives you the flexibility to experiment with different chunking strategies and evaluate their effectiveness.
+1. **Multiple Document Loaders**: The tool supports multiple document loaders, including loading via Azure Document Intelligence and basic LangChain loaders. This gives you the flexibility to experiment with different extraction methods and evaluate their effectiveness.
 
-1. **Custom Document Intelligence Loader** : When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallback when the 'prebuilt-layout' fails. Any other API model will utilize LangChain's implementation, which returns the raw response from Document Intelligence's API.
+1. **Custom Document Intelligence Loader** : When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables with column headers into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. Since each table row is transformed into a text line, to avoid breaking a row in the middle, chunking is done recursively by paragraph and line.
+The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallback when the 'prebuilt-layout' fails. Any other API model will utilize LangChain's implementation, which returns the raw response from Document Intelligence's API.
 
 1. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
 
@@ -154,9 +155,32 @@ If you want to deploy the infrastructure yourself from template you can also cli
 
 If you dont want to use `azd` you can use the normal `az` cli too.
 
+Use following command to deploy.
+
 ```bash
 az login
 az deployment sub create --subscription <subscription-id> --location <location>  --template-file infra/main.bicep
+```
+
+Or
+
+To deploy with isolated network use following command. Replace the parameter values with the specifics of your isolated network. You **must** supply all three parameters (i.e. `vnetAddressSpace`, `proxySubnetAddressSpace` and `subnetAddressSpace`) if you wish to deploy to an isolated network.
+
+```bash
+az login
+az deployment sub create --location <location> --template-file infra/main.bicep \
+--parameters vnetAddressSpace=<vnet-address-space> \
+--parameters proxySubnetAddressSpace=<proxy-subnet-address-space> \
+--parameters subnetAddressSpace=<azure-subnet-address-space>
+```
+
+here is an example with parameter values:
+
+```bash
+az deployment sub create --location uksouth --template-file infra/main.bicep \
+--parameters vnetAddressSpace='10.0.0.0/16' \
+--parameters proxySubnetAddressSpace='10.0.1.0/24' \
+--parameters subnetAddressSpace='10.0.2.0/24'
 ```
 
 ## How to use

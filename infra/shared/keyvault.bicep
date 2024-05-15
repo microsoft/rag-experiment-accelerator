@@ -2,7 +2,7 @@ param name string
 param location string = resourceGroup().location
 param tags object = {}
 
-@description('Service principal that should be granted read access to the KeyVault. If unset, no service principal is granted access by default')
+@description('Service principal will be granted read access to the KeyVault. If unset, no service principal is granted access by default')
 param principalId string = ''
 
 var defaultAccessPolicies = !empty(principalId) ? [

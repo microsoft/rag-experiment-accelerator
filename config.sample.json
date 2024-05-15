@@ -1,5 +1,8 @@
 {
-    "name_prefix": "surface",
+    "index_name_prefix": "idx",
+    "experiment_name": "",
+    "job_name": "",
+    "job_description": "",
     "preprocess": false,
     "chunking": {
         "chunk_size": [1000],
@@ -63,5 +66,6 @@
     "hyde": "disabled",
     "query_expansion": false,
     "min_query_expansion_related_question_similarity_score": 90,
-    "azure_document_intelligence_model": "prebuilt-read"
+    "azure_document_intelligence_model": "prebuilt-read",
+    "expand_to_multiple_questions": false
 }
