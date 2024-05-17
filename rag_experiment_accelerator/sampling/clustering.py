@@ -47,18 +47,17 @@ def spacy_tokenizer(sentence, parser):
         str: The tokenized sentence.
 
     """
-    if isinstance(sentence, str):
-        mytokens = parser(sentence)
-    else:
-        mytokens = parser(sentence["content"])
 
-    mytokens = [
+    if not isinstance(sentence, str):
+        sentence = sentence["content"]
+
+    tokens = [
         word.lemma_.lower().strip() if word.lemma_ != "-PRON-" else word.lower_
-        for word in mytokens
+        for word in parser(sentence)
         if not word.is_stop and not word.is_punct
     ]
-    mytokens = " ".join([i for i in mytokens])
-    return mytokens
+    tokenized_sentence = " ".join([token for token in tokens])
+    return tokenized_sentence
 
 
 def determine_optimum_k_elbow(embeddings_2d, X, min_cluster, max_cluster, result_dir):

@@ -30,7 +30,7 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
-    local: bool = False,
+    is_local: bool = False,
 ) -> dict[str]:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -65,7 +65,7 @@ def run(
         config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
     )
 
-    if local and config.SAMPLE_DATA:
+    if is_local and config.SAMPLE_DATA:
         parser = load_parser()
         docs = cluster(docs, config, parser)
 
