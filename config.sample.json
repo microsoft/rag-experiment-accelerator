@@ -4,7 +4,7 @@
     "job_name": "",
     "job_description": "",
     "preprocess": false,
-        "sampling": {
+    "sampling": {
         "sample_data": true,
         "only_run_sampling": true,
         "sample_percentage": 5,
@@ -68,5 +68,6 @@
     "hyde": "disabled",
     "query_expansion": false,
     "min_query_expansion_related_question_similarity_score": 90,
-    "azure_document_intelligence_model": "prebuilt-read"
+    "azure_document_intelligence_model": "prebuilt-read",
+    "expand_to_multiple_questions": false
 }

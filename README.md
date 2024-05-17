@@ -229,7 +229,8 @@ If you have a very large dataset and want to run a similar approach to sample th
 
 #### Available sampling parameters in the config.json file
 
-```json "sampling": {
+```json
+    "sampling": {
         "sample_data": "Set to true to enable sampling",
         "only_run_sampling": "If set to true, this will only run the sampling step and will not create an index or any subsequent steps, use this if you want to build a small sampled dataset to run in AML",
         "sample_percentage": "Percentage of the document corpus to sample",
@@ -258,7 +259,8 @@ Two options exist for running sampling, namely:
 
 Set the following values to run the indexing process locally:
 
-```json "sampling": {
+```json
+    "sampling": {
         "sample_data": true,
         "only_run_sampling": false,
         "sample_percentage": 10,
