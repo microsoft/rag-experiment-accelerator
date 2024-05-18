@@ -58,6 +58,10 @@ clear_artifacts: ## ❌ Delete all document chunks, index data and evaluation sc
 	&& rm -rf ./artifacts/index_data \
 	&& rm -rf ./artifacts/outputs
 
+clear_checkpoints: ## ❌ Delete all checkpoints data
+	$(call target_title, "clearing checkpoints") \
+	&& rm -rf ./artifacts/checkpoints \
+
 test: ## 🧪 Run tests
 	$(call target_title, "running tests")
 	pytest . --cov=. --cov-report=html --cov-config=.coveragerc

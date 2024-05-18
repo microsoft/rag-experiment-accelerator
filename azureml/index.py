@@ -1,3 +1,4 @@
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 import os
 import sys
 import argparse
@@ -53,6 +54,8 @@ def init():
 
     index_config = IndexConfig.from_index_name(args.index_name, config)
     mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
+
+    init_checkpoint(f"index_{index_config.index_name()}", config)
 
 
 def run(input_paths: List[str]) -> List[str]:

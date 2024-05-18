@@ -1,8 +1,10 @@
 import json
 import argparse
+import mlflow
 
 from azureml.pipeline import initialise_mlflow_client
-import mlflow
+
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
@@ -26,6 +28,8 @@ if __name__ == "__main__":
     mlflow.set_experiment(config.experiment_name)
 
     for index_config in config.index_configs():
+        init_checkpoint(f"index_{index_config.index_name()}", config)
+        
         with mlflow.start_run(
             run_name=f"index_job_{config.job_name}_{formatted_datetime_suffix()}"
         ):

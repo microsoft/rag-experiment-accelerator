@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
-from rag_experiment_accelerator.config.config import Config
 
+from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 
@@ -44,6 +45,7 @@ def test_run(
     mock_embedding_model.side_effect = [
         MagicMock(dimension=100 * i) for i in range(1, 3)
     ]
+
     mock_config.embedding_models = embedding_models
     mock_config.ef_constructions = ["ef_construction1", "ef_construction2"]
     mock_config.ef_searches = ["ef_search1", "ef_search2"]
@@ -57,6 +59,11 @@ def test_run(
     mock_config.generate_summary = False
     mock_config.override_content_with_summary = False
     mock_config.azure_document_intelligence_model = "prebuilt-read"
+    mock_config.data_formats = ["format1", "format2"]
+    mock_config.data_dir = "data_dir"
+    mock_config.use_checkpoints = False
+    mock_config.chunking_strategy = "chunking_strategy"
+    mock_config.azure_oai_chat_deployment_name = "oai_deployment_name"
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
     mock_environment.azure_search_admin_key = "admin_key"
@@ -64,11 +71,6 @@ def test_run(
         "document_intelligence_endpoint"
     )
     mock_environment.azure_document_intelligence_key = "document_intelligence_key"
-
-    mock_config.data_formats = ["format1", "format2"]
-    mock_config.data_dir = "data_dir"
-    mock_config.chunking_strategy = "chunking_strategy"
-    mock_config.azure_oai_chat_deployment_name = "oai_deployment_name"
 
     mock_preprocess.return_value.preprocess.return_value = "preprocessed_value"
 
@@ -87,6 +89,7 @@ def test_run(
 
     # Act
     for index_config in mock_config.index_configs():
+        init_checkpoint(f"index_{index_config.index_name()}", mock_config)
         run(mock_environment, mock_config, index_config, file_paths, mock_mlflow_client)
 
     # Assert

@@ -22,6 +22,11 @@ class ChunkingStrategy(StrEnum):
         return f'"{self.value}"'
 
 
+class ExecutionEnvironment(StrEnum):
+    LOCAL = "local"
+    AZURE_ML = "azure-ml"
+
+
 class Config:
     """
     A class for storing configuration settings for the RAG Experiment Accelerator.
@@ -106,6 +111,7 @@ class Config:
         self.azure_oai_eval_deployment_name = config_json.get(
             "azure_oai_eval_deployment_name", None
         )
+        self.use_checkpoints = config_json.get("use_checkpoints", True)
         self.retrieve_num_of_documents = config_json["retrieve_num_of_documents"]
         self.crossencoder_model = config_json["crossencoder_model"]
         self.rerank_type = config_json["rerank_type"]
@@ -126,6 +132,7 @@ class Config:
         self.azure_document_intelligence_model = config_json.get(
             "azure_document_intelligence_model", "prebuilt-read"
         )
+        self.execution_environment = ExecutionEnvironment.LOCAL
         self.language = config_json.get("language", {})
 
         self.embedding_models: list[EmbeddingModel] = []

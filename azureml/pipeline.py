@@ -1,13 +1,3 @@
-from rag_experiment_accelerator.config.paths import (
-    formatted_datetime_suffix,
-)  # noqa: E402
-from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
-from rag_experiment_accelerator.config.config import Config  # noqa: E402
-from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
-
-from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
-from rag_experiment_accelerator.utils.logging import get_logger  # noqa: E402
-
 import os
 import sys
 import argparse
@@ -18,10 +8,20 @@ from azure.ai.ml.entities import Job
 import mlflow
 import warnings
 
+
+from rag_experiment_accelerator.config.paths import (
+    formatted_datetime_suffix,
+)  # noqa: E402
+from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
+from rag_experiment_accelerator.config.config import Config, ExecutionEnvironment  # noqa: E402
+from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
+from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
+from rag_experiment_accelerator.utils.logging import get_logger  # noqa: E402
+from rag_experiment_accelerator.config.paths import mlflow_run_name  # noqa: E402
+
+
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
-
-
 logger = get_logger(__name__)
 AML_ENVIRONMENT_NAME = "CliV2AnonymousEnvironment"
 INDEX_STEP_RETRIES = 3
@@ -257,6 +257,7 @@ if __name__ == "__main__":
 
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
+    config.EXECUTION_ENVIRONMENT = ExecutionEnvironment.AZURE_ML
 
     if config.sampling:
         logger.error(
