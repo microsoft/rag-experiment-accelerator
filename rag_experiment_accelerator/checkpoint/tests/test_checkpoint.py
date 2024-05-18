@@ -32,8 +32,8 @@ def test_get_checkpoint_without_init_fails():
 
 def test_get_checkpoint_for_local_executions(mock_checkpoints):
     config = MagicMock()
-    config.EXECUTION_ENVIRONMENT = ExecutionEnvironment.LOCAL
-    config.USE_CHECKPOINTS = True
+    config.execution_environment = ExecutionEnvironment.LOCAL
+    config.use_checkpoints = True
 
     init_checkpoint("test", config)
     checkpoint = get_checkpoint()
@@ -42,8 +42,8 @@ def test_get_checkpoint_for_local_executions(mock_checkpoints):
 
 def test_get_checkpoint_for_azure_ml(mock_checkpoints):
     config = MagicMock()
-    config.EXECUTION_ENVIRONMENT = ExecutionEnvironment.AZURE_ML
-    config.USE_CHECKPOINTS = True
+    config.execution_environment = ExecutionEnvironment.AZURE_ML
+    config.use_checkpoints = True
 
     init_checkpoint("test", config)
     checkpoint = get_checkpoint()
@@ -53,8 +53,8 @@ def test_get_checkpoint_for_azure_ml(mock_checkpoints):
 
 def test_get_checkpoint_when_should_not_use_checkpoints_locally(mock_checkpoints):
     config = MagicMock()
-    config.EXECUTION_ENVIRONMENT = ExecutionEnvironment.LOCAL
-    config.USE_CHECKPOINTS = False
+    config.execution_environment = ExecutionEnvironment.LOCAL
+    config.use_checkpoints = False
 
     init_checkpoint("test", config)
     checkpoint = get_checkpoint()
@@ -63,8 +63,8 @@ def test_get_checkpoint_when_should_not_use_checkpoints_locally(mock_checkpoints
 
 def test_get_checkpoint_when_should_not_use_checkpoints_in_azure_ml(mock_checkpoints):
     config = MagicMock()
-    config.EXECUTION_ENVIRONMENT = ExecutionEnvironment.AZURE_ML
-    config.USE_CHECKPOINTS = False
+    config.execution_environment = ExecutionEnvironment.AZURE_ML
+    config.use_checkpoints = False
 
     init_checkpoint("test", config)
     checkpoint = get_checkpoint()
