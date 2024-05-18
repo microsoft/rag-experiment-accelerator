@@ -54,10 +54,9 @@
     "search_relevancy_threshold": 0.8,
     "data_formats": "all",
     "chunking_strategy": "basic",
-    "chain_of_thoughts": true,
     "hyde": "generated_hypothetical_answer",
     "query_expansion": true,
     "min_query_expansion_related_question_similarity_score": 90,
     "azure_document_intelligence_model": "prebuilt-read",
-    "expand_to_multiple_questions": false
+    "expand_to_multiple_questions": true
 }
