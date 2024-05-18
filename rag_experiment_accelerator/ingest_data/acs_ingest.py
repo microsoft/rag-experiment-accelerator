@@ -73,7 +73,7 @@ def upload_data(
     with ExitStack() as stack:
         with TimeTook("uploading data to Azure AI Search", logger=logger):
             executor = stack.enter_context(
-                ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+                ThreadPoolExecutor(config.max_worker_threads)
             )
 
             futures = {
@@ -143,7 +143,7 @@ def generate_qna_for_chunk(chunk, response_generator):
     logger.debug(f"LLM Response: {response}")
 
     response_dict = json.loads(
-        response.replace("\n", "").replace("'", "").replace("\\", "")
+        response.replace("\n", "").replace("'", "").replace("\\", "").replace('"..."', "")
     )
     for item in response_dict:
         data = {
@@ -187,9 +187,6 @@ def do_we_need_multiple_questions(
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    if not config.CHAIN_OF_THOUGHTS:
-        return False
-
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
