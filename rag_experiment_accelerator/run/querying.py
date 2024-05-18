@@ -11,6 +11,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
 from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.evaluation.eval import cosine_similarity
@@ -395,12 +396,11 @@ def query_and_eval_single_line(
         config.expand_to_multiple_questions
         and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
-
+    new_questions = []
     if is_multi_question:
         try:
             llm_response = we_need_multiple_questions(user_prompt, response_generator)
             responses = json.loads(llm_response)
-            new_questions = []
             if isinstance(responses, dict):
                 new_questions = responses["questions"]
             else:
@@ -419,75 +419,21 @@ def query_and_eval_single_line(
 
     try:
         for s_v in config.search_types:
-            search_evals = []
-            if is_multi_question:
-                (
-                    docs,
-                    search_evals,
-                ) = query_and_eval_acs_multi(
-                    search_client=search_client,
-                    embedding_model=index_config.embedding_model,
-                    questions=new_questions,
-                    original_prompt=user_prompt,
-                    output_prompt=output_prompt,
-                    search_type=s_v,
-                    evaluation_content=evaluation_content,
-                    environment=environment,
-                    config=config,
-                    evaluator=evaluator,
-                    main_prompt_instruction=config.main_prompt_instruction,
-                )
-            else:
-                (
-                    docs,
-                    evaluation,
-                ) = query_and_eval_acs(
-                    search_client=search_client,
-                    embedding_model=index_config.embedding_model,
-                    query=user_prompt,
-                    search_type=s_v,
-                    evaluation_content=evaluation_content,
-                    retrieve_num_of_documents=config.retrieve_num_of_documents,
-                    evaluator=evaluator,
-                    config=config,
-                    response_generator=response_generator,
-                )
-                search_evals.append(evaluation)
-            if config.rerank and len(docs) > 0:
-                prompt_instruction_context = rerank_documents(
-                    docs,
-                    user_prompt,
-                    output_prompt,
-                    config,
-                )
-            else:
-                prompt_instruction_context = docs
-
-            full_prompt_instruction = (
-                config.main_prompt_instruction
-                + "\n"
-                + "\n".join(prompt_instruction_context)
-            )
-            openai_response = response_generator.generate_response(
-                full_prompt_instruction,
+            output = get_query_output(
+                environment,
+                config,
+                index_config,
+                response_generator,
+                search_client,
+                evaluator,
+                question_count,
                 user_prompt,
-            )
-            logger.debug(openai_response)
-
-            output = QueryOutput(
-                rerank=config.rerank,
-                rerank_type=config.rerank_type,
-                crossencoder_model=config.crossencoder_model,
-                llm_re_rank_threshold=config.llm_rerank_threshold,
-                retrieve_num_of_documents=config.retrieve_num_of_documents,
-                crossencoder_at_k=config.crossencoder_at_k,
-                question_count=question_count,
-                actual=openai_response,
-                expected=output_prompt,
-                search_type=s_v,
-                search_evals=search_evals,
-                context=qna_context,
-                question=user_prompt,
+                output_prompt,
+                qna_context,
+                is_multi_question,
+                new_questions,
+                evaluation_content,
+                s_v,
             )
             handler.save(
                 index_name=index_config.index_name(),
@@ -500,6 +446,95 @@ def query_and_eval_single_line(
             "Invalid request. Skipping question: {user_prompt}",
             exc_info=e,
         )
+
+
+@cache_with_checkpoint(id="user_prompt+output_prompt+qna_context")
+def get_query_output(
+    environment,
+    config,
+    index_config,
+    response_generator,
+    search_client,
+    evaluator,
+    question_count,
+    user_prompt,
+    output_prompt,
+    qna_context,
+    is_multi_question,
+    new_questions,
+    evaluation_content,
+    s_v,
+):
+    search_evals = []
+    if is_multi_question:
+        (
+            docs,
+            search_evals,
+        ) = query_and_eval_acs_multi(
+            search_client=search_client,
+            embedding_model=index_config.embedding_model,
+            questions=new_questions,
+            original_prompt=user_prompt,
+            output_prompt=output_prompt,
+            search_type=s_v,
+            evaluation_content=evaluation_content,
+            environment=environment,
+            config=config,
+            evaluator=evaluator,
+            main_prompt_instruction=config.main_prompt_instruction,
+        )
+    else:
+        (
+            docs,
+            evaluation,
+        ) = query_and_eval_acs(
+            search_client=search_client,
+            embedding_model=index_config.embedding_model,
+            query=user_prompt,
+            search_type=s_v,
+            evaluation_content=evaluation_content,
+            retrieve_num_of_documents=config.retrieve_num_of_documents,
+            evaluator=evaluator,
+            config=config,
+            response_generator=response_generator,
+        )
+        search_evals.append(evaluation)
+    if config.rerank and len(docs) > 0:
+        prompt_instruction_context = rerank_documents(
+            docs,
+            user_prompt,
+            output_prompt,
+            config,
+        )
+    else:
+        prompt_instruction_context = docs
+
+    full_prompt_instruction = (
+        config.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
+    )
+    openai_response = response_generator.generate_response(
+        full_prompt_instruction,
+        user_prompt,
+    )
+    logger.debug(openai_response)
+
+    output = QueryOutput(
+        rerank=config.rerank,
+        rerank_type=config.rerank_type,
+        crossencoder_model=config.crossencoder_model,
+        llm_re_rank_threshold=config.llm_rerank_threshold,
+        retrieve_num_of_documents=config.retrieve_num_of_documents,
+        crossencoder_at_k=config.crossencoder_at_k,
+        question_count=question_count,
+        actual=openai_response,
+        expected=output_prompt,
+        search_type=s_v,
+        search_evals=search_evals,
+        context=qna_context,
+        question=user_prompt,
+    )
+
+    return output
 
 
 def run(

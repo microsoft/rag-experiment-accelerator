@@ -1,8 +1,8 @@
 import argparse
-
 import mlflow
-
 from azureml.pipeline import initialise_mlflow_client
+
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.config.paths import formatted_datetime_suffix
@@ -36,6 +36,8 @@ if __name__ == "__main__":
 
     handler = QueryOutputHandler(config.query_data_location)
     for index_config in config.index_configs():
+        init_checkpoint(f"querying_{index_config.index_name()}", config)
+
         with mlflow.start_run(
             run_name=f"query_job_{config.job_name}_{formatted_datetime_suffix()}"
         ):

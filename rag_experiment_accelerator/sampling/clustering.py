@@ -262,16 +262,16 @@ def cluster(all_chunks, config, parser):
     reducer = UMAP()
     embeddings_2d = reducer.fit_transform(X)
 
-    if config.SAMPLE_OPTIMUM_K == "auto":
+    if config.sample_optimum_k == "auto":
         optimum_k = determine_optimum_k_elbow(
             embeddings_2d,
             X,
-            config.SAMPLE_MIN_CLUSTER,
-            config.SAMPLE_MAX_CLUSTER,
+            config.sample_min_cluster,
+            config.sample_max_cluster,
             config.sampling_output_dir,
         )
     else:
-        optimum_k = config.SAMPLE_OPTIMUM_K
+        optimum_k = config.sample_optimum_k
 
     # Cluster
     x, y, text, processed_text, chunk, prediction, prediction_values = cluster_kmeans(
@@ -282,7 +282,7 @@ def cluster(all_chunks, config, parser):
     data = {"x": x, "y": y, "text": text, "prediction": prediction, "chunk": chunk}
     df = pd.DataFrame(data)
     df.to_csv(
-        f"{config.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+        f"{config.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.sample_optimum_k}.csv",
         sep=",",
     )
 
@@ -292,11 +292,11 @@ def cluster(all_chunks, config, parser):
         g["l_{0}".format(i)] = df[df["prediction"] == i]
 
         if len(g["l_{0}".format(i)]) > round(
-            (len(df) * (config.SAMPLE_PERCENTAGE / 100)) / len(prediction_values)
+            (len(df) * (config.sample_percentage / 100)) / len(prediction_values)
         ):
             g["l_{0}".format(i)] = g["l_{0}".format(i)].sample(
                 n=round(
-                    (len(df) * (config.SAMPLE_PERCENTAGE / 100))
+                    (len(df) * (config.sample_percentage / 100))
                     / len(prediction_values)
                 ),
                 random_state=42,
