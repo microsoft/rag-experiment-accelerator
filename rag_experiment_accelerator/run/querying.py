@@ -499,7 +499,7 @@ def get_query_output(
             response_generator=response_generator,
         )
         search_evals.append(evaluation)
-    if config.RERANK and len(docs) > 0:
+    if config.rerank and len(docs) > 0:
         prompt_instruction_context = rerank_documents(
             docs,
             user_prompt,
@@ -510,7 +510,7 @@ def get_query_output(
         prompt_instruction_context = docs
 
     full_prompt_instruction = (
-        config.MAIN_PROMPT_INSTRUCTION + "\n" + "\n".join(prompt_instruction_context)
+        config.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
     )
     openai_response = response_generator.generate_response(
         full_prompt_instruction,
