@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     for index_config in config.index_configs():
         init_checkpoint(f"index_{index_config.index_name()}", config)
-        
+
         with mlflow.start_run(
             run_name=f"index_job_{config.job_name}_{formatted_datetime_suffix()}"
         ):

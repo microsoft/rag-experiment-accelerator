@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
-    config.EXECUTION_ENVIRONMENT = ExecutionEnvironment.AZURE_ML
+    config.execution_environment = ExecutionEnvironment.AZURE_ML
 
     if config.sampling:
         logger.error(
