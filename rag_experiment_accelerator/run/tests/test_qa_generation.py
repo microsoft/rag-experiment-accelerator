@@ -39,8 +39,8 @@ def test_run(
     # Assert
     mock_load_documents.assert_called_once_with(
         mock_environment,
-        mock_config.CHUNKING_STRATEGY,
-        mock_config.DATA_FORMATS,
+        mock_config.chunking_strategy,
+        mock_config.data_formats,
         filepaths,
         2000,
         0,
@@ -49,11 +49,11 @@ def test_run(
         mock_environment,
         mock_config,
         all_docs_instance,
-        mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
+        mock_config.azure_oai_chat_deployment_name,
     )
     df_instance.to_json.assert_called_once_with(
-        mock_config.EVAL_DATA_JSONL_FILE_PATH, orient="records", lines=True
+        mock_config.eval_data_jsonl_file_path, orient="records", lines=True
     )
     mock_create_data_asset.assert_called_once_with(
-        mock_config.EVAL_DATA_JSONL_FILE_PATH, "eval_data", mock_environment
+        mock_config.eval_data_jsonl_file_path, "eval_data", mock_environment
     )

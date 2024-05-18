@@ -72,7 +72,7 @@ def upload_data(
     with ExitStack() as stack:
         with TimeTook("uploading data to Azure AI Search", logger=logger):
             executor = stack.enter_context(
-                ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+                ThreadPoolExecutor(config.max_worker_threads)
             )
 
             futures = {
@@ -121,9 +121,13 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
                     generate_qna_instruction_system_prompt,
                     generate_qna_instruction_user_prompt + chunk["content"],
                 )
-                response_dict = json.loads(
-                    response.replace("\n", "").replace("'", "").replace("\\", "")
+                fixed_json_str_response = (
+                    response.replace("\n", "")
+                    .replace("'", "")
+                    .replace("\\", "")
+                    .replace('"..."', "")
                 )
+                response_dict = json.loads(fixed_json_str_response)
                 for item in response_dict:
                     data = {
                         "user_prompt": item["question"],
@@ -174,9 +178,6 @@ def do_we_need_multiple_questions(
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    if not config.CHAIN_OF_THOUGHTS:
-        return False
-
     full_prompt_instruction = (
         do_need_multiple_prompt_instruction + "\n" + "question: " + question + "\n"
     )
