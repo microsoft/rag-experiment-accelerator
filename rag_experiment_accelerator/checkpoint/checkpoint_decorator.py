@@ -1,4 +1,4 @@
-from rag_experiment_accelerator.checkpoint.checkpoint import get_checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import get_checkpoint
 
 
 def cache_with_checkpoint(id=None):

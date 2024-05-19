@@ -4,7 +4,7 @@ import tempfile
 import shutil
 from unittest.mock import MagicMock
 
-from rag_experiment_accelerator.checkpoint.checkpoint import (
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import (
     get_checkpoint,
     init_checkpoint,
 )

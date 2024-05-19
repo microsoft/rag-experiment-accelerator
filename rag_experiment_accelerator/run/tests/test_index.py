@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import init_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
