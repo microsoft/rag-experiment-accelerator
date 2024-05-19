@@ -19,15 +19,15 @@ def get_checkpoint():
     return _checkpoint_instance
 
 
-def init_checkpoint(checkpoint_name, config: Config):
+def init_checkpoint(config: Config):
     """
     Initializes the checkpoint instance based on the provided configuration.
     """
     global _checkpoint_instance
-    _checkpoint_instance = _get_checkpoint_base_on_config(checkpoint_name, config)
+    _checkpoint_instance = _get_checkpoint_base_on_config(config)
 
 
-def _get_checkpoint_base_on_config(checkpoint_name, config: Config):
+def _get_checkpoint_base_on_config(config: Config):
     # import inside the method to avoid circular dependencies
     from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
     from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
@@ -41,10 +41,7 @@ def _get_checkpoint_base_on_config(checkpoint_name, config: Config):
         # Currently not supported in Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
         return NullCheckpoint()
 
-    return LocalStorageCheckpoint(
-        checkpoint_name=checkpoint_name,
-        directory=config.artifacts_dir,
-    )
+    return LocalStorageCheckpoint(directory=config.artifacts_dir)
 
 
 class Checkpoint(ABC):

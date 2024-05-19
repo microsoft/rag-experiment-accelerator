@@ -35,9 +35,9 @@ if __name__ == "__main__":
     mlflow.set_experiment(config.experiment_name)
 
     handler = QueryOutputHandler(config.query_data_location)
-    for index_config in config.index_configs():
-        init_checkpoint(f"querying_{index_config.index_name()}", config)
+    init_checkpoint(config)
 
+    for index_config in config.index_configs():
         with mlflow.start_run(
             run_name=f"query_job_{config.job_name}_{formatted_datetime_suffix()}"
         ):

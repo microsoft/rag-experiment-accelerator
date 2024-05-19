@@ -8,7 +8,7 @@ A checkpoint object is used to wrap methods, so when the method is called with a
 
 ### 1. Initialize the checkpoint object:
 ```python
-init_checkpoint(checkpoint_name, config)
+init_checkpoint(config)
 ```
 
 ### 2. Wrap the method you want to cache with the checkpoint decorator:
@@ -36,8 +36,6 @@ A Checkpoint object is a singleton, meaning, only one checkpoint instance exists
 To create a new checkpoint instance (or to override the existing instance), use the `init_checkpoint` method, this method will create a checkpoint object according to the provided configuration.
 
 To get the current checkpoint instance, use the `get_checkpoint` method.
-
-A checkpoint object is created for every step and index name, so if you change the index name data will not be saved and loaded from the checkpoint of the previous index.
 
 ### LocalStorageCheckpoint
 Checkpoint implementation for the local executions of the pipeline (i.e. the developer's machine), uses the `pickle` library for serializing and persisting the method results to the local storage.
