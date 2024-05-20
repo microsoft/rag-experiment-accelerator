@@ -6,9 +6,10 @@ from enum import StrEnum
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import create_embedding_model
 from rag_experiment_accelerator.config.index_config import IndexConfig
-from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
+
+from rag_experiment_accelerator.llm.prompt import main_instruction
 
 
 logger = get_logger(__name__)
@@ -84,7 +85,7 @@ class Config:
         if not data_dir:
             data_dir = os.path.join(os.getcwd(), "data/")
         with open(config_path.strip(), "r") as json_file:
-            config_json = json.load(json_file)
+            config_json: dict[str, any] = json.load(json_file)
 
         self._initialize_paths(config_json, config_path, data_dir)
         self.preprocess = config_json.get("preprocess", False)
@@ -154,11 +155,12 @@ class Config:
             self.ef_constructions,
             self.ef_searches,
         )
-        self.main_prompt_instruction = (
-            config_json["main_prompt_instruction"]
-            if "main_prompt_instruction" in config_json
-            else main_prompt_instruction
-        )
+
+        if "main_prompt_instruction" in config_json:
+            main_instruction.update_system_prompt(
+                config_json["main_prompt_instruction"]
+            )
+
         self.sampling = "sampling" in config_json
         if self.sampling:
             self.sample_percentage = config_json["sampling"]["sample_percentage"]

@@ -13,6 +13,7 @@ from rag_experiment_accelerator.run.querying import (
     query_and_eval_acs,
     query_and_eval_acs_multi,
 )
+from rag_experiment_accelerator.llm.prompt import Prompt, main_instruction
 
 
 class TestQuerying(unittest.TestCase):
@@ -38,6 +39,10 @@ class TestQuerying(unittest.TestCase):
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
+        self.prompt = MagicMock(spec=Prompt)
+        self.prompt.tags = []
+        self.prompt.system_message = "system message"
+        self.prompt.user_template = "user template"
 
     @patch("rag_experiment_accelerator.run.querying.search_mapping")
     def test_query_acs(self, mock_search_mapping):
@@ -62,14 +67,20 @@ class TestQuerying(unittest.TestCase):
 
     @patch("rag_experiment_accelerator.run.querying.llm_rerank_documents")
     @patch("rag_experiment_accelerator.run.querying.cross_encoder_rerank_documents")
+    @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
     def test_rerank_documents(
-        self, mock_cross_encoder_rerank_documents, mock_llm_rerank_documents
+        self,
+        mock_response_generator,
+        mock_cross_encoder_rerank_documents,
+        mock_llm_rerank_documents,
     ):
         docs = ["doc1", "doc2"]
         user_prompt = "test prompt"
         output_prompt = "output prompt"
 
-        rerank_documents(docs, user_prompt, output_prompt, self.mock_config)
+        rerank_documents(
+            docs, user_prompt, output_prompt, self.mock_config, mock_response_generator
+        )
 
         mock_llm_rerank_documents.assert_called_once()
         mock_cross_encoder_rerank_documents.assert_not_called()
@@ -139,7 +150,6 @@ class TestQuerying(unittest.TestCase):
         search_type = "search type"
         evaluation_content = "evaluation content"
         evaluator = MagicMock()
-        main_prompt_instruction = "main prompt instruction"
         mock_docs = ["doc1", "doc2"]
         mock_evaluation = {"score": 0.8}
 
@@ -164,10 +174,9 @@ class TestQuerying(unittest.TestCase):
             output_prompt,
             search_type,
             evaluation_content,
-            self.mock_environment,
             self.mock_config,
             evaluator,
-            main_prompt_instruction,
+            mock_response_generator(),
         )
 
         # Assert
@@ -188,10 +197,12 @@ class TestQuerying(unittest.TestCase):
             questions[1] or questions[0],
             output_prompt,
             self.mock_config,
+            mock_response_generator(),
         )
         mock_response_generator.return_value.generate_response.assert_called_with(
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context),
-            original_prompt,
+            main_instruction,
+            context="\n".join(prompt_instruction_context),
+            question=original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
@@ -213,7 +224,6 @@ class TestQuerying(unittest.TestCase):
         evaluation_content = "evaluation content"
         self.mock_config.rerank = False
         evaluator = MagicMock()
-        main_prompt_instruction = "main prompt instruction"
         mock_docs = ["doc1", "doc2"]
         mock_evaluation = {"score": 0.8}
 
@@ -235,10 +245,9 @@ class TestQuerying(unittest.TestCase):
             output_prompt,
             search_type,
             evaluation_content,
-            self.mock_environment,
             self.mock_config,
             evaluator,
-            main_prompt_instruction,
+            response_generator=mock_response_generator(),
         )
 
         # Assert
@@ -255,8 +264,9 @@ class TestQuerying(unittest.TestCase):
         )
         mock_rerank_documents.assert_not_called()
         mock_response_generator.return_value.generate_response.assert_called_with(
-            main_prompt_instruction + "\n" + "\n".join(mock_docs),
-            original_prompt,
+            main_instruction,
+            context="\n".join(mock_docs),
+            question=original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
@@ -327,7 +337,6 @@ class TestQuerying(unittest.TestCase):
         # Assert
         mock_query_and_eval_acs.assert_called()
         mock_query_output_handler.save.assert_called()
-        mock_response_generator.generate_response.assert_called()
 
 
 if __name__ == "__main__":

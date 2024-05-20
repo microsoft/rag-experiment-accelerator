@@ -27,8 +27,6 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
     we_need_multiple_questions,
 )
-from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
     llm_rerank_documents,
@@ -46,10 +44,13 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.llm.prompts import (
-    prompt_generated_hypothetical_answer,
-    prompt_generated_hypothetical_document_to_answer,
-    prompt_generated_related_questions,
+
+from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.llm.prompt import (
+    prompt_generate_hypothetical_answer,
+    prompt_generate_hypothetical_document,
+    prompt_generate_hypothetical_questions,
+    main_instruction,
 )
 
 load_dotenv(override=True)
@@ -105,6 +106,7 @@ def rerank_documents(
     user_prompt: str,
     output_prompt: str,
     config: Config,
+    response_generator: ResponseGenerator,
 ) -> list[str]:
     """
     Reranks a list of documents based on a given user prompt and configuration.
@@ -123,7 +125,7 @@ def rerank_documents(
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.azure_oai_chat_deployment_name,
+            response_generator,
             config.llm_rerank_threshold,
         )
     elif config.rerank_type == "crossencoder":
@@ -150,13 +152,13 @@ def hyde(
     for query in queries:
         if config.hyde == "generated_hypothetical_answer":
             result = response_generator.generate_response(
-                prompt_generated_hypothetical_answer,
-                query,
+                prompt_generate_hypothetical_answer,
+                text=query,
             )
         elif config.hyde == "generated_hypothetical_document_to_answer":
             result = response_generator.generate_response(
-                prompt_generated_hypothetical_document_to_answer,
-                query,
+                prompt_generate_hypothetical_document,
+                text=query,
             )
         else:
             raise NotImplementedError(
@@ -174,14 +176,18 @@ def query_expansion(
 ) -> list[str]:
     # Query expansion with generated questions
     augmented_questions = response_generator.generate_response(
-        prompt_generated_related_questions,
-        query,
+        prompt_generate_hypothetical_questions,
+        text=query,
+        prompt_last=True,
     )
+
+    if not augmented_questions:
+        return [query]
 
     # Filter out non related questions
     questions = filter_non_related_questions(
         query,
-        augmented_questions.split("\n"),
+        augmented_questions,
         embedding_model,
         config.min_query_expansion_related_question_similarity_score,
     )
@@ -306,10 +312,9 @@ def query_and_eval_acs_multi(
     output_prompt: str,
     search_type: str,
     evaluation_content: str,
-    environment: Environment,
     config: Config,
     evaluator: SpacyEvaluator,
-    main_prompt_instruction: str,
+    response_generator: ResponseGenerator,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
@@ -325,7 +330,6 @@ def query_and_eval_acs_multi(
         evaluation_content (str): The content to use for evaluation.
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
-        main_prompt_instruction (str): The main prompt instruction for the query
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
@@ -333,9 +337,7 @@ def query_and_eval_acs_multi(
     """
     context = []
     evaluations = []
-    response_generator = ResponseGenerator(
-        environment, config, config.azure_oai_chat_deployment_name
-    )
+
     for question in questions:
         docs, evaluation = query_and_eval_acs(
             search_client=search_client,
@@ -356,18 +358,27 @@ def query_and_eval_acs_multi(
 
         if config.rerank:
             prompt_instruction_context = rerank_documents(
-                docs, question, output_prompt, config
+                docs, question, output_prompt, config, response_generator
             )
         else:
             prompt_instruction_context = docs
 
-        full_prompt_instruction = (
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-        )
+        # TODO: Here was a bug, caused by the fact that we are not limiting the number of documents to retrieve
+        # Current solution is just forcefully limiting the number of documents to retrieve assuming they are sorted
+        if len(prompt_instruction_context) > config.retrieve_num_of_documents:
+            prompt_instruction_context = prompt_instruction_context[
+                : config.retrieve_num_of_documents
+            ]
+
+        request_context = "\n".join(prompt_instruction_context)
+        request_question = original_prompt
+
         openai_response = response_generator.generate_response(
-            full_prompt_instruction,
-            original_prompt,
+            main_instruction,
+            context=request_context,
+            question=request_question,
         )
+
         context.append(openai_response)
         logger.debug(openai_response)
 
@@ -387,7 +398,7 @@ def query_and_eval_single_line(
     question_count: int,
 ):
     logger.info(f"Processing question {line_number + 1} out of {question_count}\n\n")
-    data = json.loads(line)
+    data: dict[str, any] = json.loads(line)
     user_prompt = data.get("user_prompt")
     output_prompt = data.get("output_prompt")
     qna_context = data.get("context", "")
@@ -396,24 +407,18 @@ def query_and_eval_single_line(
         config.expand_to_multiple_questions
         and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
+
     new_questions = []
     if is_multi_question:
-        try:
-            llm_response = we_need_multiple_questions(user_prompt, response_generator)
-            responses = json.loads(llm_response)
-            if isinstance(responses, dict):
-                new_questions = responses["questions"]
-            else:
-                for response in responses:
-                    if "question" in response:
-                        new_questions.append(response["question"])
-            new_questions.append(user_prompt)
-        except ContentFilteredException as e:
-            logger.error(
-                f"Content Filtered. Unable to generate multiple questions for: {user_prompt}",
-                exc_info=e,
+        new_questions = we_need_multiple_questions(user_prompt, response_generator)
+
+        if new_questions is None:
+            logger.warning(
+                f"Unable to generate multiple questions for: {user_prompt}. Skipping..."
             )
             is_multi_question = False
+        else:
+            new_questions.append(user_prompt)
 
     evaluation_content = user_prompt + qna_context
 
@@ -466,6 +471,11 @@ def get_query_output(
     s_v,
 ):
     search_evals = []
+
+    response_generator = ResponseGenerator(
+        environment, config, config.azure_oai_chat_deployment_name
+    )
+
     if is_multi_question:
         (
             docs,
@@ -478,10 +488,9 @@ def get_query_output(
             output_prompt=output_prompt,
             search_type=s_v,
             evaluation_content=evaluation_content,
-            environment=environment,
             config=config,
             evaluator=evaluator,
-            main_prompt_instruction=config.main_prompt_instruction,
+            response_generator=response_generator,
         )
     else:
         (
@@ -505,18 +514,16 @@ def get_query_output(
             user_prompt,
             output_prompt,
             config,
+            response_generator,
         )
     else:
         prompt_instruction_context = docs
 
-    full_prompt_instruction = (
-        config.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-    )
     openai_response = response_generator.generate_response(
-        full_prompt_instruction,
-        user_prompt,
+        main_instruction,
+        context="\n".join(prompt_instruction_context),
+        question=user_prompt,
     )
-    logger.debug(openai_response)
 
     output = QueryOutput(
         rerank=config.rerank,

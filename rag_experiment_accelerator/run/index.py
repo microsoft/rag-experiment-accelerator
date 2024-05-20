@@ -11,11 +11,13 @@ from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.llm.prompts import (
+from rag_experiment_accelerator.llm.prompt import (
     prompt_instruction_title,
     prompt_instruction_summary,
 )
+
 from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
@@ -370,7 +372,9 @@ def generate_title(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_title, chunk)
+    ).generate_response(
+        prompt_instruction_title, text=chunk
+    )
     return response
 
 
@@ -392,5 +396,5 @@ def generate_summary(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_summary, chunk)
+    ).generate_response(prompt_instruction_summary, text=chunk)
     return response
