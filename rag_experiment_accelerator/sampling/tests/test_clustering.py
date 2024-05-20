@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from unittest.mock import MagicMock, patch
 
+from rag_experiment_accelerator.checkpoint import CheckpointFactory
 from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 
 
@@ -94,6 +95,7 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         f"sampled_cluster_predictions_cluster_number_{config.sample_optimum_k}.csv",
     )
     os.makedirs(config.sampling_output_dir)
+    CheckpointFactory.create_checkpoint("local", False, "")
 
     with patch(
         "rag_experiment_accelerator.sampling.clustering.logger", mock_logger
