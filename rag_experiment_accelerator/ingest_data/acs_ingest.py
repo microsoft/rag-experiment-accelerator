@@ -5,6 +5,7 @@ import hashlib
 import pandas as pd
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.llm.prompt import (
@@ -68,7 +69,7 @@ def upload_data(
     with ExitStack() as stack:
         with TimeTook("uploading data to Azure AI Search", logger=logger):
             executor = stack.enter_context(
-                ThreadPoolExecutor(config.MAX_WORKER_THREADS)
+                ThreadPoolExecutor(config.max_worker_threads)
             )
 
             futures = {
@@ -107,8 +108,6 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
     )
 
     for doc in docs:
-        # what happens with < 50 ? Currently we are skipping them
-        # But we aren't explicitly saying that stating that, should we?
         chunk = list(doc.values())[0]
         if len(chunk["content"]) > 50:
             response = response_generator.generate_response(
@@ -124,12 +123,41 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
                 "context": chunk["content"],
             }
             new_df = new_df._append(data, ignore_index=True)
+        else:
+            logger.info(
+                f"Skipping chunk with less than 50 characters: {chunk['filename']}"
+            )
 
     if new_df.empty:
         logger.error("No questions generated")
         raise ValueError("No questions generated")
 
     return new_df
+
+
+@cache_with_checkpoint(id="chunk['content']")
+def generate_qna_for_chunk(chunk, response_generator):
+    qna = []
+
+    response = response_generator.generate_response(
+        generate_qna_instruction_system_prompt,
+        generate_qna_instruction_user_prompt + chunk["content"],
+    )
+
+    logger.debug(f"LLM Response: {response}")
+
+    response_dict = json.loads(
+        response.replace("\n", "").replace("'", "").replace("\\", "").replace('"..."', "")
+    )
+    for item in response_dict:
+        data = {
+            "user_prompt": item["question"],
+            "output_prompt": item["answer"],
+            "context": chunk["content"],
+        }
+        qna.append(data)
+
+    return qna
 
 
 def we_need_multiple_questions(question, response_generator: ResponseGenerator):

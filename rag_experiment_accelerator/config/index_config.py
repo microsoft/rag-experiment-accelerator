@@ -15,7 +15,7 @@ class IndexConfig:
             Whether to preprocess the text before indexing.
         chunk_size (int):
             Chunk size for chunking documents.
-        overlap (int):
+        overlap_size (int):
             Overlap size for chunking documents.
         embedding_model (int):
             Embedding model to use for this config.
@@ -28,7 +28,7 @@ class IndexConfig:
     index_name_prefix: str
     preprocess: bool
     chunk_size: int
-    overlap: int
+    overlap_size: int
     embedding_model: EmbeddingModel
     ef_construction: int
     ef_search: int
@@ -46,7 +46,7 @@ class IndexConfig:
             f"{self.index_name_prefix}"
             f"_p-{int(self.preprocess)}"
             f"_cs-{str(self.chunk_size)}"
-            f"_o-{str(self.overlap)}"
+            f"_o-{str(self.overlap_size)}"
             f"_efc-{str(self.ef_construction)}"
             f"_efs-{str(self.ef_search)}"
             f"_sp-{str(self.sampling_percentage)}"
@@ -80,7 +80,7 @@ class IndexConfig:
             index_name_prefix=values[0],
             preprocess=bool(int(cls.__get_index_value(values[1]))),
             chunk_size=int(cls.__get_index_value(values[2])),
-            overlap=int(cls.__get_index_value(values[3])),
+            overlap_size=int(cls.__get_index_value(values[3])),
             ef_construction=int(cls.__get_index_value(values[4])),
             ef_search=int(cls.__get_index_value(values[5])),
             sampling_percentage=int(cls.__get_index_value(values[6])),
