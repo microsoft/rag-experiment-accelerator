@@ -27,5 +27,5 @@ prompt_generate_hypothetical_questions = StructuredPrompt(
     system_message="prompt_generate_hypothetical_questions.txt",
     user_template="${text}",
     validator=validate_hypothetical_questions,
-    tags=[PromptTag.JSON],
+    tags=[PromptTag.JSON, PromptTag.NonStrict],
 )

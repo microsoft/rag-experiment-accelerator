@@ -50,7 +50,6 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
         "ef_constructions",
         "ef_searches",
         "embedding_models",
-        "main_prompt_instruction",
         "max_worker_threads",
         "_config_dir",
         "artifacts_dir",

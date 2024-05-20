@@ -47,7 +47,6 @@ from rag_experiment_accelerator.config.environment import Environment
 
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.llm.prompt import (
-    Prompt,
     prompt_generate_hypothetical_answer,
     prompt_generate_hypothetical_document,
     prompt_generate_hypothetical_questions,
@@ -107,6 +106,7 @@ def rerank_documents(
     user_prompt: str,
     output_prompt: str,
     config: Config,
+    response_generator: ResponseGenerator,
 ) -> list[str]:
     """
     Reranks a list of documents based on a given user prompt and configuration.
@@ -125,7 +125,7 @@ def rerank_documents(
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.azure_oai_chat_deployment_name,
+            response_generator,
             config.llm_rerank_threshold,
         )
     elif config.rerank_type == "crossencoder":
@@ -178,7 +178,11 @@ def query_expansion(
     augmented_questions = response_generator.generate_response(
         prompt_generate_hypothetical_questions,
         text=query,
+        prompt_last=True,
     )
+
+    if not augmented_questions:
+        return [query]
 
     # Filter out non related questions
     questions = filter_non_related_questions(
@@ -308,10 +312,9 @@ def query_and_eval_acs_multi(
     output_prompt: str,
     search_type: str,
     evaluation_content: str,
-    environment: Environment,
     config: Config,
     evaluator: SpacyEvaluator,
-    main_prompt_instruction: Prompt,
+    response_generator: ResponseGenerator,
 ) -> tuple[list[str], list[dict[str, any]]]:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
@@ -327,7 +330,6 @@ def query_and_eval_acs_multi(
         evaluation_content (str): The content to use for evaluation.
         config (Config): The configuration object.
         evaluator (SpacyEvaluator): The evaluator object.
-        main_prompt_instruction (Prompt): The main prompt instruction for the query
 
     Returns:
         tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
@@ -335,10 +337,6 @@ def query_and_eval_acs_multi(
     """
     context = []
     evaluations = []
-
-    response_generator = ResponseGenerator(
-        environment, config, config.azure_oai_chat_deployment_name
-    )
 
     for question in questions:
         docs, evaluation = query_and_eval_acs(
@@ -360,16 +358,23 @@ def query_and_eval_acs_multi(
 
         if config.rerank:
             prompt_instruction_context = rerank_documents(
-                docs, question, output_prompt, config
+                docs, question, output_prompt, config, response_generator
             )
         else:
             prompt_instruction_context = docs
+
+        # TODO: Here was a bug, caused by the fact that we are not limiting the number of documents to retrieve
+        # Current solution is just forcefully limiting the number of documents to retrieve assuming they are sorted
+        if len(prompt_instruction_context) > config.retrieve_num_of_documents:
+            prompt_instruction_context = prompt_instruction_context[
+                : config.retrieve_num_of_documents
+            ]
 
         request_context = "\n".join(prompt_instruction_context)
         request_question = original_prompt
 
         openai_response = response_generator.generate_response(
-            main_prompt_instruction,
+            main_instruction,
             context=request_context,
             question=request_question,
         )
@@ -466,6 +471,11 @@ def get_query_output(
     s_v,
 ):
     search_evals = []
+
+    response_generator = ResponseGenerator(
+        environment, config, config.azure_oai_chat_deployment_name
+    )
+
     if is_multi_question:
         (
             docs,
@@ -478,10 +488,9 @@ def get_query_output(
             output_prompt=output_prompt,
             search_type=s_v,
             evaluation_content=evaluation_content,
-            environment=environment,
             config=config,
             evaluator=evaluator,
-            main_prompt_instruction=config.main_prompt_instruction,
+            response_generator=response_generator,
         )
     else:
         (
@@ -505,18 +514,16 @@ def get_query_output(
             user_prompt,
             output_prompt,
             config,
+            response_generator,
         )
     else:
         prompt_instruction_context = docs
 
-    full_prompt_instruction = (
-        config.main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context)
-    )
     openai_response = response_generator.generate_response(
-        full_prompt_instruction,
-        user_prompt,
+        main_instruction,
+        context="\n".join(prompt_instruction_context),
+        question=user_prompt,
     )
-    logger.debug(openai_response)
 
     output = QueryOutput(
         rerank=config.rerank,

@@ -104,6 +104,7 @@ class ResponseGenerator:
         except openai.BadRequestError as e:
             if e.param == "response_format":
                 self.json_object_supported = False
+                return self._get_response(messages, prompt, temperature)
             raise e
 
         if response.choices[0].finish_reason == "content_filter":
@@ -117,7 +118,11 @@ class ResponseGenerator:
         return self._interpret_response(response_text, prompt)
 
     def generate_response(
-        self, prompt: Prompt, temperature: float | None = None, **kwargs
+        self,
+        prompt: Prompt,
+        temperature: float | None = None,
+        prompt_last: bool = False,
+        **kwargs,
     ) -> any:
         system_arguments = Prompt.arguments_in_prompt(prompt.system_message)
         user_arguments = Prompt.arguments_in_prompt(prompt.user_template)
@@ -137,10 +142,16 @@ class ResponseGenerator:
             **{key: value for key, value in kwargs.items() if key in user_arguments}
         )
 
-        messages = [
-            {"role": "system", "content": sys_message},
-            {"role": "user", "content": user_template},
-        ]
+        if prompt_last:
+            messages = [
+                {"role": "system", "content": ""},
+                {"role": "user", "content": f"{user_template}\n{sys_message}"},
+            ]
+        else:
+            messages = [
+                {"role": "system", "content": sys_message},
+                {"role": "user", "content": user_template},
+            ]
 
         try:
             response = self._get_response(messages, prompt, temperature)

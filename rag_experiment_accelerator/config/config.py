@@ -161,7 +161,7 @@ class Config:
                 config_json["main_prompt_instruction"]
             )
 
-        self.SAMPLE_DATA = "sampling" in config_json
+        self.sampling = "sampling" in config_json
         if self.sampling:
             self.sample_percentage = config_json["sampling"]["sample_percentage"]
             if self.sample_percentage < 0 or self.sample_percentage > 100:

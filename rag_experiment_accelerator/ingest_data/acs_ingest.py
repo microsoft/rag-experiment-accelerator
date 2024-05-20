@@ -140,16 +140,11 @@ def generate_qna_for_chunk(chunk, response_generator):
     qna = []
 
     response = response_generator.generate_response(
-        generate_qna_instruction_system_prompt,
-        generate_qna_instruction_user_prompt + chunk["content"],
+        qna_generation_prompt,
+        context=chunk["content"],
     )
 
-    logger.debug(f"LLM Response: {response}")
-
-    response_dict = json.loads(
-        response.replace("\n", "").replace("'", "").replace("\\", "").replace('"..."', "")
-    )
-    for item in response_dict:
+    for item in response:
         data = {
             "user_prompt": item["question"],
             "output_prompt": item["answer"],
@@ -191,9 +186,6 @@ def do_we_need_multiple_questions(
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    if not config.CHAIN_OF_THOUGHTS:
-        return False
-
     response: str | None = response_generator.generate_response(
         do_need_multiple_prompt_instruction,
         text=question,

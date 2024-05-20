@@ -67,6 +67,7 @@ def llm_rerank_documents(
         rerank_prompt_instruction,
         documents=rerank_context,
         question=question,
+        prompt_last=True,
     )
 
     logger.debug("Reranker response:\n", response)

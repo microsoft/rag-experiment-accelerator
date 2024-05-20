@@ -10,10 +10,8 @@ User:
     What impact does social media have on mental health?
 
 Assistant:
-    [
-        "How does social media usage correlate with anxiety levels?",
-        "What are the effects of social media on teenagers’ self-esteem?",
-        "Can social media influence depression among adults?",
-        "Are there positive psychological impacts of social media?",
-        "How do different social media platforms affect mood?"
-    ]
+    ["How does social media usage correlate with anxiety levels?", "What are the effects of social media on teenagers’ self-esteem?", "Can social media influence depression among adults?", "Are there positive psychological impacts of social media?", "How do different social media platforms affect mood?"]
+
+Respond with json. It should contain list of elements, where each element is a string, containing generated questions.
+
+Example output structure: ["This is first question", "This is second question", "This is third question"]
