@@ -4,7 +4,7 @@ import ntpath
 from dotenv import load_dotenv
 import mlflow
 
-from rag_experiment_accelerator.checkpoint import get_checkpoint, cache_with_checkpoint
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
@@ -67,9 +67,7 @@ def run(
 
     if config.sampling:
         parser = load_parser()
-        docs = get_checkpoint().load_or_run(
-            cluster, index_config.index_name(), docs, config, parser
-        )
+        docs = cluster(index_config.index_name(), docs, config, parser)
 
     mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
@@ -176,7 +174,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
     return embedded_chunks
 
 
-@cache_with_checkpoint(id="chunk['content']+embedding_model.name")
+@cache_with_checkpoint(key="chunk['content']+embedding_model.name")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -281,7 +279,7 @@ def generate_summaries_from_chunks(
                 )
 
 
-@cache_with_checkpoint(id="chunk['content']+str(config.generate_title)")
+@cache_with_checkpoint(key="chunk['content']+str(config.generate_title)")
 def process_title(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -316,7 +314,7 @@ def process_title(
     return chunk
 
 
-@cache_with_checkpoint(id="chunk['content']+str(config.generate_summary)")
+@cache_with_checkpoint(key="chunk['content']+str(config.generate_summary)")
 def process_summary(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):

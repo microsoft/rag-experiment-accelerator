@@ -8,19 +8,14 @@ A checkpoint object is used to wrap methods, so when the method is called with a
 
 ### 1. Initialize the checkpoint object:
 ```python
-init_checkpoint(config)
+CheckpointFactory.create_checkpoint(config.execution_environment, config.use_checkpoints, config.artifacts_dir)
 ```
 
-### 2. Wrap the method you want to cache with the checkpoint decorator:
+### Wrap the method you want to cache with the checkpoint decorator:
 ```python
-@cache_with_checkpoint(id="arg2.id")
+@cache_with_checkpoint(key="arg2.id")
 def method(arg1, arg2):
     pass
-```
-
-or wrap the method using the checkpoint object:
-```python
- get_checkpoint().load_or_run(method, arg2.id, arg1, arg2)
 ```
 
 (arg2.id is the ID that uniquely identifies the call in this example)
@@ -33,9 +28,9 @@ This call will check if the provided method has previously been executed with th
 The base class for all checkpoints. It provides the basic functionality for initializing and retrieving the checkpoint instance.
 
 A Checkpoint object is a singleton, meaning, only one checkpoint instance exists at a time.
-To create a new checkpoint instance (or to override the existing instance), use the `init_checkpoint` method, this method will create a checkpoint object according to the provided configuration.
+To create a new checkpoint instance (or to override the existing instance), use the `CheckpointFactory.create_checkpoint` method, this method will create a checkpoint object according to the provided parameters.
 
-To get the current checkpoint instance, use the `get_checkpoint` method.
+To get the current checkpoint instance, use the `get_instance` method.
 
 ### LocalStorageCheckpoint
 Checkpoint implementation for the local executions of the pipeline (i.e. the developer's machine), uses the `pickle` library for serializing and persisting the method results to the local storage.

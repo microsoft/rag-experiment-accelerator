@@ -4,14 +4,14 @@ import argparse
 
 import mlflow
 
-project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(project_dir)
-
-from rag_experiment_accelerator.checkpoint import init_checkpoint  # noqa: E402
+from rag_experiment_accelerator.checkpoint import CheckpointFactory
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.run.querying import run as query_run  # noqa: E402
+
+project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(project_dir)
 
 
 def main():
@@ -56,7 +56,9 @@ def main():
     config = Config(environment, args.config_path)
     config.eval_data_jsonl_file_path = args.eval_data_path
     config.query_data_location = args.query_result_dir
-    init_checkpoint(config)
+    CheckpointFactory.create_checkpoint(
+        config.execution_environment, config.use_checkpoints, config.artifacts_dir
+    )
 
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()

@@ -51,7 +51,7 @@ def run(
                 0,
             )
             parser = load_parser()
-            all_docs = cluster(all_docs, config.sampling_output_dir, config, parser)
+            all_docs = cluster("", all_docs, config.sampling_output_dir, config, parser)
     else:
         all_docs = load_documents(
             environment,

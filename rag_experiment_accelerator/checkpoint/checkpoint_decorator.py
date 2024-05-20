@@ -1,18 +1,18 @@
-from rag_experiment_accelerator.checkpoint.checkpoint_factory import get_checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 
 
-def cache_with_checkpoint(id=None):
+def cache_with_checkpoint(key: str = None):
     """
     A decorator that can be used to cache the results of a method call using the globally initialized Checkpoint object.
-    An id must be provided to the decorator, which is used to identify the cached result.
+    An key must be provided to the decorator, which is used to identify the cached result.
     If the method is called with the same id again, the cached result is returned instead of executing the method.
     """
 
     def decorator(func):
         def wrapper(*args, **kwargs):
-            if id is None:
+            if key is None:
                 raise ValueError(
-                    "'id' must be provided to the cache_with_checkpoint decorator"
+                    "'key' must be provided to the cache_with_checkpoint decorator"
                 )
 
             eval_context = {**globals(), **locals(), **kwargs}
@@ -25,13 +25,14 @@ def cache_with_checkpoint(id=None):
             eval_context.update(arg_dict)
 
             try:
-                evaluated_id = eval(id, eval_context)
+                evaluated_id = eval(key, eval_context)
             except Exception as e:
                 raise ValueError(
-                    f"Failed to evaluate the provided expression: {id}"
+                    f"Failed to evaluate the provided expression: {key}"
                 ) from e
 
-            checkpoint = get_checkpoint()
+            checkpoint = Checkpoint.get_instance()
+
             return checkpoint.load_or_run(func, evaluated_id, *args, **kwargs)
 
         return wrapper

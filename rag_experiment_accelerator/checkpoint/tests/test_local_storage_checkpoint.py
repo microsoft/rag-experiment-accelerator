@@ -2,12 +2,9 @@ import unittest
 import os
 import tempfile
 import shutil
-from unittest.mock import MagicMock
 
-from rag_experiment_accelerator.checkpoint.checkpoint_factory import (
-    get_checkpoint,
-    init_checkpoint,
-)
+from rag_experiment_accelerator.checkpoint import CheckpointFactory
+from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
     cache_with_checkpoint,
 )
@@ -16,7 +13,7 @@ from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
 )
 
 
-@cache_with_checkpoint(id="call_identifier")
+@cache_with_checkpoint(key="call_identifier")
 def dummy(word, call_identifier):
     return f"hello {word}"
 
@@ -24,17 +21,16 @@ def dummy(word, call_identifier):
 class TestLocalStorageCheckpoint(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
+        CheckpointFactory.create_checkpoint(
+            type="local", enable_checkpoints=True, checkpoints_directory=self.temp_dir
+        )
 
     def tearDown(self):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
     def test_wrapped_method_is_cached(self):
-        config = MagicMock()
-        config.use_checkpoints = True
-        config.artifacts_dir = self.temp_dir
-        init_checkpoint(config)
-        checkpoint = get_checkpoint()
+        checkpoint = Checkpoint.get_instance()
         assert isinstance(checkpoint, LocalStorageCheckpoint)
 
         data_id = "same_id"

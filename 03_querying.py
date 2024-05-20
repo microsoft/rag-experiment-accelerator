@@ -2,7 +2,7 @@ import argparse
 import mlflow
 from azureml.pipeline import initialise_mlflow_client
 
-from rag_experiment_accelerator.checkpoint import init_checkpoint
+from rag_experiment_accelerator.checkpoint import CheckpointFactory
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.config.paths import formatted_datetime_suffix
@@ -31,11 +31,14 @@ if __name__ == "__main__":
         environment,
         args.config_path,
     )
+    CheckpointFactory.create_checkpoint(
+        config.execution_environment, config.use_checkpoints, config.artifacts_dir
+    )
+
     mlflow_client = initialise_mlflow_client(environment, config)
     mlflow.set_experiment(config.experiment_name)
 
     handler = QueryOutputHandler(config.query_data_location)
-    init_checkpoint(config)
 
     for index_config in config.index_configs():
         with mlflow.start_run(

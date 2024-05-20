@@ -10,9 +10,25 @@ class Checkpoint(ABC):
     A Checkpoint is used to cache the results of method calls, enabling the reuse of these results if the same method is called again with the same ID.
     When a method wrapped by a Checkpoint object is called with an ID that was used before,
     the Checkpoint returns the result of the previous execution instead of executing the method again.
-
-    Initialize the Checkpoint using the `init_checkpoint` method, and use the `get_checkpoint` method to get the Checkpoint object.
     """
+
+    global _instance
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        global _instance
+        if not _instance:
+            _instance = super(Checkpoint, cls).__new__(cls)
+        return _instance
+
+    @staticmethod
+    def get_instance():
+        global _instance
+        if _instance is None:
+            raise ValueError(
+                "Checkpoint not initialized yet. Call CheckpointFactory.create_checkpoint() first."
+            )
+        return _instance
 
     def load_or_run(self, method, id: str, *args, **kwargs) -> Any:
         """
@@ -36,7 +52,7 @@ class Checkpoint(ABC):
                 if len(str(id)) > max_id_length
                 else str(id)
             )
-            logger.info(
+            logger.debug(
                 f"Checkpoint data found for '{method.__name__}' and id '{trimmed_id}' - skipping execution and loading from checkpoint."
             )
             return self._load(id, method)

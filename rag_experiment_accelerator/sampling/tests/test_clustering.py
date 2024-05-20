@@ -116,7 +116,7 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
     ):
         # Act
         parser = load_parser()
-        result = cluster(all_chunks, config, parser)
+        result = cluster("", all_chunks, config, parser)
         assert len(result) == 0
         # Assert
         assert os.path.exists(

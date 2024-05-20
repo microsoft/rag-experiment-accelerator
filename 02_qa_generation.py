@@ -1,6 +1,6 @@
 import argparse
 
-from rag_experiment_accelerator.checkpoint import init_checkpoint
+from rag_experiment_accelerator.checkpoint import CheckpointFactory
 from rag_experiment_accelerator.run.qa_generation import run
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
@@ -17,6 +17,8 @@ if __name__ == "__main__":
 
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
-    init_checkpoint(config)
+    CheckpointFactory.create_checkpoint(
+        config.execution_environment, config.use_checkpoints, config.artifacts_dir
+    )
 
     run(environment, config, get_all_file_paths(config.data_dir))

@@ -1,39 +1,28 @@
-from rag_experiment_accelerator.config.config import Config, ExecutionEnvironment
+from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
+from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
+    LocalStorageCheckpoint,
+)
 
-global _checkpoint_instance
-_checkpoint_instance = None
 
-
-def get_checkpoint():
+class CheckpointFactory:
     """
-    Returns the current checkpoint instance.
+    A factory class that creates a Checkpoint object based on the provided configuration.
     """
-    global _checkpoint_instance
-    if not _checkpoint_instance:
-        raise Exception("Checkpoint not initialized yet. Call init_checkpoint() first.")
-    return _checkpoint_instance
 
+    @staticmethod
+    def create_checkpoint(
+        type: str = "local",
+        enable_checkpoints: bool = True,
+        checkpoints_directory: str = "./artifacts",
+    ):
+        """
+        Returns a Checkpoint object based on the provided configuration.
+        """
+        if not enable_checkpoints:
+            return NullCheckpoint()
 
-def init_checkpoint(config: Config):
-    """
-    Initializes the checkpoint instance based on the provided configuration.
-    """
-    global _checkpoint_instance
-    _checkpoint_instance = _get_checkpoint_base_on_config(config)
+        if type == "azure-ml":
+            # Currently not supported in Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
+            return NullCheckpoint()
 
-
-def _get_checkpoint_base_on_config(config: Config):
-    # import inside the method to avoid circular dependencies
-    from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
-    from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
-        LocalStorageCheckpoint,
-    )
-
-    if not config.use_checkpoints:
-        return NullCheckpoint()
-
-    if config.execution_environment == ExecutionEnvironment.AZURE_ML:
-        # Currently not supported in Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
-        return NullCheckpoint()
-
-    return LocalStorageCheckpoint(directory=config.artifacts_dir)
+        return LocalStorageCheckpoint(directory=checkpoints_directory)

@@ -131,7 +131,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
     return new_df
 
 
-@cache_with_checkpoint(id="chunk['content']")
+@cache_with_checkpoint(key="chunk['content']")
 def generate_qna_for_chunk(chunk, response_generator):
     qna = []
 
@@ -143,7 +143,10 @@ def generate_qna_for_chunk(chunk, response_generator):
     logger.debug(f"LLM Response: {response}")
 
     response_dict = json.loads(
-        response.replace("\n", "").replace("'", "").replace("\\", "").replace('"..."', "")
+        response.replace("\n", "")
+        .replace("'", "")
+        .replace("\\", "")
+        .replace('"..."', "")
     )
     for item in response_dict:
         data = {

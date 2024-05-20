@@ -449,7 +449,7 @@ def query_and_eval_single_line(
 
 
 @cache_with_checkpoint(
-    id="user_prompt+output_prompt+qna_context+index_config.index_name()"
+    key="user_prompt+output_prompt+qna_context+index_config.index_name()"
 )
 def get_query_output(
     environment,
