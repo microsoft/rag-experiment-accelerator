@@ -4,7 +4,6 @@ import tempfile
 import shutil
 
 from rag_experiment_accelerator.checkpoint import CheckpointFactory
-from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
     cache_with_checkpoint,
 )
@@ -21,17 +20,17 @@ def dummy(word, call_identifier):
 class TestLocalStorageCheckpoint(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
-        CheckpointFactory.create_checkpoint(
+        self.checkpoint = CheckpointFactory.create_checkpoint(
             type="local", enable_checkpoints=True, checkpoints_directory=self.temp_dir
         )
 
     def tearDown(self):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
+        CheckpointFactory.reset()
 
     def test_wrapped_method_is_cached(self):
-        checkpoint = Checkpoint.get_instance()
-        assert isinstance(checkpoint, LocalStorageCheckpoint)
+        assert isinstance(self.checkpoint, LocalStorageCheckpoint)
 
         data_id = "same_id"
         result1 = dummy("first run", data_id)

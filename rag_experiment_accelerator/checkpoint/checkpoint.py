@@ -12,24 +12,6 @@ class Checkpoint(ABC):
     the Checkpoint returns the result of the previous execution instead of executing the method again.
     """
 
-    global _instance
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        global _instance
-        if not _instance:
-            _instance = super(Checkpoint, cls).__new__(cls)
-        return _instance
-
-    @staticmethod
-    def get_instance():
-        global _instance
-        if _instance is None:
-            raise ValueError(
-                "Checkpoint not initialized yet. Call CheckpointFactory.create_checkpoint() first."
-            )
-        return _instance
-
     def load_or_run(self, method, id: str, *args, **kwargs) -> Any:
         """
         Checks if the provided method has previously been executed with the given ID,

@@ -3,6 +3,9 @@ from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
     LocalStorageCheckpoint,
 )
 
+global _instance
+_instance = None
+
 
 class CheckpointFactory:
     """
@@ -25,4 +28,27 @@ class CheckpointFactory:
             # Currently not supported in Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
             return NullCheckpoint()
 
-        return LocalStorageCheckpoint(directory=checkpoints_directory)
+        global _instance
+        _instance = LocalStorageCheckpoint(directory=checkpoints_directory)
+
+        return _instance
+
+    @staticmethod
+    def get_instance():
+        """
+        Returns the instance of the Checkpoint object.
+        """
+        global _instance
+        if _instance is None:
+            raise Exception(
+                "Checkpoint not initialized yet. Call CheckpointFactory.create_checkpoint() first."
+            )
+        return _instance
+
+    @staticmethod
+    def reset():
+        """
+        Resets the instance of the Checkpoint object.
+        """
+        global _instance
+        _instance = None

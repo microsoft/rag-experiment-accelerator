@@ -2,7 +2,6 @@ from unittest.mock import MagicMock
 import pytest
 from unittest.mock import patch
 from rag_experiment_accelerator.checkpoint.checkpoint_factory import CheckpointFactory
-from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
 from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
     LocalStorageCheckpoint,
 )
@@ -20,7 +19,7 @@ def mock_checkpoints():
 
 def test_get_checkpoint_without_init_fails():
     with pytest.raises(Exception) as e_info:
-        Checkpoint.get_instance()
+        CheckpointFactory.get_instance()
     assert (
         str(e_info.value)
         == "Checkpoint not initialized yet. Call CheckpointFactory.create_checkpoint() first."

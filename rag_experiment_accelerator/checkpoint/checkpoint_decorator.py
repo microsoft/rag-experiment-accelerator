@@ -1,4 +1,4 @@
-from rag_experiment_accelerator.checkpoint.checkpoint import Checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import CheckpointFactory
 
 
 def cache_with_checkpoint(key: str = None):
@@ -31,7 +31,7 @@ def cache_with_checkpoint(key: str = None):
                     f"Failed to evaluate the provided expression: {key}"
                 ) from e
 
-            checkpoint = Checkpoint.get_instance()
+            checkpoint = CheckpointFactory.get_instance()
 
             return checkpoint.load_or_run(func, evaluated_id, *args, **kwargs)
 

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from rag_experiment_accelerator.checkpoint.checkpoint_factory import CheckpointFactory
-from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config.config import Config, ExecutionEnvironment
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 
@@ -64,6 +64,8 @@ def test_run(
     mock_config.use_checkpoints = False
     mock_config.chunking_strategy = "chunking_strategy"
     mock_config.azure_oai_chat_deployment_name = "oai_deployment_name"
+    mock_config.execution_environment = ExecutionEnvironment.LOCAL
+    mock_config.use_checkpoints = False
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
     mock_environment.azure_search_admin_key = "admin_key"
