@@ -4,7 +4,7 @@ import ntpath
 from dotenv import load_dotenv
 import mlflow
 
-from rag_experiment_accelerator.checkpoint import get_checkpoint, cache_with_checkpoint
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
@@ -67,9 +67,7 @@ def run(
 
     if config.sampling:
         parser = load_parser()
-        docs = get_checkpoint().load_or_run(
-            cluster, index_config.index_name(), docs, config, parser
-        )
+        docs = cluster(index_config.index_name(), docs, config, parser)
 
     mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
