@@ -2,7 +2,7 @@ import argparse
 import mlflow
 from azureml.pipeline import initialise_mlflow_client
 
-from rag_experiment_accelerator.checkpoint import CheckpointFactory
+from rag_experiment_accelerator.checkpoint import create_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.config.paths import formatted_datetime_suffix
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         environment,
         args.config_path,
     )
-    CheckpointFactory.create_checkpoint(
+    create_checkpoint(
         config.execution_environment, config.use_checkpoints, config.artifacts_dir
     )
 

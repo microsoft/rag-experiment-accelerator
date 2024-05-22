@@ -3,7 +3,7 @@ import uuid
 
 from unittest.mock import patch, Mock, ANY
 
-from rag_experiment_accelerator.checkpoint.checkpoint_factory import CheckpointFactory
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import create_checkpoint
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     my_hash,
     upload_data,
@@ -168,7 +168,7 @@ def test_generate_qna_with_invalid_json(mock_response_generator, mock_json_loads
     mock_response_generator().generate_response.return_value = mock_response
     mock_json_loads.side_effect = json.JSONDecodeError("Invalid JSON", doc="", pos=0)
 
-    CheckpointFactory.create_checkpoint("local", False, "test_artifacts_dir")
+    create_checkpoint("local", False, "test_artifacts_dir")
     # Act
     result = generate_qna(Mock(), Mock(), mock_docs, mock_deployment_name)
 

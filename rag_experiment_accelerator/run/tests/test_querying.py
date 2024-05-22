@@ -2,7 +2,10 @@ import unittest
 import os
 from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
-from rag_experiment_accelerator.checkpoint import CheckpointFactory
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import (
+    create_checkpoint,
+    reset_checkpoint_instance,
+)
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.config.config import Config, ExecutionEnvironment
 from rag_experiment_accelerator.config.index_config import IndexConfig
@@ -39,6 +42,10 @@ class TestQuerying(unittest.TestCase):
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
+
+    def tearDown(self) -> None:
+        reset_checkpoint_instance()
+        return super().tearDown()
 
     @patch("rag_experiment_accelerator.run.querying.search_mapping")
     def test_query_acs(self, mock_search_mapping):
@@ -311,7 +318,7 @@ class TestQuerying(unittest.TestCase):
         mock_config.index_configs.return_value = [index_config]
         mock_config.use_checkpoints = False
         mock_config.execution_environment = ExecutionEnvironment.LOCAL
-        CheckpointFactory.create_checkpoint(
+        create_checkpoint(
             mock_config.execution_environment, mock_config.use_checkpoints, ""
         )
         # Act

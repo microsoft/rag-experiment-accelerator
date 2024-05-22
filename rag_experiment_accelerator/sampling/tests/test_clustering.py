@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from rag_experiment_accelerator.config.config import ExecutionEnvironment
 from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
-from rag_experiment_accelerator.checkpoint import CheckpointFactory
+from rag_experiment_accelerator.checkpoint import create_checkpoint
 
 
 @pytest.fixture
@@ -96,9 +96,9 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         f"sampled_cluster_predictions_cluster_number_{config.sample_optimum_k}.csv",
     )
     config.execution_environment = ExecutionEnvironment.LOCAL
-    CheckpointFactory.create_checkpoint(config.execution_environment, False)
+    create_checkpoint(config.execution_environment, False)
     os.makedirs(config.sampling_output_dir)
-    CheckpointFactory.create_checkpoint("local", False, "")
+    create_checkpoint("local", False, "")
 
     with patch(
         "rag_experiment_accelerator.sampling.clustering.logger", mock_logger

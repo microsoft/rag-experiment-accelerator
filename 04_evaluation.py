@@ -3,7 +3,7 @@ import argparse
 import mlflow
 
 from azureml.pipeline import initialise_mlflow_client
-from rag_experiment_accelerator.checkpoint import CheckpointFactory
+from rag_experiment_accelerator.checkpoint import create_checkpoint
 from rag_experiment_accelerator.run.evaluation import run
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
-    CheckpointFactory.create_checkpoint(
+    create_checkpoint(
         config.execution_environment, config.use_checkpoints, config.artifacts_dir
     )
 

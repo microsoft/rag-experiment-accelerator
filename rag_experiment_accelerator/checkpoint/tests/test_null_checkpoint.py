@@ -1,6 +1,6 @@
 import unittest
 
-from rag_experiment_accelerator.checkpoint.checkpoint_factory import CheckpointFactory
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import create_checkpoint
 from rag_experiment_accelerator.checkpoint.null_checkpoint import NullCheckpoint
 from rag_experiment_accelerator.config.config import ExecutionEnvironment
 
@@ -11,9 +11,7 @@ def dummy(word):
 
 class TestNullCheckpoint(unittest.TestCase):
     def test_wrapped_method_is_not_cached(self):
-        checkpoint = CheckpointFactory.create_checkpoint(
-            ExecutionEnvironment.LOCAL, False
-        )
+        checkpoint = create_checkpoint(ExecutionEnvironment.LOCAL, False)
         self.assertIsInstance(checkpoint, NullCheckpoint)
         data_id = "unique_id"
         result1 = checkpoint.load_or_run(dummy, data_id, "first run")

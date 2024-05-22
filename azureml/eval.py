@@ -3,7 +3,7 @@ import sys
 import argparse
 import mlflow
 
-from rag_experiment_accelerator.checkpoint import CheckpointFactory
+from rag_experiment_accelerator.checkpoint import create_checkpoint
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
@@ -52,7 +52,7 @@ def main():
 
     environment = Environment.from_keyvault(args.keyvault)
     config = Config(environment, config_path=args.config_path)
-    CheckpointFactory.create_checkpoint(
+    create_checkpoint(
         config.execution_environment, config.use_checkpoints, config.artifacts_dir
     )
 

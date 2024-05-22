@@ -3,9 +3,12 @@ import os
 import tempfile
 import shutil
 
-from rag_experiment_accelerator.checkpoint import CheckpointFactory
 from rag_experiment_accelerator.checkpoint.checkpoint_decorator import (
     cache_with_checkpoint,
+)
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import (
+    create_checkpoint,
+    reset_checkpoint_instance,
 )
 from rag_experiment_accelerator.checkpoint.local_storage_checkpoint import (
     LocalStorageCheckpoint,
@@ -20,14 +23,14 @@ def dummy(word, call_identifier):
 class TestLocalStorageCheckpoint(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
-        self.checkpoint = CheckpointFactory.create_checkpoint(
+        self.checkpoint = create_checkpoint(
             type="local", enable_checkpoints=True, checkpoints_directory=self.temp_dir
         )
 
     def tearDown(self):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
-        CheckpointFactory.reset()
+        reset_checkpoint_instance()
 
     def test_wrapped_method_is_cached(self):
         assert isinstance(self.checkpoint, LocalStorageCheckpoint)
