@@ -1,21 +1,22 @@
 import json
-import uuid
-
 from unittest.mock import patch, Mock, ANY
+import uuid
 
 from rag_experiment_accelerator.checkpoint.checkpoint_factory import create_checkpoint
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
+    generate_qna,
     my_hash,
     upload_data,
-    generate_qna,
     we_need_multiple_questions,
     do_we_need_multiple_questions,
 )
-from rag_experiment_accelerator.llm.prompts import (
+
+from rag_experiment_accelerator.llm.prompt import (
     multiple_prompt_instruction,
     prompt_instruction_title,
     prompt_instruction_summary,
 )
+
 from rag_experiment_accelerator.run.index import generate_summary, generate_title
 
 
@@ -78,7 +79,7 @@ def test_generate_title(mock_response_generator):
 
     # Assert
     mock_response_generator().generate_response.assert_called_once_with(
-        prompt_instruction_title, mock_chunk
+        prompt_instruction_title, text=mock_chunk
     )
     assert result == mock_response
 
@@ -100,7 +101,7 @@ def test_generate_summary(mock_response_generator):
 
     # Assert
     mock_response_generator().generate_response.assert_called_once_with(
-        prompt_instruction_summary, mock_chunk
+        prompt_instruction_summary, text=mock_chunk
     )
     assert result == mock_summary
 
@@ -186,16 +187,13 @@ def test_we_need_multiple_questions(mock_response_generator):
     question = "What is the meaning of life?"
     mock_response = "The meaning of life is 42."
     mock_response_generator.generate_response.return_value = mock_response
-    expected_prompt_instruction = (
-        multiple_prompt_instruction + "\n" + "question: " + question + "\n"
-    )
 
     # Act
     result = we_need_multiple_questions(question, mock_response_generator)
 
     # Assert
     mock_response_generator.generate_response.assert_called_once_with(
-        expected_prompt_instruction, ""
+        multiple_prompt_instruction, text=question
     )
     assert result == mock_response
 
@@ -207,7 +205,7 @@ def test_we_need_multiple_questions(mock_response_generator):
 def test_do_we_need_multiple_questions_true(mock_response_generator):
     # Arrange
     question = "What is the meaning of life?"
-    mock_response_generator.generate_response.return_value = '{"category": "complex"}'
+    mock_response_generator.generate_response.return_value = "complex"
     mock_config = Mock()
 
     # Act

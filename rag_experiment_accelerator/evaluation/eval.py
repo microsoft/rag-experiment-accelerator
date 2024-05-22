@@ -22,7 +22,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 )
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
-from rag_experiment_accelerator.llm.prompts import (
+from rag_experiment_accelerator.llm.prompt import (
     llm_answer_relevance_instruction,
     llm_context_recall_instruction,
     llm_context_precision_instruction,
@@ -255,7 +255,9 @@ def lcsstr(value1, value2):
     return score
 
 
-def llm_answer_relevance(response_generator: ResponseGenerator, question, answer):
+def llm_answer_relevance(
+    response_generator: ResponseGenerator, question, answer
+) -> float:
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -269,13 +271,13 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
         double: The relevancy score generated between the question and answer.
 
     """
-    try:
-        result = response_generator.generate_response(
-            sys_message=llm_answer_relevance_instruction, prompt=answer
-        )
-    except Exception as e:
-        logger.error(f"Unable to generate answer relevance score: {e}")
-        return 0
+    result = response_generator.generate_response(
+        llm_answer_relevance_instruction, text=answer
+    )
+    if result is None:
+        logger.warning("Unable to generate answer relevance score")
+        return 0.0
+
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
@@ -285,7 +287,9 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
     return float(similarity_score[0][0] * 100)
 
 
-def llm_context_precision(response_generator: ResponseGenerator, question, context):
+def llm_context_precision(
+    response_generator: ResponseGenerator, question, context
+) -> float:
     """
     Verifies whether or not a given context is useful for answering a question.
 
@@ -296,17 +300,18 @@ def llm_context_precision(response_generator: ResponseGenerator, question, conte
     Returns:
         int: 1 or 0 depending on if the context is relevant or not.
     """
-    prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    try:
-        result = response_generator.generate_response(
-            sys_message=llm_context_precision_instruction, prompt=prompt
-        )
-    except Exception as e:
-        logger.error(f"Unable to generate context precision score: {e}")
-        return 0
+    result: str | None = response_generator.generate_response(
+        llm_context_precision_instruction,
+        context=context,
+        question=question,
+    )
+    if result is None:
+        logger.warning("Unable to generate context precision score")
+        return 0.0
+
     # Since we're only asking for one response, the result is always a boolean 1 or 0
-    if "Yes" in result:
-        return 100
+    if result.lower().strip() == "yes":
+        return 100.0
 
     return 0
 
@@ -339,20 +344,15 @@ def llm_context_recall(
     Returns:
         double: The context recall score generated between the ground truth (expected) and context.
     """
-    prompt = (
-        "\nquestion: "
-        + question
-        + "\ncontext: "
-        + context
-        + "\nanswer: "
-        + groundtruth_answer
-    )
+
     result = response_generator.generate_response(
-        sys_message=llm_context_recall_instruction,
-        prompt=prompt,
+        llm_context_recall_instruction,
         temperature=temperature,
+        question=question,
+        context=context,
+        answer=groundtruth_answer,
     )
-    print(result)
+
     good_response = '"Attributed": "1"'
     bad_response = '"Attributed": "0"'
 
