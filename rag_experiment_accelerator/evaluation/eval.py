@@ -212,7 +212,10 @@ def jaro_winkler(value1, value2):
 
 def cosine(value1, value2):
     """
-    Calculates the cosine similarity between two vectors.
+    Calculates the cosine similarity (Ochiai coefficient) between two strings
+    using token-frequency vectors
+
+    https://en.wikipedia.org/wiki/Cosine_similarity.
 
     Args:
         value1 (list): The first vector.
@@ -500,7 +503,7 @@ def compute_metrics(
         metric_type (str): The type of metric to use for comparison. Valid options are:
             - "lcsstr": Longest common substring
             - "lcsseq": Longest common subsequence
-            - "cosine": Cosine similarity
+            - "cosine": Cosine similarity (Ochiai coefficient)
             - "jaro_winkler": Jaro-Winkler distance
             - "hamming": Hamming distance
             - "jaccard": Jaccard similarity

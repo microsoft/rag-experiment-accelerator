@@ -45,7 +45,7 @@ The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallba
 
 1. **Re-Ranking**: The query responses from Azure AI Search are re-evaluated using LLM and ranked according to the relevance between the query and the context.
 
-1. **Metrics and Evaluation**: You can define custom evaluation metrics, which enable precise and granular assessment of search algorithm performance. It includes distance-based, cosine, semantic similarity, and more metrics out of the box.
+1. **Metrics and Evaluation**: It supports end-to-end metrics comparing the generated answers (actual) against the ground-truth answers (expected), including distance-based, cosine and semantic similarity metrics. It also includes component-based metrics to assess retrieval and generation performance using LLMs as judges, such as context recall or answer relevance, as well as retrieval metrics to assess search results (e.g. MAP@k).
 
 1. **Report Generation**: The **RAG Experiment Accelerator** automates the process of report generation, complete with visualizations that make it easy to analyze and share experiment findings.
 
@@ -253,8 +253,9 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "crossencoder_model" :"determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base",
     "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
     "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
-    "metric_types" : "determines the metrics used for evaluation purpose. Valid value are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2, llm_answer_relevance, llm_context_precision, llm_context_recall. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens']",
+    "metric_types" : "determines the metrics used for evaluation (end-to-end or component-wise metrics using LLMs). Valid values for end-to-end metrics are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. Valid values for component-wise LLM-based metrics are llm_answer_relevance, llm_context_precision and llm_context_recall. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens', 'llm_answer_relevance']",
     "azure_oai_chat_deployment_name":  "determines the Azure OpenAI deployment name",
+    "azure_oai_eval_deployment_name": "determines the Azure OpenAI deployment name used for evaluation",
     "embedding_model_name": "embedding model name",
     "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
@@ -332,10 +333,12 @@ default value for `min_query_expansion_related_question_similarity_score` is set
 The solution integrates with Azure Machine Learning and uses MLFlow to manage experiments, jobs, and artifacts. You can view the following reports as part of the evaluation process:
 
 ### Metric Comparison
+`all_metrics_current_run.html` shows average scores across questions and search types for each selected metric:
 
 ![Metric Comparison](./images/metric_comparison.png)
 
 ### Metric Analysis
+The computation of each metric and fields used for evaluation are tracked for each question and search type in the output csv file:
 
 ![Alt text](./images/metric_analysis.png)
 
@@ -344,13 +347,20 @@ The solution integrates with Azure Machine Learning and uses MLFlow to manage ex
 ![Hyper Parameters](./images/hyper_parameters.png)
 
 ### Sample Metrics
+Metrics can be compared across runs:
 
 ![Sample Metrics](./images/sample_metric.png)
 
 ### Search evaluation
+Metrics can be compared across different search strategies:
 
 ![Search evaluation](./images/search_chart.png)
 
+### Retrieval evaluation
+Mean average precision scores are tracked and average MAP scores can be compared across search type:
+
+![Retrieval evaluation](./images/map_at_k.png)
+![Retrieval evaluation](./images/map_scores.png)
 
 ### Pitfalls
 
@@ -388,6 +398,14 @@ Possible Causes:
 **Content Filtering:** Azure OpenAI has content filters in place. If the input text or generated responses are deemed inappropriate, it could lead to errors.
 **API Limitations:** The Azure OpenAI service have token and rate limitations that affect the output.
 
+#### Evaluation step
+
+##### Description
+**End-to-end evaluation metrics:** not all the metrics comparing the generated and ground-truth answers are able to capture differences in semantics. For example, metrics such as `levenshtein` or `jaro_winkler` only measure edit distances. The `cosine` metric doesn't allow the comparison of semantics either: it uses the *textdistance* token-based implementation based on term frequency vectors. To calculate the semantic similarity between the generated answers and the expected responses, consider using embedding-based metrics such as Bert scores (`bert_`).
+
+**Component-wise evaluation metrics:** evaluation metrics using LLM-as-judges aren't deterministic. The `llm_` metrics included in the accelerator use the model indicated in the `azure_oai_eval_deployment_name` config field. The prompts used for evaluation instruction can be adjusted and are included in the `prompts.py` file (`llm_answer_relevance_instruction`, `llm_context_recall_instruction`, `llm_context_precision_instruction`).
+
+**Retrieval-based metrics:** MAP scores are computed by comparing each retrieved chunk against the question and the chunk used to generate the qna pair. To assess whether a retrieved chunk is relevant or not, the similarity between the retrieved chunk and the concatenation of the end user question and the chunk used in the qna step (`02_qa_generation.py`) is computed using the SpacyEvaluator. Spacy similarity defaults to the average of the token vectors, meaning that the computation is insensitive to the order of the words. By default, the similarity threshold is set to 80% (`spacy_evaluator.py`).
 
 ## Contributing
 
