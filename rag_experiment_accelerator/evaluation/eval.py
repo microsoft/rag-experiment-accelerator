@@ -324,8 +324,7 @@ def llm_context_recall(
     response_generator: ResponseGenerator,
     question,
     groundtruth_answer,
-    context,
-    temperature: int,
+    retrieved_contexts,
 ):
     """
     Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
@@ -342,12 +341,12 @@ def llm_context_recall(
     Args:
         question (str): The question being asked
         groundtruth_answer (str): The ground truth ("output_prompt")
-        context (str): The given context.
-        temperature (int): Temperature as defined in the config.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query
 
     Returns:
         double: The context recall score generated between the ground truth (expected) and context.
     """
+    context = "\n".join(retrieved_contexts)
     prompt = (
         "\nquestion: "
         + question
@@ -359,9 +358,7 @@ def llm_context_recall(
     result = response_generator.generate_response(
         sys_message=llm_context_recall_instruction,
         prompt=prompt,
-        temperature=temperature,
     )
-    print(result)
     good_response = '"Attributed": "1"'
     bad_response = '"Attributed": "0"'
 
