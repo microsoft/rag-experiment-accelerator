@@ -35,5 +35,5 @@ scikit-learn==1.4.2
 sentence-transformers==2.7.0
 spacy==3.7.4
 textdistance==4.6.2
-tiktoken==0.6.0
+tiktoken==0.7.0
 unstructured==0.11.8
