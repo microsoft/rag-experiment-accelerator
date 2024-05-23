@@ -54,13 +54,13 @@ Calculates the longest common substring (LCS) similarity score between two strin
 
 Computes the longest common subsequence (LCS) similarity score between two input strings.
 
-### Cosine similarity
+### Cosine similarity (Ochiai coefficient)
 
 | Configuration Key | Calculation Base     | Possible Values    |
 | ----------------- | -------------------- | ------------------ |
 | `cosine`          | `actual`, `expected` | Percentage (0-100) |
 
-The cosine similarity is calculated as the cosine of the angle between two strings represented as vectors.
+This coefficient is calculated as the intersection of the term-frequency vectors of the generated answer (actual) and the ground-truth answer (expected) divided by the geometric mean of the sizes of these vectors.
 
 ### Jaro-Winkler distance
 
