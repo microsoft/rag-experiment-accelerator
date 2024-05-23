@@ -285,30 +285,39 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
     return float(similarity_score[0][0] * 100)
 
 
-def llm_context_precision(response_generator: ResponseGenerator, question, context):
+def llm_context_precision(
+    response_generator: ResponseGenerator, question, retrieved_contexts
+):
     """
-    Verifies whether or not a given context is useful for answering a question.
+    Computes precision by assessing whether each retrieved context is useful for answering a question.
+    Only considers the presence of relevant chunks in the retrieved contexts, but doesn't take into
+    account their ranking order.
 
     Args:
         question (str): The question being asked.
-        context (str): The given context.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query.
 
     Returns:
-        int: 1 or 0 depending on if the context is relevant or not.
+        double: proportion of relevant chunks retrieved for the question
     """
-    prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-    try:
-        result = response_generator.generate_response(
-            sys_message=llm_context_precision_instruction, prompt=prompt
-        )
-    except Exception as e:
-        logger.error(f"Unable to generate context precision score: {e}")
-        return 0
-    # Since we're only asking for one response, the result is always a boolean 1 or 0
-    if "Yes" in result:
-        return 100
+    relevancy_scores = []
 
-    return 0
+    for context in retrieved_contexts:
+        prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
+        try:
+            result = response_generator.generate_response(
+                sys_message=llm_context_precision_instruction, prompt=prompt
+            )
+            # Since we're only asking for one response, the result is always a boolean 1 or 0
+            if "Yes" in result:
+                relevancy_scores.append(1)
+            else:
+                relevancy_scores.append(0)
+        except Exception as e:
+            logger.error(f"Unable to generate context precision score: {e}")
+
+    logger.debug(relevancy_scores)
+    return (sum(relevancy_scores) / len(relevancy_scores)) * 100
 
 
 def llm_context_recall(
@@ -481,7 +490,7 @@ def compute_metrics(
     question,
     actual,
     expected,
-    context,
+    retrieved_contexts,
     metric_type,
 ):
     """
@@ -490,6 +499,7 @@ def compute_metrics(
     Args:
         actual (str): The first string to compare.
         expected (str): The second string to compare.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query.
         metric_type (str): The type of metric to use for comparison. Valid options are:
             - "lcsstr": Longest common substring
             - "lcsseq": Longest common subsequence
@@ -508,7 +518,6 @@ def compute_metrics(
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
             - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
-        config (Config): The configuration of the experiment.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -568,9 +577,11 @@ def compute_metrics(
     elif metric_type == "llm_answer_relevance":
         score = llm_answer_relevance(response_generator, actual, expected)
     elif metric_type == "llm_context_precision":
-        score = llm_context_precision(response_generator, actual, context)
+        score = llm_context_precision(response_generator, question, retrieved_contexts)
     elif metric_type == "llm_context_recall":
-        score = llm_context_recall(response_generator, question, expected, context)
+        score = llm_context_recall(
+            response_generator, question, expected, retrieved_contexts
+        )
     else:
         pass
 
@@ -597,12 +608,12 @@ def evaluate_single_prompt(
             data.question,
             actual,
             expected,
-            data.context,
+            data.retrieved_contexts,
             metric_type,
         )
         metric_dic[metric_type] = score
     metric_dic["question"] = data.question
-    metric_dic["context"] = data.context
+    metric_dic["retrieved_contexts"] = data.retrieved_contexts
     metric_dic["actual"] = actual
     metric_dic["expected"] = expected
     metric_dic["search_type"] = data.search_type
@@ -710,7 +721,7 @@ def evaluate_prompts(
         mean_scores["mean"].append(mean(scores))
 
     run_id = mlflow.active_run().info.run_id
-    columns_to_remove = ["question", "context", "actual", "expected"]
+    columns_to_remove = ["question", "retrieved_contexts", "actual", "expected"]
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(

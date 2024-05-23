@@ -153,20 +153,18 @@ def test_llm_answer_relevance(mock_st, mock_generate_response):
 
 @patch("rag_experiment_accelerator.evaluation.eval.ResponseGenerator")
 def test_llm_context_precision(mock_generate_response):
-    mock_generate_response.generate_response.return_value = "Yes"
     question = "What is the name of the largest bone in the human body?"
-    context = (
-        'According to the Cleveland Clinic, "The femur is the largest and'
-        " strongest bone in the human body. It can support as much as 30 times"
-        " the weight of your body. The average adult male femur is 48 cm (18.9"
-        " in) in length and 2.34 cm (0.92 in) in diameter. The average weight"
-        " among adult males in the United States is 196 lbs (872 N)."
-        " Therefore, the adult male femur can support roughly 6,000 lbs of"
-        ' compressive force."'
-    )
+    retrieved_contexts = ["Retrieved context 1", "Retrieved context 2"]
+    mock_generate_response.generate_response.side_effect = ["Yes", "No", "Yes", "No"]
 
-    score = llm_context_precision(mock_generate_response, question, context)
-    assert score == 100
+    score = llm_context_precision(mock_generate_response, question, retrieved_contexts)
+
+    expected_relevancy_scores = [1, 0, 1, 0]
+    expected_precision = (
+        sum(expected_relevancy_scores) / len(expected_relevancy_scores)
+    ) * 100  # 50.0
+
+    assert score == expected_precision
 
 
 @patch("rag_experiment_accelerator.evaluation.eval.ResponseGenerator")
