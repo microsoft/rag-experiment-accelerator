@@ -572,7 +572,7 @@ def compute_metrics(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
     elif metric_type == "llm_answer_relevance":
-        score = llm_answer_relevance(response_generator, actual, expected)
+        score = llm_answer_relevance(response_generator, question, actual)
     elif metric_type == "llm_context_precision":
         score = llm_context_precision(response_generator, question, retrieved_contexts)
     elif metric_type == "llm_context_recall":
