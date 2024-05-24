@@ -769,20 +769,13 @@ def evaluate_prompts(
     common_data = query_data_load[0]
     mlflow.log_param("question_count", common_data.question_count)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
-    mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
-    mlflow.log_param("chunk_overlap", index_config.overlap)
-    mlflow.log_param("embedding_dimension", index_config.embedding_model.dimension)
-    mlflow.log_param("embedding_model_name", index_config.embedding_model.name)
-    mlflow.log_param("ef_construction", index_config.ef_construction)
-    mlflow.log_param("ef_search", index_config.ef_search)
     mlflow.log_metrics(sum_dict)
     mlflow.log_artifact(os.path.join(config.eval_data_location, f"{name_suffix}.csv"))
     mlflow.log_artifact(
         os.path.join(config.eval_data_location, f"sum_{name_suffix}.csv")
     )
-    draw_hist_df(sum_df, run_id, client)
-    generate_metrics(config.EXPERIMENT_NAME, run_id, client)
-    mlflow.end_run()
+    draw_hist_df(sum_df, run_id, mlflow_client)
+    generate_metrics(config.index_name_prefix, run_id, mlflow_client)
 
 
 def draw_search_chart(temp_df, run_id, mlflow_client):
