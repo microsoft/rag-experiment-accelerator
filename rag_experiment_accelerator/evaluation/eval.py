@@ -308,18 +308,19 @@ def llm_context_precision(
     relevancy_scores = []
 
     for context in retrieved_contexts:
-        prompt = "\nquestion: " + question + "\ncontext: " + context + "\nanswer: "
-        try:
-            result = response_generator.generate_response(
-                sys_message=llm_context_precision_instruction, prompt=prompt
-            )
-            # Since we're only asking for one response, the result is always a boolean 1 or 0
-            if "Yes" in result:
-                relevancy_scores.append(1)
-            else:
-                relevancy_scores.append(0)
-        except Exception as e:
-            logger.error(f"Unable to generate context precision score: {e}")
+        result: str | None = response_generator.generate_response(
+            llm_context_precision_instruction,
+            context=context,
+            question=question,
+        )
+        if result is None:
+            logger.warning("Unable to generate context precision score")
+            
+        # Since we're only asking for one response, the result is always a boolean 1 or 0
+        if result.lower().strip() == "yes":
+            relevancy_scores.append(1)
+        elif result.lower().strip() == "no":
+            relevancy_scores.append(0)
 
     logger.debug(relevancy_scores)
     return (sum(relevancy_scores) / len(relevancy_scores)) * 100
