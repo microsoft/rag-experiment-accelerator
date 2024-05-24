@@ -84,14 +84,14 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         },
     ]
     config = MagicMock()
-    config.SAMPLE_OPTIMUM_K = 2
-    config.SAMPLE_MIN_CLUSTER = 1
-    config.SAMPLE_MAX_CLUSTER = 10
-    config.SAMPLE_PERCENTAGE = 100
+    config.sample_optimum_k = 2
+    config.sample_min_cluster = 1
+    config.sample_max_cluster = 10
+    config.sample_percentage = 100
     config.sampling_output_dir = os.path.join(mock_data_dir, "sampling")
     config._sampled_cluster_predictions_path = lambda: os.path.join(
         config.sampling_output_dir,
-        f"sampled_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+        f"sampled_cluster_predictions_cluster_number_{config.sample_optimum_k}.csv",
     )
     os.makedirs(config.sampling_output_dir)
 

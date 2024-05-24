@@ -1,25 +1,27 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import ntpath
-
 from dotenv import load_dotenv
+import mlflow
 
+from rag_experiment_accelerator.checkpoint import get_checkpoint, cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.llm.prompts import (
+from rag_experiment_accelerator.llm.prompt import (
     prompt_instruction_title,
     prompt_instruction_summary,
 )
+
 from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.utils.logging import get_logger
-
 
 logger = get_logger(__name__)
 load_dotenv(override=True)
@@ -30,6 +32,7 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
+    mlflow_client: mlflow.MlflowClient,
 ) -> dict[str]:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -50,25 +53,29 @@ def run(
             index_config.embedding_model.dimension,
             index_config.ef_construction,
             index_config.ef_search,
-            config.LANGUAGE["analyzers"],
+            config.language["analyzers"],
         )
     index_dict["indexes"].append(index_config.index_name())
 
     docs = load_documents(
         environment,
-        config.CHUNKING_STRATEGY,
-        config.DATA_FORMATS,
+        config.chunking_strategy,
+        config.data_formats,
         file_paths,
         index_config.chunk_size,
-        index_config.overlap,
-        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
+        index_config.overlap_size,
+        config.azure_document_intelligence_model,
     )
 
-    if config.SAMPLE_DATA:
+    if config.sampling:
         parser = load_parser()
-        docs = cluster(docs, config, parser)
+        docs = get_checkpoint().load_or_run(
+            cluster, index_config.index_name(), docs, config, parser
+        )
 
+    mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
+    mlflow.log_metric("Number of document chunks", len(docs_ready_to_index))
     embed_chunks(index_config, pre_process, docs_ready_to_index)
 
     generate_titles_from_chunks(
@@ -171,6 +178,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
     return embedded_chunks
 
 
+@cache_with_checkpoint(id="chunk['content']")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -217,7 +225,7 @@ def generate_titles_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(
@@ -256,7 +264,7 @@ def generate_summaries_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(
@@ -275,6 +283,7 @@ def generate_summaries_from_chunks(
                 )
 
 
+@cache_with_checkpoint(id="chunk['content']")
 def process_title(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -292,9 +301,9 @@ def process_title(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_TITLE:
+    if config.generate_title:
         title = generate_title(
-            chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
+            chunk["content"], config.azure_oai_chat_deployment_name, environment, config
         )
         title_vector = index_config.embedding_model.generate_embedding(
             str(pre_process.preprocess(title))
@@ -309,6 +318,7 @@ def process_title(
     return chunk
 
 
+@cache_with_checkpoint(id="chunk['content']")
 def process_summary(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -329,9 +339,9 @@ def process_summary(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_SUMMARY:
+    if config.generate_summary:
         summary = generate_summary(
-            chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
+            chunk["content"], config.azure_oai_chat_deployment_name, environment, config
         )
         summaryVector = index_config.embedding_model.generate_embedding(
             str(pre_process.preprocess(summary))
@@ -362,7 +372,9 @@ def generate_title(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_title, chunk)
+    ).generate_response(
+        prompt_instruction_title, text=chunk
+    )
     return response
 
 
@@ -384,5 +396,5 @@ def generate_summary(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_summary, chunk)
+    ).generate_response(prompt_instruction_summary, text=chunk)
     return response

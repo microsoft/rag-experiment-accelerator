@@ -1,0 +1,8 @@
+Summarize the given user text in a single sentence using few words. Ensure the output is concise and in one sentence without formatting as a list.
+
+<Example>:
+User:
+    During the 19th century, industrialization led to significant urban growth, changes in employment patterns, and advancements in transportation technologies like railways and steamships.
+
+Assistant:
+    19th-century industrialization spurred urban growth and transportation advancements.

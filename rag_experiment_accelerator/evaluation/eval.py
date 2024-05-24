@@ -22,7 +22,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 )
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
-from rag_experiment_accelerator.llm.prompts import (
+from rag_experiment_accelerator.llm.prompt import (
     llm_answer_relevance_instruction,
     llm_context_recall_instruction,
     llm_context_precision_instruction,
@@ -258,7 +258,9 @@ def lcsstr(value1, value2):
     return score
 
 
-def llm_answer_relevance(response_generator: ResponseGenerator, question, answer):
+def llm_answer_relevance(
+    response_generator: ResponseGenerator, question, answer
+) -> float:
     """
     Scores the relevancy of the answer according to the given question.
     Answers with incomplete, redundant or unnecessary information is penalized.
@@ -272,13 +274,13 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
         double: The relevancy score generated between the question and answer.
 
     """
-    try:
-        result = response_generator.generate_response(
-            sys_message=llm_answer_relevance_instruction, prompt=answer
-        )
-    except Exception as e:
-        logger.error(f"Unable to generate answer relevance score: {e}")
-        return 0
+    result = response_generator.generate_response(
+        llm_answer_relevance_instruction, text=answer
+    )
+    if result is None:
+        logger.warning("Unable to generate answer relevance score")
+        return 0.0
+
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
     embedding1 = model.encode([str(question)])
@@ -290,7 +292,7 @@ def llm_answer_relevance(response_generator: ResponseGenerator, question, answer
 
 def llm_context_precision(
     response_generator: ResponseGenerator, question, retrieved_contexts
-):
+) -> float:
     """
     Computes precision by assessing whether each retrieved context is useful for answering a question.
     Only considers the presence of relevant chunks in the retrieved contexts, but doesn't take into
@@ -371,20 +373,20 @@ def llm_context_recall(
     ) * 100
 
 
-def generate_metrics(experiment_name, run_id, client):
+def generate_metrics(experiment_name, run_id, mlflow_client):
     """
     Generates metrics for a given experiment and run ID.
 
     Args:
         experiment_name (str): The name of the experiment.
         run_id (int): The ID of the run.
-        client (mlflow.MlflowClient): The MLflow client to use for logging the metrics.
+        mlflow_client (mlflow.MlflowClient): The MLflow client to use for logging the metrics.
 
     Returns:
         None
     """
-    experiment = dict(client.get_experiment_by_name(experiment_name))
-    runs_list = client.search_runs([experiment["experiment_id"]])
+    experiment = dict(mlflow_client.get_experiment_by_name(experiment_name))
+    runs_list = mlflow_client.search_runs([experiment["experiment_id"]])
 
     models_metrics = {}
     metrics_to_plot = []
@@ -406,7 +408,7 @@ def generate_metrics(experiment_name, run_id, client):
                     models_metrics[metric_type][single_run_id] = metric_value
                 logger.debug(models_metrics)
     else:
-        current_run = client.get_run(run_id)
+        current_run = mlflow_client.get_run(run_id)
         if current_run.data.params.get("run_metrics", {}) != {}:
             metrics = ast.literal_eval(current_run.data.params["run_metrics"])
             for metric_type, metric_value in metrics.items():
@@ -435,7 +437,7 @@ def generate_metrics(experiment_name, run_id, client):
         )
 
         plot_name = metric + ".html"
-        client.log_figure(run_id, fig, plot_name)
+        mlflow_client.log_figure(run_id, fig, plot_name)
 
         fig.data = []
         fig.layout = {}
@@ -443,14 +445,14 @@ def generate_metrics(experiment_name, run_id, client):
         y_axis = []
 
 
-def draw_hist_df(df, run_id, client):
+def draw_hist_df(df, run_id, mlflow_client):
     """
     Draw a histogram of the given dataframe and log it to the specified run ID.
 
     Args:
         df (pandas.DataFrame): The dataframe to draw the histogram from.
         run_id (str): The ID of the run to log the histogram to.
-        client (mlflow.MlflowClient): The MLflow client to use for logging the histogram.
+        mlflow_client (mlflow.MlflowClient): The MLflow client to use for logging the histogram.
 
     Returns:
         None
@@ -463,26 +465,26 @@ def draw_hist_df(df, run_id, client):
         labels=dict(x="Metric Type", y="Score", color="Metric Type"),
     )
     plot_name = "all_metrics_current_run.html"
-    client.log_figure(run_id, fig, plot_name)
+    mlflow_client.log_figure(run_id, fig, plot_name)
 
 
-def plot_apk_scores(df, run_id, client):
+def plot_apk_scores(df, run_id, mlflow_client):
     fig = px.line(df, x="k", y="score", title="AP@k scores", color="search_type")
     plot_name = "average_precision_at_k.html"
-    client.log_figure(run_id, fig, plot_name)
+    mlflow_client.log_figure(run_id, fig, plot_name)
 
 
 # maybe pull these 2 above and below functions into a single one
-def plot_mapk_scores(df, run_id, client):
+def plot_mapk_scores(df, run_id, mlflow_client):
     fig = px.line(df, x="k", y="map_at_k", title="MAP@k scores", color="search_type")
     plot_name = "mean_average_precision_at_k.html"
-    client.log_figure(run_id, fig, plot_name)
+    mlflow_client.log_figure(run_id, fig, plot_name)
 
 
-def plot_map_scores(df, run_id, client):
+def plot_map_scores(df, run_id, mlflow_client):
     fig = px.bar(df, x="search_type", y="mean", title="MAP scores", color="search_type")
     plot_name = "mean_average_precision_scores.html"
-    client.log_figure(run_id, fig, plot_name)
+    mlflow_client.log_figure(run_id, fig, plot_name)
 
 
 def compute_metrics(
@@ -640,7 +642,7 @@ def evaluate_prompts(
     environment: Environment,
     config: Config,
     index_config: IndexConfig,
-    client: mlflow.MlflowClient,
+    mlflow_client: mlflow.MlflowClient,
     name_suffix: str,
 ):
     """
@@ -650,14 +652,14 @@ def evaluate_prompts(
         environment (Environment): Initialised Environment class containing environment configuration
         config (Config): The configuration settings to use for evaluation.
         index_config (IndexConfig): Parameters of the index such as chunking and embedding model.
-        client (mlflow.MlflowClient): The MLflow client to use for logging the results.
+        mlflow_client (mlflow.MlflowClient): The MLflow client to use for logging the results.
         name_suffix (str): Name suffix to use for all outputs created.
 
     Returns:
         None
     """
-    metric_types = config.METRIC_TYPES
-    num_search_type = config.SEARCH_VARIANTS
+    metric_types = config.metric_types
+    num_search_type = config.search_types
     data_list = []
 
     pd.set_option("display.max_columns", None)
@@ -666,19 +668,19 @@ def evaluate_prompts(
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
 
-    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
+    handler = QueryOutputHandler(config.query_data_location)
 
     response_generator = ResponseGenerator(
-        environment, config, config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+        environment, config, config.azure_oai_eval_deployment_name
     )
 
     query_data_load = handler.load(
-        index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+        index_config.index_name(), config.experiment_name, config.job_name
     )
     question_count = query_data_load[0].question_count
 
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
         futures = {
             executor.submit(
                 evaluate_single_prompt,
@@ -725,12 +727,12 @@ def evaluate_prompts(
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(
-        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"), index=False
+        os.path.join(config.eval_data_location, f"{name_suffix}.csv"), index=False
     )
     logger.debug(f"Eval scores: {df.head()}")
 
     temp_df = df.drop(columns=columns_to_remove)
-    draw_search_chart(temp_df, run_id, client)
+    draw_search_chart(temp_df, run_id, mlflow_client)
 
     temp_df = temp_df.drop(columns=additional_columns_to_remove)
 
@@ -744,33 +746,28 @@ def evaluate_prompts(
         sum_dict[col_name] = float(sum_df[col_name].values)
 
     sum_df.to_csv(
-        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv"), index=False
+        os.path.join(config.eval_data_location, f"sum_{name_suffix}.csv"), index=False
     )
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
         os.path.join(
-            config.EVAL_DATA_LOCATION, f"{name_suffix}_ap_scores_at_k_test.csv"
+            config.eval_data_location, f"{name_suffix}_ap_scores_at_k_test.csv"
         ),
         index=False,
     )
-    plot_apk_scores(ap_scores_df, run_id, client)
-    plot_mapk_scores(ap_scores_df, run_id, client)
+    plot_apk_scores(ap_scores_df, run_id, mlflow_client)
+    plot_mapk_scores(ap_scores_df, run_id, mlflow_client)
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}_map_scores_test.csv"),
+        os.path.join(config.eval_data_location, f"{name_suffix}_map_scores_test.csv"),
         index=False,
     )
-    plot_map_scores(map_scores_df, run_id, client)
+    plot_map_scores(map_scores_df, run_id, mlflow_client)
 
     common_data = query_data_load[0]
-    mlflow.log_param("chunk_size", index_config.chunk_size)
     mlflow.log_param("question_count", common_data.question_count)
-    mlflow.log_param("rerank", common_data.rerank)
-    mlflow.log_param("rerank_type", common_data.rerank_type)
-    mlflow.log_param("crossencoder_model", common_data.crossencoder_model)
-    mlflow.log_param("llm_re_rank_threshold", common_data.llm_re_rank_threshold)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
     mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
     mlflow.log_param("chunk_overlap", index_config.overlap)
@@ -779,23 +776,23 @@ def evaluate_prompts(
     mlflow.log_param("ef_construction", index_config.ef_construction)
     mlflow.log_param("ef_search", index_config.ef_search)
     mlflow.log_metrics(sum_dict)
-    mlflow.log_artifact(os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"))
+    mlflow.log_artifact(os.path.join(config.eval_data_location, f"{name_suffix}.csv"))
     mlflow.log_artifact(
-        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv")
+        os.path.join(config.eval_data_location, f"sum_{name_suffix}.csv")
     )
     draw_hist_df(sum_df, run_id, client)
     generate_metrics(config.EXPERIMENT_NAME, run_id, client)
     mlflow.end_run()
 
 
-def draw_search_chart(temp_df, run_id, client):
+def draw_search_chart(temp_df, run_id, mlflow_client):
     """
     Draws a comparison chart of search types across metric types.
 
     Args:
         temp_df (pandas.DataFrame): The dataframe containing the data to be plotted.
         run_id (int): The ID of the current run.
-        client (mlflow.MlflowClient): The MLflow client to use for logging the chart.
+        mlflow_mlflow_client (mlflow.MlflowClient): The MLflow client to use for logging the chart.
 
     Returns:
         None
@@ -828,4 +825,4 @@ def draw_search_chart(temp_df, run_id, client):
         width=800,
     )
     plot_name = "search_type_current_run.html"
-    client.log_figure(run_id, fig, plot_name)
+    mlflow_client.log_figure(run_id, fig, plot_name)

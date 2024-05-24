@@ -13,31 +13,36 @@ from rag_experiment_accelerator.run.querying import (
     query_and_eval_acs,
     query_and_eval_acs_multi,
 )
+from rag_experiment_accelerator.llm.prompt import Prompt, main_instruction
 
 
 class TestQuerying(unittest.TestCase):
     def setUp(self):
         self.mock_config = MagicMock(spec=Config)
-        self.mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "test-deployment"
-        self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS = 10
-        self.mock_config.RERANK = True
-        self.mock_config.EVAL_DATA_JSONL_FILE_PATH = "test_data.jsonl"
-        self.mock_config.EF_CONSTRUCTIONS = [400]
-        self.mock_config.EF_SEARCHES = [400]
-        self.mock_config.SEARCH_VARIANTS = ["search_for_match_semantic"]
-        self.mock_config.INDEX_NAME_PREFIX = "prefix"
-        self.mock_config.RERANK_TYPE = "llm"
-        self.mock_config.CHUNK_SIZES = [1]
-        self.mock_config.OVERLAP_SIZES = [1]
-        self.mock_config.LLM_RERANK_THRESHOLD = 3
-        self.mock_config.QUERY_EXPANSION = "disabled"
-        self.mock_config.EMBEDDING_MODEL_NAME = "test-embedding-model"
-        self.mock_config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = 90
-        self.mock_config.HYDE = "disabled"
-        self.mock_config.EXPAND_TO_MULTIPLE_QUESTIONS = True
+        self.mock_config.azure_oai_chat_deployment_name = "test-deployment"
+        self.mock_config.retrieve_num_of_documents = 10
+        self.mock_config.rerank = True
+        self.mock_config.eval_data_jsonl_file_path = "test_data.jsonl"
+        self.mock_config.ef_constructors = [400]
+        self.mock_config.ef_searches = [400]
+        self.mock_config.search_types = ["search_for_match_semantic"]
+        self.mock_config.index_name_prefix = "prefix"
+        self.mock_config.rerank_type = "llm"
+        self.mock_config.chunk_sizes = [1]
+        self.mock_config.overlap_sizes = [1]
+        self.mock_config.llm_rerank_threshold = 3
+        self.mock_config.query_expansion = "disabled"
+        self.mock_config.embedding_model_name = "test-embedding-model"
+        self.mock_config.min_query_expansion_related_question_similarity_score = 90
+        self.mock_config.hyde = "disabled"
+        self.mock_config.expand_to_multiple_questions = True
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
         self.mock_embedding_model = MagicMock(spec=EmbeddingModel)
+        self.prompt = MagicMock(spec=Prompt)
+        self.prompt.tags = []
+        self.prompt.system_message = "system message"
+        self.prompt.user_template = "user template"
 
     @patch("rag_experiment_accelerator.run.querying.search_mapping")
     def test_query_acs(self, mock_search_mapping):
@@ -62,14 +67,20 @@ class TestQuerying(unittest.TestCase):
 
     @patch("rag_experiment_accelerator.run.querying.llm_rerank_documents")
     @patch("rag_experiment_accelerator.run.querying.cross_encoder_rerank_documents")
+    @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
     def test_rerank_documents(
-        self, mock_cross_encoder_rerank_documents, mock_llm_rerank_documents
+        self,
+        mock_response_generator,
+        mock_cross_encoder_rerank_documents,
+        mock_llm_rerank_documents,
     ):
         docs = ["doc1", "doc2"]
         user_prompt = "test prompt"
         output_prompt = "output prompt"
 
-        rerank_documents(docs, user_prompt, output_prompt, self.mock_config)
+        rerank_documents(
+            docs, user_prompt, output_prompt, self.mock_config, mock_response_generator
+        )
 
         mock_llm_rerank_documents.assert_called_once()
         mock_cross_encoder_rerank_documents.assert_not_called()
@@ -139,7 +150,6 @@ class TestQuerying(unittest.TestCase):
         search_type = "search type"
         evaluation_content = "evaluation content"
         evaluator = MagicMock()
-        main_prompt_instruction = "main prompt instruction"
         mock_docs = ["doc1", "doc2"]
         mock_evaluation = {"score": 0.8}
 
@@ -164,10 +174,9 @@ class TestQuerying(unittest.TestCase):
             output_prompt,
             search_type,
             evaluation_content,
-            self.mock_environment,
             self.mock_config,
             evaluator,
-            main_prompt_instruction,
+            mock_response_generator(),
         )
 
         # Assert
@@ -177,7 +186,7 @@ class TestQuerying(unittest.TestCase):
             query=questions[1] or questions[0],
             search_type=search_type,
             evaluation_content=evaluation_content,
-            retrieve_num_of_documents=self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS,
+            retrieve_num_of_documents=self.mock_config.retrieve_num_of_documents,
             evaluator=evaluator,
             config=self.mock_config,
             response_generator=mock_response_generator(),
@@ -188,10 +197,12 @@ class TestQuerying(unittest.TestCase):
             questions[1] or questions[0],
             output_prompt,
             self.mock_config,
+            mock_response_generator(),
         )
         mock_response_generator.return_value.generate_response.assert_called_with(
-            main_prompt_instruction + "\n" + "\n".join(prompt_instruction_context),
-            original_prompt,
+            main_instruction,
+            context="\n".join(prompt_instruction_context),
+            question=original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
@@ -211,9 +222,8 @@ class TestQuerying(unittest.TestCase):
         output_prompt = "output prompt"
         search_type = "search type"
         evaluation_content = "evaluation content"
-        self.mock_config.RERANK = False
+        self.mock_config.rerank = False
         evaluator = MagicMock()
-        main_prompt_instruction = "main prompt instruction"
         mock_docs = ["doc1", "doc2"]
         mock_evaluation = {"score": 0.8}
 
@@ -235,10 +245,9 @@ class TestQuerying(unittest.TestCase):
             output_prompt,
             search_type,
             evaluation_content,
-            self.mock_environment,
             self.mock_config,
             evaluator,
-            main_prompt_instruction,
+            response_generator=mock_response_generator(),
         )
 
         # Assert
@@ -248,15 +257,16 @@ class TestQuerying(unittest.TestCase):
             query=questions[1] or questions[0],
             search_type=search_type,
             evaluation_content=evaluation_content,
-            retrieve_num_of_documents=self.mock_config.RETRIEVE_NUM_OF_DOCUMENTS,
+            retrieve_num_of_documents=self.mock_config.retrieve_num_of_documents,
             evaluator=evaluator,
             config=self.mock_config,
             response_generator=mock_response_generator(),
         )
         mock_rerank_documents.assert_not_called()
         mock_response_generator.return_value.generate_response.assert_called_with(
-            main_prompt_instruction + "\n" + "\n".join(mock_docs),
-            original_prompt,
+            main_instruction,
+            context="\n".join(mock_docs),
+            question=original_prompt,
         )
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
@@ -287,20 +297,20 @@ class TestQuerying(unittest.TestCase):
         # Arrange
         mock_query_output_handler.return_value.load.return_value = [mock_query_output]
         mock_query_output_handler.return_value.save.side_effect = None
-        mock_config.CHUNK_SIZES = [1]
-        mock_config.OVERLAP_SIZES = [1]
-        mock_config.RERANK_TYPE = "llm"
-        mock_config.RETRIEVE_NUM_OF_DOCUMENTS = 1
+        mock_config.chunk_sizes = [1]
+        mock_config.overlap_sizes = [1]
+        mock_config.rerank_type = "llm"
+        mock_config.retrieve_num_of_documents = 1
         test_dir = os.path.dirname(os.path.abspath(__file__))
         data_file_path = test_dir + "/data/test_data.jsonl"
-        mock_config.EVAL_DATA_JSONL_FILE_PATH = data_file_path
+        mock_config.eval_data_jsonl_file_path = data_file_path
         self.mock_embedding_model.name = "test-embedding-model"
         mock_config.embedding_models = [self.mock_embedding_model]
-        mock_config.EF_CONSTRUCTIONS = [400]
-        mock_config.EF_SEARCHES = [400]
-        mock_config.SEARCH_VARIANTS = ["search_for_match_semantic"]
-        mock_config.INDEX_NAME_PREFIX = "prefix"
-        mock_config.RERANK = False
+        mock_config.ef_constructions = [400]
+        mock_config.ef_searches = [400]
+        mock_config.search_types = ["search_for_match_semantic"]
+        mock_config.index_name_prefix = "prefix"
+        mock_config.rerank = False
         mock_do_we_need_multiple_questions.return_value = False
         mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]
         mock_search_client = MagicMock(SearchClient)
@@ -327,7 +337,6 @@ class TestQuerying(unittest.TestCase):
         # Assert
         mock_query_and_eval_acs.assert_called()
         mock_query_output_handler.save.assert_called()
-        mock_response_generator.generate_response.assert_called()
 
 
 if __name__ == "__main__":
