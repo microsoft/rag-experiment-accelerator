@@ -65,6 +65,22 @@ def remove_spaces(text):
     return text.strip()
 
 
+def lower_and_strip(text):
+    """
+    Converts the input to lowercase without spaces or empty string if None.
+
+    Args:
+        text (str): The string to format.
+
+    Returns:
+        str: The formatted input string.
+    """
+    if text is None:
+        return ""
+    else:
+        return text.lower().strip()
+
+
 # https://huggingface.co/spaces/evaluate-metric/bleu
 def bleu(predictions, references):
     bleu = evaluate.load("bleu")
@@ -212,7 +228,10 @@ def jaro_winkler(value1, value2):
 
 def cosine(value1, value2):
     """
-    Calculates the cosine similarity between two vectors.
+    Calculates the cosine similarity (Ochiai coefficient) between two strings
+    using token-frequency vectors
+
+    https://en.wikipedia.org/wiki/Cosine_similarity.
 
     Args:
         value1 (list): The first vector.
@@ -288,40 +307,51 @@ def llm_answer_relevance(
 
 
 def llm_context_precision(
-    response_generator: ResponseGenerator, question, context
+    response_generator: ResponseGenerator, question, retrieved_contexts
 ) -> float:
     """
-    Verifies whether or not a given context is useful for answering a question.
+    Computes precision by assessing whether each retrieved context is useful for answering a question.
+    Only considers the presence of relevant chunks in the retrieved contexts, but doesn't take into
+    account their ranking order.
 
     Args:
         question (str): The question being asked.
-        context (str): The given context.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query.
 
     Returns:
-        int: 1 or 0 depending on if the context is relevant or not.
+        double: proportion of relevant chunks retrieved for the question
     """
-    result: str | None = response_generator.generate_response(
-        llm_context_precision_instruction,
-        context=context,
-        question=question,
-    )
-    if result is None:
-        logger.warning("Unable to generate context precision score")
-        return 0.0
+    relevancy_scores = []
 
-    # Since we're only asking for one response, the result is always a boolean 1 or 0
-    if result.lower().strip() == "yes":
-        return 100.0
+    for context in retrieved_contexts:
+        result: str | None = response_generator.generate_response(
+            llm_context_precision_instruction,
+            context=context,
+            question=question,
+        )
+        llm_judge_response = lower_and_strip(result)
+        # Since we're only asking for one response, the result is always a boolean 1 or 0
+        if llm_judge_response == "yes":
+            relevancy_scores.append(1)
+        elif llm_judge_response == "no":
+            relevancy_scores.append(0)
+        else:
+            logger.warning("Unable to generate context precision score")
 
-    return 0
+    logger.debug(relevancy_scores)
+
+    if not relevancy_scores:
+        logger.warning("Unable to compute average context precision")
+        return -1
+    else:
+        return (sum(relevancy_scores) / len(relevancy_scores)) * 100
 
 
 def llm_context_recall(
     response_generator: ResponseGenerator,
     question,
     groundtruth_answer,
-    context,
-    temperature: int,
+    retrieved_contexts,
 ):
     """
     Estimates context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
@@ -338,21 +368,24 @@ def llm_context_recall(
     Args:
         question (str): The question being asked
         groundtruth_answer (str): The ground truth ("output_prompt")
-        context (str): The given context.
-        temperature (int): Temperature as defined in the config.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query
 
     Returns:
         double: The context recall score generated between the ground truth (expected) and context.
     """
-
-    result = response_generator.generate_response(
-        llm_context_recall_instruction,
-        temperature=temperature,
-        question=question,
-        context=context,
-        answer=groundtruth_answer,
+    context = "\n".join(retrieved_contexts)
+    prompt = (
+        "\nquestion: "
+        + question
+        + "\ncontext: "
+        + context
+        + "\nanswer: "
+        + groundtruth_answer
     )
-
+    result = response_generator.generate_response(
+        sys_message=llm_context_recall_instruction,
+        prompt=prompt,
+    )
     good_response = '"Attributed": "1"'
     bad_response = '"Attributed": "0"'
 
@@ -481,7 +514,7 @@ def compute_metrics(
     question,
     actual,
     expected,
-    context,
+    retrieved_contexts,
     metric_type,
 ):
     """
@@ -490,10 +523,11 @@ def compute_metrics(
     Args:
         actual (str): The first string to compare.
         expected (str): The second string to compare.
+        retrieved_contexts (list[str]): The list of retrieved contexts for the query.
         metric_type (str): The type of metric to use for comparison. Valid options are:
             - "lcsstr": Longest common substring
             - "lcsseq": Longest common subsequence
-            - "cosine": Cosine similarity
+            - "cosine": Cosine similarity (Ochiai coefficient)
             - "jaro_winkler": Jaro-Winkler distance
             - "hamming": Hamming distance
             - "jaccard": Jaccard similarity
@@ -508,7 +542,6 @@ def compute_metrics(
             - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
             - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
-        config (Config): The configuration of the experiment.
 
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
@@ -566,11 +599,13 @@ def compute_metrics(
             actual, expected, paraphrase_multilingual_MiniLM_L12_v2
         )
     elif metric_type == "llm_answer_relevance":
-        score = llm_answer_relevance(response_generator, actual, expected)
+        score = llm_answer_relevance(response_generator, question, actual)
     elif metric_type == "llm_context_precision":
-        score = llm_context_precision(response_generator, actual, context)
+        score = llm_context_precision(response_generator, question, retrieved_contexts)
     elif metric_type == "llm_context_recall":
-        score = llm_context_recall(response_generator, question, expected, context)
+        score = llm_context_recall(
+            response_generator, question, expected, retrieved_contexts
+        )
     else:
         pass
 
@@ -597,12 +632,12 @@ def evaluate_single_prompt(
             data.question,
             actual,
             expected,
-            data.context,
+            data.retrieved_contexts,
             metric_type,
         )
         metric_dic[metric_type] = score
     metric_dic["question"] = data.question
-    metric_dic["context"] = data.context
+    metric_dic["retrieved_contexts"] = data.retrieved_contexts
     metric_dic["actual"] = actual
     metric_dic["expected"] = expected
     metric_dic["search_type"] = data.search_type
@@ -710,7 +745,7 @@ def evaluate_prompts(
         mean_scores["mean"].append(mean(scores))
 
     run_id = mlflow.active_run().info.run_id
-    columns_to_remove = ["question", "context", "actual", "expected"]
+    columns_to_remove = ["question", "retrieved_contexts", "actual", "expected"]
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(
@@ -762,7 +797,7 @@ def evaluate_prompts(
         os.path.join(config.eval_data_location, f"sum_{name_suffix}.csv")
     )
     draw_hist_df(sum_df, run_id, mlflow_client)
-    generate_metrics(config.index_name_prefix, run_id, mlflow_client)
+    generate_metrics(config.experiment_name, run_id, mlflow_client)
 
 
 def draw_search_chart(temp_df, run_id, mlflow_client):
