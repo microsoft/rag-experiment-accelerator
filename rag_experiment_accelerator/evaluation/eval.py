@@ -65,6 +65,22 @@ def remove_spaces(text):
     return text.strip()
 
 
+def lower_and_strip(text):
+    """
+    Converts the input to lowercase without spaces or empty string if None.
+
+    Args:
+        text (str): The string to format.
+
+    Returns:
+        str: The formatted input string.
+    """
+    if text is None:
+        return ""
+    else:
+        return text.lower().strip()
+
+
 # https://huggingface.co/spaces/evaluate-metric/bleu
 def bleu(predictions, references):
     bleu = evaluate.load("bleu")
@@ -313,17 +329,22 @@ def llm_context_precision(
             context=context,
             question=question,
         )
-        if result is None:
-            logger.warning("Unable to generate context precision score")
-            
+        llm_judge_response = lower_and_strip(result)
         # Since we're only asking for one response, the result is always a boolean 1 or 0
-        if result.lower().strip() == "yes":
+        if llm_judge_response == "yes":
             relevancy_scores.append(1)
-        elif result.lower().strip() == "no":
+        elif llm_judge_response == "no":
             relevancy_scores.append(0)
+        else:
+            logger.warning("Unable to generate context precision score")
 
     logger.debug(relevancy_scores)
-    return (sum(relevancy_scores) / len(relevancy_scores)) * 100
+
+    if not relevancy_scores:
+        logger.warning("Unable to compute average context precision")
+        return -1
+    else:
+        return (sum(relevancy_scores) / len(relevancy_scores)) * 100
 
 
 def llm_context_recall(
@@ -776,7 +797,7 @@ def evaluate_prompts(
         os.path.join(config.eval_data_location, f"sum_{name_suffix}.csv")
     )
     draw_hist_df(sum_df, run_id, mlflow_client)
-    generate_metrics(config.index_name_prefix, run_id, mlflow_client)
+    generate_metrics(config.experiment_name, run_id, mlflow_client)
 
 
 def draw_search_chart(temp_df, run_id, mlflow_client):
