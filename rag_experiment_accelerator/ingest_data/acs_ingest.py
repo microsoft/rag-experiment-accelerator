@@ -115,7 +115,11 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
                 qna_generation_prompt,
                 context=chunk["content"],
             )
-            if response is None:
+            if response is None or response == "" or response is str:
+                continue
+
+            # if response is not dict
+            if response is not dict:
                 continue
 
             data = {
