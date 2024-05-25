@@ -51,11 +51,10 @@ def init():
 
     environment = Environment.from_keyvault(args.keyvault)
     config = Config(environment, args.config_path, args.data_dir)
+    init_checkpoint(config)
 
     index_config = IndexConfig.from_index_name(args.index_name, config)
     mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
-
-    init_checkpoint(f"index_{index_config.index_name()}", config)
 
 
 def run(input_paths: List[str]) -> List[str]:

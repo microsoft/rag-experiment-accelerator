@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from umap import UMAP
 from scipy.spatial.distance import cdist
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.utils.logging import get_logger
 
 matplotlib.use("Agg")
@@ -231,11 +232,13 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     return x, y, text, processed_text, chunk, prediction, prediction_values
 
 
-def cluster(all_chunks, config, parser):
+@cache_with_checkpoint(id="index_name")
+def cluster(index_name, all_chunks, config, parser):
     """
     Clusters the given chunks of documents using TF-IDF and K-means clustering.
 
     Args:
+        index_name (str): The name of the index - used only for uniqueness as checkpoint key.
         all_chunks (list): A list of document chunks.
         config (object): The configuration object.
 

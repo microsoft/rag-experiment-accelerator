@@ -23,13 +23,12 @@ if __name__ == "__main__":
 
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
+    init_checkpoint(config)
     file_paths = get_all_file_paths(config.data_dir)
     mlflow_client = initialise_mlflow_client(environment, config)
     mlflow.set_experiment(config.experiment_name)
 
     for index_config in config.index_configs():
-        init_checkpoint(f"index_{index_config.index_name()}", config)
-
         with mlflow.start_run(
             run_name=f"index_job_{config.job_name}_{formatted_datetime_suffix()}"
         ):

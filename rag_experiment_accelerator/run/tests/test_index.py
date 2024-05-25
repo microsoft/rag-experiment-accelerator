@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from rag_experiment_accelerator.checkpoint.checkpoint import init_checkpoint
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import init_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
@@ -89,7 +89,7 @@ def test_run(
 
     # Act
     for index_config in mock_config.index_configs():
-        init_checkpoint(f"index_{index_config.index_name()}", mock_config)
+        init_checkpoint(mock_config)
         run(mock_environment, mock_config, index_config, file_paths, mock_mlflow_client)
 
     # Assert

@@ -2,6 +2,7 @@ import unittest
 import os
 from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
+from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
@@ -318,6 +319,8 @@ class TestQuerying(unittest.TestCase):
             "prefix", False, 100, 100, self.mock_embedding_model, 400, 400
         )
         mock_config.index_configs.return_value = [index_config]
+        mock_config.use_checkpoints = False
+        init_checkpoint(mock_config)
         # Act
         with open(data_file_path, "r") as file:
             line = file.readline()

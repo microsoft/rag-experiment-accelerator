@@ -11,8 +11,8 @@ class LocalStorageCheckpoint(Checkpoint):
     A checkpoint implementation that stores the data in the local file system.
     """
 
-    def __init__(self, checkpoint_name: str, directory: str = "."):
-        self.checkpoint_location = f"{directory}/checkpoints/{checkpoint_name}"
+    def __init__(self, directory: str = "."):
+        self.checkpoint_location = f"{directory}/checkpoints"
         os.makedirs(self.checkpoint_location, exist_ok=True)
         self.internal_ids: Set[str] = self._get_existing_checkpoint_ids()
 

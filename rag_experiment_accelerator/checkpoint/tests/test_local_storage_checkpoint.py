@@ -4,7 +4,7 @@ import tempfile
 import shutil
 from unittest.mock import MagicMock
 
-from rag_experiment_accelerator.checkpoint.checkpoint import (
+from rag_experiment_accelerator.checkpoint.checkpoint_factory import (
     get_checkpoint,
     init_checkpoint,
 )
@@ -33,7 +33,7 @@ class TestLocalStorageCheckpoint(unittest.TestCase):
         config = MagicMock()
         config.use_checkpoints = True
         config.artifacts_dir = self.temp_dir
-        init_checkpoint("test_save_load", config)
+        init_checkpoint(config)
         checkpoint = get_checkpoint()
         assert isinstance(checkpoint, LocalStorageCheckpoint)
 

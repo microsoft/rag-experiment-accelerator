@@ -56,11 +56,11 @@ def main():
     config = Config(environment, args.config_path)
     config.eval_data_jsonl_file_path = args.eval_data_path
     config.query_data_location = args.query_result_dir
+    init_checkpoint(config)
 
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
     index_config = IndexConfig.from_index_name(index_name, config)
-    init_checkpoint(f"querying_{index_config.index_name()}", config)
 
     mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
     query_run(environment, config, index_config, mlflow_client)
