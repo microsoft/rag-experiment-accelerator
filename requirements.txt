@@ -14,7 +14,7 @@ docx2txt==0.8
 evaluate==0.4.2
 fuzzywuzzy==0.18.0
 hnswlib==0.8.0
-langchain==0.2.0
+langchain==0.2.1
 langchain-community==0.2.0
 levenshtein==0.25.1
 umap-learn==0.5.6
