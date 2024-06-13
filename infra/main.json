@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.26.170.59819",
-      "templateHash": "14273384520214979046"
+      "version": "0.28.1.47646",
+      "templateHash": "10405514002901072370"
     }
   },
   "parameters": {
@@ -130,6 +130,20 @@
         "description": "Azure OpenAI GPT Model Version"
       }
     },
+    "azureAIDocumentIntelligenceResourceName": {
+      "type": "string",
+      "defaultValue": "[format('docintel-{0}', parameters('resourceToken'))]",
+      "metadata": {
+        "description": "Name of Azure AI Document Intelligence Resource"
+      }
+    },
+    "azureAIDocumentIntelligenceSkuName": {
+      "type": "string",
+      "defaultValue": "S0",
+      "metadata": {
+        "description": "Name of Azure AI Document Intelligence SKU"
+      }
+    },
     "applicationInsightsName": {
       "type": "string",
       "defaultValue": "[format('appinsights-{0}', parameters('resourceToken'))]",
@@ -228,8 +242,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "2144895217405179275"
+              "version": "0.28.1.47646",
+              "templateHash": "11344700457585105755"
             }
           },
           "parameters": {
@@ -326,8 +340,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "295197739825834822"
+              "version": "0.28.1.47646",
+              "templateHash": "3835024889022694318"
             },
             "description": "Creates an Azure AI Search instance."
           },
@@ -496,8 +510,153 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "16884678060833239913"
+              "version": "0.28.1.47646",
+              "templateHash": "9219454040579563054"
+            },
+            "description": "Creates an Azure Cognitive Services instance."
+          },
+          "parameters": {
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "customSubDomainName": {
+              "type": "string",
+              "defaultValue": "[parameters('name')]",
+              "metadata": {
+                "description": "The custom subdomain name used to access the API. Defaults to the value of the name parameter."
+              }
+            },
+            "deployments": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "kind": {
+              "type": "string",
+              "defaultValue": "OpenAI"
+            },
+            "publicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ]
+            },
+            "sku": {
+              "type": "object",
+              "defaultValue": {
+                "name": "S0"
+              }
+            },
+            "allowedIpRules": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "networkAcls": {
+              "type": "object",
+              "defaultValue": "[if(empty(parameters('allowedIpRules')), createObject('defaultAction', 'Allow'), createObject('ipRules', parameters('allowedIpRules'), 'defaultAction', 'Deny'))]"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.CognitiveServices/accounts",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "[parameters('kind')]",
+              "properties": {
+                "customSubDomainName": "[parameters('customSubDomainName')]",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "networkAcls": "[parameters('networkAcls')]"
+              },
+              "sku": "[parameters('sku')]"
+            },
+            {
+              "copy": {
+                "name": "deployment",
+                "count": "[length(parameters('deployments'))]",
+                "mode": "serial",
+                "batchSize": 1
+              },
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', parameters('name'), parameters('deployments')[copyIndex()].name)]",
+              "properties": {
+                "model": "[parameters('deployments')[copyIndex()].model]",
+                "raiPolicyName": "[if(contains(parameters('deployments')[copyIndex()], 'raiPolicyName'), parameters('deployments')[copyIndex()].raiPolicyName, null())]"
+              },
+              "sku": "[if(contains(parameters('deployments')[copyIndex()], 'sku'), parameters('deployments')[copyIndex()].sku, createObject('name', 'Standard', 'capacity', 30))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "endpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('name')), '2023-05-01').endpoint]"
+            },
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('azureAIDocumentIntelligenceResourceName')]",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[parameters('azureAIDocumentIntelligenceResourceName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "kind": {
+            "value": "FormRecognizer"
+          },
+          "sku": {
+            "value": {
+              "name": "[parameters('azureAIDocumentIntelligenceSkuName')]"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.28.1.47646",
+              "templateHash": "9219454040579563054"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -635,8 +794,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "246951497570111474"
+              "version": "0.28.1.47646",
+              "templateHash": "16657182853649829034"
             },
             "description": "Creates an Azure storage account."
           },
@@ -859,8 +1018,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "17106390582722715244"
+              "version": "0.28.1.47646",
+              "templateHash": "14422276109150612921"
             }
           },
           "parameters": {
@@ -969,8 +1128,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "16886330728560920883"
+              "version": "0.28.1.47646",
+              "templateHash": "16096020836949906486"
             },
             "description": "Creates an Azure Machine Learning Workspace."
           },
@@ -1052,6 +1211,9 @@
           "azureAISearchName": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureAISearchName')), '2022-09-01').outputs.name.value]"
           },
+          "documentIntelligenceName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureAIDocumentIntelligenceResourceName')), '2022-09-01').outputs.name.value]"
+          },
           "rgName": {
             "value": "[variables('rgName')]"
           }
@@ -1062,8 +1224,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "10780223516248415530"
+              "version": "0.28.1.47646",
+              "templateHash": "17694120425084503028"
             }
           },
           "parameters": {
@@ -1072,6 +1234,10 @@
               "defaultValue": ""
             },
             "azureOpenAIName": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "documentIntelligenceName": {
               "type": "string",
               "defaultValue": ""
             },
@@ -1087,6 +1253,10 @@
               "type": "string",
               "defaultValue": "openai-api-key"
             },
+            "documentIntelligenceKeyName": {
+              "type": "string",
+              "defaultValue": "azure-document-intelligence-admin-key"
+            },
             "searchKeyName": {
               "type": "string",
               "defaultValue": "azure-search-admin-key"
@@ -1100,6 +1270,15 @@
               "properties": {
                 "contentType": "string",
                 "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('rgName'), 'Microsoft.CognitiveServices/accounts', parameters('azureOpenAIName')), '2023-05-01').key1]"
+              }
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2022-07-01",
+              "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('documentIntelligenceKeyName'))]",
+              "properties": {
+                "contentType": "string",
+                "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('rgName'), 'Microsoft.CognitiveServices/accounts', parameters('documentIntelligenceName')), '2023-05-01').key1]"
               }
             },
             {
@@ -1120,11 +1299,16 @@
             "OPENAI_KEY_NAME": {
               "type": "string",
               "value": "[parameters('openAIKeyName')]"
+            },
+            "DOCINTEL_KEY_NAME": {
+              "type": "string",
+              "value": "[parameters('documentIntelligenceKeyName')]"
             }
           }
         }
       },
       "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureAIDocumentIntelligenceResourceName'))]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'keyvault')]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureOpenAIResourceName'))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]",
@@ -1193,8 +1377,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "15313621382123983055"
+              "version": "0.28.1.47646",
+              "templateHash": "284038938591552097"
             }
           },
           "parameters": {
@@ -1337,6 +1521,10 @@
     "AML_RESOURCE_GROUP_NAME": {
       "type": "string",
       "value": "[variables('rgName')]"
+    },
+    "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', parameters('azureAIDocumentIntelligenceResourceName')), '2022-09-01').outputs.endpoint.value]"
     }
   }
 }
