@@ -55,4 +55,4 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
 
 output SEARCH_KEY_NAME string = searchKeySecret.name
 output OPENAI_KEY_NAME string = openAIKeySecret.name
-output DOCINTEL_KEY_NAME string = documentIntelligenceKeySecret.name
+output DOCUMENTINTELLIGENCE_KEY_NAME string = documentIntelligenceKeySecret.name

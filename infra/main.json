@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.28.1.47646",
-      "templateHash": "10405514002901072370"
+      "templateHash": "5972590653853251843"
     }
   },
   "parameters": {
@@ -1225,7 +1225,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.28.1.47646",
-              "templateHash": "17694120425084503028"
+              "templateHash": "971357261098316609"
             }
           },
           "parameters": {
@@ -1300,7 +1300,7 @@
               "type": "string",
               "value": "[parameters('openAIKeyName')]"
             },
-            "DOCINTEL_KEY_NAME": {
+            "DOCUMENTINTELLIGENCE_KEY_NAME": {
               "type": "string",
               "value": "[parameters('documentIntelligenceKeyName')]"
             }
