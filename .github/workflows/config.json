@@ -1,4 +1,5 @@
 {
+    "$schema": "../../config.schema.json",
     "index_name_prefix": "ci",
     "experiment_name": "baseline",
     "job_name": "baseline_job",
