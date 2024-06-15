@@ -164,7 +164,7 @@ class Config:
 
         self.CHAIN_OF_THOUGHTS = config_json.get("chain_of_thoughts", False)
         self.HYDE = config_json.get("hyde", "disabled").lower()
-        self.QUERY_EXPANSION = config_json.get("generate_title", False)
+        self.QUERY_EXPANSION = config_json.get("query_expansion", False)
         self.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE = int(
             config_json.get("min_query_expansion_related_question_similarity_score", 90)
         )
