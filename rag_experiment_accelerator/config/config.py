@@ -9,6 +9,7 @@ from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
+from rag_experiment_accelerator.config.config_validator import validate_json_with_schema
 
 
 logger = get_logger(__name__)
@@ -77,6 +78,9 @@ class Config:
             data_dir = os.path.join(os.getcwd(), "data/")
         with open(config_path.strip(), "r") as json_file:
             config_json = json.load(json_file)
+            is_valid_config, validation_error = validate_json_with_schema(config_json)
+            if not is_valid_config:
+                raise ValueError(f"Config validation error: {validation_error}")
 
         self._initialize_paths(config_json, config_path, data_dir)
         self.PREPROCESS = config_json.get("preprocess", False)
