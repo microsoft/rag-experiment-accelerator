@@ -15,14 +15,21 @@ def fetch_json_schema_from_url(schema_url):
 
 def fetch_json_schema_from_file(schema_file_path, source_file_path):
     """Fetch the JSON schema from a local file path."""
-    if not os.path.isfile(schema_file_path):
-        raise ValueError(f"Local schema file not found: {schema_file_path}")
-    print("schema_file_path", schema_file_path)
-    print("source_file_path", source_file_path)
-    relative_schema_file_path = os.path.relpath(schema_file_path, start=os.path.dirname(source_file_path))
-    print("relative_schema_file_path", relative_schema_file_path)
-    with open(relative_schema_file_path, "r", encoding="utf8") as schema_file:
+    normalised_schema_path = get_normalised_schema_path(
+        schema_file_path, source_file_path
+    )
+
+    if not os.path.isfile(normalised_schema_path):
+        raise ValueError(f"Local schema file not found: {normalised_schema_path}")
+
+    with open(normalised_schema_path, "r", encoding="utf8") as schema_file:
         return json.load(schema_file)
+
+
+def get_normalised_schema_path(schema_file_path, source_file_path):
+    source_dir = os.path.dirname(source_file_path)
+    new_schema_file_path = os.path.join(source_dir, schema_file_path)
+    return os.path.normpath(new_schema_file_path)
 
 
 def fetch_json_schema(schema_reference, source_file_path):
@@ -40,7 +47,9 @@ def fetch_json_schema(schema_reference, source_file_path):
     return schema
 
 
-def validate_json_with_schema(json_data, source_file_path) -> tuple[bool, ValidationError | None]:
+def validate_json_with_schema(
+    json_data, source_file_path
+) -> tuple[bool, ValidationError | None]:
     """Validate a JSON object using the schema specified in its $schema property."""
     try:
         schema_reference = json_data.get("$schema")
