@@ -11,6 +11,14 @@ repos:
     -   id: flake8
         args: [--extend-ignore=E501]
 
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.28.5
+    hooks:
+      - id: check-jsonschema
+        files: ^config.sample.json|.github/workflows/config.json$
+        types: [json]
+        args: ["--schemafile", "config.schema.json"]
+
   - repo: local
     hooks:
       - id: bicep

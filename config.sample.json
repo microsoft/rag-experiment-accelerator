@@ -1,8 +1,8 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/rag-experiment-accelerator/limoat/enforce-json-schema-for-configjson/config.schema.json",
     "index_name_prefix": "idx",
-    "experiment_name": "",
-    "job_name": "",
+    "experiment_name": "sample",
+    "job_name": "sample",
     "job_description": "",
     "preprocess": false,
     "chunking": {

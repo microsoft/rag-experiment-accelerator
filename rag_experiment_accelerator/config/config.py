@@ -78,7 +78,7 @@ class Config:
             data_dir = os.path.join(os.getcwd(), "data/")
         with open(config_path.strip(), "r") as json_file:
             config_json = json.load(json_file)
-            is_valid_config, validation_error = validate_json_with_schema(config_json)
+            is_valid_config, validation_error = validate_json_with_schema(config_json, config_path.strip())
             if not is_valid_config:
                 raise ValueError(f"Config validation error: {validation_error}")
 
