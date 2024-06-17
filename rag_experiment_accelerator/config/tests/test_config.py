@@ -28,7 +28,8 @@ def get_test_config_dir():
 @patch(
     "rag_experiment_accelerator.config.config.create_embedding_model",
 )
-def test_config_init(mock_create_embedding_model):
+@patch("rag_experiment_accelerator.config.config.validate_json_with_schema")
+def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model):
     # Load mock config data from a YAML file
     config_path = f"{get_test_config_dir()}/config.json"
     with open(config_path, "r") as file:
@@ -42,6 +43,7 @@ def test_config_init(mock_create_embedding_model):
     embedding_model_2.name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
     mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
+    mock_validate_json_with_schema.return_value = (True, None)
 
     config = Config(environment, config_path)
 
@@ -87,6 +89,22 @@ def test_config_init(mock_create_embedding_model):
     assert config.SAMPLE_OPTIMUM_K == mock_config_data["sampling"]["optimum_k"]
     assert config.SAMPLE_MIN_CLUSTER == mock_config_data["sampling"]["min_cluster"]
     assert config.SAMPLE_MAX_CLUSTER == mock_config_data["sampling"]["max_cluster"]
+
+
+@patch(
+    "rag_experiment_accelerator.config.config.create_embedding_model",
+)
+@patch("rag_experiment_accelerator.config.config.validate_json_with_schema")
+def test_config_init_raises_error(
+    mock_validate_json_with_schema, mock_create_embedding_model
+):
+    config_path = f"{get_test_config_dir()}/config.json"
+    environment = MagicMock()
+
+    mock_validate_json_with_schema.return_value = (False, ValueError("Invalid JSON"))
+
+    with pytest.raises(ValueError):
+        Config(environment, config_path)
 
 
 def test_chunk_size_greater_than_overlap_size():
