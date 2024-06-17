@@ -1,14 +1,16 @@
+from jsonschema import ValidationError
+from unittest.mock import MagicMock, mock_open, patch
 import pytest
 import os
-
 import requests
+
 from rag_experiment_accelerator.config.config_validator import (
     fetch_json_schema,
     fetch_json_schema_from_url,
     fetch_json_schema_from_file,
     get_normalised_schema_path,
+    validate_json_with_schema,
 )
-from unittest.mock import MagicMock, mock_open, patch
 
 
 @patch("requests.get")
@@ -126,7 +128,7 @@ def test_fetch_json_schema_updates_cache(
 
     fetch_json_schema(schema_reference, "source_file.json")
     assert schema_cache == {
-        schema_reference: {"$schema": "http://test.com/schema.json"}
+        schema_reference: mock_fetch_json_schema_from_url.return_value
     }
 
 
@@ -178,3 +180,43 @@ def test_fetch_json_schema_returns_from_file(
     mock_fetch_json_schema_from_file.assert_called_once_with(
         schema_reference, "source_file.json"
     )
+
+
+def test_validate_json_with_schema_returns_true_for_no_schema():
+    json_data = {"key": "value"}
+    source_file_path = "source_file.json"
+
+    result = validate_json_with_schema(json_data, source_file_path)
+    assert result == (True, None)
+
+
+@patch("rag_experiment_accelerator.config.config_validator.fetch_json_schema")
+@patch("rag_experiment_accelerator.config.config_validator.validate")
+def test_validate_json_with_schema_returns_for_valid_json(
+    mock_validate, mock_fetch_json_schema
+):
+    json_schema = {"$schema": "http://test.com/schema.json"}
+    mock_fetch_json_schema.return_value = json_schema
+
+    mock_validate.return_value = None
+
+    json_data = {"$schema": "./schema.json"}
+    result = validate_json_with_schema(json_data, "source_file.json")
+
+    assert result == (True, None)
+
+
+@patch("rag_experiment_accelerator.config.config_validator.fetch_json_schema")
+@patch("rag_experiment_accelerator.config.config_validator.validate")
+def test_validate_json_with_schema_returns_for_invalid_json(
+    mock_validate, mock_fetch_json_schema
+):
+    json_schema = {"$schema": "http://test.com/schema.json"}
+    mock_fetch_json_schema.return_value = json_schema
+
+    mock_validate.side_effect = ValidationError("Invalid JSON")
+
+    json_data = {"$schema": "./schema.json"}
+    result = validate_json_with_schema(json_data, "source_file.json")
+
+    assert result == (False, mock_validate.side_effect)
