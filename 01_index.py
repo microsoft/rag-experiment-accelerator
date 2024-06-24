@@ -19,7 +19,6 @@ if __name__ == "__main__":
     config = Config(environment, args.config_path, args.data_dir)
 
     # Are we running locally and not in AML? We do not want to run sampling on the distributed compute at this stage
-    is_local = False
     is_local = "01_index.py" in str(sys.argv[0])
 
     file_paths = get_all_file_paths(config.data_dir)
