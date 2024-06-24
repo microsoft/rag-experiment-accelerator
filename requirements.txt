@@ -36,4 +36,4 @@ spacy==3.7.5
 textdistance==4.6.2
 tiktoken==0.7.0
 umap-learn==0.5.6
-unstructured==0.14.5
+unstructured==0.14.7
