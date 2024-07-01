@@ -16,7 +16,7 @@ fuzzywuzzy==0.18.0
 hnswlib==0.8.0
 kaleido==0.2.1
 langchain==0.2.5
-langchain-community==0.2.5
+langchain-community==0.2.6
 levenshtein==0.25.1
 lxml==5.2.2
 matplotlib==3.9.0
