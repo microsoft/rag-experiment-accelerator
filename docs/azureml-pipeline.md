@@ -42,6 +42,15 @@ This script assumes you already have a `.env` file populated with values. and wi
 
 ## Configuring input for the pipeline
 
+### Generating the QA data for the pipeline
+
+The QA data is not generated as part of the AzureML pipeline, so it must be generated locally prior to
+running the pipeline in AzureML. (Upon completion of generation this data is uploaded to AzureML so it
+will be accessible to the pipeline when it runs in AzureML.)
+
+It is important to re-generate QA data whenever the input data is changed. Otherwise, the previous QA data
+will be used to evaluate the revised data, which is usually not what is expected. 
+
 ### Providing data input
 
 Data input for the pipeline can be provided on the command line:
