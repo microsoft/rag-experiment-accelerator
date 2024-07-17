@@ -2,7 +2,7 @@
 
 ## What is it
 
-RAG Experiment Accelerator supports running the pipeline on Azure ML compute, in addition to running it on local machine. This document describes the steps to deploy the necessary resources on Azure, and to run the pipeline on Azure ML compute. 
+RAG Experiment Accelerator supports running the pipeline on Azure ML compute, in addition to running it on local machine. This document describes the steps to deploy the necessary resources on Azure, and to run the pipeline on Azure ML compute.
 
 ## Architecture diagram
 
