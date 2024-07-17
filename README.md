@@ -244,7 +244,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
         "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
         "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
-    },
+    }, 
     "experiment_name": "name of the experiment",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
