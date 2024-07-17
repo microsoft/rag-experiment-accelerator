@@ -20,17 +20,15 @@ def get_logger(name: str) -> logging.Logger:
         return logger
 
     global _cached_logging_level
+    if _cached_logging_level is None or _cached_logging_level == '':
+        _cached_logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
 
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter(
         "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
     )
     handler.setFormatter(formatter)
-
-    if _cached_logging_level is None or _cached_logging_level == '':
-        _cached_logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
-
-    logger.setLevel("INFO")
+    logger.setLevel(_cached_logging_level)
     logger.addHandler(handler)
 
     return logger

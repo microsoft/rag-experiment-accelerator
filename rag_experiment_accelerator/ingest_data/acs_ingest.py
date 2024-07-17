@@ -138,7 +138,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
                     f"question! Error message: {str(e)}"
                 )
                 logger.error(traceback.format_exc())
-                logger.error(f"LLM Response: {response}")
+                logger.debug(f"LLM Response: {response}")
 
     return new_df
 

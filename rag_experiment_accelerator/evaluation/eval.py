@@ -670,7 +670,7 @@ def evaluate_prompts(
     question_count = query_data_load[0].question_count
 
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(1))
+        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
         futures = {
             executor.submit(
                 evaluate_single_prompt,
