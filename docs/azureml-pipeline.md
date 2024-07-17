@@ -49,7 +49,7 @@ running the pipeline in AzureML. (Upon completion of generation this data is upl
 will be accessible to the pipeline when it runs in AzureML.)
 
 It is important to re-generate QA data whenever the input data is changed. Otherwise, the previous QA data
-will be used to evaluate the revised data, which is usually not what is expected. 
+will be used to evaluate the revised data, which is usually not what is expected.
 
 ### Providing data input
 
