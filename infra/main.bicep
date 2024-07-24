@@ -77,6 +77,47 @@ param azureOpenAIModelName string = 'gpt-35-turbo'
 @description('Azure OpenAI GPT Model Version')
 param azureOpenAIModelVersion string = '0613'
 
+@description('Whether to deploy Azure Document Intelligence.')
+param useAzureAIDocumentIntelligence bool = true
+
+@description('Location for Azure AI Doc Intelligence.')
+@allowed([
+  'australiaeast'
+  'brazilsouth'
+  'canadacentral'
+  'centralindia'
+  'centralus'
+  'centraluseuap'
+  'eastasia'
+  'eastus'
+  'eastus2'
+  'eastus2euap'
+  'francecentral'
+  'germanywestcentral'
+  'japaneast'
+  'japanwest'
+  'jioindiawest'
+  'koreacentral'
+  'northcentralus'
+  'northeurope'
+  'norwayeast'
+  'qatarcentral'
+  'southafricanorth'
+  'southcentralus'
+  'southeastasia'
+  'swedencentral'
+  'switzerlandnorth'
+  'switzerlandwest'
+  'uaenorth'
+  'uksouth'
+  'westcentralus'
+  'westeurope'
+  'westus'
+  'westus2'
+  'westus3'
+])
+param azureAIDocumentIntelligenceLocation string = location
+
 @description('Name of Azure AI Document Intelligence Resource')
 param azureAIDocumentIntelligenceResourceName string = 'docintel-${resourceToken}'
 
@@ -171,12 +212,12 @@ module openai './shared/cognitiveservices.bicep' = {
   }
 }
 
-module documentIntelligence './shared/cognitiveservices.bicep' = {
+module documentIntelligence './shared/cognitiveservices.bicep' = if (useAzureAIDocumentIntelligence) {
   name: azureAIDocumentIntelligenceResourceName
   scope: rg
   params: {
     name: azureAIDocumentIntelligenceResourceName
-    location: location
+    location: azureAIDocumentIntelligenceLocation
     tags: tags
     kind: 'FormRecognizer'
     sku: {
