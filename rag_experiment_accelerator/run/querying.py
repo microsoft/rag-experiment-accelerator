@@ -117,20 +117,20 @@ def rerank_documents(
         list[str]: A list of reranked documents.
     """
     result = []
-    if config.RERANK_TYPE == "llm":
+    if config.rerank.type == "llm":
         result = llm_rerank_documents(
             docs,
             user_prompt,
-            config.AZURE_OAI_CHAT_DEPLOYMENT_NAME,
-            config.LLM_RERANK_THRESHOLD,
+            config.openai.azure_oai_chat_deployment_name,
+            config.rerank.llm_rerank_threshold,
         )
-    elif config.RERANK_TYPE == "crossencoder":
+    elif config.rerank.type == "crossencoder":
         result = cross_encoder_rerank_documents(
             docs,
             user_prompt,
             output_prompt,
-            config.CROSSENCODER_MODEL,
-            config.CROSSENCODER_AT_K,
+            config.rerank.crossencoder_model,
+            config.rerank.cross_encoder_at_k,
         )
 
     return result
@@ -141,26 +141,23 @@ def hyde(
     response_generator: ResponseGenerator,
     queries: list[str],
 ):
-    if config.HYDE == "disabled":
+    if config.query_expansion.hyde == "disabled":
         return queries
 
-    generated_queries = []
-    for query in queries:
-        if config.HYDE == "generated_hypothetical_answer":
-            result = response_generator.generate_response(
-                prompt_generated_hypothetical_answer,
-                query,
-            )
-        elif config.HYDE == "generated_hypothetical_document_to_answer":
-            result = response_generator.generate_response(
-                prompt_generated_hypothetical_document_to_answer,
-                query,
-            )
-        else:
-            raise NotImplementedError(
-                f"configuration for hyde with value of [{config.HYDE}] is not supported"
-            )
-        generated_queries.append(result)
+    hyde_prompt = {
+        "generated_hypothetical_answer": prompt_generated_hypothetical_answer,
+        "generated_hypothetical_document_to_answer": prompt_generated_hypothetical_document_to_answer,
+    }
+
+    if hyde not in hyde_prompt:
+        raise NotImplementedError(
+            f"configuration for hyde with value of [{config.HYDE}] is not supported"
+        )
+
+    generated_queries = [
+        response_generator.generate_response(hyde_prompt[config.HYDE], query)
+        for query in queries
+    ]
     return generated_queries
 
 
@@ -181,13 +178,13 @@ def query_expansion(
         query,
         augmented_questions.split("\n"),
         embedding_model,
-        config.MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
+        config.query_expansion.min_query_expansion_related_question_similarity_score,
     )
 
     return questions
 
 
-def dedupulicate_search_results(search_results: list[dict]) -> list[dict]:
+def deduplicate_search_results(search_results: list[dict]) -> list[dict]:
     doc_set = set()
     score_dict = {}
 
@@ -236,7 +233,7 @@ def query_and_eval_acs(
         tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
     """
 
-    if config.QUERY_EXPANSION:
+    if config.query_expansion.query_expansion:
         generated_queries = query_expansion(
             config, response_generator, embedding_model, query
         )
@@ -255,8 +252,8 @@ def query_and_eval_acs(
         )
         search_results.extend(search_result)
 
-    search_results = dedupulicate_search_results(search_results)
-    search_result = search_result[: config.RETRIEVE_NUM_OF_DOCUMENTS]
+    search_results = deduplicate_search_results(search_results)
+    search_result = search_result[: config.search.retrieve_num_of_documents]
 
     docs, evaluation = evaluate_search_result(
         search_results, evaluation_content, evaluator
@@ -270,7 +267,7 @@ def filter_non_related_questions(
     query,
     generated_questions,
     embedding_model,
-    MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
+    min_query_expansion_related_question_similarity_score,
 ):
     questions = [query]
 
@@ -286,7 +283,7 @@ def filter_non_related_questions(
         similarity_score = int(
             sum(similarity_score_array) / len(similarity_score_array)
         )
-        if similarity_score >= MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE:
+        if similarity_score >= min_query_expansion_related_question_similarity_score:
             questions.append(generated_question)
 
     return questions
@@ -328,7 +325,7 @@ def query_and_eval_acs_multi(
     context = []
     evaluations = []
     response_generator = ResponseGenerator(
-        environment, config, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        environment, config, config.openai.azure_oai_chat_deployment_name
     )
     for question in questions:
         docs, evaluation = query_and_eval_acs(
@@ -337,7 +334,7 @@ def query_and_eval_acs_multi(
             query=question,
             search_type=search_type,
             evaluation_content=evaluation_content,
-            retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+            retrieve_num_of_documents=config.search.retrieve_num_of_documents,
             evaluator=evaluator,
             config=config,
             response_generator=response_generator,
@@ -348,7 +345,7 @@ def query_and_eval_acs_multi(
 
         evaluations.append(evaluation)
 
-        if config.RERANK:
+        if config.rerank.enabled:
             prompt_instruction_context = rerank_documents(
                 docs, question, output_prompt, config
             )
@@ -387,7 +384,7 @@ def query_and_eval_single_line(
     qna_context = data.get("context", "")
 
     is_multi_question = (
-        config.EXPAND_TO_MULTIPLE_QUESTIONS
+        config.query_expansion.expand_to_multiple_questions
         and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
 
@@ -413,7 +410,7 @@ def query_and_eval_single_line(
     evaluation_content = user_prompt + qna_context
 
     try:
-        for s_v in config.SEARCH_VARIANTS:
+        for s_v in config.search.search_type:
             search_evals = []
             if is_multi_question:
                 (
@@ -442,13 +439,13 @@ def query_and_eval_single_line(
                     query=user_prompt,
                     search_type=s_v,
                     evaluation_content=evaluation_content,
-                    retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
+                    retrieve_num_of_documents=config.search.retrieve_num_of_documents,
                     evaluator=evaluator,
                     config=config,
                     response_generator=response_generator,
                 )
                 search_evals.append(evaluation)
-            if config.RERANK and len(docs) > 0:
+            if config.rerank.enabled and len(docs) > 0:
                 prompt_instruction_context = rerank_documents(
                     docs,
                     user_prompt,
@@ -470,12 +467,12 @@ def query_and_eval_single_line(
             logger.debug(openai_response)
 
             output = QueryOutput(
-                rerank=config.RERANK,
-                rerank_type=config.RERANK_TYPE,
-                crossencoder_model=config.CROSSENCODER_MODEL,
-                llm_re_rank_threshold=config.LLM_RERANK_THRESHOLD,
-                retrieve_num_of_documents=config.RETRIEVE_NUM_OF_DOCUMENTS,
-                crossencoder_at_k=config.CROSSENCODER_AT_K,
+                rerank=config.rerank.enabled,
+                rerank_type=config.rerank.type,
+                crossencoder_model=config.rerank.crossencoder_model,
+                llm_re_rank_threshold=config.rerank.llm_rerank_threshold,
+                retrieve_num_of_documents=config.search.retrieve_num_of_documents,
+                crossencoder_at_k=config.rerank.cross_encoder_at_k,
                 question_count=question_count,
                 actual=openai_response,
                 expected=output_prompt,
@@ -487,8 +484,8 @@ def query_and_eval_single_line(
             handler.save(
                 index_name=index_config.index_name(),
                 data=output,
-                experiment_name=config.EXPERIMENT_NAME,
-                job_name=config.JOB_NAME,
+                experiment_name=config.experiment_name,
+                job_name=config.job_name,
             )
     except BadRequestError as e:
         logger.error(
@@ -506,23 +503,23 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
     """
     question_count = 0
     try:
-        with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
+        with open(config.path.eval_data_file, "r") as file:
             for line in file:
                 question_count += 1
     except FileNotFoundError as e:
-        logger.error("The file does not exist: " + config.EVAL_DATA_JSONL_FILE_PATH)
+        logger.error("The file does not exist: " + config.path.eval_data_file)
         raise e
 
-    evaluator = SpacyEvaluator(config.SEARCH_RELEVANCY_THRESHOLD)
-    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
+    evaluator = SpacyEvaluator(config.search.search_relevancy_threshold)
+    handler = QueryOutputHandler(config.path.query_data_dir)
     response_generator = ResponseGenerator(
-        environment, config, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        environment, config, config.openai.azure_oai_chat_deployment_name
     )
-    for index_config in config.index_configs():
+    for index_config in config.index_config.flatten():
         logger.info(f"Processing index: {index_config.index_name()}")
 
         handler.handle_archive_by_index(
-            index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+            index_config.index_name(), config.experiment_name, config.job_name
         )
 
         search_client = create_client(
@@ -530,7 +527,7 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
             index_config.index_name(),
             environment.azure_search_admin_key,
         )
-        with open(config.EVAL_DATA_JSONL_FILE_PATH, "r") as file:
+        with open(config.path.eval_data_file, "r") as file:
             with ExitStack() as stack:
                 executor = stack.enter_context(
                     ThreadPoolExecutor(config.MAX_WORKER_THREADS)

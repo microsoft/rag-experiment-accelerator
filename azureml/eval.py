@@ -57,8 +57,8 @@ def main():
         index_name = f.readline()
     index_config = IndexConfig.from_index_name(index_name, config)
 
-    config.QUERY_DATA_LOCATION = args.query_result_dir
-    config.EVAL_DATA_LOCATION = args.eval_result_dir
+    config.path.query_data_dir = args.query_result_dir
+    config.path.eval_data_dir = args.eval_result_dir
 
     mlflow_client = mlflow.MlflowClient()
     mlflow.set_experiment(config.EXPERIMENT_NAME)

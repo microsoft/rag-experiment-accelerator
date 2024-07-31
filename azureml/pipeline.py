@@ -185,7 +185,7 @@ def start_pipeline(
     pipeline = rag_pipeline(
         config_path_input=Input(type="uri_file", path=config_path),
         data_input=Input(type="uri_folder", path=config.data_dir),
-        eval_data_input=Input(type="uri_file", path=config.EVAL_DATA_JSONL_FILE_PATH),
+        eval_data_input=Input(type="uri_file", path=config.path.eval_data_file),
     )
     ml_client.jobs.create_or_update(pipeline, experiment_name=config.EXPERIMENT_NAME)
 
@@ -206,11 +206,11 @@ if __name__ == "__main__":
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
 
-    if config.SAMPLE_DATA:
+    if config.sampling.sample_data:
         logger.error(
             "Can't sample data when running on AzureML pipeline. Please run the pipeline locally"
         )
         exit()
     # Starting multiple pipelines hence unable to stream them
-    for index_config in config.index_configs():
+    for index_config in config.index_config.flatten():
         start_pipeline(environment, config, index_config, args.config_path)

@@ -21,7 +21,7 @@ class ResponseGenerator:
     def __init__(self, environment: Environment, config: Config, deployment_name: str):
         self.config = config
         self.deployment_name = deployment_name
-        self.temperature = self.config.TEMPERATURE
+        self.temperature = self.config.openai.openai_temperature
         self.client = self._initialize_azure_openai_client(environment)
 
     def _initialize_azure_openai_client(self, environment: Environment):

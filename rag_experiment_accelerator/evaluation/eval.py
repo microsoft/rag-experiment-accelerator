@@ -639,7 +639,7 @@ def evaluate_prompts(
     Evaluates prompts using various metrics and logs the results to MLflow.
 
     Args:
-        environment (Environment): Initialised Environment class containing environment configuration
+        environment (Environment): Initialized Environment class containing environment configuration
         config (Config): The configuration settings to use for evaluation.
         index_config (IndexConfig): Parameters of the index such as chunking and embedding model.
         client (mlflow.MlflowClient): The MLflow client to use for logging the results.
@@ -648,8 +648,8 @@ def evaluate_prompts(
     Returns:
         None
     """
-    metric_types = config.METRIC_TYPES
-    num_search_type = config.SEARCH_VARIANTS
+    metric_types = config.eval.metric_types
+    num_search_type = config.search.search_type
     data_list = []
 
     pd.set_option("display.max_columns", None)
@@ -658,14 +658,14 @@ def evaluate_prompts(
     map_scores_by_search_type = {}
     average_precision_for_search_type = {}
 
-    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
+    handler = QueryOutputHandler(config.path.query_data_dir)
 
     response_generator = ResponseGenerator(
-        environment, config, config.AZURE_OAI_EVAL_DEPLOYMENT_NAME
+        environment, config, config.openai.azure_oai_eval_deployment_name
     )
 
     query_data_load = handler.load(
-        index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+        index_config.index_name(), config.experiment_name, config.job_name
     )
     question_count = query_data_load[0].question_count
 
@@ -717,7 +717,7 @@ def evaluate_prompts(
     additional_columns_to_remove = ["search_type"]
     df = pd.DataFrame(data_list)
     df.to_csv(
-        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"), index=False
+        os.path.join(config.path.eval_data_dir, f"{name_suffix}.csv"), index=False
     )
     logger.debug(f"Eval scores: {df.head()}")
 
@@ -736,13 +736,13 @@ def evaluate_prompts(
         sum_dict[col_name] = float(sum_df[col_name].values)
 
     sum_df.to_csv(
-        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv"), index=False
+        os.path.join(config.path.eval_data_dir, f"sum_{name_suffix}.csv"), index=False
     )
 
     ap_scores_df = pd.DataFrame(eval_scores_df)
     ap_scores_df.to_csv(
         os.path.join(
-            config.EVAL_DATA_LOCATION, f"{name_suffix}_ap_scores_at_k_test.csv"
+            config.path.eval_data_dir, f"{name_suffix}_ap_scores_at_k_test.csv"
         ),
         index=False,
     )
@@ -751,7 +751,7 @@ def evaluate_prompts(
 
     map_scores_df = pd.DataFrame(mean_scores)
     map_scores_df.to_csv(
-        os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}_map_scores_test.csv"),
+        os.path.join(config.path.eval_data_dir, f"{name_suffix}_map_scores_test.csv"),
         index=False,
     )
     plot_map_scores(map_scores_df, run_id, client)
@@ -772,9 +772,9 @@ def evaluate_prompts(
     mlflow.log_param("ef_search", index_config.ef_search)
     mlflow.log_param("run_metrics", sum_dict)
     mlflow.log_metrics(sum_dict)
-    mlflow.log_artifact(os.path.join(config.EVAL_DATA_LOCATION, f"{name_suffix}.csv"))
+    mlflow.log_artifact(os.path.join(config.path.eval_data_dir, f"{name_suffix}.csv"))
     mlflow.log_artifact(
-        os.path.join(config.EVAL_DATA_LOCATION, f"sum_{name_suffix}.csv")
+        os.path.join(config.path.eval_data_dir, f"sum_{name_suffix}.csv")
     )
     draw_hist_df(sum_df, run_id, client)
     generate_metrics(config.EXPERIMENT_NAME, run_id, client)

@@ -41,8 +41,8 @@ def main():
     environment = Environment.from_keyvault(args.keyvault)
 
     config = Config(environment, args.config_path)
-    config.EVAL_DATA_JSONL_FILE_PATH = args.eval_data_path
-    config.QUERY_DATA_LOCATION = args.query_result_dir
+    config.path.eval_data_file = args.eval_data_path
+    config.path.query_data_dir = args.query_result_dir
 
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()

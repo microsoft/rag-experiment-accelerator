@@ -31,7 +31,7 @@ if __name__ == "__main__":
     name_suffix = formatted_datetime_suffix()
 
     with mlflow.start_run(run_name=mlflow_run_name(config, name_suffix)):
-        for index_config in config.index_configs():
+        for index_config in config.index_config.flatten():
             run(
                 environment,
                 config,

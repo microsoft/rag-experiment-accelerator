@@ -174,7 +174,7 @@ def do_we_need_multiple_questions(
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.
     """
-    if not config.CHAIN_OF_THOUGHTS:
+    if not config.query_expansion.chain_of_thoughts:
         return False
 
     full_prompt_instruction = (

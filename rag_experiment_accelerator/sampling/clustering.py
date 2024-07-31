@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from umap import UMAP
 from scipy.spatial.distance import cdist
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.utils.logging import get_logger
 
 matplotlib.use("Agg")
@@ -231,7 +232,7 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     return x, y, text, processed_text, chunk, prediction, prediction_values
 
 
-def cluster(all_chunks, config, parser):
+def cluster(all_chunks, config: Config, parser):
     """
     Clusters the given chunks of documents using TF-IDF and K-means clustering.
 
@@ -262,27 +263,27 @@ def cluster(all_chunks, config, parser):
     reducer = UMAP()
     embeddings_2d = reducer.fit_transform(X)
 
-    if config.SAMPLE_OPTIMUM_K == "auto":
+    if config.sampling.sample_data == "auto":
         optimum_k = determine_optimum_k_elbow(
             embeddings_2d,
             X,
-            config.SAMPLE_MIN_CLUSTER,
-            config.SAMPLE_MAX_CLUSTER,
-            config.sampling_output_dir,
+            config.sampling.min_cluster,
+            config.sampling.max_cluster,
+            config.path.sampling_output_dir,
         )
     else:
-        optimum_k = config.SAMPLE_OPTIMUM_K
+        optimum_k = config.sampling.optimum_k
 
     # Cluster
     x, y, text, processed_text, chunk, prediction, prediction_values = cluster_kmeans(
-        embeddings_2d, optimum_k, df, config.sampling_output_dir
+        embeddings_2d, optimum_k, df, config.path.sampling_output_dir
     )
 
     # Capture all predictions
     data = {"x": x, "y": y, "text": text, "prediction": prediction, "chunk": chunk}
     df = pd.DataFrame(data)
     df.to_csv(
-        f"{config.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+        f"{config.path.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.sampling.optimum_k}.csv",
         sep=",",
     )
 
@@ -292,11 +293,12 @@ def cluster(all_chunks, config, parser):
         g["l_{0}".format(i)] = df[df["prediction"] == i]
 
         if len(g["l_{0}".format(i)]) > round(
-            (len(df) * (config.SAMPLE_PERCENTAGE / 100)) / len(prediction_values)
+            (len(df) * (config.sampling.sample_percentage / 100))
+            / len(prediction_values)
         ):
             g["l_{0}".format(i)] = g["l_{0}".format(i)].sample(
                 n=round(
-                    (len(df) * (config.SAMPLE_PERCENTAGE / 100))
+                    (len(df) * (config.sampling.sample_percentage / 100))
                     / len(prediction_values)
                 ),
                 random_state=42,

@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 class BaseConfig:
     def __init__(self) -> None:
         self.__sampling_attributes: list[str] = []
-        self.__static_atributes: list[str] = []
+        self.__static_attributes: list[str] = []
         self.__nested_configs: list[str] = []
 
         self.__gather_sampling_attributes()
@@ -43,7 +43,7 @@ class BaseConfig:
                 if isinstance(attr_value, BaseConfig):
                     self.__nested_configs.append(key)
                 else:
-                    self.__static_atributes.append(key)
+                    self.__static_attributes.append(key)
 
         return sampling_attributes
 

@@ -44,7 +44,7 @@ def test_run(
     mock_embedding_model.side_effect = [
         MagicMock(dimension=100 * i) for i in range(1, 3)
     ]
-    mock_config.embedding_models = embedding_models
+    mock_config.embedding_model = embedding_models
     mock_config.EF_CONSTRUCTIONS = ["ef_construction1", "ef_construction2"]
     mock_config.EF_SEARCHES = ["ef_search1", "ef_search2"]
     mock_config.DATA_FORMATS = "test_format"

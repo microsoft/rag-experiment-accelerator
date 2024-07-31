@@ -10,7 +10,7 @@ class AOAIEmbeddingModel(EmbeddingModel):
 
     Args:
         deployment_name (str): The name of the deployment.
-        environment (Environment): The initialised environment.
+        environment (Environment): The initialized environment.
         dimension (int, optional): The dimension of the embedding. Defaults to 1536 which is the dimension of text-embedding-ada-002.
         **kwargs: Additional keyword arguments.
 
@@ -29,14 +29,14 @@ class AOAIEmbeddingModel(EmbeddingModel):
     ) -> None:
         super().__init__(name=deployment_name, dimension=dimension, **kwargs)
         self.deployment_name = deployment_name
-        self._client: AzureOpenAI = self._initilize_client(environment=environment)
+        self._client: AzureOpenAI = self._initialize_client(environment=environment)
 
-    def _initilize_client(self, environment: Environment) -> AzureOpenAI:
+    def _initialize_client(self, environment: Environment) -> AzureOpenAI:
         """
         Initializes the AzureOpenAIClient.
 
         Args:
-            environment (Environment): The initialised environment.
+            environment (Environment): The initialized environment.
 
         Returns:
             AzureOpenAI: The initialized AzureOpenAI client.

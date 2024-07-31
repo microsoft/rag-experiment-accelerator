@@ -35,7 +35,7 @@ def run(
 
     all_docs = {}
     # Check if we have already sampled
-    if config.SAMPLE_DATA:
+    if config.sampling.sample_data:
         logger.info("Running QA Generation process with sampling")
         if exists(config._sampled_cluster_predictions_path()):
             df = pd.read_csv(config._sampled_cluster_predictions_path())
@@ -45,18 +45,20 @@ def run(
             all_docs = load_documents(
                 environment,
                 config.CHUNKING_STRATEGY,
-                config.DATA_FORMATS,
+                config.data_formats,
                 file_paths,
                 2000,
                 0,
             )
             parser = load_parser()
-            all_docs = cluster(all_docs, config.sampling_output_dir, config, parser)
+            all_docs = cluster(
+                all_docs, config.path.sampling_output_dir, config, parser
+            )
     else:
         all_docs = load_documents(
             environment,
             config.CHUNKING_STRATEGY,
-            config.DATA_FORMATS,
+            config.data_formats,
             file_paths,
             2000,
             0,
@@ -64,9 +66,9 @@ def run(
 
     # generate qna
     df = generate_qna(
-        environment, config, all_docs, config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        environment, config, all_docs, config.openai.azure_oai_chat_deployment_name
     )
     # write to jsonl
-    df.to_json(config.EVAL_DATA_JSONL_FILE_PATH, orient="records", lines=True)
+    df.to_json(config.path.eval_data_file, orient="records", lines=True)
     # create data asset in mlstudio
-    create_data_asset(config.EVAL_DATA_JSONL_FILE_PATH, "eval_data", environment)
+    create_data_asset(config.path.eval_data_file, "eval_data", environment)

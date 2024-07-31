@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from rag_experiment_accelerator.config.base_config import BaseConfig
 from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
@@ -14,14 +14,10 @@ class IndexConfig(BaseConfig):
     Attributes:
         index_name_prefix (str):
             Prefix to use for the index created in Azure Search.
-        preprocess (bool):
-            Whether to preprocess the text before indexing.
-        chunk_size (int):
-            Chunk size for chunking documents.
-        overlap (int):
-            Overlap size for chunking documents.
-        embedding_model (int):
-            Embedding model to use for this config.
+        chunking_config (ChunkingConfig):
+            Configuration for chunking documents.
+        embedding_model (EmbeddingModelConfig):
+            Configuration for the embedding model.
         ef_construction (int):
             Parameter ef_construction for HNSW index.
         ef_search (int):
@@ -29,7 +25,10 @@ class IndexConfig(BaseConfig):
     """
 
     index_name_prefix: str = "idx"
-    chunking_config: ChunkingConfig = ChunkingConfig()
-    embedding_model: EmbeddingModelConfig = EmbeddingModelConfig()
+    chunking_config: ChunkingConfig = field(default_factory=ChunkingConfig)
+    embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
     ef_construction: int = 400
     ef_search: int = 400
+
+    def __pre_init__(self):
+        super().__init__()

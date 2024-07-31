@@ -2,7 +2,15 @@
     "experiment_name": "",
     "job_name": "",
     "job_description": "",
-    "data_formats": "all",
+    "data_formats": ["*"],
+    "main_prompt_instruction": "",
+    "sampling": {
+        "sample_data": false,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
     "index_config": {
         "chunking_config": {
             "preprocess": false,

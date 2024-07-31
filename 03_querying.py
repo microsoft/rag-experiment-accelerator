@@ -28,13 +28,13 @@ if __name__ == "__main__":
         args.config_path,
     )
 
-    handler = QueryOutputHandler(config.QUERY_DATA_LOCATION)
-    for index_config in config.index_configs():
+    handler = QueryOutputHandler(config.path.query_data_dir)
+    for index_config in config.index_config.flatten():
         run(environment, config, index_config)
 
         create_data_asset(
             data_path=handler.get_output_path(
-                index_config.index_name(), config.EXPERIMENT_NAME, config.JOB_NAME
+                index_config.index_name(), config.experiment_name, config.job_name
             ),
             data_asset_name=index_config.index_name(),
             environment=environment,

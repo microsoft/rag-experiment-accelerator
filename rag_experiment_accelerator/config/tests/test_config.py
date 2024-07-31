@@ -45,7 +45,7 @@ def test_config_init(mock_create_embedding_model):
 
     config = Config(environment, config_path)
 
-    config.embedding_models = [embedding_model_1, embedding_model_2]
+    config.embedding_model = [embedding_model_1, embedding_model_2]
 
     assert config.INDEX_NAME_PREFIX == mock_config_data["index_name_prefix"]
     assert config.EXPERIMENT_NAME == mock_config_data["experiment_name"]
@@ -59,7 +59,7 @@ def test_config_init(mock_create_embedding_model):
     assert config.LLM_RERANK_THRESHOLD == mock_config_data["llm_re_rank_threshold"]
     assert config.CROSSENCODER_AT_K == mock_config_data["cross_encoder_at_k"]
     assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
-    assert config.SEARCH_VARIANTS == mock_config_data["search_types"]
+    assert config.search == mock_config_data["search"]
     assert config.METRIC_TYPES == mock_config_data["metric_types"]
     assert (
         config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
@@ -76,11 +76,11 @@ def test_config_init(mock_create_embedding_model):
         == f"{get_test_config_dir()}/artifacts/eval_data.jsonl"
     )
 
-    assert config.embedding_models[0].name.return_value == "all-MiniLM-L6-v2"
-    assert config.embedding_models[0].dimension.return_value == 384
+    assert config.embedding_model[0].name.return_value == "all-MiniLM-L6-v2"
+    assert config.embedding_model[0].dimension.return_value == 384
 
-    assert config.embedding_models[1].name.return_value == "text-embedding-ada-002"
-    assert config.embedding_models[1].dimension.return_value == 1536
+    assert config.embedding_model[1].name.return_value == "text-embedding-ada-002"
+    assert config.embedding_model[1].dimension.return_value == 1536
 
     assert config.SAMPLE_DATA
     assert config.SAMPLE_PERCENTAGE == mock_config_data["sampling"]["sample_percentage"]
@@ -138,31 +138,31 @@ def test_validate_semantic_search_config():
 
     # Test case 1: use_semantic_search is False, but semantic search is
     # required
-    config.SEARCH_VARIANTS = ["search_for_match_semantic"]
+    config.search.search_type = ["search_for_match_semantic"]
     use_semantic_search = False
     with pytest.raises(ValueError) as info:
         config.validate_semantic_search_config(use_semantic_search)
     assert (
         str(info.value)
-        == "Semantic search is required for search variants 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
+        == "Semantic search is required for search types 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
     )
 
     # Test case 2: use_semantic_search is True, and semantic search is required
-    config.SEARCH_VARIANTS = ["search_for_match_semantic"]
+    config.search.search_type = ["search_for_match_semantic"]
     use_semantic_search = True
     # No exception should be raised
     config.validate_semantic_search_config(use_semantic_search)
 
     # Test case 3: use_semantic_search is False, and semantic search is not
     # required
-    config.SEARCH_VARIANTS = ["search_for_exact_match"]
+    config.search.search_type = ["search_for_exact_match"]
     use_semantic_search = False
     # No exception should be raised
     config.validate_semantic_search_config(use_semantic_search)
 
     # Test case 4: use_semantic_search is True, and semantic search is not
     # required
-    config.SEARCH_VARIANTS = ["search_for_exact_match"]
+    config.search.search_type = ["search_for_exact_match"]
     use_semantic_search = True
     # No exception should be raised
     config.validate_semantic_search_config(use_semantic_search)

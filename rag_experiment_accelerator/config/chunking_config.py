@@ -19,3 +19,6 @@ class ChunkingConfig(BaseConfig):
     override_content_with_summary: bool = False
     chunking_strategy: ChunkingStrategy = ChunkingStrategy.BASIC
     azure_document_intelligence_model: str = "prebuilt-read"
+
+    def __post_init__(self):
+        super().__init__()

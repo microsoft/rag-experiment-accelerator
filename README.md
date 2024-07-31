@@ -16,7 +16,7 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 
 ## Latest changes
 
-18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data.
+18 March 2024: Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data.
 
 This is done to ensure representative results in the sample that one would get across the entire dataset.
 
@@ -34,7 +34,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 1. **Multiple Document Loaders**: The tool supports multiple document loaders, including loading via Azure Document Intelligence and basic LangChain loaders. This gives you the flexibility to experiment with different extraction methods and evaluate their effectiveness.
 
-1. **Custom Document Intelligence Loader** : When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables with column headers into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. Since each table row is transformed into a text line, to avoid breaking a row in the middle, chunking is done recursively by paragraph and line.
+1. **Custom Document Intelligence Loader**: When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables with column headers into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. Since each table row is transformed into a text line, to avoid breaking a row in the middle, chunking is done recursively by paragraph and line.
 The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallback when the 'prebuilt-layout' fails. Any other API model will utilize LangChain's implementation, which returns the raw response from Document Intelligence's API.
 
 1. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
@@ -72,7 +72,7 @@ Install the following software on the host machine you will perform the deployme
 >1. For Windows - [Windows Store Ubuntu 22.04.3 LTS](https://www.microsoft.com/store/productId/9pn20msr04dw)
 >2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
 >3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
->4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
+>4. [VS Code Extension: Remote-Containers](vscode:extension/ms-vscode-remote.remote-containers)
 
 #### Developing in a DevContainer
 
@@ -244,7 +244,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
         "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
         "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
         "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
-    }, 
+    },
     "experiment_name": "name of the experiment",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
@@ -262,7 +262,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
     "query_expansion": "this feature allows you to experiment with various query expansion approaches which may improve the retrieval metrics The possible values are 'disabled' (default), 'generated_hypothetical_answer', 'generated_hypothetical_document_to_answer', 'generated_related_questions' reference article - Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings) - https://arxiv.org/abs/2212.10496"
     "min_query_expansion_related_question_similarity_score": "minimum similarity score in percentage between LLM generated related queries to the original query using cosine similarly score. default 90%"
-    "azure_document_intelligence_model": "represents the Azure Document Intelligence Model. Used when chunking strategy is 'azure-document-intelligence'. When set to 'prebuilt-layout', provides additional features (see above)", 
+    "azure_document_intelligence_model": "represents the Azure Document Intelligence Model. Used when chunking strategy is 'azure-document-intelligence'. When set to 'prebuilt-layout', provides additional features (see above)",
 }
 ```
 
@@ -379,7 +379,9 @@ There might be situations in which the solution would still generate errors desp
 This solution utilizes several configuration parameters in config.json that directly impact its functionality and performance. Please pay close attention to these settings:
 
 **retrieve_num_of_documents:** This config controls the initial number of documents retrieved for analysis. Excessively high or low values can lead to "index out of range" errors due to rank processing of Search AI results.
+
 **cross_encoder_at_k:** This config influences the ranking process. A high value might result in irrelevant documents being included in the final results.
+
 **llm_re_rank_threshold:** This config determines which documents are passed to the language model (LLM) for further processing. Setting this value too high could create an overly large context for the LLM to handle, potentially leading to processing errors or degraded results. This might also result in exception from Azure OpenAI endpoint.
 
 #### Azure OpenAI Model and Deployment

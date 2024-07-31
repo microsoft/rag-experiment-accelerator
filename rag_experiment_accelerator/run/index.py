@@ -50,21 +50,21 @@ def run(
             index_config.embedding_model.dimension,
             index_config.ef_construction,
             index_config.ef_search,
-            config.LANGUAGE["analyzers"],
+            config.language.analyzers,
         )
     index_dict["indexes"].append(index_config.index_name())
 
     docs = load_documents(
         environment,
-        config.CHUNKING_STRATEGY,
-        config.DATA_FORMATS,
+        index_config.chunking_config.chunking_strategy,
+        config.data_formats,
         file_paths,
-        index_config.chunk_size,
-        index_config.overlap,
-        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
+        index_config.chunking_config.chunk_size,
+        index_config.chunking_config.overlap,
+        index_config.chunking_config.azure_document_intelligence_model,
     )
 
-    if config.SAMPLE_DATA:
+    if config.sampling.sample_data:
         parser = load_parser()
         docs = cluster(docs, config, parser)
 
@@ -294,7 +294,10 @@ def process_title(
     """
     if config.GENERATE_TITLE:
         title = generate_title(
-            chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
+            chunk["content"],
+            config.openai.azure_oai_chat_deployment_name,
+            environment,
+            config,
         )
         title_vector = index_config.embedding_model.generate_embedding(
             str(pre_process.preprocess(title))
@@ -331,7 +334,10 @@ def process_summary(
     """
     if config.GENERATE_SUMMARY:
         summary = generate_summary(
-            chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
+            chunk["content"],
+            config.openai.azure_oai_chat_deployment_name,
+            environment,
+            config,
         )
         summaryVector = index_config.embedding_model.generate_embedding(
             str(pre_process.preprocess(summary))

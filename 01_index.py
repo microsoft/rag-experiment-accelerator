@@ -15,11 +15,12 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
 
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, args.config_path, args.data_dir)
+
+    config = Config.from_path(environment, args.config_path, args.data_dir)
 
     file_paths = get_all_file_paths(config.data_dir)
-    for index_config in config.index_configs():
+    for index_config in config.index_config.flatten():
         index_dict = run(environment, config, index_config, file_paths)
 
-    with open(config.GENERATED_INDEX_NAMES_FILE_PATH, "w") as index_name:
+    with open(config.path.generated_index_names_file, "w") as index_name:
         json.dump(index_dict, index_name, indent=4)
