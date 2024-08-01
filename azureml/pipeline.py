@@ -156,7 +156,7 @@ def start_pipeline(
     )
 
     @dsl.pipeline(
-        name=mlflow_run_name(config),
+        name=mlflow_run_name(config.job_name),
         compute=environment.aml_compute_name,
         description="RAG Experiment Pipeline",
     )
@@ -184,7 +184,7 @@ def start_pipeline(
 
     pipeline = rag_pipeline(
         config_path_input=Input(type="uri_file", path=config_path),
-        data_input=Input(type="uri_folder", path=config.data_dir),
+        data_input=Input(type="uri_folder", path=config.path.data_dir),
         eval_data_input=Input(type="uri_file", path=config.path.eval_data_file),
     )
     ml_client.jobs.create_or_update(pipeline, experiment_name=config.EXPERIMENT_NAME)

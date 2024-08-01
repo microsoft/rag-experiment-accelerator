@@ -66,7 +66,7 @@ def test_run(
     mock_environment.azure_document_intelligence_key = "document_intelligence_key"
 
     mock_config.DATA_FORMATS = ["format1", "format2"]
-    mock_config.data_dir = "data_dir"
+    mock_config.path.data_dir = "data_dir"
     mock_config.CHUNKING_STRATEGY = "chunking_strategy"
     mock_config.AZURE_OAI_CHAT_DEPLOYMENT_NAME = "oai_deployment_name"
 

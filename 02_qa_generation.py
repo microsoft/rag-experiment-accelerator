@@ -17,4 +17,4 @@ if __name__ == "__main__":
     environment = Environment.from_env_or_keyvault()
     config = Config(environment, args.config_path, args.data_dir)
 
-    run(environment, config, get_all_file_paths(config.data_dir))
+    run(environment, config, get_all_file_paths(config.path.data_dir))

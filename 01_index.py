@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     config = Config.from_path(environment, args.config_path, args.data_dir)
 
-    file_paths = get_all_file_paths(config.data_dir)
+    file_paths = get_all_file_paths(config.path.data_dir)
     for index_config in config.index_config.flatten():
         index_dict = run(environment, config, index_config, file_paths)
 

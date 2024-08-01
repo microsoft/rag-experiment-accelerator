@@ -45,7 +45,7 @@ class Config(BaseConfig):
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
 
-    def __pre_init__(self):
+    def __post_init__(self):
         super().__init__()
 
     @classmethod
@@ -82,9 +82,9 @@ class Config(BaseConfig):
         #     int(max_worker_threads) if max_worker_threads else None
         # )
 
-        # # log all the configuration settings in debug mode
-        # for key, value in config_json.items():
-        #     logger.debug(f"Configuration setting: {key} = {value}")
+        # log all the configuration settings in debug mode
+        for key, value in config_json.items():
+            logger.debug(f"Configuration setting: {key} = {value}")
 
         return config
 

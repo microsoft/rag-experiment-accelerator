@@ -30,5 +30,5 @@ class IndexConfig(BaseConfig):
     ef_construction: int = 400
     ef_search: int = 400
 
-    def __pre_init__(self):
+    def __post_init__(self):
         super().__init__()

@@ -2,8 +2,6 @@ import os
 import glob
 from datetime import datetime
 
-from rag_experiment_accelerator.config.config import Config
-
 from rag_experiment_accelerator.utils.logging import get_logger
 
 
@@ -18,7 +16,7 @@ def get_all_file_paths(directory: str) -> list[str]:
     return [file for file in glob.glob(pattern, recursive=True) if os.path.isfile(file)]
 
 
-def try_create_directory(self, directory: str) -> None:
+def try_create_directory(directory: str) -> None:
     """
     Tries to create a directory with the given path.
 
@@ -44,8 +42,8 @@ def formatted_datetime_suffix():
     return datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
 
-def mlflow_run_name(config: Config, suffix: str = None):
+def mlflow_run_name(job_name: str, suffix: str = None):
     """Returns a name to use for the MlFlow experiment run."""
     if not suffix:
         suffix = formatted_datetime_suffix()
-    return f"{config.job_name}_{suffix}"
+    return f"{job_name}_{suffix}"

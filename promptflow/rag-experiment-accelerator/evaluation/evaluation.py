@@ -19,7 +19,7 @@ def my_python_tool(config_path: str) -> bool:
     name_suffix = formatted_datetime_suffix()
 
     mlflow.set_tags(get_run_tags(config))
-    with mlflow.start_run(run_name=mlflow_run_name(config, name_suffix)):
+    with mlflow.start_run(run_name=mlflow_run_name(config.job_name, name_suffix)):
         mlflow.set_tags()
         for index_config in config.index_config.flatten():
             run(

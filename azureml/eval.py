@@ -47,7 +47,7 @@ def main():
     parser.add_argument(
         "--eval_result_dir",
         type=str,
-        help="output: path to write results of evalulation to",
+        help="output: path to write results of evaluation to",
     )
     args = parser.parse_args()
 

@@ -25,5 +25,5 @@ class SamplingConfig(BaseConfig):
     min_cluster: int = 2
     max_cluster: int = 30
 
-    def __pre_init__(self):
+    def __post_init__(self):
         super().__init__()
