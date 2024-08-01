@@ -3,15 +3,12 @@ import os
 
 from dataclasses import dataclass, field
 
-from rag_experiment_accelerator.config.path_config import PathConfig
-from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.config.environment import Environment
 
+from rag_experiment_accelerator.config.path_config import PathConfig
+from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.base_config import BaseConfig
-from rag_experiment_accelerator.config.embedding_model_config import (
-    EmbeddingModelConfig,
-)
 from rag_experiment_accelerator.config.language_config import LanguageConfig
 from rag_experiment_accelerator.config.reranker_config import RerankerConfig
 from rag_experiment_accelerator.config.search_config import SearchConfig
@@ -20,6 +17,7 @@ from rag_experiment_accelerator.config.openai_config import OpenAIConfig
 from rag_experiment_accelerator.config.eval_config import EvalConfig
 
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from rag_experiment_accelerator.embedding.factory import create_embedding_model
 from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -37,7 +35,6 @@ class Config(BaseConfig):
     path: PathConfig = field(default_factory=PathConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
     index_config: IndexConfig = field(default_factory=IndexConfig)
-    embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
     language: LanguageConfig = field(default_factory=LanguageConfig)
     rerank: RerankerConfig = field(default_factory=RerankerConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
@@ -69,22 +66,17 @@ class Config(BaseConfig):
             == "true"
         )
 
-        # config.embedding_models: list[EmbeddingModel] = []
-        # embedding_model_config = config_json.get("embedding_models", [])
-        # for model_config in embedding_model_config:
-        #    kwargs = {"environment": environment, **model_config}
-        #    self.embedding_models.append(
-        #        create_embedding_model(model_config["type"], **kwargs)
-        #    )
+        config.initialize_embedding_models(environment)
 
-        # max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
-        # self.MAX_WORKER_THREADS = (
-        #     int(max_worker_threads) if max_worker_threads else None
-        # )
+        # todo: refactor this
+        max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
+        config.MAX_WORKER_THREADS = (
+            int(max_worker_threads) if max_worker_threads else None
+        )
 
-        # log all the configuration settings in debug mode
-        for key, value in config_json.items():
-            logger.debug(f"Configuration setting: {key} = {value}")
+        # # log all the configuration settings in debug mode
+        # for key, value in config_json.items():
+        #     logger.debug(f"Configuration setting: {key} = {value}")
 
         return config
 
@@ -119,14 +111,13 @@ class Config(BaseConfig):
                 "Semantic search is required for search types 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
             )
 
-    def _find_embedding_model_by_name(self, model_name: str) -> EmbeddingModel:
-        for model in self.embedding_model:
-            if model.name == model_name:
-                return model
-        raise AttributeError(f"No model found with the name: [{model_name}]")
+    def initialize_embedding_models(self, environment: Environment):
+        self.embedding_models_dictionary = {}
+        for model_config in self.index_config.embedding_model:
+            kwargs = {"environment": environment, **model_config.to_dict()}
+            self.embedding_models_dictionary[
+                model_config.model_name
+            ] = create_embedding_model(model_config.type, **kwargs)
 
-    def _sampled_cluster_predictions_path(self):
-        return os.path.join(
-            self.path.sampling_output_dir,
-            f"sampled_cluster_predictions_cluster_number_{self.sampling.optimum_k}.csv",
-        )
+    def get_embedding_model(self, model_name) -> EmbeddingModel:
+        return self.embedding_models_dictionary.get(model_name)

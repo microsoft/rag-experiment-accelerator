@@ -766,8 +766,11 @@ def evaluate_prompts(
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
     mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
     mlflow.log_param("chunk_overlap", index_config.overlap)
-    mlflow.log_param("embedding_dimension", index_config.embedding_model.dimension)
-    mlflow.log_param("embedding_model_name", index_config.embedding_model.name)
+    mlflow.log_param(
+        "embedding_dimension",
+        config.get_embedding_model(index_config.embedding_model.model_name).dimension,
+    )
+    mlflow.log_param("embedding_model_name", index_config.embedding_model.model_name)
     mlflow.log_param("ef_construction", index_config.ef_construction)
     mlflow.log_param("ef_search", index_config.ef_search)
     mlflow.log_param("run_metrics", sum_dict)

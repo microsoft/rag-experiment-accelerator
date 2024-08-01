@@ -30,10 +30,8 @@ def test_index_name_to_index_config():
     index_name = "prefix_p-0_cs-1_o-2_efc-3_efs-4_sp-0_t-0_s-0_oc-0_modelname"
     mock_embedding_model = MagicMock()
     mock_embedding_model.name = "modelname"
-    config = MagicMock()
-    config._find_embedding_model_by_name.return_value = mock_embedding_model
 
-    index_config = IndexConfig.from_index_name(index_name, config)
+    index_config = IndexConfig.from_index_name(index_name)
 
     assert index_config.index_name_prefix == "prefix"
     assert index_config.chunk_size == 1

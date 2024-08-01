@@ -42,7 +42,7 @@ def init():
     environment = Environment.from_keyvault(args.keyvault)
     config = Config(environment, args.config_path, args.data_dir)
 
-    index_config = IndexConfig.from_index_name(args.index_name, config)
+    index_config = IndexConfig.from_index_name(args.index_name)
 
 
 def run(input_paths: List[str]) -> List[str]:

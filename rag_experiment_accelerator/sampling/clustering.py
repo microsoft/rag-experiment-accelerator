@@ -247,7 +247,7 @@ def cluster(all_chunks, config: Config, parser):
     logger.info(f"Sampling - Original Document chunk length {len(all_chunks)}")
     df = chunk_dict_to_dataframe(all_chunks)
 
-    # Tokenise and remove punctuation and stop words
+    # Tokenize and remove punctuation and stop words
     tqdm.pandas()
     df["processed_text"] = df["text"].progress_apply(
         lambda text: spacy_tokenizer(text, parser)

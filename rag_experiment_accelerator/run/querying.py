@@ -418,7 +418,9 @@ def query_and_eval_single_line(
                     search_evals,
                 ) = query_and_eval_acs_multi(
                     search_client=search_client,
-                    embedding_model=index_config.embedding_model,
+                    embedding_model=config.get_embedding_model(
+                        index_config.embedding_model.model_name
+                    ),
                     questions=new_questions,
                     original_prompt=user_prompt,
                     output_prompt=output_prompt,
@@ -435,7 +437,9 @@ def query_and_eval_single_line(
                     evaluation,
                 ) = query_and_eval_acs(
                     search_client=search_client,
-                    embedding_model=index_config.embedding_model,
+                    embedding_model=config.get_embedding_model(
+                        index_config.embedding_model.model_name
+                    ),
                     query=user_prompt,
                     search_type=s_v,
                     evaluation_content=evaluation_content,
@@ -516,15 +520,16 @@ def run(environment: Environment, config: Config, index_config: IndexConfig):
         environment, config, config.openai.azure_oai_chat_deployment_name
     )
     for index_config in config.index_config.flatten():
-        logger.info(f"Processing index: {index_config.index_name()}")
+        index_name = index_config.index_name()
+        logger.info(f"Processing index: {index_name}")
 
         handler.handle_archive_by_index(
-            index_config.index_name(), config.experiment_name, config.job_name
+            index_name, config.experiment_name, config.job_name
         )
 
         search_client = create_client(
             environment.azure_search_service_endpoint,
-            index_config.index_name(),
+            index_name,
             environment.azure_search_admin_key,
         )
         with open(config.path.eval_data_file, "r") as file:

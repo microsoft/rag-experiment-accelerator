@@ -46,7 +46,7 @@ def main():
 
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
-    index_config = IndexConfig.from_index_name(index_name, config)
+    index_config = IndexConfig.from_index_name(index_name)
 
     query_run(environment, config, index_config)
 

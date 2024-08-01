@@ -55,7 +55,7 @@ def main():
     config = Config(environment, config_path=args.config_path)
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
-    index_config = IndexConfig.from_index_name(index_name, config)
+    index_config = IndexConfig.from_index_name(index_name)
 
     config.path.query_data_dir = args.query_result_dir
     config.path.eval_data_dir = args.eval_result_dir

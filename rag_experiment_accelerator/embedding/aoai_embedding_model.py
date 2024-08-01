@@ -64,5 +64,4 @@ class AOAIEmbeddingModel(EmbeddingModel):
             input=chunk, model=self.deployment_name
         )
 
-        embedding = response.data[0].embedding
-        return embedding
+        return response.data[0].embedding

@@ -40,19 +40,20 @@ def run(
     pre_process = Preprocess(True)
     index_dict = {"indexes": []}
 
-    with TimeTook(
-        f"create Azure Search Index {index_config.index_name()}", logger=logger
-    ):
+    index_name = index_config.index_name()
+    with TimeTook(f"create Azure Search Index {index_name}", logger=logger):
         create_acs_index(
             environment.azure_search_service_endpoint,
-            index_config.index_name(),
+            index_name,
             environment.azure_search_admin_key,
-            index_config.embedding_model.dimension,
+            config.get_embedding_model(
+                index_config.embedding_model.model_name
+            ).dimension,
             index_config.ef_construction,
             index_config.ef_search,
             config.language.analyzers,
         )
-    index_dict["indexes"].append(index_config.index_name())
+    index_dict["indexes"].append(index_name)
 
     docs = load_documents(
         environment,
@@ -69,7 +70,7 @@ def run(
         docs = cluster(docs, config, parser)
 
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
-    embed_chunks(index_config, pre_process, docs_ready_to_index)
+    embed_chunks(config, index_config, pre_process, docs_ready_to_index)
 
     generate_titles_from_chunks(
         config, index_config, pre_process, docs_ready_to_index, environment
@@ -79,14 +80,14 @@ def run(
     )
 
     with TimeTook(
-        f"load documents to Azure Search index {index_config.index_name()}",
+        f"load documents to Azure Search index {index_name}",
         logger=logger,
     ):
         upload_data(
             environment=environment,
             config=config,
             chunks=docs_ready_to_index,
-            index_name=index_config.index_name(),
+            index_name=index_name,
         )
 
     return index_dict
@@ -123,26 +124,31 @@ def convert_docs_to_vector_db_records(docs):
     return dicts
 
 
-def embed_chunks(config: IndexConfig, pre_process, chunks):
+def embed_chunks(config: Config, index_config: IndexConfig, pre_process, chunks):
     """
     Generates embeddings for chunks of documents.
 
     Args:
         config (object): A configuration object that holds various settings.
         pre_process (object): An object with a method for preprocessing text.
-        chunks (list): A list of all documents chunks to be embeded.
+        chunks (list): A list of all documents chunks to be embedded.
 
     Returns:
         tuple: A tuple containing the index name and the list of processed documents.
     """
-    with TimeTook(f"generate embeddings for {config.index_name()} ", logger=logger):
+    with TimeTook(
+        f"generate embeddings for {index_config.index_name()} ", logger=logger
+    ):
         embedded_chunks = []
         with ExitStack() as stack:
             executor = stack.enter_context(ThreadPoolExecutor())
 
             futures = {
                 executor.submit(
-                    embed_chunk, pre_process, config.embedding_model, doc
+                    embed_chunk,
+                    pre_process,
+                    config.get_embedding_model(index_config.embedding_model.model_name),
+                    doc,
                 ): doc
                 for doc in chunks
             }
@@ -158,7 +164,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
                 else:
                     embedded_chunks.append(chunk_dict)
 
-    if config.override_content_with_summary:
+    if index_config.chunking_config.override_content_with_summary:
         for chunk in chunks:
             if "summary" in chunk:
                 chunk["content"] = chunk["summary"]
@@ -292,16 +298,16 @@ def process_title(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_TITLE:
+    if index_config.chunking_config.generate_title:
         title = generate_title(
             chunk["content"],
             config.openai.azure_oai_chat_deployment_name,
             environment,
             config,
         )
-        title_vector = index_config.embedding_model.generate_embedding(
-            str(pre_process.preprocess(title))
-        )
+        title_vector = config.get_embedding_model(
+            index_config.embedding_model.model_name
+        ).generate_embedding(str(pre_process.preprocess(title)))
     else:
         title = ""
         title_vector = []
@@ -339,9 +345,9 @@ def process_summary(
             environment,
             config,
         )
-        summaryVector = index_config.embedding_model.generate_embedding(
-            str(pre_process.preprocess(summary))
-        )
+        summaryVector = config.get_embedding_model(
+            index_config.embedding_model.model_name
+        ).generate_embedding(str(pre_process.preprocess(summary)))
     else:
         summary = ""
         summaryVector = []
