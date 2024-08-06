@@ -20,7 +20,7 @@ langchain-community==0.2.11
 levenshtein==0.25.1
 lxml==5.2.2
 matplotlib==3.9.1
-mlflow==2.15.0
+mlflow==2.15.1
 openai==1.38.0
 plotly==5.23.0
 pypdf==4.3.1
