@@ -26,7 +26,7 @@ plotly==5.22.0
 pypdf==4.2.0
 pytesseract==0.3.10
 python-dotenv==1.0.1
-PyMuPDF==1.24.5
+PyMuPDF==1.24.9
 PyPDF2~=3.0
 rouge-score==0.1.2
 scikit-learn==1.5.0
