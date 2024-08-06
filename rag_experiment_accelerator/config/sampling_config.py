@@ -24,6 +24,3 @@ class SamplingConfig(BaseConfig):
     optimum_k: str = "auto"
     min_cluster: int = 2
     max_cluster: int = 30
-
-    def __post_init__(self):
-        super().__init__()

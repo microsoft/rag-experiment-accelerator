@@ -15,6 +15,3 @@ class EvalConfig(BaseConfig):
         ]
     )
     eval_data_jsonl_file_path: str = "./artifacts/eval_data.jsonl"
-
-    def __post_init__(self):
-        super().__init__()

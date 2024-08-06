@@ -37,14 +37,17 @@ def run(
     # Check if we have already sampled
     if config.sampling.sample_data:
         logger.info("Running QA Generation process with sampling")
-        if exists(config._sampled_cluster_predictions_path()):
-            df = pd.read_csv(config._sampled_cluster_predictions_path())
+        sampled_cluster_predictions_path = config.path.sampled_cluster_predictions_path(
+            config.sampling.optimum_k
+        )
+        if exists(sampled_cluster_predictions_path):
+            df = pd.read_csv(sampled_cluster_predictions_path)
             all_docs = dataframe_to_chunk_dict(df)
             logger.info("Loaded sampled data")
         else:
             all_docs = load_documents(
                 environment,
-                config.CHUNKING_STRATEGY,
+                config.index_config.chunking_config.chunking_strategy,
                 config.data_formats,
                 file_paths,
                 2000,
@@ -57,7 +60,7 @@ def run(
     else:
         all_docs = load_documents(
             environment,
-            config.CHUNKING_STRATEGY,
+            config.index_config.chunking_config.chunking_strategy,
             config.data_formats,
             file_paths,
             2000,

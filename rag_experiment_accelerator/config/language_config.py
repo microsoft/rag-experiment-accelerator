@@ -11,14 +11,8 @@ class LanguageAnalyzerConfig(BaseConfig):
     tokenizers: list[any] = field(default_factory=list)
     token_filters: list[any] = field(default_factory=list)
 
-    def __post_init__(self):
-        super().__init__()
-
 
 @dataclass
 class LanguageConfig(BaseConfig):
     analyzers: LanguageAnalyzerConfig = field(default_factory=LanguageAnalyzerConfig)
     query_language: str = "en-us"
-
-    def __post_init__(self):
-        super().__init__()

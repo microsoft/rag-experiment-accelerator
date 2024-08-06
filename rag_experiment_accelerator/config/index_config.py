@@ -30,9 +30,6 @@ class IndexConfig(BaseConfig):
     chunking_config: ChunkingConfig = field(default_factory=ChunkingConfig)
     embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
 
-    def __post_init__(self):
-        super().__init__()
-
     def label_properties(self) -> dict:
         """
         Returns properties subset used for labeling.

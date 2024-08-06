@@ -42,8 +42,8 @@ class Config(BaseConfig):
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
 
-    def __post_init__(self):
-        super().__init__()
+    # def __post_init__(self):
+    #     super().__init__()
 
     @classmethod
     def from_path(

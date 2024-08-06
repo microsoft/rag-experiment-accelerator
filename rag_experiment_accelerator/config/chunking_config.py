@@ -20,9 +20,6 @@ class ChunkingConfig(BaseConfig):
     # only for azure document intelligence strategy
     azure_document_intelligence_model: str = "prebuilt-read"
 
-    def __post_init__(self):
-        super().__init__()
-
     def label_properties(self) -> dict:
         """
         Returns properties used for labeling.

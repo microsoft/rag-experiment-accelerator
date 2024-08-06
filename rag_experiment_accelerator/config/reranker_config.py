@@ -9,6 +9,3 @@ class RerankerConfig(BaseConfig):
     cross_encoder_at_k: int = 3
     crossencoder_model: str = ""
     llm_rerank_threshold: int = 3
-
-    def __post_init__(self):
-        super().__init__()

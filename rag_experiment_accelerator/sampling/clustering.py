@@ -309,7 +309,7 @@ def cluster(all_chunks, config: Config, parser):
     # Concatenate the list of DataFrames into a single DataFrame
     df_concat = pd.concat(df_list)
     df_concat.to_csv(
-        config._sampled_cluster_predictions_path(),
+        config.path.sampled_cluster_predictions_path(config.sampling.optimum_k),
         sep=",",
     )
     # Rebuild sampled chunks dict

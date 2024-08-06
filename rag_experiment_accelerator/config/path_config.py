@@ -46,3 +46,9 @@ class PathConfig(BaseConfig):
         if not self.sampling_output_dir:
             self.sampling_output_dir = os.path.join(self.artifacts_dir, "sampling")
         paths.try_create_directory(self.sampling_output_dir)
+
+    def sampled_cluster_predictions_path(self, optimum_k: int) -> str:
+        return os.path.join(
+            self.sampling_output_dir,
+            f"sampled_cluster_predictions_cluster_number_{optimum_k}.csv",
+        )

@@ -338,7 +338,7 @@ def process_summary(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_SUMMARY:
+    if index_config.chunking_config.generate_summary:
         summary = generate_summary(
             chunk["content"],
             config.openai.azure_oai_chat_deployment_name,
