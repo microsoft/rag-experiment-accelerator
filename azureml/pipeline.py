@@ -211,6 +211,7 @@ if __name__ == "__main__":
             "Can't sample data when running on AzureML pipeline. Please run the pipeline locally"
         )
         exit()
+
     # Starting multiple pipelines hence unable to stream them
     for index_config in config.index_config.flatten():
         start_pipeline(environment, config, index_config, args.config_path)

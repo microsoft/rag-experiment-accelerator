@@ -45,11 +45,11 @@ def init():
     index_config = IndexConfig.from_index_name(args.index_name)
 
 
-def run(input_paths: List[str]) -> List[str]:
+def run(input_paths: List[str]) -> str:
     global args
     global config
     global environment
     global index_config
     index_run(environment, config, index_config, input_paths)
 
-    return [args.index_name]
+    return args.index_name

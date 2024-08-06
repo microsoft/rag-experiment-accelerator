@@ -59,8 +59,6 @@ class BaseConfig:
             BaseConfig: A flattened configuration object with attribute values set to each combination.
 
         """
-        obj_copy = deepcopy(self)
-
         key_values = {key: getattr(self, key) for key in get_type_hints(self)}
         sampling_key_values = {
             key: value
@@ -88,16 +86,18 @@ class BaseConfig:
             random.shuffle(combination_tuples)
 
         for values in combination_tuples:
+            obj_copy = deepcopy(self)
+
             for idx, attr in enumerate(attribute_names):
                 setattr(obj_copy, attr, values[idx])
 
             yield obj_copy
 
-    def sample(self) -> "BaseConfig":
+    def sample(self) -> list["BaseConfig"]:
         """
-        Returns a randomly selected flattened configuration from the base config.
+        Returns one randomly selected flattened configuration from the base config.
 
         Returns:
             BaseConfig: A randomly selected flattened configuration.
         """
-        return next(self.flatten(randomize=True))
+        return [next(self.flatten(randomize=True))]

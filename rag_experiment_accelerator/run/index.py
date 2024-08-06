@@ -30,15 +30,14 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
-) -> dict[str]:
+) -> str:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
 
     Returns:
-        Index dictionary containing the names of the indexes created.
+        The name of the index created.
     """
     pre_process = Preprocess(True)
-    index_dict = {"indexes": []}
 
     index_name = index_config.index_name()
     with TimeTook(f"create Azure Search Index {index_name}", logger=logger):
@@ -53,7 +52,6 @@ def run(
             index_config.ef_search,
             config.language.analyzers,
         )
-    index_dict["indexes"].append(index_name)
 
     docs = load_documents(
         environment,
@@ -90,7 +88,7 @@ def run(
             index_name=index_name,
         )
 
-    return index_dict
+    return index_name
 
 
 def convert_docs_to_vector_db_records(docs):

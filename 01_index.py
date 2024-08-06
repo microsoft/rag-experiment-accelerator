@@ -19,8 +19,13 @@ if __name__ == "__main__":
     config = Config.from_path(environment, args.config_path, args.data_dir)
 
     file_paths = get_all_file_paths(config.path.data_dir)
-    for index_config in config.index_config.flatten():
-        index_dict = run(environment, config, index_config, file_paths)
 
-    with open(config.path.generated_index_names_file, "w") as index_name:
-        json.dump(index_dict, index_name, indent=4)
+    index_dict = {"indexes": []}
+
+    for index_config in config.index_config.flatten():
+        index_name = run(environment, config, index_config, file_paths)
+        index_dict["indexes"].append(index_name)
+
+    # saves the list of index names locally, not used afterwards
+    with open(config.path.generated_index_names_file, "w") as index_names_file:
+        json.dump(index_dict, index_names_file, indent=4)
