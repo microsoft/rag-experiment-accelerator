@@ -20,7 +20,7 @@ langchain-community==0.2.11
 levenshtein==0.25.1
 lxml==5.2.2
 matplotlib==3.9.1
-mlflow==2.15.0
+mlflow==2.15.1
 openai==1.39.0
 plotly==5.23.0
 pypdf==4.3.1
@@ -36,4 +36,4 @@ textdistance==4.6.3
 tiktoken==0.7.0
 tqdm==4.66.5
 umap-learn==0.5.6
-unstructured==0.15.0
+unstructured==0.15.1
