@@ -22,7 +22,7 @@ lxml==5.2.2
 matplotlib==3.9.0
 mlflow==2.14.1
 openai==1.35.3
-plotly==5.22.0
+plotly==5.23.0
 pypdf==4.2.0
 pytesseract==0.3.10
 python-dotenv==1.0.1
