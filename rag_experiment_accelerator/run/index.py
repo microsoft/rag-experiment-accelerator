@@ -1,25 +1,27 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import ntpath
-
 from dotenv import load_dotenv
+import mlflow
 
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.llm.prompts import (
+from rag_experiment_accelerator.llm.prompt import (
     prompt_instruction_title,
     prompt_instruction_summary,
 )
+
 from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.utils.logging import get_logger
-
 
 logger = get_logger(__name__)
 load_dotenv(override=True)
@@ -30,6 +32,7 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
+    mlflow_client: mlflow.MlflowClient,
 ) -> str:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -65,9 +68,11 @@ def run(
 
     if config.sampling.sample_data:
         parser = load_parser()
-        docs = cluster(docs, config, parser)
+        docs = cluster(index_config.index_name(), docs, config, parser)
 
+    mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
+    mlflow.log_metric("Number of document chunks", len(docs_ready_to_index))
     embed_chunks(config, index_config, pre_process, docs_ready_to_index)
 
     generate_titles_from_chunks(
@@ -175,6 +180,7 @@ def embed_chunks(config: Config, index_config: IndexConfig, pre_process, chunks)
     return embedded_chunks
 
 
+@cache_with_checkpoint(id="chunk['content']+embedding_model.name")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -221,7 +227,7 @@ def generate_titles_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(
@@ -260,7 +266,7 @@ def generate_summaries_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(
@@ -279,6 +285,7 @@ def generate_summaries_from_chunks(
                 )
 
 
+@cache_with_checkpoint(id="chunk['content']+str(config.generate_title)")
 def process_title(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -316,6 +323,7 @@ def process_title(
     return chunk
 
 
+@cache_with_checkpoint(id="chunk['content']+str(config.generate_summary)")
 def process_summary(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -372,7 +380,7 @@ def generate_title(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_title, chunk)
+    ).generate_response(prompt_instruction_title, text=chunk)
     return response
 
 
@@ -394,5 +402,5 @@ def generate_summary(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_summary, chunk)
+    ).generate_response(prompt_instruction_summary, text=chunk)
     return response

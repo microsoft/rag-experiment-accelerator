@@ -1,3 +1,4 @@
+from enum import StrEnum
 import json
 import os
 
@@ -18,20 +19,27 @@ from rag_experiment_accelerator.config.eval_config import EvalConfig
 
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import create_embedding_model
-from rag_experiment_accelerator.llm.prompts import main_prompt_instruction
 from rag_experiment_accelerator.utils.logging import get_logger
+
+from rag_experiment_accelerator.llm.prompt import main_instruction
 
 
 logger = get_logger(__name__)
 
 
+class ExecutionEnvironment(StrEnum):
+    LOCAL = "local"
+    AZURE_ML = "azure-ml"
+
+
 @dataclass
 class Config(BaseConfig):
+    execution_environment: ExecutionEnvironment = ExecutionEnvironment.LOCAL
     experiment_name: str = ""
     job_name: str = ""
     job_description: str = ""
     data_formats: list[str] = field(default_factory=lambda: ["*"])
-    main_prompt_instruction: str = ""
+    main_instruction: str = ""
     path: PathConfig = field(default_factory=PathConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
     index_config: IndexConfig = field(default_factory=IndexConfig)
@@ -42,9 +50,6 @@ class Config(BaseConfig):
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
 
-    # def __post_init__(self):
-    #     super().__init__()
-
     @classmethod
     def from_path(
         cls, environment: Environment, config_path: str = None, data_dir: str = None
@@ -52,14 +57,14 @@ class Config(BaseConfig):
         if not config_path:
             config_path = os.path.join(os.getcwd(), "./config.json")
         with open(config_path.strip(), "r") as json_file:
-            config_json = json.load(json_file)
+            config_json: dict[str, any] = json.load(json_file)
 
         config = Config.from_dict(config_json)
 
         config.path.initialize_paths(config_path, data_dir)
 
-        if not config.main_prompt_instruction:
-            config.main_prompt_instruction = main_prompt_instruction
+        if not config.main_instruction:
+            config.main_instruction = main_instruction
 
         config.validate_inputs(
             use_semantic_search=environment.azure_search_use_semantic_search.lower()
@@ -69,8 +74,9 @@ class Config(BaseConfig):
         config.initialize_embedding_models(environment)
 
         # todo: refactor this
+        config.execution_environment = ExecutionEnvironment.LOCAL
         max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
-        config.MAX_WORKER_THREADS = (
+        config.max_worker_threads = (
             int(max_worker_threads) if max_worker_threads else None
         )
 

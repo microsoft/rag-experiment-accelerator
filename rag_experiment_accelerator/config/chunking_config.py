@@ -7,6 +7,9 @@ class ChunkingStrategy(StrEnum):
     BASIC = "basic"
     AZURE_DOCUMENT_INTELLIGENCE = "azure-document-intelligence"
 
+    def __repr__(self) -> str:
+        return f'"{self.value}"'
+
 
 @dataclass
 class ChunkingConfig(BaseConfig):
@@ -16,7 +19,7 @@ class ChunkingConfig(BaseConfig):
     generate_title: bool = False
     generate_summary: bool = False
     override_content_with_summary: bool = False
-    chunking_strategy: ChunkingStrategy = ChunkingStrategy.BASIC  # todo: to index?
+    chunking_strategy: ChunkingStrategy = ChunkingStrategy.BASIC  # todo: add to index?
     # only for azure document intelligence strategy
     azure_document_intelligence_model: str = "prebuilt-read"
 

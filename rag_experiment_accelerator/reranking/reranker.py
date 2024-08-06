@@ -1,9 +1,8 @@
-import json
 import re
 
 from sentence_transformers import CrossEncoder
 
-from rag_experiment_accelerator.llm.prompts import rerank_prompt_instruction
+from rag_experiment_accelerator.llm.prompt import rerank_prompt_instruction
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -64,30 +63,21 @@ def llm_rerank_documents(
         rerank_context += "\ndocument " + str(index) + ":\n"
         rerank_context += docs + "\n"
 
-    prompt = f"""
-        Let's try this now:
-        {rerank_context}
-        Question: {question}
-    """
+    response: dict[str, int] | None = response_generator.generate_response(
+        rerank_prompt_instruction,
+        documents=rerank_context,
+        question=question,
+        prompt_last=True,
+    )
 
-    response = response_generator.generate_response(rerank_prompt_instruction, prompt)
-    logger.debug("Response", response)
-    pattern = r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}"
-    try:
-        matches = re.findall(pattern, response)[0]
-        reranked = json.loads(matches)
-        logger.debug(reranked)
-        new_docs = []
-        for key, value in reranked["documents"].items():
-            key = key.replace("document_", "")
-            numeric_data = re.findall(r"\d+\.\d+|\d+", key)
-            if int(value) > rerank_threshold:
-                new_docs.append(int(numeric_data[0]))
-            result = [documents[i] for i in new_docs]
-    except BaseException:
-        logger.error(
-            "Unable to parse the rerank documents LLM response. Returning all"
-            " documents."
-        )
-        result = documents
+    logger.debug("Reranker response:\n", response)
+
+    if response is None:
+        return documents
+
+    result = []
+    for key, _ in sorted(response.items(), key=lambda x: x[1], reverse=True):
+        document_index = int(re.search(r"document_(\d+)", key))
+        result.append(documents[document_index])
+
     return result

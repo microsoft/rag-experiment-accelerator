@@ -47,32 +47,32 @@ def test_config_init(mock_create_embedding_model):
 
     config.embedding_model = [embedding_model_1, embedding_model_2]
 
-    assert config.INDEX_NAME_PREFIX == mock_config_data["index_name_prefix"]
-    assert config.EXPERIMENT_NAME == mock_config_data["experiment_name"]
-    assert config.CHUNK_SIZES == mock_config_data["chunking"]["chunk_size"]
-    assert config.OVERLAP_SIZES == mock_config_data["chunking"]["overlap_size"]
-    assert config.CHUNKING_STRATEGY == mock_config_data["chunking_strategy"]
-    assert config.EF_CONSTRUCTIONS == mock_config_data["ef_construction"]
-    assert config.EF_SEARCHES == mock_config_data["ef_search"]
-    assert config.RERANK == mock_config_data["rerank"]
-    assert config.RERANK_TYPE == mock_config_data["rerank_type"]
-    assert config.LLM_RERANK_THRESHOLD == mock_config_data["llm_re_rank_threshold"]
-    assert config.CROSSENCODER_AT_K == mock_config_data["cross_encoder_at_k"]
-    assert config.CROSSENCODER_MODEL == mock_config_data["crossencoder_model"]
-    assert config.search == mock_config_data["search"]
-    assert config.METRIC_TYPES == mock_config_data["metric_types"]
+    assert config.index_name_prefix == mock_config_data["index_name_prefix"]
+    assert config.experiment_name == mock_config_data["experiment_name"]
+    assert config.chunk_sizes == mock_config_data["chunking"]["chunk_size"]
+    assert config.overlap_sizes == mock_config_data["chunking"]["overlap_size"]
+    assert config.chunking_strategy == mock_config_data["chunking_strategy"]
+    assert config.ef_constructions == mock_config_data["ef_construction"]
+    assert config.ef_searches == mock_config_data["ef_search"]
+    assert config.rerank == mock_config_data["rerank"]
+    assert config.rerank_type == mock_config_data["rerank_type"]
+    assert config.llm_rerank_threshold == mock_config_data["llm_re_rank_threshold"]
+    assert config.crossencoder_at_k == mock_config_data["cross_encoder_at_k"]
+    assert config.crossencoder_model == mock_config_data["crossencoder_model"]
+    assert config.search_types == mock_config_data["search_types"]
+    assert config.metric_types == mock_config_data["metric_types"]
     assert (
-        config.AZURE_OAI_CHAT_DEPLOYMENT_NAME
+        config.azure_oai_chat_deployment_name
         == mock_config_data["azure_oai_chat_deployment_name"]
     )
-    assert config.TEMPERATURE == mock_config_data["openai_temperature"]
+    assert config.temperature == mock_config_data["openai_temperature"]
     assert (
-        config.SEARCH_RELEVANCY_THRESHOLD
+        config.search_relevency_threshold
         == mock_config_data["search_relevancy_threshold"]
     )
-    assert config.DATA_FORMATS == mock_config_data["data_formats"]
+    assert config.data_formats == mock_config_data["data_formats"]
     assert (
-        config.EVAL_DATA_JSONL_FILE_PATH
+        config.eval_data_jsonl_file_path
         == f"{get_test_config_dir()}/artifacts/eval_data.jsonl"
     )
 
@@ -82,11 +82,11 @@ def test_config_init(mock_create_embedding_model):
     assert config.embedding_model[1].name.return_value == "text-embedding-ada-002"
     assert config.embedding_model[1].dimension.return_value == 1536
 
-    assert config.SAMPLE_DATA
-    assert config.SAMPLE_PERCENTAGE == mock_config_data["sampling"]["sample_percentage"]
-    assert config.SAMPLE_OPTIMUM_K == mock_config_data["sampling"]["optimum_k"]
-    assert config.SAMPLE_MIN_CLUSTER == mock_config_data["sampling"]["min_cluster"]
-    assert config.SAMPLE_MAX_CLUSTER == mock_config_data["sampling"]["max_cluster"]
+    assert config.sampling
+    assert config.sample_percentage == mock_config_data["sampling"]["sample_percentage"]
+    assert config.sample_optimum_k == mock_config_data["sampling"]["optimum_k"]
+    assert config.sample_min_cluster == mock_config_data["sampling"]["min_cluster"]
+    assert config.sample_max_cluster == mock_config_data["sampling"]["max_cluster"]
 
 
 def test_chunk_size_greater_than_overlap_size():

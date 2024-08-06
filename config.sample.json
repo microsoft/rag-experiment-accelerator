@@ -3,7 +3,8 @@
     "job_name": "",
     "job_description": "",
     "data_formats": ["*"],
-    "main_prompt_instruction": "",
+    "main_instruction": "",
+    "use_checkpoints": true,
     "sampling": {
         "sample_data": false,
         "sample_percentage": 5,
@@ -44,6 +45,7 @@
         "query_language": "en-us"
     },
     "rerank": {
+        "enabled": true,
         "type": "crossencoder",
         "llm_rerank_threshold": 3,
         "cross_encoder_at_k": 4,
@@ -60,7 +62,6 @@
     },
     "query_expansion": {
         "hyde": "disabled",
-        "chain_of_thoughts": true,
         "query_expansion": false,
         "min_query_expansion_related_question_similarity_score": 90,
         "expand_to_multiple_questions": false

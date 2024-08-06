@@ -14,7 +14,8 @@ class QueryOutput:
         expected (str): The expected output.
         search_type (str): The type of search.
         search_evals (list): The evaluations for search.
-        context (str): The context of the query.
+        context (str): The qna context of the query.
+        retrieved_contexts (list): The list of retrieved contexts of the query.
         question (str): The question of the query.
     """
 
@@ -32,6 +33,7 @@ class QueryOutput:
         search_type: str,
         search_evals: list,
         context: str,
+        retrieved_contexts: list,
         question: str,
     ):
         self.rerank = rerank
@@ -46,4 +48,5 @@ class QueryOutput:
         self.search_type = search_type
         self.search_evals = search_evals
         self.context = context
+        self.retrieved_contexts = retrieved_contexts
         self.question = question

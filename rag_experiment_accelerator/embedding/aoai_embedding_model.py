@@ -65,3 +65,7 @@ class AOAIEmbeddingModel(EmbeddingModel):
         )
 
         return response.data[0].embedding
+
+    # todo: is it needed?
+    def to_dict(self) -> dict:
+        return super().to_dict()

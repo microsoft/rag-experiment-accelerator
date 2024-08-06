@@ -2,8 +2,6 @@ import os
 import sys
 import argparse
 import mlflow
-from mlflow import MlflowClient
-
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_dir)
@@ -12,16 +10,6 @@ from rag_experiment_accelerator.config.environment import Environment  # noqa: E
 from rag_experiment_accelerator.config.config import Config  # noqa: E402
 from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.run.evaluation import run as eval_run  # noqa: E402
-
-
-def _get_parent_mlflow_run_id(mlflow_client: MlflowClient):
-    """
-    The MLFlow run will be already started by the parent pipeline,
-    retrieve the run_id to collect metrics into the parent run
-    """
-    with mlflow.start_run():
-        mlflow_run = mlflow_client.get_run(mlflow.active_run().info.run_id)
-        return mlflow_run.data.tags["azureml.pipeline"]
 
 
 def main():
@@ -45,6 +33,16 @@ def main():
         "--keyvault", type=str, help="keyvault to load the environment from"
     )
     parser.add_argument(
+        "--mlflow_tracking_uri",
+        type=str,
+        help="input: mlflow tracking uri to log to",
+    )
+    parser.add_argument(
+        "--mlflow_parent_run_id",
+        type=str,
+        help="input: mlflow parent run id to connect nested run to",
+    )
+    parser.add_argument(
         "--eval_result_dir",
         type=str,
         help="output: path to write results of evaluation to",
@@ -60,13 +58,8 @@ def main():
     config.path.query_data_dir = args.query_result_dir
     config.path.eval_data_dir = args.eval_result_dir
 
-    mlflow_client = mlflow.MlflowClient()
-    mlflow.set_experiment(config.EXPERIMENT_NAME)
-
-    with mlflow.start_run(run_id=_get_parent_mlflow_run_id(mlflow_client)):
-        eval_run(
-            environment, config, index_config, mlflow_client, name_suffix="_result"
-        )
+    mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
+    eval_run(environment, config, index_config, mlflow_client, name_suffix="_result")
 
 
 if __name__ == "__main__":
