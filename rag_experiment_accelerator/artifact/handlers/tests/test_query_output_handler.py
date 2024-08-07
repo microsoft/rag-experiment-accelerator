@@ -58,7 +58,7 @@ def test_save(mock_artifact_handler_save_dict):
         rerank="rerank1",
         rerank_type="rerank_type1",
         crossencoder_model="cross_encoder_model1",
-        llm_re_rank_threshold=1,
+        llm_rerank_threshold=1,
         retrieve_num_of_documents=1,
         crossencoder_at_k=2,
         question_count=1,
@@ -86,7 +86,7 @@ def test_load(mock_artifact_handler_load):
         rerank="rerank1",
         rerank_type="rerank_type1",
         crossencoder_model="cross_encoder_model1",
-        llm_re_rank_threshold=1,
+        llm_rerank_threshold=1,
         retrieve_num_of_documents=1,
         crossencoder_at_k=1,
         question_count=1,
@@ -112,7 +112,7 @@ def test_load(mock_artifact_handler_load):
         assert d.rerank == data.rerank
         assert d.rerank_type == data.rerank_type
         assert d.crossencoder_model == data.crossencoder_model
-        assert d.llm_re_rank_threshold == data.llm_re_rank_threshold
+        assert d.llm_rerank_threshold == data.llm_rerank_threshold
         assert d.retrieve_num_of_documents == data.retrieve_num_of_documents
         assert d.crossencoder_at_k == data.crossencoder_at_k
         assert d.question_count == data.question_count

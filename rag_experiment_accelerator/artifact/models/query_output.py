@@ -6,7 +6,7 @@ class QueryOutput:
         rerank (bool): Indicates whether reranking is enabled.
         rerank_type (str): The type of reranking.
         crossencoder_model (str): The model used for cross-encoding.
-        llm_re_rank_threshold (int): The threshold for reranking using LLM.
+        llm_rerank_threshold (int): The threshold for reranking using LLM.
         retrieve_num_of_documents (int): The number of documents to retrieve.
         crossencoder_at_k (int): The value of k for cross-encoder.
         question_count (int): The count of questions.
@@ -24,7 +24,7 @@ class QueryOutput:
         rerank: bool,
         rerank_type: str,
         crossencoder_model: str,
-        llm_re_rank_threshold: int,
+        llm_rerank_threshold: int,
         retrieve_num_of_documents: int,
         crossencoder_at_k: int,
         question_count: int,
@@ -39,7 +39,7 @@ class QueryOutput:
         self.rerank = rerank
         self.rerank_type = rerank_type
         self.crossencoder_model = crossencoder_model
-        self.llm_re_rank_threshold = llm_re_rank_threshold
+        self.llm_rerank_threshold = llm_rerank_threshold
         self.retrieve_num_of_documents = retrieve_num_of_documents
         self.crossencoder_at_k = crossencoder_at_k
         self.question_count = question_count

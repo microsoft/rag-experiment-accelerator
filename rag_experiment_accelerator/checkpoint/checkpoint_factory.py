@@ -36,4 +36,4 @@ def _get_checkpoint_base_on_config(config: Config):
         # Currently not supported in Azure ML: https://github.com/microsoft/rag-experiment-accelerator/issues/491
         return NullCheckpoint()
 
-    return LocalStorageCheckpoint(directory=config.artifacts_dir)
+    return LocalStorageCheckpoint(directory=config.path.artifacts_dir)

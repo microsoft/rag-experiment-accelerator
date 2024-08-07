@@ -546,68 +546,75 @@ def compute_metrics(
     Returns:
         float: The similarity score between the two strings, as determined by the specified metric.
     """
-    if metric_type == "lcsstr":
-        score = lcsstr(actual, expected)
-    elif metric_type == "lcsseq":
-        score = lcsseq(actual, expected)
-    elif metric_type == "cosine":
-        score = cosine(actual, expected)
-    elif metric_type == "jaro_winkler":
-        score = jaro_winkler(actual, expected)
-    elif metric_type == "hamming":
-        score = hamming(actual, expected)
-    elif metric_type == "jaccard":
-        score = jaccard(actual, expected)
-    elif metric_type == "levenshtein":
-        score = levenshtein(actual, expected)
-    elif metric_type == "fuzzy":
-        score = fuzzy(actual, expected)
-    elif metric_type == "bert_all_MiniLM_L6_v2":
-        all_MiniLM_L6_v2 = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-        score = compare_semantic_document_values(actual, expected, all_MiniLM_L6_v2)
-    elif metric_type == "bert_base_nli_mean_tokens":
-        base_nli_mean_tokens = SentenceTransformer(
-            "sentence-transformers/bert-base-nli-mean-tokens"
-        )
-        score = compare_semantic_document_values(actual, expected, base_nli_mean_tokens)
-    elif metric_type == "bert_large_nli_mean_tokens":
-        large_nli_mean_tokens = SentenceTransformer(
-            "sentence-transformers/bert-large-nli-mean-tokens"
-        )
-        score = compare_semantic_document_values(
-            actual, expected, large_nli_mean_tokens
-        )
-    elif metric_type == "bert_large_nli_stsb_mean_tokens":
-        large_nli_stsb_mean_tokens = SentenceTransformer(
-            "sentence-transformers/bert-large-nli-stsb-mean-tokens"
-        )
-        score = compare_semantic_document_values(
-            actual, expected, large_nli_stsb_mean_tokens
-        )
-    elif metric_type == "bert_distilbert_base_nli_stsb_mean_tokens":
-        distilbert_base_nli_stsb_mean_tokens = SentenceTransformer(
-            "sentence-transformers/distilbert-base-nli-stsb-mean-tokens"
-        )
-        score = compare_semantic_document_values(
-            actual, expected, distilbert_base_nli_stsb_mean_tokens
-        )
-    elif metric_type == "bert_paraphrase_multilingual_MiniLM_L12_v2":
-        paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer(
-            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-        )
-        score = compare_semantic_document_values(
-            actual, expected, paraphrase_multilingual_MiniLM_L12_v2
-        )
-    elif metric_type == "llm_answer_relevance":
-        score = llm_answer_relevance(response_generator, question, actual)
-    elif metric_type == "llm_context_precision":
-        score = llm_context_precision(response_generator, question, retrieved_contexts)
-    elif metric_type == "llm_context_recall":
-        score = llm_context_recall(
-            response_generator, question, expected, retrieved_contexts
-        )
-    else:
-        pass
+    match metric_type:
+        case "lcsstr":
+            score = lcsstr(actual, expected)
+        case "lcsseq":
+            score = lcsseq(actual, expected)
+        case "cosine":
+            score = cosine(actual, expected)
+        case "jaro_winkler":
+            score = jaro_winkler(actual, expected)
+        case "hamming":
+            score = hamming(actual, expected)
+        case "jaccard":
+            score = jaccard(actual, expected)
+        case "levenshtein":
+            score = levenshtein(actual, expected)
+        case "fuzzy":
+            score = fuzzy(actual, expected)
+        case "bert_all_MiniLM_L6_v2":
+            all_MiniLM_L6_v2 = SentenceTransformer(
+                "sentence-transformers/all-MiniLM-L6-v2"
+            )
+            score = compare_semantic_document_values(actual, expected, all_MiniLM_L6_v2)
+        case "bert_base_nli_mean_tokens":
+            base_nli_mean_tokens = SentenceTransformer(
+                "sentence-transformers/bert-base-nli-mean-tokens"
+            )
+            score = compare_semantic_document_values(
+                actual, expected, base_nli_mean_tokens
+            )
+        case "bert_large_nli_mean_tokens":
+            large_nli_mean_tokens = SentenceTransformer(
+                "sentence-transformers/bert-large-nli-mean-tokens"
+            )
+            score = compare_semantic_document_values(
+                actual, expected, large_nli_mean_tokens
+            )
+        case "bert_large_nli_stsb_mean_tokens":
+            large_nli_stsb_mean_tokens = SentenceTransformer(
+                "sentence-transformers/bert-large-nli-stsb-mean-tokens"
+            )
+            score = compare_semantic_document_values(
+                actual, expected, large_nli_stsb_mean_tokens
+            )
+        case "bert_distilbert_base_nli_stsb_mean_tokens":
+            distilbert_base_nli_stsb_mean_tokens = SentenceTransformer(
+                "sentence-transformers/distilbert-base-nli-stsb-mean-tokens"
+            )
+            score = compare_semantic_document_values(
+                actual, expected, distilbert_base_nli_stsb_mean_tokens
+            )
+        case "bert_paraphrase_multilingual_MiniLM_L12_v2":
+            paraphrase_multilingual_MiniLM_L12_v2 = SentenceTransformer(
+                "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            )
+            score = compare_semantic_document_values(
+                actual, expected, paraphrase_multilingual_MiniLM_L12_v2
+            )
+        case "llm_answer_relevance":
+            score = llm_answer_relevance(response_generator, question, actual)
+        case "llm_context_precision":
+            score = llm_context_precision(
+                response_generator, question, retrieved_contexts
+            )
+        case "llm_context_recall":
+            score = llm_context_recall(
+                response_generator, question, expected, retrieved_contexts
+            )
+        case _:
+            pass
 
     return score
 
@@ -792,7 +799,7 @@ def evaluate_prompts(
     mlflow.log_param("question_count", common_data.question_count)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
     mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
-    mlflow.log_param("chunk_overlap", index_config.overlap)
+    mlflow.log_param("chunk_overlap", index_config.chunking_config.overlap_size)
     mlflow.log_param(
         "embedding_dimension",
         config.get_embedding_model(index_config.embedding_model.model_name).dimension,

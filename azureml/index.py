@@ -50,7 +50,7 @@ def init():
     global mlflow_client
 
     environment = Environment.from_keyvault(args.keyvault)
-    config = Config(environment, args.config_path, args.data_dir)
+    config = Config.from_path(environment, args.config_path, args.data_dir)
     init_checkpoint(config)
 
     index_config = IndexConfig.from_index_name(args.index_name)

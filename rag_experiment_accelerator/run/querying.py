@@ -532,7 +532,7 @@ def get_query_output(
         rerank=config.rerank.enabled,
         rerank_type=config.rerank.type,
         crossencoder_model=config.rerank.crossencoder_model,
-        llm_re_rank_threshold=config.rerank.llm_rerank_threshold,
+        llm_rerank_threshold=config.rerank.llm_rerank_threshold,
         retrieve_num_of_documents=config.search.retrieve_num_of_documents,
         crossencoder_at_k=config.rerank.cross_encoder_at_k,
         question_count=question_count,

@@ -9,7 +9,7 @@ from rag_experiment_accelerator.config.config import Config
 @tool
 def my_python_tool(should_index: bool, config_path: str) -> bool:
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, config_path)
+    config = Config.from_path(environment, config_path)
     init_checkpoint(config)
 
     if should_index:

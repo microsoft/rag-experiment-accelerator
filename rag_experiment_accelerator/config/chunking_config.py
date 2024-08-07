@@ -15,7 +15,7 @@ class ChunkingStrategy(StrEnum):
 class ChunkingConfig(BaseConfig):
     preprocess: bool = False
     chunk_size: int = 512
-    overlap: int = 128
+    overlap_size: int = 128
     generate_title: bool = False
     generate_summary: bool = False
     override_content_with_summary: bool = False
@@ -30,7 +30,7 @@ class ChunkingConfig(BaseConfig):
         properties = {
             "p": int(self.preprocess),
             "cs": self.chunk_size,
-            "o": self.overlap,
+            "o": self.overlap_size,
             "t": int(self.generate_title),
             "s": int(self.generate_summary),
             "oc": int(self.override_content_with_summary),
@@ -48,7 +48,7 @@ class ChunkingConfig(BaseConfig):
         return ChunkingConfig(
             preprocess=bool(properties["p"]),
             chunk_size=int(properties["cs"]),
-            overlap=int(properties["o"]),
+            overlap_size=int(properties["o"]),
             generate_title=bool(properties["t"]),
             generate_summary=bool(properties["s"]),
             override_content_with_summary=bool(properties["os"]),

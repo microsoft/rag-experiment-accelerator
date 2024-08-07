@@ -19,7 +19,7 @@
         "chunking_config": {
             "preprocess": false,
             "chunk_size": [1000],
-            "overlap": [200],
+            "overlap_size": [200],
             "generate_title": false,
             "generate_summary": false,
             "override_content_with_summary": false,

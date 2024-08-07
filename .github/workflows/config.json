@@ -1,24 +1,38 @@
 {
-    "TODO UPDATE": "",
-    "index_name_prefix": "ci",
     "experiment_name": "baseline",
     "job_name": "baseline_job",
     "job_description": "",
-    "chunking": {
-        "chunk_size": [1000],
-        "overlap_size": [200],
-        "generate_title": true,
-        "generate_summary": true,
-        "override_content_with_summary": false
+    "data_formats": ["*"],
+    "main_instruction": "",
+    "use_checkpoints": true,
+    "sampling": {
+        "sample_data": false,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
     },
-    "embedding_models": [
-        {
-            "type": "sentence-transformer",
-            "model_name": "all-mpnet-base-v2"
-        }
-    ],
-    "ef_construction": [400],
-    "ef_search": [400],
+    "index_config": {
+        "index_name_prefix": "ci",
+        "ef_construction": [400],
+        "ef_search": [400],
+        "chunking_config": {
+            "preprocess": false,
+            "chunk_size": [1000],
+            "overlap_size": [200],
+            "generate_title": false,
+            "generate_summary": false,
+            "override_content_with_summary": false,
+            "chunking_strategy": "basic",
+            "azure_document_intelligence_model": "prebuilt-read"
+        },
+        "embedding_model": [
+            {
+                "type": "sentence-transformer",
+                "model_name": "all-mpnet-base-v2"
+            }
+        ]
+    },
     "language":{
         "analyzers": {
             "analyzer_name": "en.microsoft",
@@ -30,34 +44,42 @@
         },
         "query_language": "en-us"
     },
-    "rerank": true,
-    "rerank_type": "crossencoder",
-    "llm_re_rank_threshold": 3,
-    "cross_encoder_at_k": 4,
-    "crossencoder_model": "cross-encoder/stsb-roberta-base",
-    "search_types": [
-        "search_for_manual_hybrid",
-        "search_for_match_Hybrid_multi",
-        "search_for_match_semantic"
-    ],
-    "retrieve_num_of_documents": 5,
-    "metric_types": [
-        "fuzzy",
-        "bert_all_MiniLM_L6_v2",
-        "cosine",
-        "bert_distilbert_base_nli_stsb_mean_tokens",
-        "llm_answer_relevance",
-        "llm_context_precision"
-    ],
-    "azure_oai_chat_deployment_name": "gpt-35-turbo",
-    "azure_oai_eval_deployment_name": "gpt-35-turbo",
-    "openai_temperature": 0,
-    "search_relevancy_threshold": 0.8,
-    "data_formats": "all",
-    "chunking_strategy": "basic",
-    "hyde": "generated_hypothetical_answer",
-    "query_expansion": true,
-    "min_query_expansion_related_question_similarity_score": 90,
-    "azure_document_intelligence_model": "prebuilt-read",
-    "expand_to_multiple_questions": true
+    "rerank": {
+        "enabled": true,
+        "type": "crossencoder",
+        "llm_rerank_threshold": 3,
+        "cross_encoder_at_k": 4,
+        "crossencoder_model": "cross-encoder/stsb-roberta-base"
+    },
+    "search": {
+        "retrieve_num_of_documents": 5,
+        "search_type": [
+            "search_for_manual_hybrid",
+            "search_for_match_Hybrid_multi",
+            "search_for_match_semantic"
+        ],
+        "search_relevancy_threshold": 0.8
+    },
+    "query_expansion": {
+        "query_expansion": true,
+        "hyde": "generated_hypothetical_answer",
+        "min_query_expansion_related_question_similarity_score": 90,
+        "expand_to_multiple_questions": true
+    },
+    "openai": {
+        "azure_oai_chat_deployment_name": "gpt-35-turbo",
+        "azure_oai_eval_deployment_name": "gpt-35-turbo",
+        "openai_temperature": 0
+    },
+    "eval": {
+        "metric_types": [
+            "fuzzy",
+            "bert_all_MiniLM_L6_v2",
+            "cosine",
+            "bert_distilbert_base_nli_stsb_mean_tokens",
+            "llm_answer_relevance",
+            "llm_context_precision"
+        ],
+        "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
+    }
 }

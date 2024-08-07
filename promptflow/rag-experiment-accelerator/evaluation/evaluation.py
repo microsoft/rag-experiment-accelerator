@@ -14,7 +14,7 @@ from rag_experiment_accelerator.config.paths import (
 @tool
 def my_python_tool(config_path: str) -> bool:
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, config_path)
+    config = Config.from_path(environment, config_path)
     mlflow_client = initialise_mlflow_client(environment, config)
     name_suffix = formatted_datetime_suffix()
 
@@ -27,6 +27,6 @@ def my_python_tool(config_path: str) -> bool:
                 config,
                 index_config,
                 mlflow_client,
-                formatted_datetime_suffix,
+                name_suffix,
             )
     return True

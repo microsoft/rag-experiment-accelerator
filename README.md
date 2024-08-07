@@ -248,7 +248,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "experiment_name": "name of the experiment",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
     "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
-    "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
+    "llm_rerank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
     "cross_encoder_at_k": "determines the threshold when using cross-encoding re-ranking. Chunks with given rank value are selected." ,
     "crossencoder_model" :"determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base",
     "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
@@ -383,7 +383,7 @@ This solution utilizes several configuration parameters in config.json that dire
 
 **cross_encoder_at_k:** This config influences the ranking process. A high value might result in irrelevant documents being included in the final results.
 
-**llm_re_rank_threshold:** This config determines which documents are passed to the language model (LLM) for further processing. Setting this value too high could create an overly large context for the LLM to handle, potentially leading to processing errors or degraded results. This might also result in exception from Azure OpenAI endpoint.
+**llm_rerank_threshold:** This config determines which documents are passed to the language model (LLM) for further processing. Setting this value too high could create an overly large context for the LLM to handle, potentially leading to processing errors or degraded results. This might also result in exception from Azure OpenAI endpoint.
 
 #### Azure OpenAI Model and Deployment
 

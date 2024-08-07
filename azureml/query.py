@@ -53,7 +53,7 @@ def main():
 
     environment = Environment.from_keyvault(args.keyvault)
 
-    config = Config(environment, args.config_path)
+    config = Config.from_path(environment, args.config_path)
     config.path.eval_data_file = args.eval_data_path
     config.path.query_data_dir = args.query_result_dir
     init_checkpoint(config)

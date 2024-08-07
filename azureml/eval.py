@@ -50,7 +50,7 @@ def main():
     args = parser.parse_args()
 
     environment = Environment.from_keyvault(args.keyvault)
-    config = Config(environment, config_path=args.config_path)
+    config = Config.from_path(environment, config_path=args.config_path)
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
     index_config = IndexConfig.from_index_name(index_name)

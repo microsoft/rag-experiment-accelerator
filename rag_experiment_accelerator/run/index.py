@@ -62,7 +62,7 @@ def run(
         config.data_formats,
         file_paths,
         index_config.chunking_config.chunk_size,
-        index_config.chunking_config.overlap,
+        index_config.chunking_config.overlap_size,
         index_config.chunking_config.azure_document_intelligence_model,
     )
 

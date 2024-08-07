@@ -256,7 +256,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, args.config_path, args.data_dir)
+    config = Config.from_path(environment, args.config_path, args.data_dir)
     config.execution_environment = ExecutionEnvironment.AZURE_ML
 
     if config.sampling.sample_data:

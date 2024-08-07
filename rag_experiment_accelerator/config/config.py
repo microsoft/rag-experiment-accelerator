@@ -5,7 +5,6 @@ import os
 from dataclasses import dataclass, field
 
 from rag_experiment_accelerator.config.environment import Environment
-
 from rag_experiment_accelerator.config.path_config import PathConfig
 from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.config.index_config import IndexConfig
@@ -40,6 +39,8 @@ class Config(BaseConfig):
     job_description: str = ""
     data_formats: list[str] = field(default_factory=lambda: ["*"])
     main_instruction: str = ""
+    max_worker_threads: int = None
+    use_checkpoints: bool = True
     path: PathConfig = field(default_factory=PathConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
     index_config: IndexConfig = field(default_factory=IndexConfig)
@@ -76,9 +77,8 @@ class Config(BaseConfig):
         # todo: refactor this
         config.execution_environment = ExecutionEnvironment.LOCAL
         max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
-        config.max_worker_threads = (
-            int(max_worker_threads) if max_worker_threads else None
-        )
+        if max_worker_threads:
+            config.max_worker_threads = int(max_worker_threads)
 
         # # log all the configuration settings in debug mode
         # for key, value in config_json.items():
@@ -95,7 +95,7 @@ class Config(BaseConfig):
             raise ValueError(
                 "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
             )
-        if max(self.index_config.chunking_config.overlap) > min(
+        if max(self.index_config.chunking_config.overlap_size) > min(
             self.index_config.chunking_config.chunk_size
         ):
             raise ValueError(
@@ -118,12 +118,12 @@ class Config(BaseConfig):
             )
 
     def initialize_embedding_models(self, environment: Environment):
-        self.embedding_models_dictionary = {}
+        self.__embedding_models_dictionary = {}
         for model_config in self.index_config.embedding_model:
             kwargs = {"environment": environment, **model_config.to_dict()}
-            self.embedding_models_dictionary[
+            self.__embedding_models_dictionary[
                 model_config.model_name
             ] = create_embedding_model(model_config.type, **kwargs)
 
     def get_embedding_model(self, model_name) -> EmbeddingModel:
-        return self.embedding_models_dictionary.get(model_name)
+        return self.__embedding_models_dictionary.get(model_name)

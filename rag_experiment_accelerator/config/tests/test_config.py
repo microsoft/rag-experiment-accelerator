@@ -43,7 +43,7 @@ def test_config_init(mock_create_embedding_model):
     embedding_model_2.dimension.return_value = 1536
     mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
 
-    config = Config(environment, config_path)
+    config = Config.from_path(environment, config_path)
 
     config.embedding_model = [embedding_model_1, embedding_model_2]
 
@@ -56,7 +56,7 @@ def test_config_init(mock_create_embedding_model):
     assert config.ef_searches == mock_config_data["ef_search"]
     assert config.rerank == mock_config_data["rerank"]
     assert config.rerank_type == mock_config_data["rerank_type"]
-    assert config.llm_rerank_threshold == mock_config_data["llm_re_rank_threshold"]
+    assert config.llm_rerank_threshold == mock_config_data["llm_rerank_threshold"]
     assert config.crossencoder_at_k == mock_config_data["cross_encoder_at_k"]
     assert config.crossencoder_model == mock_config_data["crossencoder_model"]
     assert config.search_types == mock_config_data["search_types"]
