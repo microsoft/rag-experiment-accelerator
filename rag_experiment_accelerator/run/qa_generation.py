@@ -47,7 +47,7 @@ def run(
         else:
             all_docs = load_documents(
                 environment,
-                config.index_config.chunking_config.chunking_strategy,
+                config.index.chunking.chunking_strategy,
                 config.data_formats,
                 file_paths,
                 2000,
@@ -60,7 +60,7 @@ def run(
     else:
         all_docs = load_documents(
             environment,
-            config.index_config.chunking_config.chunking_strategy,
+            config.index.chunking.chunking_strategy,
             config.data_formats,
             file_paths,
             2000,

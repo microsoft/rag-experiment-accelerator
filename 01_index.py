@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     index_dict = {"indexes": []}
 
-    for index_config in config.index_config.flatten():
+    for index_config in config.index.flatten():
         with mlflow.start_run(run_name=mlflow_run_name(f"index_job_{config.job_name}")):
             index_name = run(
                 environment, config, index_config, file_paths, mlflow_client

@@ -37,7 +37,7 @@ if __name__ == "__main__":
     handler = QueryOutputHandler(config.path.query_data_dir)
     init_checkpoint(config)
 
-    for index_config in config.index_config.flatten():
+    for index_config in config.index.flatten():
         with mlflow.start_run(run_name=mlflow_run_name(config.job_name)):
             run(environment, config, index_config, mlflow_client)
 

@@ -41,7 +41,7 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
     Returns the hyper parameters for the current job.
     """
     config_copy = copy.deepcopy(config)
-    config_copy.index_config = index_config
+    config_copy.index = index_config
 
     config_dict = config.to_dict()
 

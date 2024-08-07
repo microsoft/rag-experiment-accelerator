@@ -58,12 +58,12 @@ def run(
 
     docs = load_documents(
         environment,
-        index_config.chunking_config.chunking_strategy,
+        index_config.chunking.chunking_strategy,
         config.data_formats,
         file_paths,
-        index_config.chunking_config.chunk_size,
-        index_config.chunking_config.overlap_size,
-        index_config.chunking_config.azure_document_intelligence_model,
+        index_config.chunking.chunk_size,
+        index_config.chunking.overlap_size,
+        index_config.chunking.azure_document_intelligence_model,
     )
 
     if config.sampling.sample_data:
@@ -167,7 +167,7 @@ def embed_chunks(config: Config, index_config: IndexConfig, pre_process, chunks)
                 else:
                     embedded_chunks.append(chunk_dict)
 
-    if index_config.chunking_config.override_content_with_summary:
+    if index_config.chunking.override_content_with_summary:
         for chunk in chunks:
             if "summary" in chunk:
                 chunk["content"] = chunk["summary"]
@@ -303,7 +303,7 @@ def process_title(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if index_config.chunking_config.generate_title:
+    if index_config.chunking.generate_title:
         title = generate_title(
             chunk["content"],
             config.openai.azure_oai_chat_deployment_name,
@@ -344,7 +344,7 @@ def process_summary(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if index_config.chunking_config.generate_summary:
+    if index_config.chunking.generate_summary:
         summary = generate_summary(
             chunk["content"],
             config.openai.azure_oai_chat_deployment_name,

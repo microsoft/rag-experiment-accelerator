@@ -43,7 +43,7 @@ class Config(BaseConfig):
     use_checkpoints: bool = True
     path: PathConfig = field(default_factory=PathConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
-    index_config: IndexConfig = field(default_factory=IndexConfig)
+    index: IndexConfig = field(default_factory=IndexConfig)
     language: LanguageConfig = field(default_factory=LanguageConfig)
     rerank: RerankerConfig = field(default_factory=RerankerConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
@@ -54,7 +54,7 @@ class Config(BaseConfig):
     @classmethod
     def from_path(
         cls, environment: Environment, config_path: str = None, data_dir: str = None
-    ) -> BaseConfig:
+    ) -> "Config":
         if not config_path:
             config_path = os.path.join(os.getcwd(), "./config.json")
         with open(config_path.strip(), "r") as json_file:
@@ -87,17 +87,15 @@ class Config(BaseConfig):
         return config
 
     def validate_inputs(self, use_semantic_search: bool):
-        if any(val < 100 or val > 1000 for val in self.index_config.ef_construction):
+        if any(val < 100 or val > 1000 for val in self.index.ef_construction):
             raise ValueError(
                 "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
             )
-        if any(val < 100 or val > 1000 for val in self.index_config.ef_search):
+        if any(val < 100 or val > 1000 for val in self.index.ef_search):
             raise ValueError(
                 "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
             )
-        if max(self.index_config.chunking_config.overlap_size) > min(
-            self.index_config.chunking_config.chunk_size
-        ):
+        if max(self.index.chunking.overlap_size) > min(self.index.chunking.chunk_size):
             raise ValueError(
                 "Config param validation error: overlap_size must be less than chunk_size"
             )
@@ -119,7 +117,7 @@ class Config(BaseConfig):
 
     def initialize_embedding_models(self, environment: Environment):
         self.__embedding_models_dictionary = {}
-        for model_config in self.index_config.embedding_model:
+        for model_config in self.index.embedding_model:
             kwargs = {"environment": environment, **model_config.to_dict()}
             self.__embedding_models_dictionary[
                 model_config.model_name

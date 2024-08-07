@@ -576,7 +576,7 @@ def run(
     response_generator = ResponseGenerator(
         environment, config, config.openai.azure_oai_chat_deployment_name
     )
-    for index_config in config.index_config.flatten():
+    for index_config in config.index.flatten():
         index_name = index_config.index_name()
         logger.info(f"Processing index: {index_name}")
 

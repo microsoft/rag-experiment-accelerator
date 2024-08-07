@@ -14,7 +14,7 @@ class IndexConfig(BaseConfig):
     Attributes:
         index_name_prefix (str):
             Prefix to use for the index created in Azure Search.
-        chunking_config (ChunkingConfig):
+        chunking (ChunkingConfig):
             Configuration for chunking documents.
         embedding_model (EmbeddingModelConfig):
             Configuration for the embedding model.
@@ -27,7 +27,7 @@ class IndexConfig(BaseConfig):
     index_name_prefix: str = "idx"
     ef_construction: int = 400
     ef_search: int = 400
-    chunking_config: ChunkingConfig = field(default_factory=ChunkingConfig)
+    chunking: ChunkingConfig = field(default_factory=ChunkingConfig)
     embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
 
     def label_properties(self) -> dict:
@@ -42,7 +42,7 @@ class IndexConfig(BaseConfig):
             # "sp": self.sampling_percentage,
         }
 
-        properties.update(self.chunking_config.label_properties())
+        properties.update(self.chunking.label_properties())
 
         return properties
 
@@ -61,7 +61,7 @@ class IndexConfig(BaseConfig):
             index_name_prefix=bool(properties["p"]),
             ef_construction=int(properties["cs"]),
             ef_search=int(properties["o"]),
-            chunking_config=ChunkingConfig(properties),
+            chunking=ChunkingConfig(properties),
             # "emn": self.embedding_model.model_name.lower(),
             # "sp": self.sampling_percentage,
         )

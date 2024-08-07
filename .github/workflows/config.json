@@ -12,11 +12,11 @@
         "min_cluster": 2,
         "max_cluster": 30
     },
-    "index_config": {
+    "index": {
         "index_name_prefix": "ci",
         "ef_construction": [400],
         "ef_search": [400],
-        "chunking_config": {
+        "chunking": {
             "preprocess": false,
             "chunk_size": [1000],
             "overlap_size": [200],

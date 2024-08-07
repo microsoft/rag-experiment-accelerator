@@ -268,7 +268,7 @@ if __name__ == "__main__":
     mlflow_client = initialise_mlflow_client(environment, config)
 
     # Starting multiple pipelines hence unable to stream them
-    for index_config in config.index_config.flatten():
+    for index_config in config.index.flatten():
         # with mlflow.start_run(run_name=config.job_name, description=config.job_description, experiment_id=experiment.experiment_id) as run:
         logger.info(f"Starting pipeline for index: {index_config.index_name()}")
         job = start_pipeline(

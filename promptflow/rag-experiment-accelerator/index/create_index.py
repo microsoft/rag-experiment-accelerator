@@ -14,6 +14,6 @@ def my_python_tool(should_index: bool, config_path: str) -> bool:
 
     if should_index:
         file_paths = get_all_file_paths(config.path.data_dir)
-        for index_config in config.index_config.flatten():
+        for index_config in config.index.flatten():
             run(environment, config, index_config, file_paths)
     return True
