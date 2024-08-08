@@ -277,6 +277,7 @@ class TestQuerying(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.querying.SpacyEvaluator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutputHandler")
     @patch("rag_experiment_accelerator.run.querying.create_client")
+    @patch("rag_experiment_accelerator.run.querying.create_client")
     @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
     @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")

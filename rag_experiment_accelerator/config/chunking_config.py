@@ -51,5 +51,5 @@ class ChunkingConfig(BaseConfig):
             overlap_size=int(properties["o"]),
             generate_title=bool(properties["t"]),
             generate_summary=bool(properties["s"]),
-            override_content_with_summary=bool(properties["os"]),
+            override_content_with_summary=bool(properties["oc"]),
         )

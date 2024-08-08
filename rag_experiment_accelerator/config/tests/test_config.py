@@ -5,20 +5,13 @@ from rag_experiment_accelerator.config.config import Config
 from unittest.mock import MagicMock, patch
 
 
-class ConfigNoInit(Config):
-    """
-    This class represents a configuration object without an initializer.
-
-    It inherits from the `Config` class.
-
-    Usage:
-    ```
-    config = ConfigNoInit()
-    ```
-    """
-
-    def __init__(self) -> None:
-        pass
+def init_config():
+    config = Config()
+    config.index.chunking.chunk_size = [512]
+    config.index.chunking.overlap_size = [128]
+    config.index.ef_construction = [400]
+    config.index.ef_search = [400]
+    return config
 
 
 def get_test_config_dir():
@@ -184,8 +177,12 @@ def test_config_init(mock_create_embedding_model):
 
 
 def test_chunk_size_greater_than_overlap_size():
+    config = init_config()
+    config.index.chunking.chunk_size = [128]
+    config.index.chunking.overlap_size = [512]
+
     with pytest.raises(ValueError) as info:
-        Config.validate_inputs(Config, [128], [512], [400], [400])
+        config.validate_inputs()
 
     assert (
         str(info.value)
@@ -195,10 +192,14 @@ def test_chunk_size_greater_than_overlap_size():
 
 def test_validate_ef_search():
     with pytest.raises(ValueError) as high_info:
-        Config.validate_inputs(Config, [512], [128], [400], [1001])
+        config = init_config()
+        config.index.ef_search = [1001]
+        config.validate_inputs()
 
     with pytest.raises(ValueError) as low_info:
-        Config.validate_inputs(Config, [512], [128], [400], [99])
+        config = init_config()
+        config.index.ef_search = [99]
+        config.validate_inputs()
 
     assert (
         str(high_info.value)
@@ -212,10 +213,14 @@ def test_validate_ef_search():
 
 def test_validate_ef_construction():
     with pytest.raises(ValueError) as high_info:
-        Config.validate_inputs(Config, [512], [128], [1001], [400])
+        config = init_config()
+        config.index.ef_construction = [1001]
+        config.validate_inputs()
 
     with pytest.raises(ValueError) as low_info:
-        Config.validate_inputs(Config, [512], [128], [99], [400])
+        config = init_config()
+        config.index.ef_construction = [99]
+        config.validate_inputs()
 
     assert (
         str(high_info.value)
@@ -228,14 +233,14 @@ def test_validate_ef_construction():
 
 
 def test_validate_semantic_search_config():
-    config = ConfigNoInit()
+    config = init_config()
 
     # Test case 1: use_semantic_search is False, but semantic search is
     # required
     config.search.search_type = ["search_for_match_semantic"]
     use_semantic_search = False
     with pytest.raises(ValueError) as info:
-        config.validate_semantic_search_config(use_semantic_search)
+        config.validate_inputs(use_semantic_search)
     assert (
         str(info.value)
         == "Semantic search is required for search types 'search_for_match_semantic' or 'search_for_manual_hybrid', but it's not enabled."
@@ -245,18 +250,18 @@ def test_validate_semantic_search_config():
     config.search.search_type = ["search_for_match_semantic"]
     use_semantic_search = True
     # No exception should be raised
-    config.validate_semantic_search_config(use_semantic_search)
+    config.validate_inputs(use_semantic_search)
 
     # Test case 3: use_semantic_search is False, and semantic search is not
     # required
     config.search.search_type = ["search_for_exact_match"]
     use_semantic_search = False
     # No exception should be raised
-    config.validate_semantic_search_config(use_semantic_search)
+    config.validate_inputs(use_semantic_search)
 
     # Test case 4: use_semantic_search is True, and semantic search is not
     # required
     config.search.search_type = ["search_for_exact_match"]
     use_semantic_search = True
     # No exception should be raised
-    config.validate_semantic_search_config(use_semantic_search)
+    config.validate_inputs(use_semantic_search)

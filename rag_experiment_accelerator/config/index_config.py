@@ -14,14 +14,14 @@ class IndexConfig(BaseConfig):
     Attributes:
         index_name_prefix (str):
             Prefix to use for the index created in Azure Search.
-        chunking (ChunkingConfig):
-            Configuration for chunking documents.
-        embedding_model (EmbeddingModelConfig):
-            Configuration for the embedding model.
         ef_construction (int):
             Parameter ef_construction for HNSW index.
         ef_search (int):
             Parameter ef_search for HNSW index.
+        chunking (ChunkingConfig):
+            Configuration for chunking documents.
+        embedding_model (EmbeddingModelConfig):
+            Configuration for the embedding model.
     """
 
     index_name_prefix: str = "idx"
@@ -58,10 +58,11 @@ class IndexConfig(BaseConfig):
         #     raise (f"Invalid index name [{index_name}]")
 
         return IndexConfig(
-            index_name_prefix=bool(properties["p"]),
-            ef_construction=int(properties["cs"]),
-            ef_search=int(properties["o"]),
-            chunking=ChunkingConfig(properties),
+            index_name_prefix=properties["idx"],
+            ef_construction=int(properties["efc"]),
+            ef_search=int(properties["efs"]),
+            chunking=ChunkingConfig.from_label_properties(properties),
+            embedding_model=EmbeddingModelConfig(model_name=properties["emn"]),
             # "emn": self.embedding_model.model_name.lower(),
             # "sp": self.sampling_percentage,
         )

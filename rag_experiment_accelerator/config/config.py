@@ -60,7 +60,6 @@ class Config(BaseConfig):
         with open(config_path.strip(), "r") as json_file:
             config_json: dict[str, any] = json.load(json_file)
 
-        # check type casting
         config = Config.from_dict(config_json)
 
         config.path.initialize_paths(config_path, data_dir)
@@ -76,17 +75,19 @@ class Config(BaseConfig):
         config.initialize_embedding_models(environment)
 
         config.execution_environment = ExecutionEnvironment.LOCAL
+        # todo: move to Environment class
         max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
         if max_worker_threads:
             config.max_worker_threads = int(max_worker_threads)
 
+        # todo: remove or flatten
         # log all the configuration settings in debug mode
         for key, value in config.to_dict():
             logger.debug(f"Configuration setting: {key} = {value}")
 
         return config
 
-    def validate_inputs(self, use_semantic_search: bool):
+    def validate_inputs(self, use_semantic_search: bool = False):
         if any(val < 100 or val > 1000 for val in self.index.ef_construction):
             raise ValueError(
                 "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
