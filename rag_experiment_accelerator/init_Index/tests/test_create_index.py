@@ -33,7 +33,7 @@ class TestCreateIndex(unittest.TestCase):
         dimension = 128
         ef_construction = 100
         ef_search = 100
-        analyzers = {
+        analyzer = {
             "index_analyzer_name": None,
             "search_analyzer_name": None,
             "analyzer_name": None,
@@ -50,7 +50,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension,
             ef_construction,
             ef_search,
-            analyzers,
+            analyzer,
         )
 
         # Assert that the 'create_or_update_index' method was called on the
@@ -75,7 +75,7 @@ class TestCreateIndex(unittest.TestCase):
         dimension = 128
         ef_construction = 100
         ef_search = 100
-        analyzers = {
+        analyzer = {
             "analyzer_name": "test_analyzer",
             "index_analyzer_name": None,
             "search_analyzer_name": None,
@@ -87,7 +87,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension,
             ef_construction,
             ef_search,
-            analyzers,
+            analyzer,
         )
         mock_create_or_update_index.assert_called()
 
@@ -101,7 +101,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension = 128
             ef_construction = 100
             ef_search = 100
-            analyzers = {
+            analyzer = {
                 "analyzer_name": None,
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": "test_search_analyzer",
@@ -113,11 +113,11 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
             # Test if only one of index_analyzer_name or search_analyzer_name is set.
-            analyzers = {
+            analyzer = {
                 "analyzer_name": None,
                 "index_analyzer_name": None,
                 "search_analyzer_name": "test_search_analyzer",
@@ -129,7 +129,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -140,10 +140,10 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
-            analyzers = {
+            analyzer = {
                 "analyzer_name": None,
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": None,
@@ -155,7 +155,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -166,7 +166,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
     # Test that create_acs_index raiser error when analyzer is set together
@@ -184,7 +184,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension = 128
             ef_construction = 100
             ef_search = 100
-            analyzers = {
+            analyzer = {
                 "analyzer_name": "test_analyzer",
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": None,
@@ -196,7 +196,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -207,10 +207,10 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
-            analyzers = {
+            analyzer = {
                 "analyzer_name": "test_analyzer",
                 "index_analyzer_name": None,
                 "search_analyzer_name": "test_search_analyzer",
@@ -222,7 +222,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -233,17 +233,17 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
-    # Test that create_acs_index works correctly when the analyzers dictionary
+    # Test that create_acs_index works correctly when the analyzer dictionary
     # contains non-None values
     @patch.object(AzureKeyCredential, "__init__", return_value=None)
     @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_analyzers_non_none(
         self, mock_create_or_update_index, mock_azure_key_credential
     ):
-        analyzers = {
+        analyzer = {
             "index_analyzer_name": "test_index_analyzer",
             "search_analyzer_name": "test_search_analyzer",
             "analyzer_name": None,
@@ -257,19 +257,19 @@ class TestCreateIndex(unittest.TestCase):
         }
         try:
             create_acs_index(
-                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzers
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzer
             )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
 
-    # Test that create_acs_index works correctly when the analyzers dictionary
+    # Test that create_acs_index works correctly when the analyzer dictionary
     # contains None values
     @patch.object(AzureKeyCredential, "__init__", return_value=None)
     @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_analyzers_none(
         self, mock_create_or_update_index, mock_azure_key_credential
     ):
-        analyzers = {
+        analyzer = {
             "index_analyzer_name": None,
             "search_analyzer_name": None,
             "analyzer_name": None,
@@ -279,7 +279,7 @@ class TestCreateIndex(unittest.TestCase):
         }
         try:
             create_acs_index(
-                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzers
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzer
             )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
@@ -344,7 +344,7 @@ class TestCreateIndex(unittest.TestCase):
         dimension = 128
         ef_construction = 100
         ef_search = 100
-        analyzers = {
+        analyzer = {
             "index_analyzer_name": None,
             "search_analyzer_name": None,
             "analyzer_name": None,
@@ -360,7 +360,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension,
             ef_construction,
             ef_search,
-            analyzers,
+            analyzer,
         )
         # Assert that the 'create_or_update_index' method was called with the
         # correct dimension

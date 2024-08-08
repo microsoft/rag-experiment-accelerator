@@ -47,46 +47,140 @@ def test_config_init(mock_create_embedding_model):
 
     config.embedding_model = [embedding_model_1, embedding_model_2]
 
-    assert config.index_name_prefix == mock_config_data["index_name_prefix"]
     assert config.experiment_name == mock_config_data["experiment_name"]
-    assert config.chunk_sizes == mock_config_data["chunking"]["chunk_size"]
-    assert config.overlap_sizes == mock_config_data["chunking"]["overlap_size"]
-    assert config.chunking_strategy == mock_config_data["chunking_strategy"]
-    assert config.ef_constructions == mock_config_data["ef_construction"]
-    assert config.ef_searches == mock_config_data["ef_search"]
-    assert config.rerank == mock_config_data["rerank"]
-    assert config.rerank_type == mock_config_data["rerank_type"]
-    assert config.llm_rerank_threshold == mock_config_data["llm_rerank_threshold"]
-    assert config.crossencoder_at_k == mock_config_data["cross_encoder_at_k"]
-    assert config.crossencoder_model == mock_config_data["crossencoder_model"]
-    assert config.search_types == mock_config_data["search_types"]
-    assert config.metric_types == mock_config_data["metric_types"]
-    assert (
-        config.azure_oai_chat_deployment_name
-        == mock_config_data["azure_oai_chat_deployment_name"]
-    )
-    assert config.temperature == mock_config_data["openai_temperature"]
-    assert (
-        config.search_relevency_threshold
-        == mock_config_data["search_relevancy_threshold"]
-    )
+    # execution_environment
+    assert config.job_name == mock_config_data["job_name"]
+    assert config.job_description == mock_config_data["job_description"]
     assert config.data_formats == mock_config_data["data_formats"]
+    assert config.main_instruction == mock_config_data["main_instruction"]
+    assert config.max_worker_threads == mock_config_data["max_worker_threads"]
+    assert config.use_checkpoints == mock_config_data["use_checkpoints"]
+
+    sampling = config.sampling
+    assert sampling.sample_data == mock_config_data["sampling"]["sample_data"]
     assert (
-        config.eval_data_jsonl_file_path
+        sampling.sample_percentage == mock_config_data["sampling"]["sample_percentage"]
+    )
+    assert sampling.optimum_k == mock_config_data["sampling"]["optimum_k"]
+    assert sampling.min_cluster == mock_config_data["sampling"]["min_cluster"]
+    assert sampling.max_cluster == mock_config_data["sampling"]["max_cluster"]
+
+    index = config.index
+    assert index.index_name_prefix == mock_config_data["index_name_prefix"]
+    assert index.ef_construction == mock_config_data["ef_construction"]
+    assert index.ef_search == mock_config_data["ef_search"]
+
+    chunking = index.chunking
+    mock_chunking = mock_config_data["index"]["chunking"]
+    assert chunking.preprocess == mock_chunking["preprocess"]
+    assert chunking.chunk_size == mock_chunking["chunk_size"]
+    assert chunking.overlap_size == mock_chunking["overlap_size"]
+    assert chunking.generate_title == mock_chunking["generate_title"]
+    assert chunking.generate_summary == mock_chunking["generate_summary"]
+    assert (
+        chunking.override_content_with_summary
+        == mock_chunking["override_content_with_summary"]
+    )
+    assert chunking.chunking_strategy == mock_chunking["chunking_strategy"]
+    assert (
+        chunking.azure_document_intelligence_model
+        == mock_chunking["azure_document_intelligence_model"]
+    )
+
+    mock_embedding_model_config = mock_config_data["index"]["embedding_model"]
+    assert index.embedding_model[0].type == mock_embedding_model_config[0]["type"]
+    assert (
+        index.embedding_model[0].model_name
+        == mock_embedding_model_config[0]["model_name"]
+    )
+
+    assert index.embedding_model[1].type == mock_embedding_model_config[1]["type"]
+    assert (
+        index.embedding_model[1].model_name
+        == mock_embedding_model_config[1]["model_name"]
+    )
+
+    model1 = config.get_embedding_model(config.index.embedding_model[0].model_name)
+    assert model1.name.return_value == "all-MiniLM-L6-v2"
+    assert model1.dimension.return_value == 384
+
+    model2 = config.get_embedding_model(config.index.embedding_model[1].model_name)
+    assert model2.name.return_value == "text-embedding-ada-002"
+    assert model2.dimension.return_value == 1536
+
+    assert (
+        config.language.query_language == mock_config_data["language"]["query_language"]
+    )
+    analyzer = config.language.analyzer
+    mock_analyzer = mock_config_data["language"]["analyzer"]
+    assert analyzer.analyzer_name == mock_analyzer["analyzer_name"]
+    assert analyzer.index_analyzer_name == mock_analyzer["index_analyzer_name"]
+    assert analyzer.search_analyzer_name == mock_analyzer["search_analyzer_name"]
+    assert analyzer.char_filters == mock_analyzer["char_filters"]
+    assert analyzer.tokenizers == mock_analyzer["tokenizers"]
+    assert analyzer.token_filters == mock_analyzer["token_filters"]
+
+    assert config.rerank.enabled == mock_config_data["rerank"]["enabled"]
+    assert config.rerank.type == mock_config_data["rerank"]["type"]
+    assert (
+        config.rerank.cross_encoder_at_k
+        == mock_config_data["rerank"]["cross_encoder_at_k"]
+    )
+    assert (
+        config.rerank.cross_encoder_model
+        == mock_config_data["rerank"]["cross_encoder_model"]
+    )
+    assert (
+        config.rerank.llm_rerank_threshold
+        == mock_config_data["rerank"]["llm_rerank_threshold"]
+    )
+
+    assert (
+        config.search.retrieve_num_of_documents
+        == mock_config_data["search"]["retrieve_num_of_documents"]
+    )
+    assert config.search.search_type == mock_config_data["search"]["search_type"]
+    assert (
+        config.search.search_relevancy_threshold
+        == mock_config_data["search"]["search_relevancy_threshold"]
+    )
+
+    query_expansion = config.query_expansion
+    mock_query_expansion = mock_config_data["query_expansion"]
+    assert query_expansion.query_expansion == mock_query_expansion["query_expansion"]
+    assert query_expansion.hyde == mock_query_expansion["hyde"]
+    assert (
+        query_expansion.min_query_expansion_related_question_similarity_score
+        == mock_query_expansion["min_query_expansion_related_question_similarity_score"]
+    )
+    assert (
+        query_expansion.expand_to_multiple_questions
+        == mock_query_expansion["expand_to_multiple_questions"]
+    )
+
+    openai = config.openai
+    mock_openai = mock_config_data["openai"]
+    assert (
+        openai.azure_oai_chat_deployment_name
+        == mock_openai["azure_oai_chat_deployment_name"]
+    )
+    assert (
+        openai.azure_oai_eval_deployment_name
+        == mock_openai["azure_oai_eval_deployment_name"]
+    )
+    assert openai.temperature == mock_openai["temperature"]
+
+    assert config.eval.metric_types == mock_config_data["eval"]["metric_types"]
+    assert (
+        config.eval.eval_data_jsonl_file_path
+        == mock_config_data["eval"]["eval_data_jsonl_file_path"]
+    )
+
+    # todo: which one?
+    assert (
+        config.eval.eval_data_jsonl_file_path
         == f"{get_test_config_dir()}/artifacts/eval_data.jsonl"
     )
-
-    assert config.embedding_model[0].name.return_value == "all-MiniLM-L6-v2"
-    assert config.embedding_model[0].dimension.return_value == 384
-
-    assert config.embedding_model[1].name.return_value == "text-embedding-ada-002"
-    assert config.embedding_model[1].dimension.return_value == 1536
-
-    assert config.sampling
-    assert config.sample_percentage == mock_config_data["sampling"]["sample_percentage"]
-    assert config.sample_optimum_k == mock_config_data["sampling"]["optimum_k"]
-    assert config.sample_min_cluster == mock_config_data["sampling"]["min_cluster"]
-    assert config.sample_max_cluster == mock_config_data["sampling"]["max_cluster"]
 
 
 def test_chunk_size_greater_than_overlap_size():

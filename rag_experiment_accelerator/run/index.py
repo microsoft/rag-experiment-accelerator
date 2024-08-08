@@ -53,7 +53,7 @@ def run(
             ).dimension,
             index_config.ef_construction,
             index_config.ef_search,
-            config.language.analyzers,
+            config.language.analyzer,
         )
 
     docs = load_documents(

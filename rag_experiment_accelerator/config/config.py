@@ -60,6 +60,7 @@ class Config(BaseConfig):
         with open(config_path.strip(), "r") as json_file:
             config_json: dict[str, any] = json.load(json_file)
 
+        # check type casting
         config = Config.from_dict(config_json)
 
         config.path.initialize_paths(config_path, data_dir)
@@ -74,15 +75,14 @@ class Config(BaseConfig):
 
         config.initialize_embedding_models(environment)
 
-        # todo: refactor this
         config.execution_environment = ExecutionEnvironment.LOCAL
         max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
         if max_worker_threads:
             config.max_worker_threads = int(max_worker_threads)
 
-        # # log all the configuration settings in debug mode
-        # for key, value in config_json.items():
-        #     logger.debug(f"Configuration setting: {key} = {value}")
+        # log all the configuration settings in debug mode
+        for key, value in config.to_dict():
+            logger.debug(f"Configuration setting: {key} = {value}")
 
         return config
 

@@ -24,14 +24,6 @@ def _flatten_dict_gen(d, parent_key, sep):
             yield new_key, v
 
 
-def convert_to_dict(dictionary):
-    new_dictionary = dict()
-    for key, value in dictionary.items():
-        new_dictionary[key] = value.to_dict() if hasattr(value, "to_dict") else value
-
-    return new_dictionary
-
-
 def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
     return dict(_flatten_dict_gen(d, parent_key, sep))
 

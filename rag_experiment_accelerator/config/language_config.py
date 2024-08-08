@@ -14,5 +14,5 @@ class LanguageAnalyzerConfig(BaseConfig):
 
 @dataclass
 class LanguageConfig(BaseConfig):
-    analyzers: LanguageAnalyzerConfig = field(default_factory=LanguageAnalyzerConfig)
+    analyzer: LanguageAnalyzerConfig = field(default_factory=LanguageAnalyzerConfig)
     query_language: str = "en-us"

@@ -133,7 +133,7 @@ def rerank_documents(
             docs,
             user_prompt,
             output_prompt,
-            config.rerank.crossencoder_model,
+            config.rerank.cross_encoder_model,
             config.rerank.cross_encoder_at_k,
         )
 
@@ -531,7 +531,7 @@ def get_query_output(
     output = QueryOutput(
         rerank=config.rerank.enabled,
         rerank_type=config.rerank.type,
-        crossencoder_model=config.rerank.crossencoder_model,
+        cross_encoder_model=config.rerank.cross_encoder_model,
         llm_rerank_threshold=config.rerank.llm_rerank_threshold,
         retrieve_num_of_documents=config.search.retrieve_num_of_documents,
         crossencoder_at_k=config.rerank.cross_encoder_at_k,

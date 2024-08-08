@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
+from typing import Optional
 
 from rag_experiment_accelerator.utils.logging import get_logger
 
@@ -32,7 +33,9 @@ class STEmbeddingModel(EmbeddingModel):
         "bert-large-nli-mean-tokens": 1024,
     }
 
-    def __init__(self, model_name: str, dimension: int = None, **kwargs) -> None:
+    def __init__(
+        self, model_name: str, dimension: Optional[int] = None, **kwargs
+    ) -> None:
         """
         Initializes an instance of the STEmbeddingModel class.
 

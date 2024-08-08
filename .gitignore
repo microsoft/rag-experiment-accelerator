@@ -185,6 +185,8 @@ data/*
 
 .vscode
 
+checkpoints/
+
 # AzureML config folder
 .azureml/*
 

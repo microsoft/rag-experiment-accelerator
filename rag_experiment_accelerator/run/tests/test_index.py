@@ -54,7 +54,7 @@ def test_run(
     mock_config.max_worker_threads = 1
     mock_config.sampling = False
     mock_config.index_name_prefix = "prefix"
-    mock_config.language = {"analyzers": ["analyzer1", "analyzer2"]}
+    mock_config.language = {"analyzer": ["analyzer1", "analyzer2"]}
     mock_config.generate_title = False
     mock_config.generate_summary = False
     mock_config.override_content_with_summary = False

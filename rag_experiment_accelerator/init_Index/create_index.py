@@ -33,20 +33,20 @@ def create_acs_index(
     dimension,
     ef_construction,
     ef_search,
-    analyzers: LanguageAnalyzerConfig,
+    analyzer: LanguageAnalyzerConfig,
 ):
     try:
         credential = AzureKeyCredential(key)
 
         # Apply checks on analyzer settings. Search analyzer and index analyzer must be set together
-        if bool(analyzers.index_analyzer_name) != bool(analyzers.search_analyzer_name):
+        if bool(analyzer.index_analyzer_name) != bool(analyzer.search_analyzer_name):
             raise ValueError(
                 "Both 'index_analyzer_name' and 'search_analyzer_name' must be set together"
             )
 
         # Analyzer can only be used if neither search analyzer or index analyzer are set
-        if analyzers.analyzer_name and (
-            analyzers.search_analyzer_name or analyzers.index_analyzer_name
+        if analyzer.analyzer_name and (
+            analyzer.search_analyzer_name or analyzer.index_analyzer_name
         ):
             raise ValueError(
                 "analyzer_name should be empty if either search_analyzer_name or index_analyzer_name is not empty"
@@ -140,28 +140,28 @@ def create_acs_index(
         tokenizers = []
         token_filters = []
         char_filters = []
-        if analyzers.tokenizers:
+        if analyzer.tokenizers:
             tokenizers = [
                 LexicalTokenizer(
                     name=tokenizer["name"],
                     token_chars=tokenizer["token_chars"],
                 )
-                for tokenizer in analyzers.tokenizers
+                for tokenizer in analyzer.tokenizers
             ]
-        if analyzers.token_filters:
-            # token_filters = [LexicalTokenFilter(name=analyzers["token_filters"]["name"], odatatype="#Microsoft.Azure.Search.AsciiFoldingTokenFilter")]
+        if analyzer.token_filters:
+            # token_filters = [LexicalTokenFilter(name=analyzer["token_filters"]["name"], odatatype="#Microsoft.Azure.Search.AsciiFoldingTokenFilter")]
             token_filters = [
                 TokenFilter(name="lowercase"),
                 TokenFilter(name="asciifolding"),
             ]
-        if analyzers.char_filters:
+        if analyzer.char_filters:
             char_filters = [
                 CharFilter(
                     name=char_filter["name"],
                     odatatype="#Microsoft.Azure.Search.MappingCharFilter",
                     mappings=char_filter["mappings"],
                 )
-                for char_filter in analyzers.char_filters
+                for char_filter in analyzer.char_filters
             ]
 
         cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
