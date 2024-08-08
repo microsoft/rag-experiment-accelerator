@@ -285,7 +285,7 @@ def generate_summaries_from_chunks(
                 )
 
 
-@cache_with_checkpoint(id="chunk['content']+str(config.generate_title)")
+@cache_with_checkpoint(id="chunk['content']+str(config.index.chunking.generate_title)")
 def process_title(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -323,7 +323,9 @@ def process_title(
     return chunk
 
 
-@cache_with_checkpoint(id="chunk['content']+str(config.generate_summary)")
+@cache_with_checkpoint(
+    id="chunk['content']+str(config.index.chunking.generate_summary)"
+)
 def process_summary(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
