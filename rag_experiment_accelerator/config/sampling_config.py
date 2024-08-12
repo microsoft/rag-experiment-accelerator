@@ -9,7 +9,7 @@ class SamplingConfig(BaseConfig):
     Attributes:
         sample_data (bool):
             Flag indicating whether to sample the data.
-        sample_percentage (int):
+        percentage (int):
             Percentage of data to sample.
         optimum_k (str):
             Optimum value of k for clustering.
@@ -20,7 +20,7 @@ class SamplingConfig(BaseConfig):
     """
 
     sample_data: bool = False
-    sample_percentage: int = 5
+    percentage: int = 5
     optimum_k: str = "auto"
     min_cluster: int = 2
     max_cluster: int = 30

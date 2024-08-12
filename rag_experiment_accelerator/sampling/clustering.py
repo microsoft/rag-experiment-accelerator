@@ -296,12 +296,11 @@ def cluster(index_name, all_chunks, config: Config, parser):
         g["l_{0}".format(i)] = df[df["prediction"] == i]
 
         if len(g["l_{0}".format(i)]) > round(
-            (len(df) * (config.sampling.sample_percentage / 100))
-            / len(prediction_values)
+            (len(df) * (config.sampling.percentage / 100)) / len(prediction_values)
         ):
             g["l_{0}".format(i)] = g["l_{0}".format(i)].sample(
                 n=round(
-                    (len(df) * (config.sampling.sample_percentage / 100))
+                    (len(df) * (config.sampling.percentage / 100))
                     / len(prediction_values)
                 ),
                 random_state=42,

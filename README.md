@@ -227,7 +227,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "job_description": "You may provide a description for the current job run which describes in words what you are about to experiment with",
     "sampling": {
         "sample_data": "Set to true to enable sampling",
-        "sample_percentage": "Percentage of the document corpus to sample",
+        "percentage": "Percentage of the document corpus to sample",
         "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
         "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
         "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30",

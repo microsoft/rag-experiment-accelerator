@@ -7,7 +7,7 @@ from rag_experiment_accelerator.embedding.aoai_embedding_model import AOAIEmbedd
 
 
 @patch(
-    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initilize_client"
+    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initialize_client"
 )
 def test_generate_embedding(mock_client):
     expected_embeddings = Embedding(

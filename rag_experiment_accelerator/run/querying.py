@@ -364,9 +364,9 @@ def query_and_eval_acs_multi(
 
         # TODO: Here was a bug, caused by the fact that we are not limiting the number of documents to retrieve
         # Current solution is just forcefully limiting the number of documents to retrieve assuming they are sorted
-        if len(prompt_instruction_context) > config.retrieve_num_of_documents:
+        if len(prompt_instruction_context) > config.search.retrieve_num_of_documents:
             prompt_instruction_context = prompt_instruction_context[
-                : config.retrieve_num_of_documents
+                : config.search.retrieve_num_of_documents
             ]
 
         request_context = "\n".join(prompt_instruction_context)
