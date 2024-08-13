@@ -12,7 +12,6 @@ class PathConfig(BaseConfig):
     eval_data_dir: str = ""
     generated_index_names_file: str = ""
     query_data_dir: str = ""
-    eval_data_dir: str = ""
     sampling_output_dir: str = ""
 
     def initialize_paths(self, config_file_path: str, data_dir: str) -> None:

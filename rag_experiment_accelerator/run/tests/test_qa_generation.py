@@ -55,8 +55,8 @@ def test_run(
         mock_config.openai.azure_oai_chat_deployment_name,
     )
     df_instance.to_json.assert_called_once_with(
-        mock_config.path.eval_data_jsonl_file_path, orient="records", lines=True
+        mock_config.path.eval_data_file, orient="records", lines=True
     )
     mock_create_data_asset.assert_called_once_with(
-        mock_config.path.eval_data_jsonl_file_path, "eval_data", mock_environment
+        mock_config.path.eval_data_file, "eval_data", mock_environment
     )

@@ -5,6 +5,9 @@
     "data_formats": ["test_data_format"],
     "main_instruction": "",
     "use_checkpoints": true,
+    "path": {
+        "eval_data_file": "./artifacts/eval_data.jsonl"
+    },
     "sampling": {
         "sample_data": false,
         "percentage": 5,
@@ -78,7 +81,6 @@
         "metric_types": [
             "test_metric_type_1",
             "test_metric_type_2"
-        ],
-        "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
+        ]
     }
 }

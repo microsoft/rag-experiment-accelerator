@@ -23,7 +23,7 @@ If the indexes have been previously created, this node is optional and can be sk
 ### QA Generation
 The `qa_generation` node will chunk each document and generate ground truth questions and answers for each chunk.
 
-Optionally, this node can be skipped by setting the input `should_generate_qa` to `false` and a set of user-provided ground truth questions and answers can be used. User-provided questions and answers should be in the `jsonl` file format and by default, in the location `./artifacts/eval_data.jsonl`. This location can be configured by updating the `eval_data_jsonl_file_path` value in `config.json`. Each line of the `jsonl` file should contain the keys:
+Optionally, this node can be skipped by setting the input `should_generate_qa` to `false` and a set of user-provided ground truth questions and answers can be used. User-provided questions and answers should be in the `jsonl` file format and by default, in the location `./artifacts/eval_data.jsonl`. This location can be configured by updating the `eval_data_file` value in `config.json`. Each line of the `jsonl` file should contain the keys:
 - `user_prompt` field contains the generated question
 - `output_prompt` field contains the generated answer
 - `context` field contains the document sections from which the question-answer pair was generated
@@ -123,7 +123,7 @@ az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
     "embedding_model_name": "embedding model name",
     "temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
     "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
-    "eval_data_jsonl_file_path": "the file path of the ground truth questions and answers. This must be a jsonl file and each line should contain the keys: user_prompt (question), output_prompt (answer), context (the document context that contains the answer)"
+    "eval_data_file": "the file path of the ground truth questions and answers. This must be a jsonl file and each line should contain the keys: user_prompt (question), output_prompt (answer), context (the document context that contains the answer)"
 }
 ```
 

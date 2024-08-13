@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
-from rag_experiment_accelerator.config.eval_config import EvalConfig
 from rag_experiment_accelerator.config.openai_config import OpenAIConfig
+from rag_experiment_accelerator.config.path_config import PathConfig
 from rag_experiment_accelerator.config.query_expansion import QueryExpansionConfig
 from rag_experiment_accelerator.config.rerank_config import RerankConfig
 from rag_experiment_accelerator.config.search_config import SearchConfig
@@ -60,8 +60,8 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.search.retrieve_num_of_documents = 10
         self.mock_config.search.search_type = ["search_for_match_semantic"]
 
-        self.mock_config.eval = MagicMock(spec=EvalConfig)
-        self.mock_config.eval.eval_data_jsonl_file_path = "test_data.jsonl"
+        self.mock_config.path = MagicMock(spec=PathConfig)
+        self.mock_config.path.eval_data_file = "test_data.jsonl"
 
         self.mock_environment = MagicMock(spec=Environment)
         self.mock_search_client = MagicMock(spec=SearchClient)
@@ -322,7 +322,7 @@ class TestQuerying(unittest.TestCase):
         mock_query_output_handler.return_value.save.side_effect = None
         test_dir = os.path.dirname(os.path.abspath(__file__))
         data_file_path = test_dir + "/data/test_data.jsonl"
-        self.mock_config.eval_data_jsonl_file_path = data_file_path
+        self.mock_config.path.eval_data_file = data_file_path
         self.mock_config.rerank = MagicMock(spec=RerankConfig)
         self.mock_config.rerank.enabled = False
         mock_do_we_need_multiple_questions.return_value = False

@@ -5,6 +5,9 @@
     "data_formats": ["*"],
     "main_instruction": "",
     "use_checkpoints": true,
+    "path": {
+        "eval_data_file": "./artifacts/eval_data.jsonl"
+    },
     "sampling": {
         "sample_data": false,
         "percentage": 5,
@@ -79,7 +82,6 @@
             "bert_distilbert_base_nli_stsb_mean_tokens",
             "llm_answer_relevance",
             "llm_context_precision"
-        ],
-        "eval_data_jsonl_file_path": "./artifacts/eval_data.jsonl"
+        ]
     }
 }

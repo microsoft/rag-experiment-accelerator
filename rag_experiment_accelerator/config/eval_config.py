@@ -14,4 +14,3 @@ class EvalConfig(BaseConfig):
             "llm_context_precision",
         ]
     )
-    eval_data_jsonl_file_path: str = "./artifacts/eval_data.jsonl"

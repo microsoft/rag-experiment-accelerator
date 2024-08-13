@@ -148,10 +148,8 @@ def test_config_init(mock_create_embedding_model):
     assert openai.temperature == mock_openai["temperature"]
 
     assert config.eval.metric_types == mock_config["eval"]["metric_types"]
-    assert (
-        config.eval.eval_data_jsonl_file_path
-        == mock_config["eval"]["eval_data_jsonl_file_path"]
-    )
+
+    assert config.path.eval_data_file == mock_config["path"]["eval_data_file"]
 
 
 def test_chunk_size_greater_than_overlap_size():
