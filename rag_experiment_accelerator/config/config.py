@@ -10,7 +10,7 @@ from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.base_config import BaseConfig
 from rag_experiment_accelerator.config.language_config import LanguageConfig
-from rag_experiment_accelerator.config.reranker_config import RerankerConfig
+from rag_experiment_accelerator.config.rerank_config import RerankConfig
 from rag_experiment_accelerator.config.search_config import SearchConfig
 from rag_experiment_accelerator.config.query_expansion import QueryExpansionConfig
 from rag_experiment_accelerator.config.openai_config import OpenAIConfig
@@ -18,6 +18,7 @@ from rag_experiment_accelerator.config.eval_config import EvalConfig
 
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import create_embedding_model
+from rag_experiment_accelerator.llm.prompt.prompt import Prompt
 from rag_experiment_accelerator.utils.logging import get_logger
 
 from rag_experiment_accelerator.llm.prompt import main_instruction
@@ -38,14 +39,14 @@ class Config(BaseConfig):
     job_name: str = ""
     job_description: str = ""
     data_formats: list[str] = field(default_factory=lambda: ["*"])
-    main_instruction: str = ""
+    main_instruction: Prompt = field(init=False)
     max_worker_threads: int = None
     use_checkpoints: bool = True
     path: PathConfig = field(default_factory=PathConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
     index: IndexConfig = field(default_factory=IndexConfig)
     language: LanguageConfig = field(default_factory=LanguageConfig)
-    rerank: RerankerConfig = field(default_factory=RerankerConfig)
+    rerank: RerankConfig = field(default_factory=RerankConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     query_expansion: QueryExpansionConfig = field(default_factory=QueryExpansionConfig)
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
@@ -75,15 +76,15 @@ class Config(BaseConfig):
         config.initialize_embedding_models(environment)
 
         config.execution_environment = ExecutionEnvironment.LOCAL
-        # todo: move to Environment class
+        # todo: move to Environment class?
         max_worker_threads = os.environ.get("MAX_WORKER_THREADS", None)
         if max_worker_threads:
             config.max_worker_threads = int(max_worker_threads)
 
         # todo: remove or flatten
-        # log all the configuration settings in debug mode
-        for key, value in config.to_dict():
-            logger.debug(f"Configuration setting: {key} = {value}")
+        # # log all the configuration settings in debug mode
+        # for key, value in config.to_dict():
+        #     logger.debug(f"Configuration setting: {key} = {value}")
 
         return config
 
@@ -102,10 +103,10 @@ class Config(BaseConfig):
             )
 
         if self.sampling.sample_data and (
-            self.sampling.sample_percentage < 0 or self.sampling.sample_percentage > 100
+            self.sampling.percentage < 0 or self.sampling.percentage > 100
         ):
             raise ValueError(
-                "Config param validation error: sample_percentage must be between 0 and 100 (inclusive)"
+                "Config param validation error: sample percentage must be between 0 and 100 (inclusive)"
             )
 
         if (

@@ -185,7 +185,9 @@ data/*
 
 .vscode
 
+<MagicMock*
 checkpoints/
+mlruns
 
 # AzureML config folder
 .azureml/*

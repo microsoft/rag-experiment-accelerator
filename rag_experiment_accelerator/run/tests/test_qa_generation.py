@@ -22,10 +22,13 @@ def test_run(
     df_instance = MagicMock()
 
     mock_config = MagicMock()
-    mock_config.sample_data = True
-    mock_config.sample_optimum_k = 3
-    sampled_input_data_csv_path = f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.sample_optimum_k}.csv"
-    mock_config._sample_input_data_csv_path.return_value = sampled_input_data_csv_path
+    mock_config.sampling.sample_data = True
+    mock_config.sampling.optimum_k = 3
+
+    sampled_input_data_csv_path = f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.sampling.optimum_k}.csv"
+    mock_config.path.sampled_cluster_predictions_path.return_value = (
+        sampled_input_data_csv_path
+    )
     mock_exists.return_value = False
 
     mock_load_documents.return_value = all_docs_instance = MagicMock()
@@ -39,7 +42,7 @@ def test_run(
     # Assert
     mock_load_documents.assert_called_once_with(
         mock_environment,
-        mock_config.chunking_strategy,
+        mock_config.index.chunking.chunking_strategy,
         mock_config.data_formats,
         filepaths,
         2000,
@@ -49,11 +52,11 @@ def test_run(
         mock_environment,
         mock_config,
         all_docs_instance,
-        mock_config.azure_oai_chat_deployment_name,
+        mock_config.openai.azure_oai_chat_deployment_name,
     )
     df_instance.to_json.assert_called_once_with(
-        mock_config.eval_data_jsonl_file_path, orient="records", lines=True
+        mock_config.path.eval_data_jsonl_file_path, orient="records", lines=True
     )
     mock_create_data_asset.assert_called_once_with(
-        mock_config.eval_data_jsonl_file_path, "eval_data", mock_environment
+        mock_config.path.eval_data_jsonl_file_path, "eval_data", mock_environment
     )

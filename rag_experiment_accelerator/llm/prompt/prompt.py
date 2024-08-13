@@ -22,26 +22,25 @@ class PromptTag(StrEnum):
 
 
 class Prompt:
-    _base_tags: list = list()
+    tags: set[str] = {}
+    system_message: str = ""
+    user_template: str = ""
 
     def __init__(
         self,
         system_message: str,
         user_template: str,
-        tags: list[str] | None = None,
+        tags: set[str] | None = None,
     ) -> None:
-        self.system_message = system_message
-        self.user_template = user_template
-
-        self.tags = self._base_tags + tags if tags else []
+        self.system_message = self._try_load_prompt_file(system_message)
+        self.user_template = self._try_load_prompt_file(user_template)
+        if tags:
+            self.tags = tags
 
         if PromptTag.JSON in self.tags:
             assert (
                 PromptTag.Structured in self.tags
             ), "Structured tag must be present for JSON prompts"
-
-        self.system_message = self._try_load_prompt_file(self.system_message)
-        self.user_template = self._try_load_prompt_file(self.user_template)
 
     @staticmethod
     def arguments_in_prompt(prompt: str) -> set[str]:
@@ -62,6 +61,18 @@ class Prompt:
 
     @staticmethod
     def _try_load_prompt_file(prompt_file: str) -> str:
+        """
+        Tries to load the content of a .txt prompt file.
+
+        Args:
+            prompt_file (str): The path or name of the prompt file.
+
+        Returns:
+            str: The content of the prompt file or the input string if it is not a .txt file.
+
+        Raises:
+            FileNotFoundError: If the prompt file is not found.
+        """
         if re.match(r'^[^\/:*?"<>|\r\n]+\.txt$', prompt_file):
             prompt_file = Prompt._get_prompt_file_path(prompt_file)
             if os.path.isfile(prompt_file):
@@ -86,15 +97,15 @@ class Prompt:
 
 
 class CoTPrompt(Prompt):
-    _base_tags: list = [PromptTag.ChainOfThought]
-
     def __init__(
         self,
         system_message: str,
         user_template: str,
-        tags: list[str] | None = None,
+        tags: set[str] = {},
         separator: str = "##RESPONSE##",
     ) -> None:
+        tags.add(PromptTag.ChainOfThought)
+
         super().__init__(system_message, user_template, tags)
         assert (
             PromptTag.ChainOfThought in self.tags
@@ -128,7 +139,7 @@ class CoTPrompt(Prompt):
         if not has_sep_in_system:
             if has_sep_in_user:
                 logger.warning(
-                    "It is recommended to declare saparator in system message as well"
+                    "It is recommended to declare separator in system message as well"
                 )
             else:
                 logger.error(
@@ -151,31 +162,31 @@ class StructuredPrompt(Prompt):
     A prompt that expects a structured response, such as JSON.
     """
 
-    _base_tags: list = [PromptTag.Structured]
-
     def __init__(
         self,
         system_message: str,
         user_template: str,
-        tags: list[str] | None = None,
+        tags: set[str] = {},
         validator: callable = _default_validation,
     ) -> None:
+        tags.add(PromptTag.Structured)
+
         super().__init__(system_message, user_template, tags)
 
         self.validator = validator
 
 
 class StructuredWithCoTPrompt(CoTPrompt, StructuredPrompt):
-    _base_tags: list = [PromptTag.ChainOfThought, PromptTag.Structured]
-
     def __init__(
         self,
         system_message: str,
         user_template: str,
-        tags: list[str] | None = None,
+        tags: set[str] = {},
         validator: callable = _default_validation,
         separator: str = "##RESPONSE##",
     ) -> None:
+        # tags = tags | {PromptTag.ChainOfThought, PromptTag.Structured}
+
         StructuredPrompt.__init__(
             self,
             system_message=system_message,
@@ -190,3 +201,5 @@ class StructuredWithCoTPrompt(CoTPrompt, StructuredPrompt):
             tags=tags,
             separator=separator,
         )
+
+        logger.debug(f"StructuredWithCoTPrompt tags {self.tags}")
