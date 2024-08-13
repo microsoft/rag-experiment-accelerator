@@ -95,32 +95,30 @@ def fuzzy(doc1, doc2):
     Calculates the fuzzy score between two documents.
 
     Parameters:
-    doc1 (str): The first document to compare.
-    doc2 (str): The second document to compare.
+        doc1 (str): The first document to compare.
+        doc2 (str): The second document to compare.
 
     Returns:
-    int: The fuzzy score between the two documents.
+        int: The fuzzy score between the two documents.
     """
-    differences = []
-    fuzzy_compare_values(doc1, doc2, differences)
+    differences = fuzzy_compare_values(doc1, doc2)
 
     return int(sum(differences) / len(differences))
 
 
-def fuzzy_compare_values(value1, value2, differences):
+def fuzzy_compare_values(value1, value2) -> list[float]:
     """
     Compares two values using fuzzy string matching and appends the similarity score to a list of differences.
 
     Args:
         value1 (str): The first value to compare.
         value2 (str): The second value to compare.
-        differences (list): A list to which the similarity score will be appended.
 
     Returns:
-        None
+        A list of the similarity scores.
     """
-    similarity_score = fuzz.token_set_ratio(value1, value2)
-    differences.append(similarity_score)
+    similarity_score = [fuzz.token_set_ratio(value1, value2)]
+    return similarity_score
 
 
 def compare_semantic_document_values(doc1, doc2, model_type):
@@ -135,8 +133,7 @@ def compare_semantic_document_values(doc1, doc2, model_type):
     Returns:
         int: The percentage of differences between the two documents.
     """
-    differences = []
-    semantic_compare_values(doc1, doc2, differences, model_type)
+    differences = semantic_compare_values(doc1, doc2, model_type)
 
     return int(sum(differences) / len(differences))
 
@@ -144,26 +141,24 @@ def compare_semantic_document_values(doc1, doc2, model_type):
 def semantic_compare_values(
     value1: str,
     value2: str,
-    differences: list[float],
     model_type: SentenceTransformer,
-) -> None:
+) -> list[float]:
     """
     Computes the semantic similarity between two values using a pre-trained SentenceTransformer model.
 
     Args:
         value1 (str): The first value to compare.
         value2 (str): The second value to compare.
-        differences (list[float]): A list to store the similarity scores.
         model_type (SentenceTransformer): The pre-trained SentenceTransformer model to use for encoding the values.
 
     Returns:
-        None
+        A list of the similarity scores.
     """
     embedding1 = model_type.encode([str(value1)])
     embedding2 = model_type.encode([str(value2)])
     similarity_score = cosine_similarity(embedding1, embedding2)
 
-    differences.append(similarity_score * 100)
+    return [similarity_score * 100]
 
 
 def levenshtein(value1, value2):
