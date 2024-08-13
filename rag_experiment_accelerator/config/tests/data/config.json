@@ -5,9 +5,7 @@
     "data_formats": ["test_data_format"],
     "main_instruction": "",
     "use_checkpoints": true,
-    "path": {
-        "eval_data_file": "./artifacts/eval_data.jsonl"
-    },
+    "path": {},
     "sampling": {
         "sample_data": false,
         "percentage": 5,
