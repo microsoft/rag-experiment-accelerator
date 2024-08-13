@@ -120,24 +120,24 @@ def rerank_documents(
     Returns:
         list[str]: A list of reranked documents.
     """
-    result = []
-    if config.rerank.type == "llm":
-        result = llm_rerank_documents(
-            docs,
-            user_prompt,
-            response_generator,
-            config.rerank.llm_rerank_threshold,
-        )
-    elif config.rerank.type == "crossencoder":
-        result = cross_encoder_rerank_documents(
-            docs,
-            user_prompt,
-            output_prompt,
-            config.rerank.cross_encoder_model,
-            config.rerank.cross_encoder_at_k,
-        )
-
-    return result
+    match config.rerank.type:
+        case "llm":
+            return llm_rerank_documents(
+                docs,
+                user_prompt,
+                response_generator,
+                config.rerank.llm_rerank_threshold,
+            )
+        case "cross_encoder":
+            return cross_encoder_rerank_documents(
+                docs,
+                user_prompt,
+                output_prompt,
+                config.rerank.cross_encoder_model,
+                config.rerank.cross_encoder_at_k,
+            )
+        case _:
+            return []
 
 
 def hyde(
@@ -533,7 +533,7 @@ def get_query_output(
         cross_encoder_model=config.rerank.cross_encoder_model,
         llm_rerank_threshold=config.rerank.llm_rerank_threshold,
         retrieve_num_of_documents=config.search.retrieve_num_of_documents,
-        crossencoder_at_k=config.rerank.cross_encoder_at_k,
+        cross_encoder_at_k=config.rerank.cross_encoder_at_k,
         question_count=question_count,
         actual=openai_response,
         expected=output_prompt,

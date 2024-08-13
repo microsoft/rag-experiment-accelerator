@@ -793,7 +793,7 @@ def evaluate_prompts(
     common_data = query_data_load[0]
     mlflow.log_param("question_count", common_data.question_count)
     mlflow.log_param("retrieve_num_of_documents", common_data.retrieve_num_of_documents)
-    mlflow.log_param("crossencoder_at_k", common_data.crossencoder_at_k)
+    mlflow.log_param("cross_encoder_at_k", common_data.cross_encoder_at_k)
     mlflow.log_param("chunk_overlap", index_config.chunking.overlap_size)
     mlflow.log_param(
         "embedding_dimension",

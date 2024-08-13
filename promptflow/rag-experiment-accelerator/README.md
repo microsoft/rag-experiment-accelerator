@@ -111,7 +111,7 @@ az ml environment create --file ./environment.yaml -w $MLWorkSpaceName
     },
     "experiment_name": "name of the experiment",
     "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
-    "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
+    "rerank_type": "determines the type of re-ranking. Value values are llm or cross_encoder",
     "llm_rerank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
     "cross_encoder_at_k": "determines the threshold when using cross-encoding re-ranking. Chunks with given rank value are selected." ,
     "cross_encoder_model" :"determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base",

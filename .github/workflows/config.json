@@ -49,7 +49,7 @@
     },
     "rerank": {
         "enabled": true,
-        "type": "crossencoder",
+        "type": "cross_encoder",
         "llm_rerank_threshold": 3,
         "cross_encoder_at_k": 4,
         "cross_encoder_model": "cross-encoder/stsb-roberta-base"

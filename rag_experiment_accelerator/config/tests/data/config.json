@@ -56,7 +56,7 @@
         "type": "test_rerank_type",
         "llm_rerank_threshold": 6,
         "cross_encoder_at_k": 7,
-        "cross_encoder_model": "test_crossencoder_model"
+        "cross_encoder_model": "test_cross_encoder_model"
     },
     "search": {
         "retrieve_num_of_documents": 9,
