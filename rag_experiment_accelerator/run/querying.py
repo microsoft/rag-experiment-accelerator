@@ -212,6 +212,12 @@ def deduplicate_search_results(search_results: list[dict]) -> list[dict]:
     return search_result
 
 
+class QueryAndEvalACSResult:
+    def __init__(self, documents: list[str], evaluations: dict[str, any]):
+        self.documents = documents
+        self.evaluations = evaluations
+
+
 def query_and_eval_acs(
     search_client: SearchClient,
     embedding_model: EmbeddingModel,
@@ -222,11 +228,11 @@ def query_and_eval_acs(
     evaluator: SpacyEvaluator,
     config: Config,
     response_generator: ResponseGenerator,
-) -> tuple[list[str], list[dict[str, any]]]:
+) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
-    results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
-    the evaluation results.
+    results using the provided evaluator and evaluation content. Returns a QueryAndEvalACSResult object containing
+    the retrieved documents and the evaluation results.
 
     Args:
         search_client (SearchClient): The Azure AI Search client to use for querying the service.
@@ -240,7 +246,7 @@ def query_and_eval_acs(
         response_generator (ResponseGenerator): The response generator object.
 
     Returns:
-        tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
+        QueryAndEvalACSResult: An object containing the retrieved documents and the evaluation results.
     """
 
     if config.query_expansion.query_expansion:
@@ -270,7 +276,7 @@ def query_and_eval_acs(
     )
 
     evaluation["query"] = query
-    return docs, evaluation
+    return QueryAndEvalACSResult(docs, evaluation)
 
 
 def filter_non_related_questions(
@@ -314,7 +320,7 @@ def query_and_eval_acs_multi(
     config: Config,
     evaluator: SpacyEvaluator,
     response_generator: ResponseGenerator,
-) -> tuple[list[str], list[dict[str, any]]]:
+) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
     using OpenAI's GPT-3 model.
@@ -331,14 +337,13 @@ def query_and_eval_acs_multi(
         evaluator (SpacyEvaluator): The evaluator object.
 
     Returns:
-        tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
-        results for each question.
+        QueryAndEvalACSResult: : An object containing the retrieved documents and the evaluation results for each question.
     """
     context = []
     evaluations = []
 
     for question in questions:
-        docs, evaluation = query_and_eval_acs(
+        result = query_and_eval_acs(
             search_client=search_client,
             embedding_model=embedding_model,
             query=question,
@@ -349,18 +354,18 @@ def query_and_eval_acs_multi(
             config=config,
             response_generator=response_generator,
         )
-        if len(docs) == 0:
+        if len(result.documents) == 0:
             logger.warning(f"No documents found for question: {question}")
             continue
 
-        evaluations.append(evaluation)
+        evaluations.append(result.evaluations)
 
         if config.rerank.enabled:
             prompt_instruction_context = rerank_documents(
-                docs, question, output_prompt, config, response_generator
+                result.documents, question, output_prompt, config, response_generator
             )
         else:
-            prompt_instruction_context = docs
+            prompt_instruction_context = result.documents
 
         # TODO: Here was a bug, caused by the fact that we are not limiting the number of documents to retrieve
         # Current solution is just forcefully limiting the number of documents to retrieve assuming they are sorted
@@ -478,10 +483,7 @@ def get_query_output(
     )
 
     if is_multi_question:
-        (
-            docs,
-            search_evals,
-        ) = query_and_eval_acs_multi(
+        result = query_and_eval_acs_multi(
             search_client=search_client,
             embedding_model=index_config.embedding_model,
             questions=new_questions,
@@ -494,10 +496,7 @@ def get_query_output(
             response_generator=response_generator,
         )
     else:
-        (
-            docs,
-            evaluation,
-        ) = query_and_eval_acs(
+        result = query_and_eval_acs(
             search_client=search_client,
             embedding_model=config.get_embedding_model(
                 index_config.embedding_model.model_name
@@ -510,17 +509,17 @@ def get_query_output(
             config=config,
             response_generator=response_generator,
         )
-        search_evals.append(evaluation)
-    if config.rerank.enabled and len(docs) > 0:
+        search_evals.append(result.evaluations)
+    if config.rerank.enabled and len(result.documents) > 0:
         prompt_instruction_context = rerank_documents(
-            docs,
+            result.documents,
             user_prompt,
             output_prompt,
             config,
             response_generator,
         )
     else:
-        prompt_instruction_context = docs
+        prompt_instruction_context = result.documents
 
     openai_response = response_generator.generate_response(
         main_instruction,

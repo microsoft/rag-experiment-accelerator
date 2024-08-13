@@ -14,6 +14,7 @@ from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.run.querying import (
+    QueryAndEvalACSResult,
     query_acs,
     query_and_eval_single_line,
     rerank_documents,
@@ -26,6 +27,8 @@ from rag_experiment_accelerator.llm.prompt import Prompt, main_instruction
 class TestQuerying(unittest.TestCase):
     def setUp(self):
         self.mock_config = MagicMock(spec=Config)
+
+        self.mock_config.use_checkpoints = False
 
         self.mock_config.index = MagicMock(spec=IndexConfig)
         self.mock_config.index.index_name_prefix = "prefix"
@@ -133,7 +136,7 @@ class TestQuerying(unittest.TestCase):
         mock_evaluate_search_result.return_value = (mock_docs, mock_evaluation)
 
         # Act
-        result_docs, result_evaluation = query_and_eval_acs(
+        result = query_and_eval_acs(
             self.mock_search_client,
             self.mock_embedding_model,
             query,
@@ -156,8 +159,8 @@ class TestQuerying(unittest.TestCase):
         mock_evaluate_search_result.assert_called_once_with(
             mock_search_result, evaluation_content, mock_evaluator
         )
-        self.assertEqual(result_docs, mock_docs)
-        self.assertEqual(result_evaluation, mock_evaluation)
+        self.assertEqual(result.documents, mock_docs)
+        self.assertEqual(result.evaluations, mock_evaluation)
 
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
     @patch("rag_experiment_accelerator.run.querying.rerank_documents")
@@ -179,8 +182,8 @@ class TestQuerying(unittest.TestCase):
         mock_evaluation = {"score": 0.8}
 
         mock_query_and_eval_acs.side_effect = [
-            (mock_docs, mock_evaluation),
-            (mock_docs, mock_evaluation),
+            QueryAndEvalACSResult(mock_docs, mock_evaluation),
+            QueryAndEvalACSResult(mock_docs, mock_evaluation),
         ]
         mock_rerank_documents.return_value = prompt_instruction_context = [
             "context1",
@@ -254,8 +257,8 @@ class TestQuerying(unittest.TestCase):
         mock_evaluation = {"score": 0.8}
 
         mock_query_and_eval_acs.side_effect = [
-            (mock_docs, mock_evaluation),
-            (mock_docs, mock_evaluation),
+            QueryAndEvalACSResult(mock_docs, mock_evaluation),
+            QueryAndEvalACSResult(mock_docs, mock_evaluation),
         ]
 
         mock_response_generator.return_value.generate_response.return_value = (
@@ -297,59 +300,36 @@ class TestQuerying(unittest.TestCase):
         self.assertEqual(result_context, ["openai response", "openai response"])
         self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
 
-    @patch("rag_experiment_accelerator.run.querying.Config")
     @patch("rag_experiment_accelerator.run.querying.Environment")
     @patch("rag_experiment_accelerator.run.querying.SpacyEvaluator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutputHandler")
-    @patch("rag_experiment_accelerator.run.querying.create_client")
-    @patch("rag_experiment_accelerator.run.querying.create_client")
     @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
     @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
-    @patch("rag_experiment_accelerator.run.querying.query_and_eval_single_line")
     def test_run_no_multi_no_rerank(
         self,
-        mock_query_and_eval_single_line,
         mock_query_and_eval_acs,
         mock_do_we_need_multiple_questions,
         mock_query_output,
         mock_response_generator,
-        mock_create_client,
         mock_query_output_handler,
         mock_spacy_evaluator,
         mock_environment,
-        mock_config,
     ):
         # Arrange
         mock_query_output_handler.return_value.load.return_value = [mock_query_output]
         mock_query_output_handler.return_value.save.side_effect = None
-        mock_config.index.chunking.chunk_size = [1]
-        mock_config.index.chunking.overlap_size = [1]
-
-        mock_config.rerank_type = "llm"
-        mock_config.search.retrieve_num_of_documents = 1
         test_dir = os.path.dirname(os.path.abspath(__file__))
         data_file_path = test_dir + "/data/test_data.jsonl"
-        mock_config.eval_data_jsonl_file_path = data_file_path
-        self.mock_embedding_model.name = "test-embedding-model"
-        mock_config.embedding_models = [self.mock_embedding_model]
-        mock_config.ef_constructions = [400]
-        mock_config.ef_searches = [400]
-        mock_config.search_types = ["search_for_match_semantic"]
-        mock_config.index_name_prefix = "prefix"
-
+        self.mock_config.eval_data_jsonl_file_path = data_file_path
         self.mock_config.rerank = MagicMock(spec=RerankConfig)
         self.mock_config.rerank.enabled = False
         mock_do_we_need_multiple_questions.return_value = False
-        mock_query_and_eval_acs.return_value = [MagicMock(), MagicMock()]
+        mock_query_and_eval_acs.return_value = MagicMock()
         mock_search_client = MagicMock(SearchClient)
-        index_config = IndexConfig(
-            "prefix", False, 100, 100, self.mock_embedding_model, 400, 400
-        )
-        mock_config.index_configs.return_value = [index_config]
-        mock_config.use_checkpoints = False
-        init_checkpoint(mock_config)
+
+        init_checkpoint(self.mock_config)
         # Act
         with open(data_file_path, "r") as file:
             line = file.readline()
@@ -358,8 +338,8 @@ class TestQuerying(unittest.TestCase):
             1,
             mock_query_output_handler,
             mock_environment,
-            mock_config,
-            index_config,
+            self.mock_config,
+            self.mock_config.index,
             mock_response_generator,
             mock_search_client,
             mock_spacy_evaluator,
