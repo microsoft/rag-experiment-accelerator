@@ -4,6 +4,14 @@
     "job_name": "",
     "job_description": "",
     "preprocess": false,
+    "sampling": {
+        "sample_data": true,
+        "only_run_sampling": true,
+        "sample_percentage": 5,
+        "optimum_k": "auto",
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
     "chunking": {
         "chunk_size": [1000],
         "overlap_size": [200],

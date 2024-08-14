@@ -51,6 +51,8 @@ The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallba
 
 1. **Multi-Lingual**: The tool supports language analyzers for linguistic support on individual languages and specialized (language-agnostic) analyzers for user-defined patterns on search indexes. For more information, see [Types of Analyzers](https://learn.microsoft.com/en-us/azure/search/search-analyzers#types-of-analyzers).
 
+1. **Sampling**: If you have a large dataset and/or want to speed up the experimentation, a sampling process is available to create a small but representative sample of the data for the percentage specified. The data will be clustered by content and a percentage of each cluster will be selected as part of the sample. Results obtained should be roughly indicative of the full dataset within a ~10% margin. Once an approach has been identified, running on the full dataset is recommended for accurate results.
+
 ## Products used
 
 - [Azure AI Search Service](https://learn.microsoft.com/en-us/azure/search/search-create-service-portal) (Note: [Semantic Search](https://learn.microsoft.com/en-us/azure/search/search-get-started-semantic?tabs=dotnet) is available in Azure AI Search, at Basic tier or higher.)
@@ -185,21 +187,21 @@ az deployment sub create --location uksouth --template-file infra/main.bicep \
 
 ## How to use
 
-To use the **RAG Experiment Accelerator**, follow these steps:
+To use the **RAG Experiment Accelerator** locally, follow these steps:
 
 1. Copy the provided `config.sample.json` file to a file named `config.json` and change any hyperparameters to tailor to your experiment.
 2. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
   ```bash
   python 01_index.py
   -d "The directory holding the configuration files and data. Defaults to current working directory"
-  -dd "The directory holding the data. Defaults to data"
+  --data_dir "The directory holding the data. Defaults to data"
   -cf "JSON config filename. Defaults to config.json"
   ```
 3. Run `02_qa_generation.py` (python 02_qa_generation.py) to generate question-answer pairs using Azure OpenAI.
   ```bash
   python 02_qa_generation.py
   -d "The directory holding the configuration files and data. Defaults to current working directory"
-  -dd "The directory holding the data. Defaults to data"
+  --data_dir "The directory holding the data. Defaults to data"
   -cf "JSON config filename. Defaults to config.json"
   ```
 4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
@@ -217,6 +219,63 @@ To use the **RAG Experiment Accelerator**, follow these steps:
 
 Alternatively, you can run the above steps (apart from `02_qa_generation.py`) using an Azure ML pipeline. To do so, follow [the guide here](./docs/azureml-pipeline.md).
 
+### Running with sampling
+
+Sampling will be run locally to create a small but representative slice of the data. This helps with rapid experimentation and keeps costs down. Results obtained should be roughly indicative of the full dataset within a ~10% margin. Once an approach has been identified, running on the full dataset is recommended for accurate results.
+
+**Note**: Sampling can only be run locally, at this stage it is not supported on a distributed AML compute cluster. So the process would be to run sampling locally and then use the generated sample dataset to run on AML.
+
+If you have a very large dataset and want to run a similar approach to sample the data, you can use the pyspark in-memory distributed implementation in the [Data Discovery Toolkit](https://github.com/microsoft/Data-Discovery-Toolkit) for [Microsoft Fabric](https://learn.microsoft.com/en-us/fabric/get-started/microsoft-fabric-overview) or [Azure Synapse Analytics](https://learn.microsoft.com/en-gb/azure/synapse-analytics/).  
+
+#### Available sampling parameters in the config.json file
+
+```json
+    "sampling": {
+        "sample_data": "Set to true to enable sampling",
+        "only_run_sampling": "If set to true, this will only run the sampling step and will not create an index or any subsequent steps, use this if you want to build a small sampled dataset to run in AML",
+        "sample_percentage": "Percentage of the document corpus to sample",
+        "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+        "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
+        "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30",
+    },
+```
+
+
+The sampling process will produce the following artifacts in the sampling directory:
+
+1. A directory named after the config value ```job_name``` containing the subset of files sampled, these can be specified as ```--data_dir``` argument when running the entire process on AML.
+2. A 2 dimensional scatter plot of the clustered files (by content) selected as the sampled dataset in the sampling folder.
+![images/all_cluster_predictions_cluster_number_5.jpg](images/all_cluster_predictions_cluster_number_5.jpg)
+3. A .cvs file of the entire dataset with cluster predictions named "all_cluster_predictions..." and a cvs file with the sampled cluster predictions named "sampled_cluster_predictions...". This can be used for further enriching the dataset, for example, creating a meaningful label per cluster and updates all record. See the [Heuristics classifier in the Data Discovery Toolkit as an example](https://github.com/microsoft/Data-Discovery-Toolkit/blob/main/walkthroughs/heuristics/standalone_text_heuristics.ipynb) or [Pixplotml for image data](https://github.com/microsoft/Data-Discovery-Toolkit?tab=readme-ov-file#using-pixplotml-to-rapidly-visualise-and-label-data-for-training). 
+4. If the ```"optimum_k": auto``` config value is set to auto, the sampling process will attempt to set the optimum number of clusters automatically. This can be overridden if you know roughly how many broad buckets of content exist in your data. An elbow graph will be generated in the sampling folder.
+![Optimum k elbow graph](images/elbow_5.png)
+
+Two options exist for running sampling, namely:
+
+1. Run the entire process locally with sampling, including the index generation and subsequent steps
+2. Run only the sampling locally and then use the created sampled dataset to execute on AML
+
+#### Run the entire process locally
+
+Set the following values to run the indexing process locally:
+
+```json
+    "sampling": {
+        "sample_data": true,
+        "only_run_sampling": false,
+        "sample_percentage": 10,
+        "optimum_k": auto,
+        "min_cluster": 2,
+        "max_cluster": 30
+    },
+```
+
+#### Run only the sampling locally and the subsequent steps on AML
+
+If ```only_run_sampling```config value is set to true, this will only run the sampling step, no index will be created and any other subsequent steps will not executed. Set the ```--data_dir``` argument to directory created by the sampling process which will be:
+
+```artifacts/sampling/config.[job_name]``` and execute the [AML pipeline step.](docs/azureml-pipeline.md)
+
 # Description of configuration elements
 
 ```json
@@ -227,6 +286,7 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
     "job_description": "You may provide a description for the current job run which describes in words what you are about to experiment with",
     "sampling": {
         "sample_data": "Set to true to enable sampling",
+        "only_run_sampling": "If set to true, this will only run the sampling step and will not create an index or any subsequent steps, use this if you want to build a small sampled dataset to run in AML",
         "sample_percentage": "Percentage of the document corpus to sample",
         "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
         "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",

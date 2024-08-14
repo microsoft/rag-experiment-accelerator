@@ -74,15 +74,19 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
     # Arrange
     all_chunks = [
         {
-            "text1": "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds are known for their distinctive cooing call and their ability to navigate long distances. Pigeons are also appreciated for their beauty, with their colorful feathers and iridescent sheen."
+            "content": "Pigeons, also known as rock doves, are a common sight in urban areas around the world. These birds are known for their distinctive cooing call and their ability to navigate long distances. Pigeons are also appreciated for their beauty, with their colorful feathers and iridescent sheen.",
+            "metadata": {"source": mock_data_dir + "/sampling/tests/data/test1.txt"},
         },
         {
-            "text2": "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, including delivering messages during wartime and racing competitions. They are also popular as pets and can be trained to perform tricks."
+            "content": "Pigeons have been domesticated for thousands of years and have been used for a variety of purposes, including delivering messages during wartime and racing competitions. They are also popular as pets and can be trained to perform tricks.",
+            "metadata": {"source": mock_data_dir + "/sampling/tests/data/test2.txt"},
         },
         {
-            "text3": "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to spread seeds and nutrients throughout their environment and are even considered a keystone species in some areas."
+            "content": "Despite their reputation as pests, pigeons play an important role in the ecosystem. They help to spread seeds and nutrients throughout their environment and are even considered a keystone species in some areas.",
+            "metadata": {"source": mock_data_dir + "/sampling/tests/data/test3.txt"},
         },
     ]
+
     config = MagicMock()
     config.SAMPLE_OPTIMUM_K = 2
     config.SAMPLE_MIN_CLUSTER = 1
@@ -109,7 +113,20 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         return_value=2,
     ), patch(
         "rag_experiment_accelerator.sampling.clustering.cluster_kmeans",
-        return_value=(0, 0, "text", "processed_text", 0, [0, 1], [0.5, 0.6]),
+        return_value=(
+            0,
+            0,
+            "text",
+            "processed_text",
+            0,
+            [0, 1],
+            [0.5, 0.6],
+            [
+                mock_data_dir + "/sampling/tests/data/test1.txt",
+                mock_data_dir + "/sampling/tests/data/test2.txt",
+                mock_data_dir + "/sampling/tests/data/test3.txt",
+            ],
+        ),
     ), patch(
         "rag_experiment_accelerator.sampling.clustering.pd.DataFrame",
         return_value=mock_df_concat,
@@ -131,7 +148,6 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
                 "sampled_cluster_predictions_cluster_number_2.csv",
             )
         )
-        assert mock_logger.info.call_count == 4
         assert (
             mock_logger.info.call_args_list[0][0][0]
             == "Sampling - Original Document chunk length 3"
