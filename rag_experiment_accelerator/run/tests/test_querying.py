@@ -194,7 +194,7 @@ class TestQuerying(unittest.TestCase):
         )
 
         # Act
-        result_context, result_evals = query_and_eval_acs_multi(
+        result = query_and_eval_acs_multi(
             self.mock_search_client,
             self.mock_embedding_model,
             questions,
@@ -232,8 +232,8 @@ class TestQuerying(unittest.TestCase):
             context="\n".join(prompt_instruction_context),
             question=original_prompt,
         )
-        self.assertEqual(result_context, ["openai response", "openai response"])
-        self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
+        self.assertEqual(result.documents, ["openai response", "openai response"])
+        self.assertEqual(result.evaluations, [mock_evaluation, mock_evaluation])
 
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
     @patch("rag_experiment_accelerator.run.querying.rerank_documents")
@@ -266,7 +266,7 @@ class TestQuerying(unittest.TestCase):
         )
 
         # Act
-        result_context, result_evals = query_and_eval_acs_multi(
+        result = query_and_eval_acs_multi(
             self.mock_search_client,
             self.mock_embedding_model,
             questions,
@@ -297,8 +297,8 @@ class TestQuerying(unittest.TestCase):
             context="\n".join(mock_docs),
             question=original_prompt,
         )
-        self.assertEqual(result_context, ["openai response", "openai response"])
-        self.assertEqual(result_evals, [mock_evaluation, mock_evaluation])
+        self.assertEqual(result.documents, ["openai response", "openai response"])
+        self.assertEqual(result.evaluations, [mock_evaluation, mock_evaluation])
 
     @patch("rag_experiment_accelerator.run.querying.Environment")
     @patch("rag_experiment_accelerator.run.querying.SpacyEvaluator")
