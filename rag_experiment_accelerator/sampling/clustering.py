@@ -266,16 +266,16 @@ def cluster(index_name, all_chunks, config: Config, parser):
     reducer = UMAP()
     embeddings_2d = reducer.fit_transform(X)
 
-    if config.sampling.optimum_k == "auto":
+    if config.index.sampling.optimum_k == "auto":
         optimum_k = determine_optimum_k_elbow(
             embeddings_2d,
             X,
-            config.sampling.min_cluster,
-            config.sampling.max_cluster,
+            config.index.sampling.min_cluster,
+            config.index.sampling.max_cluster,
             config.path.sampling_output_dir,
         )
     else:
-        optimum_k = config.sampling.optimum_k
+        optimum_k = config.index.sampling.optimum_k
 
     # Cluster
     x, y, text, processed_text, chunk, prediction, prediction_values = cluster_kmeans(
@@ -286,7 +286,7 @@ def cluster(index_name, all_chunks, config: Config, parser):
     data = {"x": x, "y": y, "text": text, "prediction": prediction, "chunk": chunk}
     df = pd.DataFrame(data)
     df.to_csv(
-        f"{config.path.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.sampling.optimum_k}.csv",
+        f"{config.path.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.index.sampling.optimum_k}.csv",
         sep=",",
     )
 
@@ -296,11 +296,12 @@ def cluster(index_name, all_chunks, config: Config, parser):
         g["l_{0}".format(i)] = df[df["prediction"] == i]
 
         if len(g["l_{0}".format(i)]) > round(
-            (len(df) * (config.sampling.percentage / 100)) / len(prediction_values)
+            (len(df) * (config.index.sampling.percentage / 100))
+            / len(prediction_values)
         ):
             g["l_{0}".format(i)] = g["l_{0}".format(i)].sample(
                 n=round(
-                    (len(df) * (config.sampling.percentage / 100))
+                    (len(df) * (config.index.sampling.percentage / 100))
                     / len(prediction_values)
                 ),
                 random_state=42,
@@ -311,7 +312,7 @@ def cluster(index_name, all_chunks, config: Config, parser):
     # Concatenate the list of DataFrames into a single DataFrame
     df_concat = pd.concat(df_list)
     df_concat.to_csv(
-        config.path.sampled_cluster_predictions_path(config.sampling.optimum_k),
+        config.path.sampled_cluster_predictions_path(config.index.sampling.optimum_k),
         sep=",",
     )
     # Rebuild sampled chunks dict

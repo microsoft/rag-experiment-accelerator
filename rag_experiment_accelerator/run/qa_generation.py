@@ -35,10 +35,10 @@ def run(
 
     all_docs = {}
     # Check if we have already sampled
-    if config.sampling.sample_data:
+    if config.index.sampling.sample_data:
         logger.info("Running QA Generation process with sampling")
         sampled_cluster_predictions_path = config.path.sampled_cluster_predictions_path(
-            config.sampling.optimum_k
+            config.index.sampling.optimum_k
         )
         if exists(sampled_cluster_predictions_path):
             df = pd.read_csv(sampled_cluster_predictions_path)

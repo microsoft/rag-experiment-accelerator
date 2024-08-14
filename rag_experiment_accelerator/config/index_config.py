@@ -5,6 +5,7 @@ from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
 from rag_experiment_accelerator.config.embedding_model_config import (
     EmbeddingModelConfig,
 )
+from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 
 
 @dataclass
@@ -22,6 +23,8 @@ class IndexConfig(BaseConfig):
             Configuration for chunking documents.
         embedding_model (EmbeddingModelConfig):
             Configuration for the embedding model.
+        sampling (SamplingConfig):
+            Configuration for sampling documents.
     """
 
     index_name_prefix: str = "idx"
@@ -29,6 +32,7 @@ class IndexConfig(BaseConfig):
     ef_search: int = 400
     chunking: ChunkingConfig = field(default_factory=ChunkingConfig)
     embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
+    sampling: SamplingConfig = field(default_factory=SamplingConfig)
 
     def label_properties(self) -> dict:
         """
@@ -39,7 +43,7 @@ class IndexConfig(BaseConfig):
             "efc": self.ef_construction,
             "efs": self.ef_search,
             "emn": self.embedding_model.model_name.lower(),
-            # "sp": self.sampling_percentage,
+            "sp": self.sampling.percentage,
         }
 
         properties.update(self.chunking.label_properties())
@@ -53,18 +57,13 @@ class IndexConfig(BaseConfig):
         Reverse of label_properties().
         """
 
-        # todo: update validation
-        # if len(properties) != 11:
-        #     raise (f"Invalid index name [{index_name}]")
-
         return IndexConfig(
             index_name_prefix=properties["idx"],
             ef_construction=int(properties["efc"]),
             ef_search=int(properties["efs"]),
             chunking=ChunkingConfig.from_label_properties(properties),
             embedding_model=EmbeddingModelConfig(model_name=properties["emn"]),
-            # "emn": self.embedding_model.model_name.lower(),
-            # "sp": self.sampling_percentage,
+            sampling=SamplingConfig(percentage=properties["sp"]),
         )
 
     def index_name(self) -> str:
@@ -92,4 +91,9 @@ class IndexConfig(BaseConfig):
         key_values = [kv.split("-") for kv in index_name.split("_")]
         properties = {kv[0]: kv[1].strip() for kv in key_values}
 
-        return IndexConfig.from_label_properties(properties)
+        try:
+            index_config = IndexConfig.from_label_properties(properties)
+        except Exception as e:
+            raise ValueError(f"Invalid index name [{index_name}]. {e}")
+
+        return index_config

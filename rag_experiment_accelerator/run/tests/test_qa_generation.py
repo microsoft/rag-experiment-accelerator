@@ -22,10 +22,10 @@ def test_run(
     df_instance = MagicMock()
 
     mock_config = MagicMock()
-    mock_config.sampling.sample_data = True
-    mock_config.sampling.optimum_k = 3
+    mock_config.index.sampling.sample_data = True
+    mock_config.index.sampling.optimum_k = 3
 
-    sampled_input_data_csv_path = f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.sampling.optimum_k}.csv"
+    sampled_input_data_csv_path = f"{data_dir}/sampling/sampled_cluster_predictions_cluster_number_{mock_config.index.sampling.optimum_k}.csv"
     mock_config.path.sampled_cluster_predictions_path.return_value = (
         sampled_input_data_csv_path
     )

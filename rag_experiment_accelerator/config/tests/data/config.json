@@ -6,13 +6,6 @@
     "main_instruction": "",
     "use_checkpoints": true,
     "path": {},
-    "sampling": {
-        "sample_data": false,
-        "percentage": 5,
-        "optimum_k": "auto",
-        "min_cluster": 2,
-        "max_cluster": 30
-    },
     "index": {
         "index_name_prefix": "test_prefix",
         "ef_construction": [300],
@@ -36,7 +29,14 @@
                 "type": "azure",
                 "model_name": "text-embedding-ada-002"
             }
-        ]
+        ],
+        "sampling": {
+            "sample_data": false,
+            "percentage": 5,
+            "optimum_k": "auto",
+            "min_cluster": 2,
+            "max_cluster": 30
+        }
     },
     "language":{
         "analyzer": {

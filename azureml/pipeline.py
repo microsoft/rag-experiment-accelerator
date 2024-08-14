@@ -259,7 +259,7 @@ if __name__ == "__main__":
     config = Config.from_path(environment, args.config_path, args.data_dir)
     config.execution_environment = ExecutionEnvironment.AZURE_ML
 
-    if config.sampling.sample_data:
+    if config.index.sampling.sample_data:
         logger.error(
             "Can't sample data when running on AzureML pipeline. Please run the pipeline locally"
         )

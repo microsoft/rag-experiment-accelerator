@@ -49,13 +49,6 @@ def test_config_init(mock_create_embedding_model):
     )
     assert config.use_checkpoints == mock_config["use_checkpoints"]
 
-    sampling = config.sampling
-    assert sampling.sample_data == mock_config["sampling"]["sample_data"]
-    assert sampling.percentage == mock_config["sampling"]["percentage"]
-    assert sampling.optimum_k == mock_config["sampling"]["optimum_k"]
-    assert sampling.min_cluster == mock_config["sampling"]["min_cluster"]
-    assert sampling.max_cluster == mock_config["sampling"]["max_cluster"]
-
     index = config.index
     mock_index = mock_config["index"]
     assert index.index_name_prefix == mock_index["index_name_prefix"]
@@ -78,6 +71,13 @@ def test_config_init(mock_create_embedding_model):
         chunking.azure_document_intelligence_model
         == mock_chunking["azure_document_intelligence_model"]
     )
+
+    sampling = config.index.sampling
+    assert sampling.sample_data == mock_config["index"]["sampling"]["sample_data"]
+    assert sampling.percentage == mock_config["index"]["sampling"]["percentage"]
+    assert sampling.optimum_k == mock_config["index"]["sampling"]["optimum_k"]
+    assert sampling.min_cluster == mock_config["index"]["sampling"]["min_cluster"]
+    assert sampling.max_cluster == mock_config["index"]["sampling"]["max_cluster"]
 
     mock_embedding = mock_config["index"]["embedding_model"]
     assert index.embedding_model[0].type == mock_embedding[0]["type"]

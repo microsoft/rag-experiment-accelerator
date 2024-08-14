@@ -86,14 +86,14 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
     ]
     config = MagicMock()
     config.use_checkpoints = False
-    config.sampling.optimum_k = 2
-    config.sampling.min_cluster = 1
-    config.sampling.max_cluster = 10
-    config.sampling.percentage = 100
+    config.index.sampling.optimum_k = 2
+    config.index.sampling.min_cluster = 1
+    config.index.sampling.max_cluster = 10
+    config.index.sampling.percentage = 100
     config.path.sampling_output_dir = os.path.join(mock_data_dir, "sampling")
     os.makedirs(config.path.sampling_output_dir)
 
-    sampled_input_data_csv_path = f"{config.path.sampling_output_dir}/sampled_cluster_predictions_cluster_number_{config.sampling.optimum_k}.csv"
+    sampled_input_data_csv_path = f"{config.path.sampling_output_dir}/sampled_cluster_predictions_cluster_number_{config.index.sampling.optimum_k}.csv"
     config.path.sampled_cluster_predictions_path.return_value = (
         sampled_input_data_csv_path
     )

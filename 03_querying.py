@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="input: path to the input data",
-        default=None,  # default is initialised in Config
+        default=None,  # default is initialized in Config
     )
     args, _ = parser.parse_known_args()
 

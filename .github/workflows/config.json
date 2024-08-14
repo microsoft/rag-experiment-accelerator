@@ -6,13 +6,6 @@
     "main_instruction": "",
     "use_checkpoints": true,
     "path": {},
-    "sampling": {
-        "sample_data": false,
-        "percentage": 5,
-        "optimum_k": "auto",
-        "min_cluster": 2,
-        "max_cluster": 30
-    },
     "index": {
         "index_name_prefix": "ci",
         "ef_construction": [400],
@@ -32,7 +25,14 @@
                 "type": "sentence-transformer",
                 "model_name": "all-mpnet-base-v2"
             }
-        ]
+        ],
+        "sampling": {
+            "sample_data": false,
+            "percentage": 5,
+            "optimum_k": "auto",
+            "min_cluster": 2,
+            "max_cluster": 30
+        }
     },
     "language":{
         "analyzer": {

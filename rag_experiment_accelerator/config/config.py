@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.config.path_config import PathConfig
-from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.base_config import BaseConfig
 from rag_experiment_accelerator.config.language_config import LanguageConfig
@@ -43,7 +42,6 @@ class Config(BaseConfig):
     max_worker_threads: int = None
     use_checkpoints: bool = True
     path: PathConfig = field(default_factory=PathConfig)
-    sampling: SamplingConfig = field(default_factory=SamplingConfig)
     index: IndexConfig = field(default_factory=IndexConfig)
     language: LanguageConfig = field(default_factory=LanguageConfig)
     rerank: RerankConfig = field(default_factory=RerankConfig)
@@ -102,8 +100,8 @@ class Config(BaseConfig):
                 "Config param validation error: overlap_size must be less than chunk_size"
             )
 
-        if self.sampling.sample_data and (
-            self.sampling.percentage < 0 or self.sampling.percentage > 100
+        if self.index.sampling.sample_data and (
+            self.sampling.percentage < 0 or self.index.sampling.percentage > 100
         ):
             raise ValueError(
                 "Config param validation error: sample percentage must be between 0 and 100 (inclusive)"

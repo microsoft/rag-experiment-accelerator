@@ -19,7 +19,7 @@ class ChunkingConfig(BaseConfig):
     generate_title: bool = False
     generate_summary: bool = False
     override_content_with_summary: bool = False
-    chunking_strategy: ChunkingStrategy = ChunkingStrategy.BASIC  # todo: add to index?
+    chunking_strategy: ChunkingStrategy = ChunkingStrategy.BASIC
     # only for azure document intelligence strategy
     azure_document_intelligence_model: str = "prebuilt-read"
 
