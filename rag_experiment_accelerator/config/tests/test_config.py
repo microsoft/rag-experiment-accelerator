@@ -149,7 +149,9 @@ def test_config_init(mock_create_embedding_model):
 
     assert config.eval.metric_types == mock_config["eval"]["metric_types"]
 
-    assert config.path.eval_data_file == mock_config["path"]["eval_data_file"]
+    assert config.path.eval_data_file.endswith("eval_data.jsonl") and (
+        "eval_data_file" not in mock_config["path"]
+    )
 
 
 def test_chunk_size_greater_than_overlap_size():
