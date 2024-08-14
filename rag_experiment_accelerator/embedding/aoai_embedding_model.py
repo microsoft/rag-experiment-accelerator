@@ -65,7 +65,3 @@ class AOAIEmbeddingModel(EmbeddingModel):
         )
 
         return response.data[0].embedding
-
-    # todo: shall it be extended?
-    def to_dict(self) -> dict:
-        return super().to_dict()

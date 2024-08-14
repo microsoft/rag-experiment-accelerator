@@ -75,6 +75,3 @@ class STEmbeddingModel(EmbeddingModel):
 
         """
         return self._model.encode([str(chunk)]).tolist()[0]
-
-    def to_dict(self) -> dict:
-        return super().to_dict()
