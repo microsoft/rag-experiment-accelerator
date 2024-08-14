@@ -101,7 +101,7 @@ class Config(BaseConfig):
             )
 
         if self.index.sampling.sample_data and (
-            self.sampling.percentage < 0 or self.index.sampling.percentage > 100
+            self.index.sampling.percentage < 0 or self.index.sampling.percentage > 100
         ):
             raise ValueError(
                 "Config param validation error: sample percentage must be between 0 and 100 (inclusive)"

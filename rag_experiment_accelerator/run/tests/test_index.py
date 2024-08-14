@@ -63,9 +63,8 @@ def test_run(
             azure_document_intelligence_model="prebuilt-read",
         ),
         embedding_model=[MagicMock(), MagicMock()],
+        sampling=MagicMock(spec=SamplingConfig, sample_data=False),
     )
-
-    mock_config.sampling = MagicMock(spec=SamplingConfig, sample_data=False)
 
     mock_config.language = MagicMock(
         spec=LanguageConfig, analyzer=["analyzer1", "analyzer2"]

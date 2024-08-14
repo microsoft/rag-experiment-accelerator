@@ -66,7 +66,7 @@ def run(
         index_config.chunking.azure_document_intelligence_model,
     )
 
-    if config.sampling.sample_data:
+    if index_config.sampling.sample_data:
         parser = load_parser()
         docs = cluster(index_config.index_name(), docs, config, parser)
 
