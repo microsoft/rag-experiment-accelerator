@@ -129,6 +129,7 @@ class ResponseGenerator:
 
         for key in system_arguments:
             assert key in kwargs, f"Missing argument {key} in system message."
+
         for key in user_arguments:
             assert key in kwargs, f"Missing argument {key} in user template."
 

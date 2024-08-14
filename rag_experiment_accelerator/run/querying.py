@@ -160,7 +160,7 @@ def hyde(
 
     generated_queries = [
         response_generator.generate_response(
-            hyde_prompt[config.query_expansion.hyde], query
+            hyde_prompt[config.query_expansion.hyde], text=query
         )
         for query in queries
     ]
