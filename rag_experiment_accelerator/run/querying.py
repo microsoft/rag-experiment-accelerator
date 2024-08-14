@@ -386,7 +386,7 @@ def query_and_eval_acs_multi(
         context.append(openai_response)
         logger.debug(openai_response)
 
-    return context, evaluations
+    return QueryAndEvalACSResult(documents=context, evaluations=evaluations)
 
 
 def query_and_eval_single_line(
