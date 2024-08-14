@@ -482,10 +482,14 @@ def get_query_output(
         environment, config, config.openai.azure_oai_chat_deployment_name
     )
 
+    embedding_model = config.get_embedding_model(
+        index_config.embedding_model.model_name
+    )
+
     if is_multi_question:
         result = query_and_eval_acs_multi(
             search_client=search_client,
-            embedding_model=index_config.embedding_model,
+            embedding_model=embedding_model,
             questions=new_questions,
             original_prompt=user_prompt,
             output_prompt=output_prompt,
@@ -498,9 +502,7 @@ def get_query_output(
     else:
         result = query_and_eval_acs(
             search_client=search_client,
-            embedding_model=config.get_embedding_model(
-                index_config.embedding_model.model_name
-            ),
+            embedding_model=embedding_model,
             query=user_prompt,
             search_type=s_v,
             evaluation_content=evaluation_content,

@@ -3,6 +3,9 @@ from unittest.mock import MagicMock, patch
 from rag_experiment_accelerator.checkpoint.checkpoint_factory import init_checkpoint
 from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
 from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config.embedding_model_config import (
+    EmbeddingModelConfig,
+)
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.language_config import LanguageConfig
 from rag_experiment_accelerator.config.openai_config import OpenAIConfig
@@ -62,8 +65,11 @@ def test_run(
             override_content_with_summary=False,
             azure_document_intelligence_model="prebuilt-read",
         ),
-        embedding_model=[MagicMock(), MagicMock()],
-        sampling=MagicMock(spec=SamplingConfig, sample_data=False),
+        embedding_model=[
+            EmbeddingModelConfig(model_name="model1"),
+            EmbeddingModelConfig(model_name="model2"),
+        ],
+        sampling=SamplingConfig(sample_data=False),
     )
 
     mock_config.language = MagicMock(
