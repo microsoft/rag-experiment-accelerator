@@ -91,7 +91,7 @@ class Config:
         self.EF_CONSTRUCTIONS = config_json["ef_construction"]
         self.EF_SEARCHES = config_json["ef_search"]
         self.INDEX_NAME_PREFIX = config_json["index_name_prefix"]
-        self.EXPERIMENT_NAME = self.INDEX_NAME_PREFIX
+        self.EXPERIMENT_NAME = config_json["experiment_name"] or self.INDEX_NAME_PREFIX
         self.JOB_NAME = config_json["job_name"]
         self.JOB_DESCRIPTION = config_json["job_description"]
         self.SEARCH_VARIANTS = config_json["search_types"]
@@ -157,7 +157,6 @@ class Config:
             self.SAMPLE_OPTIMUM_K = config_json["sampling"]["optimum_k"]
             self.SAMPLE_MIN_CLUSTER = config_json["sampling"]["min_cluster"]
             self.SAMPLE_MAX_CLUSTER = config_json["sampling"]["max_cluster"]
-            self.ONLY_RUN_SAMPLING = config_json["sampling"]["only_run_sampling"]
 
         # log all the configuration settings in debug mode
         for key, value in config_json.items():

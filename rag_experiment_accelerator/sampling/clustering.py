@@ -1,4 +1,3 @@
-import os
 import warnings
 import numpy as np
 import matplotlib
@@ -11,7 +10,6 @@ from sklearn.cluster import KMeans
 from umap import UMAP
 from scipy.spatial.distance import cdist
 from rag_experiment_accelerator.utils.logging import get_logger
-import shutil
 
 matplotlib.use("Agg")
 plt.style.use("ggplot")
@@ -47,17 +45,14 @@ def spacy_tokenizer(sentence, parser):
         str: The tokenized sentence.
 
     """
-
-    if not isinstance(sentence, str):
-        sentence = sentence["content"]
-
-    tokens = [
+    mytokens = parser(sentence)
+    mytokens = [
         word.lemma_.lower().strip() if word.lemma_ != "-PRON-" else word.lower_
-        for word in parser(sentence)
+        for word in mytokens
         if not word.is_stop and not word.is_punct
     ]
-    tokenized_sentence = " ".join([token for token in tokens])
-    return tokenized_sentence
+    mytokens = " ".join([i for i in mytokens])
+    return mytokens
 
 
 def determine_optimum_k_elbow(embeddings_2d, X, min_cluster, max_cluster, result_dir):
@@ -177,20 +172,18 @@ def chunk_dict_to_dataframe(all_chunks):
     all_chunks (list[dict]): A list of dictionaries where each dictionary contains a chunk and its corresponding text.
 
     Returns:
-    df (pandas.DataFrame): A DataFrame with three columns - 'chunk', 'text' and 'filename, where 'chunk' contains the chunks and 'text' contains the corresponding text and 'filename' the file name.
+    df (pandas.DataFrame): A DataFrame with two columns - 'chunk' and 'text', where 'chunk' contains the chunks and 'text' contains the corresponding text.
     """
 
     chunks = []
     text = []
-    filename = []
 
     for row in all_chunks:
         key, value = list(row.items())[0]
         chunks.append(key)
         text.append(value)
-        filename.append(value["metadata"]["source"])
 
-    df = pd.DataFrame({"chunk": chunks, "text": text, "filename": filename})
+    df = pd.DataFrame({"chunk": chunks, "text": text})
 
     return df
 
@@ -214,7 +207,6 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
             - chunk (list): Chunk data from the DataFrame.
             - prediction (list): Cluster labels assigned by K-means.
             - prediction_values (list): Unique cluster labels.
-            - filenames (list): File names of the sampled data.
 
     """
     logger.info("Clustering chunks")
@@ -228,9 +220,6 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     )
 
     # Save
-    filenames = (
-        x
-    ) = y = text = processed_text = chunk = prediction = prediction_values = []
     x = embeddings_2d[:, 0].tolist()
     y = embeddings_2d[:, 1].tolist()
     text = df["text"].tolist()
@@ -238,9 +227,8 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     chunk = df["chunk"].tolist()
     prediction = kmeans.labels_.tolist()
     prediction_values = list(set(kmeans.labels_.tolist()))
-    filenames = list(set(df["filename"].tolist()))
 
-    return x, y, text, processed_text, chunk, prediction, prediction_values, filenames
+    return x, y, text, processed_text, chunk, prediction, prediction_values
 
 
 def cluster(all_chunks, config, parser):
@@ -286,16 +274,9 @@ def cluster(all_chunks, config, parser):
         optimum_k = config.SAMPLE_OPTIMUM_K
 
     # Cluster
-    (
-        x,
-        y,
-        text,
-        processed_text,
-        chunk,
-        prediction,
-        prediction_values,
-        filenames,
-    ) = cluster_kmeans(embeddings_2d, optimum_k, df, config.sampling_output_dir)
+    x, y, text, processed_text, chunk, prediction, prediction_values = cluster_kmeans(
+        embeddings_2d, optimum_k, df, config.sampling_output_dir
+    )
 
     # Capture all predictions
     data = {"x": x, "y": y, "text": text, "prediction": prediction, "chunk": chunk}
@@ -332,22 +313,5 @@ def cluster(all_chunks, config, parser):
     # Rebuild sampled chunks dict
     sampled_chunks = dataframe_to_chunk_dict(df_concat)
     logger.info(f"Sampled Document chunk length {len(sampled_chunks)}")
-
-    # Preserve the sampled files into directory
-    for filename in filenames:
-        try:
-            fn = os.path.basename(filename)
-            os.makedirs(
-                config.sampling_output_dir + "/" + config.JOB_NAME, exist_ok=True
-            )
-            shutil.copy2(
-                filename, config.sampling_output_dir + "/" + config.JOB_NAME + "/" + fn
-            )
-        except OSError as e:
-            logger.info(f"file {filename} could not be copied with metadata {e}")
-            continue
-    logger.info(
-        f"Sampled Documents have been copied to {config.sampling_output_dir + '/' + config.JOB_NAME + '/'}"
-    )
 
     return sampled_chunks

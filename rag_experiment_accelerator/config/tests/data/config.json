@@ -7,7 +7,6 @@
     "preprocess": false,
     "sampling": {
         "sample_data": false,
-        "only_run_sampling": false,
         "sample_percentage": 5,
         "optimum_k": "auto",
         "min_cluster": 2,
