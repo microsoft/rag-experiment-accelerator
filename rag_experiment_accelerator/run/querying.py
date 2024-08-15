@@ -25,7 +25,7 @@ from rag_experiment_accelerator.evaluation.spacy_evaluator import (
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
-    we_need_multiple_questions,
+    generate_multiple_questions,
 )
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
@@ -54,7 +54,6 @@ from rag_experiment_accelerator.llm.prompt import (
 )
 
 load_dotenv(override=True)
-
 
 logger = get_logger(__name__)
 
@@ -414,7 +413,7 @@ def query_and_eval_single_line(
 
     new_questions = []
     if is_multi_question:
-        new_questions = we_need_multiple_questions(user_prompt, response_generator)
+        new_questions = generate_multiple_questions(user_prompt, response_generator)
 
         if new_questions is None:
             logger.warning(
