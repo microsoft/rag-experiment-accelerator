@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import StrEnum
 
 from rag_experiment_accelerator.config.base_config import BaseConfig
 from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
@@ -6,6 +7,20 @@ from rag_experiment_accelerator.config.embedding_model_config import (
     EmbeddingModelConfig,
 )
 from rag_experiment_accelerator.config.sampling_config import SamplingConfig
+
+
+class IndexKey(StrEnum):
+    PREFIX = "idx"
+    EF_CONSTRUCTION = "efc"
+    EF_SEARCH = "efs"
+    EMBEDDING_MODEL_NAME = "em"
+    SAMPLING_PERCENTAGE = "sp"
+    PREPROCESS = "p"
+    CHUNK_SIZE = "cs"
+    OVERLAP_SIZE = "o"
+    GENERATE_TITLE = "t"
+    GENERATE_SUMMARY = "s"
+    OVERRIDE_CONTENT_WITH_SUMMARY = "oc"
 
 
 @dataclass
@@ -34,36 +49,55 @@ class IndexConfig(BaseConfig):
     embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
 
-    def label_properties(self) -> dict:
+    def __label_properties(self) -> dict:
         """
         Returns properties subset used for labeling.
         """
         properties = {
-            "idx": self.index_name_prefix,
-            "efc": self.ef_construction,
-            "efs": self.ef_search,
-            "emn": self.embedding_model.model_name.lower(),
-            "sp": self.sampling.percentage,
+            IndexKey.PREFIX: self.index_name_prefix,
+            IndexKey.EF_CONSTRUCTION: self.ef_construction,
+            IndexKey.EF_SEARCH: self.ef_search,
+            IndexKey.EMBEDDING_MODEL_NAME: self.embedding_model.model_name.lower(),
+            IndexKey.SAMPLING_PERCENTAGE: self.sampling.percentage,
+            IndexKey.PREPROCESS: int(self.chunking.preprocess),
+            IndexKey.CHUNK_SIZE: self.chunking.chunk_size,
+            IndexKey.OVERLAP_SIZE: self.chunking.overlap_size,
+            IndexKey.GENERATE_TITLE: int(self.chunking.generate_title),
+            IndexKey.GENERATE_SUMMARY: int(self.chunking.generate_summary),
+            IndexKey.OVERRIDE_CONTENT_WITH_SUMMARY: int(
+                self.chunking.override_content_with_summary
+            ),
         }
-
-        properties.update(self.chunking.label_properties())
 
         return properties
 
     @classmethod
-    def from_label_properties(cls, properties: dict) -> "IndexConfig":
+    def __from_label_properties(cls, properties: dict) -> "IndexConfig":
         """
         Creates IndexConfig from the dictionary with properties.
-        Reverse of label_properties().
+        Reverse of __label_properties().
         """
 
         return IndexConfig(
-            index_name_prefix=properties["idx"],
-            ef_construction=int(properties["efc"]),
-            ef_search=int(properties["efs"]),
-            chunking=ChunkingConfig.from_label_properties(properties),
-            embedding_model=EmbeddingModelConfig(model_name=properties["emn"]),
-            sampling=SamplingConfig(percentage=properties["sp"]),
+            index_name_prefix=properties[IndexKey.PREFIX],
+            ef_construction=int(properties[IndexKey.EF_CONSTRUCTION]),
+            ef_search=int(properties[IndexKey.EF_SEARCH]),
+            chunking=ChunkingConfig(
+                preprocess=bool(properties[IndexKey.PREPROCESS]),
+                chunk_size=int(properties[IndexKey.CHUNK_SIZE]),
+                overlap_size=int(properties[IndexKey.OVERLAP_SIZE]),
+                generate_title=bool(properties[IndexKey.GENERATE_TITLE]),
+                generate_summary=bool(properties[IndexKey.GENERATE_SUMMARY]),
+                override_content_with_summary=bool(
+                    properties[IndexKey.OVERRIDE_CONTENT_WITH_SUMMARY]
+                ),
+            ),
+            embedding_model=EmbeddingModelConfig(
+                model_name=properties[IndexKey.EMBEDDING_MODEL_NAME]
+            ),
+            sampling=SamplingConfig(
+                percentage=properties[IndexKey.SAMPLING_PERCENTAGE]
+            ),
         )
 
     def index_name(self) -> str:
@@ -72,7 +106,7 @@ class IndexConfig(BaseConfig):
         Reverse of IndexConfig.from_index_name().
         """
         index_name = "_".join(
-            [f"{key}-{value}" for (key, value) in self.label_properties().items()]
+            [f"{key}-{value}" for (key, value) in self.__label_properties().items()]
         )
         if index_name.startswith("_") or index_name.startswith("-"):
             index_name = "i" + index_name
@@ -92,7 +126,7 @@ class IndexConfig(BaseConfig):
         properties = {kv[0]: kv[1].strip() for kv in key_values}
 
         try:
-            index_config = IndexConfig.from_label_properties(properties)
+            index_config = IndexConfig.__from_label_properties(properties)
         except Exception as e:
             raise ValueError(f"Invalid index name [{index_name}]. {e}")
 
