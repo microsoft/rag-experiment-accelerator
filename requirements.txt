@@ -24,7 +24,7 @@ mlflow==2.15.1
 openai==1.40.6
 plotly==5.23.0
 pypdf==4.3.1
-pytesseract==0.3.10
+pytesseract==0.3.13
 python-dotenv==1.0.1
 PyMuPDF==1.24.9
 PyPDF2~=3.0
