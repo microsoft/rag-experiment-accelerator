@@ -59,7 +59,10 @@ The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallba
 
 ## Compute setup
 
-At the moment, the RAG Experiment Accelerator runs on a desktop machine. There are two options available; run within a development container or install locally on your host machine.
+At the moment, the RAG Experiment Accelerator can be run locally leveraging one of the following:
+
+* [Run within a development container](#1-run-within-a-development-container)
+* [Install locally on your host machine](#2-local-install).
 
 ### 1. Run within a Development Container
 
@@ -86,10 +89,6 @@ code .
 
 Once the project opens in vscode it should ask you if you would like to "Reopen this in a development container". Say yes.
 
-#### Data
-
-Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
-
 ---
 
 ### 2. Local install
@@ -102,11 +101,7 @@ You can of course run the **RAG Experiment Accelerator** on a Windows/Mac machin
 git clone https://github.com/microsoft/rag-experiment-accelerator.git
 ```
 
-2. **setup env file**: Copy `.env.template` and save as `.env` file. Provide values for all the keys
-
-LOGGING_LEVEL is INFO by default. Allowed logging levels are NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL.
-
-3. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
+2. Execute the requirements.txt in a conda (first install Anaconda/Miniconda) or virtual environment (then install a couple of dependencies - prompted on the run) to install the dependencies.
 
 ```bash
 conda create -n rag-experiment python=3.11
@@ -118,16 +113,14 @@ conda activate rag-experiment
 pip install .
 ```
 
-4. Install Azure CLI and authorize:
+3. Install Azure CLI and authorize:
 ```bash
 az login
 az account set  --subscription="<your_subscription_guid>"
 az account show
 ```
 
-5. Copy your files (in PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
-
-## Cloud setup
+## Provision Infrastructure
 
 There are 3 options to install all the required azure services:
 
@@ -153,7 +146,7 @@ If you want to deploy the infrastructure yourself from template you can also cli
 
 ### 3. Deploy with Azure CLI
 
-If you dont want to use `azd` you can use the normal `az` cli too.
+If you don't want to use `azd` you can use the normal `az` cli too.
 
 Use following command to deploy.
 
@@ -187,33 +180,38 @@ az deployment sub create --location uksouth --template-file infra/main.bicep \
 
 To use the **RAG Experiment Accelerator**, follow these steps:
 
+1. Copy the provided `.env.template` file to a file named `.env` and update all of the [required values](./docs/environment-variables.md). Many of the required values for the `.env` file will come from resources which have previously been configured and/or can be gathered from resources provisioned in the [Provision Infrastructure](#provision-infrastructure) section. Also note, by default, `LOGGING_LEVEL` is set to `INFO` but can be changed to any of the following levels: `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`.
+
 1. Copy the provided `config.sample.json` file to a file named `config.json` and change any hyperparameters to tailor to your experiment.
-2. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
-  ```bash
-  python 01_index.py
-  -d "The directory holding the configuration files and data. Defaults to current working directory"
-  -dd "The directory holding the data. Defaults to data"
-  -cf "JSON config filename. Defaults to config.json"
-  ```
-3. Run `02_qa_generation.py` (python 02_qa_generation.py) to generate question-answer pairs using Azure OpenAI.
-  ```bash
-  python 02_qa_generation.py
-  -d "The directory holding the configuration files and data. Defaults to current working directory"
-  -dd "The directory holding the data. Defaults to data"
-  -cf "JSON config filename. Defaults to config.json"
-  ```
-4. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
-  ```bash
-  python 03_querying.py
-  -d "The directory holding the configuration files and data. Defaults to current working directory"
-  -cf "JSON config filename. Defaults to config.json"
-  ```
-5. Run `04_evaluation.py` (python 04_evaluation.py) to calculate metrics using various methods and generate charts and reports in Azure Machine Learning using MLFlow integration.
-  ```bash
-  python 04_evaluation.py
-  -d "The directory holding the configuration files and data. Defaults to current working directory"
-  -cf "JSON config filename. Defaults to config.json"
-  ```
+
+1. Copy any files for ingestion (PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
+
+1. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
+    ```bash
+    python 01_index.py
+    -d "The directory holding the configuration files and data. Defaults to current working directory"
+    -dd "The directory holding the data. Defaults to data"
+    -cf "JSON config filename. Defaults to config.json"
+    ```
+1. Run `02_qa_generation.py` (python 02_qa_generation.py) to generate question-answer pairs using Azure OpenAI.
+    ```bash
+    python 02_qa_generation.py
+    -d "The directory holding the configuration files and data. Defaults to current working directory"
+    -dd "The directory holding the data. Defaults to data"
+    -cf "JSON config filename. Defaults to config.json"
+    ```
+1. Run `03_querying.py` (python 03_querying.py) to query Azure AI Search to generate context, re-rank items in context, and get response from Azure OpenAI using the new context.
+    ```bash
+    python 03_querying.py
+    -d "The directory holding the configuration files and data. Defaults to current working directory"
+    -cf "JSON config filename. Defaults to config.json"
+    ```
+1. Run `04_evaluation.py` (python 04_evaluation.py) to calculate metrics using various methods and generate charts and reports in Azure Machine Learning using MLFlow integration.
+    ```bash
+    python 04_evaluation.py
+    -d "The directory holding the configuration files and data. Defaults to current working directory"
+    -cf "JSON config filename. Defaults to config.json"
+    ```
 
 Alternatively, you can run the above steps (apart from `02_qa_generation.py`) using an Azure ML pipeline. To do so, follow [the guide here](./docs/azureml-pipeline.md).
 
