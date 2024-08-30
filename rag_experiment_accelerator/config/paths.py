@@ -32,8 +32,6 @@ def try_create_directory(directory: str) -> None:
     try:
         os.makedirs(directory, exist_ok=True)
     except OSError as e:
-        if "Read-only file system" in e.strerror:
-            pass
         logger.warn(f"Failed to create directory {directory}: {e.strerror}")
 
 

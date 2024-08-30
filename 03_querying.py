@@ -41,10 +41,11 @@ if __name__ == "__main__":
         with mlflow.start_run(run_name=mlflow_run_name(config.job_name)):
             run(environment, config, index_config, mlflow_client)
 
+            index_name = index_config.index_name()
             create_data_asset(
                 data_path=handler.get_output_path(
-                    index_config.index_name(), config.experiment_name, config.job_name
+                    index_name, config.experiment_name, config.job_name
                 ),
-                data_asset_name=index_config.index_name(),
+                data_asset_name=index_name,
                 environment=environment,
             )

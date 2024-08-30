@@ -3,8 +3,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 
 from rag_experiment_accelerator.evaluation.eval import (
-    lower,
-    remove_spaces,
     bleu,
     fuzzy,
     compare_semantic_document_values,
@@ -19,20 +17,6 @@ from rag_experiment_accelerator.evaluation.eval import (
     llm_context_precision,
     llm_context_recall,
 )
-
-
-def test_lower():
-    text = "UPPER CASE input text"
-    expected = "upper case input text"
-
-    assert lower(text) == expected
-
-
-def test_remove_spaces():
-    text = "  leading and trailing spaces   "
-    expected = "leading and trailing spaces"
-
-    assert remove_spaces(text) == expected
 
 
 def test_fuzzy():
