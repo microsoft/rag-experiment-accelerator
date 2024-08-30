@@ -301,3 +301,4 @@ def evaluate_prompts(
     )
     draw_hist_df(sum_df, run_id, mlflow_client)
     generate_metrics(config.experiment_name, run_id, mlflow_client)
+    mlflow.end_run()
