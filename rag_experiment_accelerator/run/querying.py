@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import mlflow
 from openai import BadRequestError
 
+from sklearn.metrics.pairwise import cosine_similarity
+
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
@@ -14,7 +16,6 @@ from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
-from rag_experiment_accelerator.evaluation.eval import cosine_similarity
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.evaluation.search_eval import (
     evaluate_search_result,
