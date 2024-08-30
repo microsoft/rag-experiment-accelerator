@@ -85,17 +85,19 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         },
     ]
     config = MagicMock()
-    config.sample_optimum_k = 2
-    config.sample_min_cluster = 1
-    config.sample_max_cluster = 10
-    config.sample_percentage = 100
     config.use_checkpoints = False
-    config.sampling_output_dir = os.path.join(mock_data_dir, "sampling")
-    config._sampled_cluster_predictions_path = lambda: os.path.join(
-        config.sampling_output_dir,
-        f"sampled_cluster_predictions_cluster_number_{config.sample_optimum_k}.csv",
+    config.index.sampling.optimum_k = 2
+    config.index.sampling.min_cluster = 1
+    config.index.sampling.max_cluster = 10
+    config.index.sampling.percentage = 100
+    config.path.sampling_output_dir = os.path.join(mock_data_dir, "sampling")
+    os.makedirs(config.path.sampling_output_dir)
+
+    sampled_input_data_csv_path = f"{config.path.sampling_output_dir}/sampled_cluster_predictions_cluster_number_{config.index.sampling.optimum_k}.csv"
+    config.path.sampled_cluster_predictions_path.return_value = (
+        sampled_input_data_csv_path
     )
-    os.makedirs(config.sampling_output_dir)
+
     init_checkpoint(config)
 
     with patch(
@@ -124,13 +126,13 @@ def test_cluster(mock_logger, mock_df, mock_reducer, mock_df_concat, mock_data_d
         # Assert
         assert os.path.exists(
             os.path.join(
-                config.sampling_output_dir,
+                config.path.sampling_output_dir,
                 "all_cluster_predictions_cluster_number_2.csv",
             )
         )
         assert os.path.exists(
             os.path.join(
-                config.sampling_output_dir,
+                config.path.sampling_output_dir,
                 "sampled_cluster_predictions_cluster_number_2.csv",
             )
         )

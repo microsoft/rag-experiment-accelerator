@@ -25,5 +25,5 @@ rerank_prompt_instruction = StructuredPrompt(
     system_message="prompt_instruction_keywords.txt",
     user_template=_rerank_template,
     validator=validate_rerank,
-    tags=[PromptTag.JSON, PromptTag.NonStrict],
+    tags={PromptTag.JSON, PromptTag.NonStrict},
 )

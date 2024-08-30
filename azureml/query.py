@@ -53,14 +53,14 @@ def main():
 
     environment = Environment.from_keyvault(args.keyvault)
 
-    config = Config(environment, args.config_path)
-    config.eval_data_jsonl_file_path = args.eval_data_path
-    config.query_data_location = args.query_result_dir
+    config = Config.from_path(environment, args.config_path)
+    config.path.eval_data_file = args.eval_data_path
+    config.path.query_data_dir = args.query_result_dir
     init_checkpoint(config)
 
     with open(args.index_name_path, "r") as f:
         index_name = f.readline()
-    index_config = IndexConfig.from_index_name(index_name, config)
+    index_config = IndexConfig.from_index_name(index_name)
 
     mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
     query_run(environment, config, index_config, mlflow_client)

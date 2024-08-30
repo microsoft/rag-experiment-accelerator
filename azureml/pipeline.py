@@ -9,9 +9,7 @@ import mlflow
 import warnings
 
 
-from rag_experiment_accelerator.config.paths import (
-    formatted_datetime_suffix,
-)  # noqa: E402
+from rag_experiment_accelerator.config.paths import mlflow_run_name  # noqa: E402
 from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
 from rag_experiment_accelerator.config.config import (
     Config,
@@ -192,7 +190,7 @@ def start_pipeline(
         },
     )
 
-    job_name = f"{config.job_name}_{formatted_datetime_suffix()}"
+    job_name = mlflow_run_name(config.job_name)
 
     @dsl.pipeline(
         name=job_name,
@@ -235,8 +233,8 @@ def start_pipeline(
 
     pipeline = rag_pipeline(
         config_path_input=Input(type="uri_file", path=config_path),
-        data_input=Input(type="uri_folder", path=config.data_dir),
-        eval_data_input=Input(type="uri_file", path=config.eval_data_jsonl_file_path),
+        data_input=Input(type="uri_folder", path=config.path.data_dir),
+        eval_data_input=Input(type="uri_file", path=config.path.eval_data_file),
         mlflow_tracking_uri=mlflow_client.tracking_uri,
     )
     return ml_client.jobs.create_or_update(
@@ -258,10 +256,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, args.config_path, args.data_dir)
+    config = Config.from_path(environment, args.config_path, args.data_dir)
     config.execution_environment = ExecutionEnvironment.AZURE_ML
 
-    if config.sampling:
+    if config.index.sampling.sample_data:
         logger.error(
             "Can't sample data when running on AzureML pipeline. Please run the pipeline locally"
         )
@@ -270,7 +268,7 @@ if __name__ == "__main__":
     mlflow_client = initialise_mlflow_client(environment, config)
 
     # Starting multiple pipelines hence unable to stream them
-    for index_config in config.index_configs():
+    for index_config in config.index.flatten():
         # with mlflow.start_run(run_name=config.job_name, description=config.job_description, experiment_id=experiment.experiment_id) as run:
         logger.info(f"Starting pipeline for index: {index_config.index_name()}")
         job = start_pipeline(

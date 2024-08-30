@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock, ANY
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     my_hash,
     upload_data,
-    we_need_multiple_questions,
+    generate_multiple_questions,
     do_we_need_multiple_questions,
 )
 
@@ -157,7 +157,7 @@ def test_we_need_multiple_questions(mock_response_generator):
     mock_response_generator.generate_response.return_value = mock_response
 
     # Act
-    result = we_need_multiple_questions(question, mock_response_generator)
+    result = generate_multiple_questions(question, mock_response_generator)
 
     # Assert
     mock_response_generator.generate_response.assert_called_once_with(

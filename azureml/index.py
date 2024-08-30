@@ -50,14 +50,14 @@ def init():
     global mlflow_client
 
     environment = Environment.from_keyvault(args.keyvault)
-    config = Config(environment, args.config_path, args.data_dir)
+    config = Config.from_path(environment, args.config_path, args.data_dir)
     init_checkpoint(config)
 
-    index_config = IndexConfig.from_index_name(args.index_name, config)
+    index_config = IndexConfig.from_index_name(args.index_name)
     mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
 
 
-def run(input_paths: List[str]) -> List[str]:
+def run(input_paths: List[str]) -> str:
     global args
     global config
     global environment
@@ -66,4 +66,4 @@ def run(input_paths: List[str]) -> List[str]:
 
     index_run(environment, config, index_config, input_paths, mlflow_client)
 
-    return [args.index_name]
+    return args.index_name

@@ -1,69 +1,87 @@
 from unittest.mock import MagicMock, patch
 
 from rag_experiment_accelerator.checkpoint.checkpoint_factory import init_checkpoint
+from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
 from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.config.embedding_model_config import (
+    EmbeddingModelConfig,
+)
+from rag_experiment_accelerator.config.index_config import IndexConfig
+from rag_experiment_accelerator.config.language_config import LanguageConfig
+from rag_experiment_accelerator.config.openai_config import OpenAIConfig
+from rag_experiment_accelerator.config.query_expansion import QueryExpansionConfig
+from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.run.index import run
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 
 
-@patch("rag_experiment_accelerator.run.index.mlflow")
 @patch("rag_experiment_accelerator.run.index.mlflow.MlflowClient")
-@patch("rag_experiment_accelerator.embedding.embedding_model.EmbeddingModel")
+@patch("rag_experiment_accelerator.config.config.create_embedding_model")
 @patch("rag_experiment_accelerator.run.index.upload_data")
 @patch("rag_experiment_accelerator.run.index.cluster")
 @patch("rag_experiment_accelerator.run.index.load_documents")
 @patch("rag_experiment_accelerator.run.index.create_acs_index")
 @patch("rag_experiment_accelerator.run.index.Preprocess")
-@patch("rag_experiment_accelerator.run.index.Config.__init__", return_value=None)
 @patch("rag_experiment_accelerator.run.index.Environment")
 def test_run(
     mock_environment,
-    _,
     mock_preprocess,
     mock_create_acs_index,
     mock_load_documents,
     mock_cluster,
     mock_upload_data,
-    mock_embedding_model,
+    mock_create_embedding_model,
     mock_mlflow_client,
-    __,
 ):
     # Arrange
     data_dir = "./data"
 
-    mock_config = Config()
-    mock_config.artifacts_dir = "artifacts_dir"
-    mock_config.preprocess = False
-    mock_config.chunk_sizes = [10, 20]
-    mock_config.overlap_sizes = [5, 10]
+    embedding_model_1 = MagicMock()
+    embedding_model_1.deployment_name.return_value = "all-MiniLM-L6-v2"
+    embedding_model_1.dimension.return_value = 384
 
-    # Create a list of mock EmbeddingModel instances
-    embedding_models = [mock_embedding_model for _ in range(2)]
+    embedding_model_2 = MagicMock()
+    embedding_model_2.deployment_name.return_value = "text-embedding-ada-002"
+    embedding_model_2.dimension.return_value = 1536
+    mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
 
-    # Set a side effect to assign a dimension value to each embedding model
-    mock_embedding_model = MagicMock()
-    mock_embedding_model.side_effect = [
-        MagicMock(dimension=100 * i) for i in range(1, 3)
-    ]
-
-    mock_config.embedding_models = embedding_models
-    mock_config.ef_constructions = ["ef_construction1", "ef_construction2"]
-    mock_config.ef_searches = ["ef_search1", "ef_search2"]
-    mock_config.data_formats = "test_format"
-    mock_config.chunking_strategy = "basic"
-    mock_config.max_worker_threads = 1
-    mock_config.sampling = False
-    mock_config.index_name_prefix = "prefix"
-    mock_config.language = {"analyzers": ["analyzer1", "analyzer2"]}
-    mock_config.generate_title = False
-    mock_config.generate_summary = False
-    mock_config.override_content_with_summary = False
-    mock_config.azure_document_intelligence_model = "prebuilt-read"
+    mock_config = MagicMock(spec=Config)
     mock_config.data_formats = ["format1", "format2"]
-    mock_config.data_dir = "data_dir"
     mock_config.use_checkpoints = False
-    mock_config.chunking_strategy = "chunking_strategy"
-    mock_config.azure_oai_chat_deployment_name = "oai_deployment_name"
+    mock_config.max_worker_threads = 1
+
+    mock_config.use_checkpoints = False
+
+    mock_config.index = IndexConfig(
+        index_name_prefix="prefix",
+        ef_construction=[300, 400],
+        ef_search=[300, 400],
+        chunking=ChunkingConfig(
+            chunk_size=[10, 20],
+            overlap_size=[5, 10],
+            chunking_strategy="chunking_strategy",
+            generate_title=False,
+            generate_summary=False,
+            override_content_with_summary=False,
+            azure_document_intelligence_model="prebuilt-read",
+        ),
+        embedding_model=[
+            EmbeddingModelConfig(model_name="model1"),
+            EmbeddingModelConfig(model_name="model2"),
+        ],
+        sampling=SamplingConfig(sample_data=False),
+    )
+
+    mock_config.language = MagicMock(
+        spec=LanguageConfig, analyzer=["analyzer1", "analyzer2"]
+    )
+
+    mock_config.query_expansion = MagicMock(
+        spec=QueryExpansionConfig, query_expansion=False
+    )
+
+    mock_config.openai = MagicMock(spec=OpenAIConfig)
+    mock_config.openai.azure_oai_chat_deployment_name = "test-deployment"
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
     mock_environment.azure_search_admin_key = "admin_key"
@@ -88,7 +106,7 @@ def test_run(
     file_paths = get_all_file_paths(data_dir)
 
     # Act
-    for index_config in mock_config.index_configs():
+    for index_config in mock_config.index.flatten():
         init_checkpoint(mock_config)
         run(mock_environment, mock_config, index_config, file_paths, mock_mlflow_client)
 

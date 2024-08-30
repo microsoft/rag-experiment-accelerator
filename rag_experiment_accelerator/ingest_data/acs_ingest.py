@@ -155,16 +155,16 @@ def generate_qna_for_chunk(chunk, response_generator):
     return qna
 
 
-def we_need_multiple_questions(question, response_generator: ResponseGenerator):
+def generate_multiple_questions(question, response_generator: ResponseGenerator):
     """
     Generates a response to a given question using a language model with multiple prompts.
 
     Args:
         question (str): The question to generate a response for.
-        response_generator (ResponseGenerator): Initialised ResponseGenerator to use
+        response_generator (ResponseGenerator): Initialized ResponseGenerator to use
 
     Returns:
-        str: The generated response.
+        str: The list of sub-questions.
     """
     response = response_generator.generate_response(
         multiple_prompt_instruction,
@@ -181,7 +181,7 @@ def do_we_need_multiple_questions(
 
     Args:
         question (str): The question to ask.
-        response_generator (ResponseGenerator): Initialised ResponseGenerator to use
+        response_generator (ResponseGenerator): Initialized ResponseGenerator to use
 
     Returns:
         bool: True if we need to ask multiple questions, False otherwise.

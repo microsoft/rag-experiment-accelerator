@@ -24,14 +24,6 @@ def _flatten_dict_gen(d, parent_key, sep):
             yield new_key, v
 
 
-def convert_to_dict(dictionary):
-    new_dictionary = dict()
-    for key, value in dictionary.items():
-        new_dictionary[key] = value.to_dict() if hasattr(value, "to_dict") else value
-
-    return new_dictionary
-
-
 def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
     return dict(_flatten_dict_gen(d, parent_key, sep))
 
@@ -40,35 +32,18 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
     """
     Returns the hyper parameters for the current job.
     """
-    params = dict()
-    config_dict = vars(copy.copy(config))
+    config_copy = copy.deepcopy(config)
+    config_copy.index = index_config
 
-    # Remove combination of hyper parameters and other not needed parameters
-    for param in [
-        "chunk_sizes",
-        "overlap_sizes",
-        "ef_constructions",
-        "ef_searches",
-        "embedding_models",
-        "max_worker_threads",
-        "_config_dir",
-        "artifacts_dir",
-        "data_dir",
-        "eval_data_jsonl_file_path",
-        "generated_index_names_file_path",
-        "query_data_location",
-        "eval_data_location",
-        "sampling_output_dir",
-    ]:
+    config_dict = config.to_dict()
+
+    # Remove not needed parameters
+    for param in ["path", "main_instruction", "use_checkpoints"]:
         config_dict.__delitem__(param)
 
-    # Add the config parameters
-    params.update(flatten_dict(convert_to_dict(config_dict)))
+    config_flatten_dict = flatten_dict(config_dict)
 
-    # Add the index config parameters by converting to dict
-    params.update(flatten_dict(convert_to_dict(vars(index_config))))
-
-    return params
+    return config_flatten_dict
 
 
 def run(

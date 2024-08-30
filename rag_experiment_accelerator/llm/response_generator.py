@@ -33,7 +33,7 @@ class ResponseGenerator:
     def __init__(self, environment: Environment, config: Config, deployment_name: str):
         self.config = config
         self.deployment_name = deployment_name
-        self.temperature = self.config.temperature
+        self.temperature = self.config.openai.temperature
         self.use_long_prompt = True
         self.client = self._initialize_azure_openai_client(environment)
         self.json_object_supported = True
@@ -129,6 +129,7 @@ class ResponseGenerator:
 
         for key in system_arguments:
             assert key in kwargs, f"Missing argument {key} in system message."
+
         for key in user_arguments:
             assert key in kwargs, f"Missing argument {key} in user template."
 

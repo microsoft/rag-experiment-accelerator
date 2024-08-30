@@ -16,7 +16,7 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
 
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, args.config_path, args.data_dir)
+    config = Config.from_path(environment, args.config_path, args.data_dir)
     init_checkpoint(config)
 
-    run(environment, config, get_all_file_paths(config.data_dir))
+    run(environment, config, get_all_file_paths(config.path.data_dir))

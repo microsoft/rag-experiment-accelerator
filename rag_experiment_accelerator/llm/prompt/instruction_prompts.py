@@ -30,14 +30,14 @@ prompt_instruction_entities = StructuredPrompt(
     system_message="prompt_instruction_entities.txt",
     user_template="${text}",
     validator=validate_instruction_entities,
-    tags=[PromptTag.JSON],
+    tags={PromptTag.JSON},
 )
 
 prompt_instruction_keywords = StructuredPrompt(
     system_message="prompt_instruction_keywords.txt",
     user_template="${text}",
     validator=validate_instruction_keyword,
-    tags=[PromptTag.JSON],
+    tags={PromptTag.JSON},
 )
 
 prompt_instruction_title = Prompt(

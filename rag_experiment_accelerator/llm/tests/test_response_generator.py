@@ -20,7 +20,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.generator.client = Mock()
         self.generator.json_object_supported = False
         self.prompt = Mock(spec=Prompt)
-        self.prompt.tags = []
+        self.prompt.tags = {}
 
     def create_mock_prompt(self, prompt_type, tags, separator=None, validator=None):
         mock_prompt = Mock(spec=prompt_type)

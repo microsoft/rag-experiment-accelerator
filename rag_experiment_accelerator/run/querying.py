@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import mlflow
 from openai import BadRequestError
 
+from sklearn.metrics.pairwise import cosine_similarity
+
 from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
@@ -14,7 +16,6 @@ from rag_experiment_accelerator.artifact.models.query_output import QueryOutput
 from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
-from rag_experiment_accelerator.evaluation.eval import cosine_similarity
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.evaluation.search_eval import (
     evaluate_search_result,
@@ -25,7 +26,7 @@ from rag_experiment_accelerator.evaluation.spacy_evaluator import (
 
 from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
-    we_need_multiple_questions,
+    generate_multiple_questions,
 )
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
@@ -54,7 +55,6 @@ from rag_experiment_accelerator.llm.prompt import (
 )
 
 load_dotenv(override=True)
-
 
 logger = get_logger(__name__)
 
@@ -120,24 +120,24 @@ def rerank_documents(
     Returns:
         list[str]: A list of reranked documents.
     """
-    result = []
-    if config.rerank_type == "llm":
-        result = llm_rerank_documents(
-            docs,
-            user_prompt,
-            response_generator,
-            config.llm_rerank_threshold,
-        )
-    elif config.rerank_type == "crossencoder":
-        result = cross_encoder_rerank_documents(
-            docs,
-            user_prompt,
-            output_prompt,
-            config.crossencoder_model,
-            config.crossencoder_at_k,
-        )
-
-    return result
+    match config.rerank.type:
+        case "llm":
+            return llm_rerank_documents(
+                docs,
+                user_prompt,
+                response_generator,
+                config.rerank.llm_rerank_threshold,
+            )
+        case "cross_encoder":
+            return cross_encoder_rerank_documents(
+                docs,
+                user_prompt,
+                output_prompt,
+                config.rerank.cross_encoder_model,
+                config.rerank.cross_encoder_at_k,
+            )
+        case _:
+            return []
 
 
 def hyde(
@@ -145,26 +145,25 @@ def hyde(
     response_generator: ResponseGenerator,
     queries: list[str],
 ):
-    if config.hyde == "disabled":
+    if config.query_expansion.hyde == "disabled":
         return queries
 
-    generated_queries = []
-    for query in queries:
-        if config.hyde == "generated_hypothetical_answer":
-            result = response_generator.generate_response(
-                prompt_generate_hypothetical_answer,
-                text=query,
-            )
-        elif config.hyde == "generated_hypothetical_document_to_answer":
-            result = response_generator.generate_response(
-                prompt_generate_hypothetical_document,
-                text=query,
-            )
-        else:
-            raise NotImplementedError(
-                f"configuration for hyde with value of [{config.hyde}] is not supported"
-            )
-        generated_queries.append(result)
+    hyde_prompt = {
+        "generated_hypothetical_answer": prompt_generate_hypothetical_answer,
+        "generated_hypothetical_document_to_answer": prompt_generate_hypothetical_document,
+    }
+
+    if config.query_expansion.hyde not in hyde_prompt:
+        raise NotImplementedError(
+            f"configuration for hyde with value of [{config.query_expansion.hyde}] is not supported"
+        )
+
+    generated_queries = [
+        response_generator.generate_response(
+            hyde_prompt[config.query_expansion.hyde], text=query
+        )
+        for query in queries
+    ]
     return generated_queries
 
 
@@ -189,13 +188,13 @@ def query_expansion(
         query,
         augmented_questions,
         embedding_model,
-        config.min_query_expansion_related_question_similarity_score,
+        config.query_expansion.min_query_expansion_related_question_similarity_score,
     )
 
     return questions
 
 
-def dedupulicate_search_results(search_results: list[dict]) -> list[dict]:
+def deduplicate_search_results(search_results: list[dict]) -> list[dict]:
     doc_set = set()
     score_dict = {}
 
@@ -213,6 +212,12 @@ def dedupulicate_search_results(search_results: list[dict]) -> list[dict]:
     return search_result
 
 
+class QueryAndEvalACSResult:
+    def __init__(self, documents: list[str], evaluations: dict[str, any]):
+        self.documents = documents
+        self.evaluations = evaluations
+
+
 def query_and_eval_acs(
     search_client: SearchClient,
     embedding_model: EmbeddingModel,
@@ -223,11 +228,11 @@ def query_and_eval_acs(
     evaluator: SpacyEvaluator,
     config: Config,
     response_generator: ResponseGenerator,
-) -> tuple[list[str], list[dict[str, any]]]:
+) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
-    results using the provided evaluator and evaluation content. Returns a tuple containing the retrieved documents and
-    the evaluation results.
+    results using the provided evaluator and evaluation content. Returns a QueryAndEvalACSResult object containing
+    the retrieved documents and the evaluation results.
 
     Args:
         search_client (SearchClient): The Azure AI Search client to use for querying the service.
@@ -241,10 +246,10 @@ def query_and_eval_acs(
         response_generator (ResponseGenerator): The response generator object.
 
     Returns:
-        tuple[list[dict[str, any]], dict[str, any]]: A tuple containing the retrieved documents and the evaluation results.
+        QueryAndEvalACSResult: An object containing the retrieved documents and the evaluation results.
     """
 
-    if config.query_expansion:
+    if config.query_expansion.query_expansion:
         generated_queries = query_expansion(
             config, response_generator, embedding_model, query
         )
@@ -263,22 +268,22 @@ def query_and_eval_acs(
         )
         search_results.extend(search_result)
 
-    search_results = dedupulicate_search_results(search_results)
-    search_result = search_result[: config.retrieve_num_of_documents]
+    search_results = deduplicate_search_results(search_results)
+    search_result = search_result[: config.search.retrieve_num_of_documents]
 
     docs, evaluation = evaluate_search_result(
         search_results, evaluation_content, evaluator
     )
 
     evaluation["query"] = query
-    return docs, evaluation
+    return QueryAndEvalACSResult(docs, evaluation)
 
 
 def filter_non_related_questions(
     query,
     generated_questions,
     embedding_model,
-    MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE,
+    min_query_expansion_related_question_similarity_score,
 ):
     questions = [query]
 
@@ -298,7 +303,7 @@ def filter_non_related_questions(
         similarity_score = int(
             sum(similarity_score_array) / len(similarity_score_array)
         )
-        if similarity_score >= MIN_QUERY_EXPANSION_RELATED_QUESTION_SIMILARITY_SCORE:
+        if similarity_score >= min_query_expansion_related_question_similarity_score:
             questions.append(generated_question)
 
     return questions
@@ -315,7 +320,7 @@ def query_and_eval_acs_multi(
     config: Config,
     evaluator: SpacyEvaluator,
     response_generator: ResponseGenerator,
-) -> tuple[list[str], list[dict[str, any]]]:
+) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
     using OpenAI's GPT-3 model.
@@ -332,42 +337,41 @@ def query_and_eval_acs_multi(
         evaluator (SpacyEvaluator): The evaluator object.
 
     Returns:
-        tuple[list[str], list[dict[str, any]]]: A tuple containing a list of OpenAI responses and a list of evaluation
-        results for each question.
+        QueryAndEvalACSResult: : An object containing the retrieved documents and the evaluation results for each question.
     """
     context = []
     evaluations = []
 
     for question in questions:
-        docs, evaluation = query_and_eval_acs(
+        result = query_and_eval_acs(
             search_client=search_client,
             embedding_model=embedding_model,
             query=question,
             search_type=search_type,
             evaluation_content=evaluation_content,
-            retrieve_num_of_documents=config.retrieve_num_of_documents,
+            retrieve_num_of_documents=config.search.retrieve_num_of_documents,
             evaluator=evaluator,
             config=config,
             response_generator=response_generator,
         )
-        if len(docs) == 0:
+        if len(result.documents) == 0:
             logger.warning(f"No documents found for question: {question}")
             continue
 
-        evaluations.append(evaluation)
+        evaluations.append(result.evaluations)
 
-        if config.rerank:
+        if config.rerank.enabled:
             prompt_instruction_context = rerank_documents(
-                docs, question, output_prompt, config, response_generator
+                result.documents, question, output_prompt, config, response_generator
             )
         else:
-            prompt_instruction_context = docs
+            prompt_instruction_context = result.documents
 
         # TODO: Here was a bug, caused by the fact that we are not limiting the number of documents to retrieve
         # Current solution is just forcefully limiting the number of documents to retrieve assuming they are sorted
-        if len(prompt_instruction_context) > config.retrieve_num_of_documents:
+        if len(prompt_instruction_context) > config.search.retrieve_num_of_documents:
             prompt_instruction_context = prompt_instruction_context[
-                : config.retrieve_num_of_documents
+                : config.search.retrieve_num_of_documents
             ]
 
         request_context = "\n".join(prompt_instruction_context)
@@ -382,7 +386,7 @@ def query_and_eval_acs_multi(
         context.append(openai_response)
         logger.debug(openai_response)
 
-    return context, evaluations
+    return QueryAndEvalACSResult(documents=context, evaluations=evaluations)
 
 
 def query_and_eval_single_line(
@@ -404,13 +408,13 @@ def query_and_eval_single_line(
     qna_context = data.get("context", "")
 
     is_multi_question = (
-        config.expand_to_multiple_questions
+        config.query_expansion.expand_to_multiple_questions
         and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
 
     new_questions = []
     if is_multi_question:
-        new_questions = we_need_multiple_questions(user_prompt, response_generator)
+        new_questions = generate_multiple_questions(user_prompt, response_generator)
 
         if new_questions is None:
             logger.warning(
@@ -423,7 +427,7 @@ def query_and_eval_single_line(
     evaluation_content = user_prompt + qna_context
 
     try:
-        for s_v in config.search_types:
+        for s_v in config.search.search_type:
             output = get_query_output(
                 environment,
                 config,
@@ -475,16 +479,17 @@ def get_query_output(
     search_evals = []
 
     response_generator = ResponseGenerator(
-        environment, config, config.azure_oai_chat_deployment_name
+        environment, config, config.openai.azure_oai_chat_deployment_name
+    )
+
+    embedding_model = config.get_embedding_model(
+        index_config.embedding_model.model_name
     )
 
     if is_multi_question:
-        (
-            docs,
-            search_evals,
-        ) = query_and_eval_acs_multi(
+        result = query_and_eval_acs_multi(
             search_client=search_client,
-            embedding_model=index_config.embedding_model,
+            embedding_model=embedding_model,
             questions=new_questions,
             original_prompt=user_prompt,
             output_prompt=output_prompt,
@@ -495,31 +500,28 @@ def get_query_output(
             response_generator=response_generator,
         )
     else:
-        (
-            docs,
-            evaluation,
-        ) = query_and_eval_acs(
+        result = query_and_eval_acs(
             search_client=search_client,
-            embedding_model=index_config.embedding_model,
+            embedding_model=embedding_model,
             query=user_prompt,
             search_type=s_v,
             evaluation_content=evaluation_content,
-            retrieve_num_of_documents=config.retrieve_num_of_documents,
+            retrieve_num_of_documents=config.search.retrieve_num_of_documents,
             evaluator=evaluator,
             config=config,
             response_generator=response_generator,
         )
-        search_evals.append(evaluation)
-    if config.rerank and len(docs) > 0:
+        search_evals.append(result.evaluations)
+    if config.rerank.enabled and len(result.documents) > 0:
         prompt_instruction_context = rerank_documents(
-            docs,
+            result.documents,
             user_prompt,
             output_prompt,
             config,
             response_generator,
         )
     else:
-        prompt_instruction_context = docs
+        prompt_instruction_context = result.documents
 
     openai_response = response_generator.generate_response(
         main_instruction,
@@ -528,12 +530,12 @@ def get_query_output(
     )
 
     output = QueryOutput(
-        rerank=config.rerank,
-        rerank_type=config.rerank_type,
-        crossencoder_model=config.crossencoder_model,
-        llm_re_rank_threshold=config.llm_rerank_threshold,
-        retrieve_num_of_documents=config.retrieve_num_of_documents,
-        crossencoder_at_k=config.crossencoder_at_k,
+        rerank=config.rerank.enabled,
+        rerank_type=config.rerank.type,
+        cross_encoder_model=config.rerank.cross_encoder_model,
+        llm_rerank_threshold=config.rerank.llm_rerank_threshold,
+        retrieve_num_of_documents=config.search.retrieve_num_of_documents,
+        cross_encoder_at_k=config.rerank.cross_encoder_at_k,
         question_count=question_count,
         actual=openai_response,
         expected=output_prompt,
@@ -561,33 +563,34 @@ def run(
     """
     question_count = 0
     try:
-        with open(config.eval_data_jsonl_file_path, "r") as file:
+        with open(config.path.eval_data_file, "r") as file:
             for line in file:
                 question_count += 1
     except FileNotFoundError as e:
-        logger.error("The file does not exist: " + config.eval_data_jsonl_file_path)
+        logger.error("The file does not exist: " + config.path.eval_data_file)
         raise e
 
     mlflow.log_metric("question_count", question_count)
 
-    evaluator = SpacyEvaluator(config.search_relevency_threshold)
-    handler = QueryOutputHandler(config.query_data_location)
+    evaluator = SpacyEvaluator(config.search.search_relevancy_threshold)
+    handler = QueryOutputHandler(config.path.query_data_dir)
     response_generator = ResponseGenerator(
-        environment, config, config.azure_oai_chat_deployment_name
+        environment, config, config.openai.azure_oai_chat_deployment_name
     )
-    for index_config in config.index_configs():
-        logger.info(f"Processing index: {index_config.index_name()}")
+    for index_config in config.index.flatten():
+        index_name = index_config.index_name()
+        logger.info(f"Processing index: {index_name}")
 
         handler.handle_archive_by_index(
-            index_config.index_name(), config.experiment_name, config.job_name
+            index_name, config.experiment_name, config.job_name
         )
 
         search_client = create_client(
             environment.azure_search_service_endpoint,
-            index_config.index_name(),
+            index_name,
             environment.azure_search_admin_key,
         )
-        with open(config.eval_data_jsonl_file_path, "r") as file:
+        with open(config.path.eval_data_file, "r") as file:
             with ExitStack() as stack:
                 executor = stack.enter_context(
                     ThreadPoolExecutor(config.max_worker_threads)
