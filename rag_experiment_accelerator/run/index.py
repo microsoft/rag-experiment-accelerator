@@ -37,7 +37,7 @@ def run(
     Returns:
         Index dictionary containing the names of the indexes created.
     """
-    pre_process = Preprocess(True)
+    pre_process = Preprocess(index_config.preprocess)
     index_dict = {"indexes": []}
 
     with TimeTook(
@@ -189,7 +189,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
         dict: The chunk dictionary with the added "content_vector" key.
     """
     chunk["content_vector"] = embedding_model.generate_embedding(
-        str(pre_process.preprocess(chunk["content"]))
+        pre_process.preprocess(chunk["content"])
     )
 
     return chunk
@@ -297,7 +297,7 @@ def process_title(
             chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
         )
         title_vector = index_config.embedding_model.generate_embedding(
-            str(pre_process.preprocess(title))
+            pre_process.preprocess(title)
         )
     else:
         title = ""
@@ -334,7 +334,7 @@ def process_summary(
             chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
         )
         summaryVector = index_config.embedding_model.generate_embedding(
-            str(pre_process.preprocess(summary))
+            pre_process.preprocess(summary)
         )
     else:
         summary = ""

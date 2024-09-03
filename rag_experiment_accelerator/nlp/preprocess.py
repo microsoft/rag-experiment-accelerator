@@ -1,6 +1,5 @@
 import re
 from string import punctuation
-from typing import Union
 from spacy import load
 
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -23,7 +22,7 @@ class Preprocess:
                 download("en_core_web_lg")
                 self.nlp = load("en_core_web_lg")
 
-    def preprocess(self, text) -> Union[str, list[str]]:
+    def preprocess(self, text) -> str:
         """
         Preprocess the input text by converting it to lowercase, removing punctuation and tags, removing stop words, and tokenizing the words.
 
@@ -44,7 +43,7 @@ class Preprocess:
                 word_tokens = self.word_tokenize(clean_text)
                 for i in word_tokens:
                     word_list.append(i)
-            return word_list
+            return " ".join(word_list)
         else:
             return text
 
@@ -133,7 +132,9 @@ class Preprocess:
             str: The sentence with stop words removed.
         """
         doc = self.nlp(sentence)
-        filtered_tokens = [token for token in doc if not token.is_stop]
+        filtered_tokens = [
+            token for token in doc if not token.is_stop and str(token) != "\n"
+        ]
 
         return " ".join([token.text for token in filtered_tokens])
 

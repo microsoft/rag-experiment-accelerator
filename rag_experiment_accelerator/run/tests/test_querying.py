@@ -29,6 +29,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.RERANK_TYPE = "llm"
         self.mock_config.CHUNK_SIZES = [1]
         self.mock_config.OVERLAP_SIZES = [1]
+        self.mock_config.PREPROCESS = False
         self.mock_config.LLM_RERANK_THRESHOLD = 3
         self.mock_config.QUERY_EXPANSION = "disabled"
         self.mock_config.EMBEDDING_MODEL_NAME = "test-embedding-model"
@@ -58,6 +59,7 @@ class TestQuerying(unittest.TestCase):
             embedding_model=self.mock_embedding_model,
             query=user_prompt,
             retrieve_num_of_documents=retrieve_num_of_documents,
+            preprocess=False,
         )
 
     @patch("rag_experiment_accelerator.run.querying.llm_rerank_documents")
@@ -116,6 +118,7 @@ class TestQuerying(unittest.TestCase):
             user_prompt=query,
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
+            preprocess=False,
         )
         mock_evaluate_search_result.assert_called_once_with(
             mock_search_result, evaluation_content, mock_evaluator
@@ -181,6 +184,7 @@ class TestQuerying(unittest.TestCase):
             evaluator=evaluator,
             config=self.mock_config,
             response_generator=mock_response_generator(),
+            preprocess=False,
         )
         # mock_rerank_documents.assert_not_called()
         mock_rerank_documents.assert_called_with(
@@ -252,6 +256,7 @@ class TestQuerying(unittest.TestCase):
             evaluator=evaluator,
             config=self.mock_config,
             response_generator=mock_response_generator(),
+            preprocess=False,
         )
         mock_rerank_documents.assert_not_called()
         mock_response_generator.return_value.generate_response.assert_called_with(
