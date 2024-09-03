@@ -37,6 +37,7 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.index.chunking = MagicMock(spec=ChunkingConfig)
         self.mock_config.index.chunking.chunk_size = [1]
         self.mock_config.index.chunking.overlap_size = [1]
+        self.mock_config.index.chunking.preprocess = False
         self.mock_config.index.embedding_model = MagicMock(spec=EmbeddingModel)
         self.mock_config.index.embedding_model.model_name = "test-embedding-model"
 
@@ -91,6 +92,7 @@ class TestQuerying(unittest.TestCase):
             embedding_model=self.mock_embedding_model,
             query=user_prompt,
             retrieve_num_of_documents=retrieve_num_of_documents,
+            preprocess=False,
         )
 
     @patch("rag_experiment_accelerator.run.querying.llm_rerank_documents")
@@ -155,6 +157,7 @@ class TestQuerying(unittest.TestCase):
             user_prompt=query,
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
+            preprocess=False,
         )
         mock_evaluate_search_result.assert_called_once_with(
             mock_search_result, evaluation_content, mock_evaluator

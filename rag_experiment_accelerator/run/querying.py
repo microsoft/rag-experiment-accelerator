@@ -76,6 +76,7 @@ def query_acs(
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
+    preprocess: bool = False,
 ):
     """
     Queries the Azure AI Search service using the specified search client and search parameters.
@@ -98,6 +99,7 @@ def query_acs(
         embedding_model=embedding_model,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
+        preprocess=preprocess,
     )
 
 
@@ -265,6 +267,7 @@ def query_and_eval_acs(
             user_prompt=generated_query,
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
+            preprocess=config.index.chunking.preprocess,
         )
         search_results.extend(search_result)
 
