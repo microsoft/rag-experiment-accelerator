@@ -1,0 +1,9 @@
+Provide unique keywords for the given user text. Output the keywords as a JSON list.
+
+Example:
+
+User:
+    The latest smartphone model features an advanced camera system, enhanced battery life, and a new artificial intelligence chipset designed to improve user experience.
+
+Assistant:
+    ["smartphone", "advanced camera", "enhanced battery life", "artificial intelligence", "user experience"]
