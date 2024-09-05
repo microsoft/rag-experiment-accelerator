@@ -1,9 +1,11 @@
 param keyVaultName string = ''
 param azureOpenAIName string = ''
+param documentIntelligenceName string = ''
 param azureAISearchName string = ''
 param rgName string = ''
 // Do not use _ in the key names as it is not allowed in the key vault secret name
 param openAIKeyName string = 'openai-api-key'
+param documentIntelligenceKeyName string = 'azure-document-intelligence-admin-key'
 param searchKeyName string = 'azure-search-admin-key'
 
 resource openAIKeySecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
@@ -11,7 +13,27 @@ resource openAIKeySecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   name: openAIKeyName
   properties: {
     contentType: 'string'
-    value: listKeys(resourceId(subscription().subscriptionId, rgName, 'Microsoft.CognitiveServices/accounts', azureOpenAIName), '2023-05-01').key1
+    value: listKeys(
+      resourceId(subscription().subscriptionId, rgName, 'Microsoft.CognitiveServices/accounts', azureOpenAIName),
+      '2023-05-01'
+    ).key1
+  }
+}
+
+resource documentIntelligenceKeySecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
+  parent: keyVault
+  name: documentIntelligenceKeyName
+  properties: {
+    contentType: 'string'
+    value: listKeys(
+      resourceId(
+        subscription().subscriptionId,
+        rgName,
+        'Microsoft.CognitiveServices/accounts',
+        documentIntelligenceName
+      ),
+      '2023-05-01'
+    ).key1
   }
 }
 
@@ -20,8 +42,11 @@ resource searchKeySecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   name: searchKeyName
   properties: {
     contentType: 'string'
-    value: listAdminKeys(resourceId(subscription().subscriptionId, rgName, 'Microsoft.Search/searchServices', azureAISearchName), '2023-11-01').primaryKey
-}
+    value: listAdminKeys(
+      resourceId(subscription().subscriptionId, rgName, 'Microsoft.Search/searchServices', azureAISearchName),
+      '2023-11-01'
+    ).primaryKey
+  }
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
@@ -30,3 +55,4 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
 
 output SEARCH_KEY_NAME string = searchKeySecret.name
 output OPENAI_KEY_NAME string = openAIKeySecret.name
+output DOCUMENTINTELLIGENCE_KEY_NAME string = documentIntelligenceKeySecret.name
