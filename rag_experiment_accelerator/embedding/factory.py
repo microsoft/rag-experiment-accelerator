@@ -3,11 +3,12 @@ from rag_experiment_accelerator.embedding.st_embedding_model import STEmbeddingM
 
 
 def create_embedding_model(model_type: str, **kwargs):
-    if model_type == "azure":
-        return AOAIEmbeddingModel(**kwargs)
-    elif model_type == "sentence-transformer":
-        return STEmbeddingModel(**kwargs)
-    else:
-        raise ValueError(
-            f"Invalid embedding type: {model_type}. Must be one of ['azure', 'sentence-transformer']"
-        )
+    match model_type:
+        case "azure":
+            return AOAIEmbeddingModel(**kwargs)
+        case "sentence-transformer":
+            return STEmbeddingModel(**kwargs)
+        case _:
+            raise ValueError(
+                f"Invalid embedding type: {model_type}. Must be one of ['azure', 'sentence-transformer']"
+            )

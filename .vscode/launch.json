@@ -37,7 +37,7 @@
             "envFile": "${input:dotEnvFilePath}",
         },
         {
-            "name": "5. AzureML Pipleline",
+            "name": "5. AzureML Pipeline",
             "type": "debugpy",
             "request": "launch",
             "module": "azureml.pipeline",

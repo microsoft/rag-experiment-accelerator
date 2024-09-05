@@ -34,7 +34,7 @@ class Preprocess:
             Union[str, list[str]]:  If enabled - list of preprocessed words otherwise the original text.
         """
         if self.__enabled:
-            lower_text = self.to_lower(text).strip()
+            lower_text = text.lower().strip()
             sentence_tokens = self.sentence_tokenize(lower_text)
             word_list = []
             for each_sent in sentence_tokens:
@@ -47,30 +47,6 @@ class Preprocess:
             return word_list
         else:
             return text
-
-    def to_lower(self, text):
-        """
-        Convert all characters in the given text to lowercase.
-
-        Args:
-            text (str): The text to convert to lowercase.
-
-        Returns:
-            str: The converted text in lowercase.
-        """
-        return text.lower()
-
-    def remove_spaces(self, text):
-        """
-        Removes leading and trailing spaces from a string.
-
-        Args:
-            text (str): The string to remove spaces from.
-
-        Returns:
-            str: The input string with leading and trailing spaces removed.
-        """
-        return text.strip()
 
     def remove_punctuation(self, text):
         """

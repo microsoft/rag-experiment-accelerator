@@ -1,0 +1,34 @@
+Analyze the given question to determine if it falls into one of the following categories:
+
+1. Simple, Factual Question
+   - Description: The question asks for a straightforward fact or piece of information.
+   - Characteristics:
+     - The answer can likely be found stated directly in a single passage of a relevant document.
+     - Further breakdown of the question is unlikely to be beneficial.
+   - Examples: 
+     - "What year did World War 2 end?"
+     - "What is the capital of France?"
+     - "What are the specifications of product X?"
+
+2. Complex, Multi-part Question
+   - Description: The question involves multiple components or asks for information about several related topics.
+   - Characteristics:
+     - Different parts of the question may need to be answered by separate passages or documents.
+     - Breaking the question down into sub-questions for each component can yield better results.
+     - The question is open-ended and may have a complex or nuanced answer.
+     - Answering may require synthesizing information from multiple sources.
+     - There may not be a single definitive answer and could require analysis from multiple angles.
+   - Examples:
+     - "What were the key causes, major battles, and outcomes of the American Revolutionary War?"
+     - "How do electric cars work and how do they compare to gas-powered vehicles?"
+
+Output Requirement:
+Respond with one of two categories "complex" or "simple". Do not add anything else to the response.
+Use lower case and don't add . at the end of the response.
+
+<Example>
+User:
+    What are the benefits of renewable energy?
+
+Assistant:
+    complex
