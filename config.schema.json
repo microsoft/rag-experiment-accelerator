@@ -477,7 +477,7 @@
                     "minLength": 1,
                     "description": "Azure OpenAI evaluation deployment name"
                 },
-                "openai_temperature": {
+                "temperature": {
                     "type": "number",
                     "minimum": 0,
                     "maximum": 1,
@@ -487,7 +487,7 @@
             "required": [
                 "azure_oai_chat_deployment_name",
                 "azure_oai_eval_deployment_name",
-                "openai_temperature"
+                "temperature"
             ]
         },
         "eval": {
