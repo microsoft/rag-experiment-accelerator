@@ -38,7 +38,7 @@
             <mxPoint x="420" y="200" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="gFHnbSyB1-i4nugdEwJ--8" value="&lt;pre style=&quot;font-size: 8px;&quot;&gt;for config in configs:&lt;br&gt;  for index_config in config.index_configs():&lt;br&gt;    start_pipeline()&lt;/pre&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;" parent="1" vertex="1">
+        <mxCell id="gFHnbSyB1-i4nugdEwJ--8" value="&lt;pre style=&quot;font-size: 8px;&quot;&gt;for config in configs:&lt;br&gt;  for index_config in config.index.flatten():&lt;br&gt;    start_pipeline()&lt;/pre&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;" parent="1" vertex="1">
           <mxGeometry x="160" y="150" width="210" height="100" as="geometry" />
         </mxCell>
         <mxCell id="ka2Pck3t7iw5_ma6AWct-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="gFHnbSyB1-i4nugdEwJ--9" target="gFHnbSyB1-i4nugdEwJ--8">
