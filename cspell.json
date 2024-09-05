@@ -4,9 +4,14 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
+        "AOAI",
         "azuretools",
+        "dataframe",
+        "groundtruth",
+        "jaccard",
         "keyvault",
-        "spacy"
+        "spacy",
+        "textdistance"
     ],
     "ignoreWords": [
         "BLAS",
