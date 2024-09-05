@@ -17,29 +17,20 @@
             "description": "Azure ML Job description for the current experimentation"
         },
         "data_formats": {
-            "oneOf": [
-                {
-                    "type": "string",
-                    "enum": [
-                        "all"
-                    ],
-                    "default": "all"
-                },
-                {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "pdf",
-                            "html",
-                            "markdown",
-                            "json",
-                            "text",
-                            "docx"
-                        ]
-                    }
-                }
-            ],
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "*",
+                    "pdf",
+                    "html",
+                    "markdown",
+                    "json",
+                    "text",
+                    "docx"
+                ]
+            },
+            "default": "*",
             "description": "List of formats or 'all' to allow any supported format"
         },
         "use_checkpoints": {
