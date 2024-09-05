@@ -156,9 +156,7 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
     )
 
 
-@patch(
-    "rag_experiment_accelerator.config.config.create_embedding_model",
-)
+@patch("rag_experiment_accelerator.config.config.create_embedding_model")
 @patch("rag_experiment_accelerator.config.config.validate_json_with_schema")
 def test_config_init_raises_error(
     mock_validate_json_with_schema, mock_create_embedding_model
@@ -169,7 +167,7 @@ def test_config_init_raises_error(
     mock_validate_json_with_schema.return_value = (False, ValueError("Invalid JSON"))
 
     with pytest.raises(ValueError):
-        Config(environment, config_path)
+        Config.from_path(environment, config_path)
 
 
 def test_chunk_size_greater_than_overlap_size():

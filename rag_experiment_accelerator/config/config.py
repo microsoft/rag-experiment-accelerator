@@ -58,7 +58,9 @@ class Config(BaseConfig):
             config_path = os.path.join(os.getcwd(), "./config.json")
         with open(config_path.strip(), "r") as json_file:
             config_json: dict[str, any] = json.load(json_file)
-            is_valid_config, validation_error = validate_json_with_schema(config_json, config_path.strip())
+            is_valid_config, validation_error = validate_json_with_schema(
+                config_json, config_path.strip()
+            )
             if not is_valid_config:
                 raise ValueError(f"Config validation error: {validation_error}")
 
@@ -66,8 +68,8 @@ class Config(BaseConfig):
 
         config.path.initialize_paths(config_path, data_dir)
 
-        if not config.main_instruction:
-            config.main_instruction = main_instruction
+        # todo: currently main_instruction in the prompt file and not possible to override in the config
+        config.main_instruction = main_instruction
 
         config.validate_inputs(
             use_semantic_search=environment.azure_search_use_semantic_search.lower()

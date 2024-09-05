@@ -2,11 +2,6 @@
     "$schema": "http://json-schema.org/draft-06/schema#",
     "type": "object",
     "properties": {
-        "index_name_prefix": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Search Index name prefix"
-        },
         "experiment_name": {
             "type": "string",
             "minLength": 1,
@@ -21,97 +16,159 @@
             "type": "string",
             "description": "Azure ML Job description for the current experimentation"
         },
-        "preprocess": {
-            "type": "boolean",
-            "default": false,
-            "description": "Whether or not to preprocess the text"
+        "data_formats": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "enum": [
+                        "all"
+                    ],
+                    "default": "all"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "pdf",
+                            "html",
+                            "markdown",
+                            "json",
+                            "text",
+                            "docx"
+                        ]
+                    }
+                }
+            ],
+            "description": "List of formats or 'all' to allow any supported format"
         },
-        "chunking": {
+        "use_checkpoints": {
+            "type": "boolean",
+            "description": "If checkpoints are enabled"
+        },
+        "index": {
             "type": "object",
             "properties": {
-                "chunk_size": {
+                "index_name_prefix": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Search Index name prefix"
+                },
+                "ef_construction": {
                     "type": "array",
                     "items": {
                         "type": "integer"
                     },
                     "minItems": 1,
-                    "description": "A list of integers representing the chunk sizes for chunking documents"
+                    "description": "Number of `ef_construction` to use for Azure AI Search vector configuration"
                 },
-                "overlap_size": {
-                    "type": "array",
+                "ef_search": {
                     "items": {
                         "type": "integer"
                     },
                     "minItems": 1,
-                    "description": "A list of integers representing the overlap sizes for chunking documents"
+                    "description": "Number of `ef_search` to use for Azure AI Search vector configuration"
                 },
-                "generate_title": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Whether or not to generate title for chunk content"
+                "chunking": {
+                    "type": "object",
+                    "properties": {
+                        "preprocess": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to preprocess the text"
+                        },
+                        "chunk_size": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 1,
+                            "description": "A list of integers representing the chunk sizes for chunking documents"
+                        },
+                        "overlap_size": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 1,
+                            "description": "A list of integers representing the overlap sizes for chunking documents"
+                        },
+                        "generate_title": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to generate title for chunk content"
+                        },
+                        "generate_summary": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to generate summary for chunk content"
+                        },
+                        "override_content_with_summary": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to override chunk content with generated summary"
+                        },
+                        "chunking_strategy": {
+                            "type": "string",
+                            "enum": [
+                                "azure-document-intelligence",
+                                "basic"
+                            ],
+                            "description": "Chunking strategy to use for the document chunking process"
+                        },
+                        "azure_document_intelligence_model": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "prebuilt-read",
+                            "description": "Azure Document Intelligence model name to use for chunking strategy `azure-document-intelligence`"
+                        }
+                    },
+                    "required": [
+                        "chunk_size",
+                        "overlap_size",
+                        "chunking_strategy"
+                    ]
                 },
-                "generate_summary": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Whether or not to generate summary for chunk content"
-                },
-                "override_content_with_summary": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Whether or not to override chunk content with generated summary"
+                "embedding_model": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "description": "Array containing the configuration for the embedding models to use",
+                    "items": {
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "azure",
+                                    "sentence-transformer"
+                                ],
+                                "description": "Type of the embedding model. `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models."
+                            },
+                            "model_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the model to use"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "model_name"
+                        ]
+                    }
                 }
             },
             "required": [
-                "chunk_size",
-                "overlap_size"
+                "index_name_prefix",
+                "ef_construction",
+                "ef_search",
+                "chunking",
+                "embedding_model"
             ]
-        },
-        "embedding_models": {
-            "type": "array",
-            "uniqueItems": true,
-            "minItems": 1,
-            "description": "Array containing the configuration for the embedding models to use",
-            "items": {
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "azure",
-                            "sentence-transformer"
-                        ],
-                        "description": "Type of the embedding model. `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models."
-                    },
-                    "model_name": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Name of the model to use"
-                    }
-                },
-                "required": [
-                    "type",
-                    "model_name"
-                ]
-            }
-        },
-        "ef_construction": {
-            "type": "array",
-            "items": {
-                "type": "integer"
-            },
-            "minItems": 1,
-            "description": "Number of `ef_construction` to use for Azure AI Search vector configuration"
-        },
-        "ef_search": {
-            "items": {
-                "type": "integer"
-            },
-            "minItems": 1,
-            "description": "Number of `ef_search` to use for Azure AI Search vector configuration"
         },
         "language": {
             "type": "object",
             "properties": {
-                "analyzers": {
+                "analyzer": {
                     "type": "object",
                     "properties": {
                         "char_filters": {
@@ -303,200 +360,179 @@
             ]
         },
         "rerank": {
-            "type": "boolean",
-            "description": "If search results should be re-ranked"
-        },
-        "rerank_type": {
-            "type": "string",
-            "enum": [
-                "llm",
-                "crossencoder"
-            ],
-            "description": "Type of re-ranking"
-        },
-        "llm_re_rank_threshold": {
-            "type": "integer",
-            "description": "Threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10."
-        },
-        "cross_encoder_at_k": {
-            "type": "integer",
-            "description": "Threshold when using cross-encoding re-ranking. Chunks with given rank value are selected"
-        },
-        "crossencoder_model": {
-            "type": "string",
-            "enum": [
-                "cross-encoder/stsb-roberta-base"
-            ],
-            "description": "Model used for cross-encoding re-ranking step"
-        },
-        "search_types": {
-            "type": "array",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "search_for_match_semantic",
-                    "search_for_match_Hybrid_multi",
-                    "search_for_match_Hybrid_cross",
-                    "search_for_match_text",
-                    "search_for_match_pure_vector",
-                    "search_for_match_pure_vector_multi",
-                    "search_for_match_pure_vector_cross",
-                    "search_for_manual_hybrid"
-                ]
-            },
-            "description": "Search types used for experimentation"
-        },
-        "retrieve_num_of_documents": {
-            "type": "integer",
-            "description": "Number of chunks to retrieve from the search index"
-        },
-        "metric_types": {
-            "type": "array",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "lcsstr",
-                    "lcsseq",
-                    "cosine",
-                    "jaro_winkler",
-                    "hamming",
-                    "jaccard",
-                    "levenshtein",
-                    "fuzzy",
-                    "bert_all_MiniLM_L6_v2",
-                    "bert_base_nli_mean_tokens",
-                    "bert_large_nli_mean_tokens",
-                    "bert_large_nli_stsb_mean_tokens",
-                    "bert_distilbert_base_nli_stsb_mean_tokens",
-                    "bert_paraphrase_multilingual_MiniLM_L12_v2",
-                    "llm_answer_relevance",
-                    "llm_context_precision",
-                    "llm_context_recall"
-                ]
-            },
-            "description": "Metrics used for evaluation"
-        },
-        "azure_oai_chat_deployment_name": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Azure OpenAI deployment name"
-        },
-        "azure_oai_eval_deployment_name": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Azure OpenAI evaluation deployment name"
-        },
-        "openai_temperature": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Temperature for OpenAI API"
-        },
-        "search_relevancy_threshold": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1,
-            "default": 0.8,
-            "description": "Similarity threshold to determine if a document is relevant"
-        },
-        "data_formats": {
-            "oneOf": [
-                {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "If search results should be re-ranked"
+                },
+                "type": {
                     "type": "string",
                     "enum": [
-                        "all"
+                        "llm",
+                        "crossencoder"
                     ],
-                    "default": "all"
+                    "description": "Type of re-ranking"
                 },
-                {
+                "llm_rerank_threshold": {
+                    "type": "integer",
+                    "description": "Threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10."
+                },
+                "cross_encoder_at_k": {
+                    "type": "integer",
+                    "description": "Threshold when using cross-encoding re-ranking. Chunks with given rank value are selected"
+                },
+                "cross_encoder_model": {
+                    "type": "string",
+                    "enum": [
+                        "cross-encoder/stsb-roberta-base"
+                    ],
+                    "description": "Model used for cross-encoding re-ranking step"
+                }
+            }
+        },
+        "search": {
+            "type": "object",
+            "properties": {
+                "retrieve_num_of_documents": {
+                    "type": "integer",
+                    "description": "Number of chunks to retrieve from the search index"
+                },
+                "search_type": {
                     "type": "array",
                     "items": {
                         "type": "string",
                         "enum": [
-                            "pdf",
-                            "html",
-                            "markdown",
-                            "json",
-                            "text",
-                            "docx"
+                            "search_for_match_semantic",
+                            "search_for_match_Hybrid_multi",
+                            "search_for_match_Hybrid_cross",
+                            "search_for_match_text",
+                            "search_for_match_pure_vector",
+                            "search_for_match_pure_vector_multi",
+                            "search_for_match_pure_vector_cross",
+                            "search_for_manual_hybrid"
                         ]
-                    }
+                    },
+                    "description": "Search types used for experimentation"
+                },
+                "search_relevancy_threshold": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.8,
+                    "description": "Similarity threshold to determine if a document is relevant"
                 }
-            ],
-            "description": "List of formats or 'all' to allow any supported format"
-        },
-        "eval_data_jsonl_file_path": {
-            "type": "string",
-            "minLength": 1,
-            "description": "File path of the ground truth questions and answers"
-        },
-        "chunking_strategy": {
-            "type": "string",
-            "enum": [
-                "azure-document-intelligence",
-                "basic"
-            ],
-            "description": "Chunking strategy to use for the document chunking process"
-        },
-        "azure_document_intelligence_model": {
-            "type": "string",
-            "minLength": 1,
-            "default": "prebuilt-read",
-            "description": "Azure Document Intelligence model name to use for chunking strategy `azure-document-intelligence`"
-        },
-        "chain_of_thoughts": {
-            "type": "boolean",
-            "description": "Whether or not to use chain of thoughts for complex queries"
-        },
-        "hyde": {
-            "type": "string",
-            "enum": [
-                "disabled",
-                "generated_hypothetical_answer",
-                "generated_hypothetical_document_to_answer"
-            ],
-            "default": "disabled",
-            "description": "Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM"
+            },
+            "required": [
+                "retrieve_num_of_documents",
+                "search_type"
+            ]
         },
         "query_expansion": {
-            "type": "boolean",
-            "default": false,
-            "description": "Whether or not to expand the query using related questions"
+            "type": "object",
+            "properties": {
+                "hyde": {
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "generated_hypothetical_answer",
+                        "generated_hypothetical_document_to_answer"
+                    ],
+                    "default": "disabled",
+                    "description": "Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM"
+                },
+                "query_expansion": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether or not to expand the query using related questions"
+                },
+                "min_query_expansion_related_question_similarity_score": {
+                    "type": "integer",
+                    "default": 90,
+                    "description": "Minimum similarity score for query expansion generated related questions"
+                },
+                "expand_to_multiple_questions": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": ""
+                }
+            },
+            "required": [
+                "hyde",
+                "query_expansion",
+                "min_query_expansion_related_question_similarity_score",
+                "expand_to_multiple_questions"
+            ]
         },
-        "min_query_expansion_related_question_similarity_score": {
-            "type": "integer",
-            "default": 90,
-            "description": "Minimum similarity score for query expansion generated related questions"
+        "openai": {
+            "type": "object",
+            "properties": {
+                "azure_oai_chat_deployment_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Azure OpenAI deployment name"
+                },
+                "azure_oai_eval_deployment_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Azure OpenAI evaluation deployment name"
+                },
+                "openai_temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Temperature for OpenAI API"
+                }
+            },
+            "required": [
+                "azure_oai_chat_deployment_name",
+                "azure_oai_eval_deployment_name",
+                "openai_temperature"
+            ]
         },
-        "expand_to_multiple_questions": {
-            "type": "boolean",
-            "default": false,
-            "description": ""
+        "eval": {
+            "type": "object",
+            "properties": {
+                "metric_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "lcsstr",
+                            "lcsseq",
+                            "cosine",
+                            "jaro_winkler",
+                            "hamming",
+                            "jaccard",
+                            "levenshtein",
+                            "fuzzy",
+                            "bert_all_MiniLM_L6_v2",
+                            "bert_base_nli_mean_tokens",
+                            "bert_large_nli_mean_tokens",
+                            "bert_large_nli_stsb_mean_tokens",
+                            "bert_distilbert_base_nli_stsb_mean_tokens",
+                            "bert_paraphrase_multilingual_MiniLM_L12_v2",
+                            "llm_answer_relevance",
+                            "llm_context_precision",
+                            "llm_context_recall"
+                        ]
+                    },
+                    "description": "Metrics used for evaluation"
+                }
+            }
         }
     },
     "required": [
-        "index_name_prefix",
         "experiment_name",
         "job_name",
         "job_description",
-        "chunking",
-        "embedding_models",
-        "ef_construction",
-        "ef_search",
+        "data_formats",
+        "use_checkpoints",
+        "index",
         "language",
         "rerank",
-        "rerank_type",
-        "llm_re_rank_threshold",
-        "cross_encoder_at_k",
-        "crossencoder_model",
-        "search_types",
-        "retrieve_num_of_documents",
-        "metric_types",
-        "azure_oai_chat_deployment_name",
-        "azure_oai_eval_deployment_name",
-        "openai_temperature",
-        "chunking_strategy",
-        "chain_of_thoughts",
-        "hyde"
+        "search",
+        "openai",
+        "eval"
     ]
 }
