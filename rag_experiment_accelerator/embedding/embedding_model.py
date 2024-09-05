@@ -17,8 +17,8 @@ class EmbeddingModel(ABC):
     """
 
     def __init__(self, name: str, dimension: int, **kwargs) -> None:
-        self.dimension = dimension
         self.name = name
+        self.dimension = dimension
 
     @abstractmethod
     def generate_embedding(self, chunk: str) -> list[float]:
@@ -32,3 +32,9 @@ class EmbeddingModel(ABC):
             list: The generated embedding as a list.
         """
         pass
+
+    def to_dict(self) -> dict:
+        return {
+            "dimension": self.dimension,
+            "name": self.name,
+        }

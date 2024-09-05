@@ -1,24 +1,29 @@
 import os
 import sys
 import argparse
-
 from azure.ai.ml import MLClient, Input, Output, dsl, command
 from azure.ai.ml.parallel import parallel_run_function, RunFunction
 import azure.ai.ml.entities
+from azure.ai.ml.entities import Job
+import mlflow
+import warnings
 
-project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(project_dir)
 
-from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
-from rag_experiment_accelerator.config.config import Config  # noqa: E402
-from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.config.paths import mlflow_run_name  # noqa: E402
+from rag_experiment_accelerator.config.environment import Environment  # noqa: E402
+from rag_experiment_accelerator.config.config import (
+    Config,
+    ExecutionEnvironment,
+)  # noqa: E402
+from rag_experiment_accelerator.config.index_config import IndexConfig  # noqa: E402
 from rag_experiment_accelerator.utils.auth import get_default_az_cred  # noqa: E402
 from rag_experiment_accelerator.utils.logging import get_logger  # noqa: E402
 
 
+project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(project_dir)
 logger = get_logger(__name__)
-AML_ENVIRONMENT_NAME = "rag-env"
+AML_ENVIRONMENT_NAME = "CliV2AnonymousEnvironment"
 INDEX_STEP_RETRIES = 3
 INDEX_STEP_TIMEOUT_SECONDS = 10 * 3600
 INDEX_STEP_FILES_PER_BATCH = 4
@@ -49,12 +54,33 @@ dependencies:
     return conda_filename
 
 
+def initialise_mlflow_client(environment: Environment, config: Config):
+    """
+    Initializes the ML client and sets the MLflow tracking URI.
+    """
+    ml_client = MLClient(
+        get_default_az_cred(),
+        environment.aml_subscription_id,
+        environment.aml_resource_group_name,
+        environment.aml_workspace_name,
+    )
+    mlflow_tracking_uri = ml_client.workspaces.get(
+        ml_client.workspace_name
+    ).mlflow_tracking_uri
+    mlflow.set_tracking_uri(mlflow_tracking_uri)
+
+    return mlflow.MlflowClient(mlflow_tracking_uri)
+
+
 def start_pipeline(
     environment: Environment,
     config: Config,
     index_config: IndexConfig,
     config_path: str,
-):
+    mlflow_client: mlflow.MlflowClient,
+) -> Job:
+    warnings.filterwarnings("ignore", category=UserWarning, module="azure.ai.ml")
+
     ml_client = MLClient(
         credential=get_default_az_cred(),
         subscription_id=environment.aml_subscription_id,
@@ -76,11 +102,13 @@ def start_pipeline(
 
     index_pipeline_component = parallel_run_function(
         name="index_job",
-        display_name=f"Index documents for the experiment {index_config.index_name()}",
-        description="Upload input documents for RAG accelerator into Azure Search Index",
+        experiment_name=config.experiment_name,
+        display_name=f"Index documents for {config.experiment_name} experiment",
+        description="Preprocess documents, split into smaller chunks, embed and enrich them, and finally upload documents chunks for retrieval into Azure Search Index",
         inputs={
             "data": Input(type="uri_folder"),
             "config_path": Input(type="uri_file"),
+            "mlflow_tracking_uri": Input(type="string"),
         },
         outputs={"index_name": Output(type="uri_file", mode="rw_mount")},
         input_data="${{inputs.data}}",
@@ -95,7 +123,8 @@ def start_pipeline(
             entry_script="azureml/index.py",
             program_arguments="""--data_dir ${{inputs.data}} \
                 --index_name_path ${{outputs.index_name}} \
-                --config_path ${{inputs.config_path}}"""
+                --config_path ${{inputs.config_path}} \
+                --mlflow_tracking_uri ${{inputs.mlflow_tracking_uri}}"""
             + f" --keyvault {environment.azure_key_vault_endpoint}"
             + f" --index_name {index_config.index_name()}",
             environment=pipeline_job_env,
@@ -109,12 +138,14 @@ def start_pipeline(
 
     query_pipeline_component = command(
         name="query_job",
+        experiment_name=config.experiment_name,
         display_name="Query documents for the experiment",
         description="Query documents for the experiment",
         inputs={
             "index_name": Input(type="uri_file"),
             "config_path": Input(type="uri_file"),
             "eval_data": Input(type="uri_file"),
+            "mlflow_tracking_uri": Input(type="string"),
         },
         outputs={"query_result": Output(type="uri_folder", mode="rw_mount")},
         code="./",
@@ -122,7 +153,8 @@ def start_pipeline(
             --eval_data_path ${{inputs.eval_data}} \
             --config_path ${{inputs.config_path}} \
             --index_name_path ${{inputs.index_name}} \
-            --query_result_dir ${{outputs.query_result}}"""
+            --query_result_dir ${{outputs.query_result}} \
+            --mlflow_tracking_uri ${{inputs.mlflow_tracking_uri}}"""
         + f" --keyvault {environment.azure_key_vault_endpoint}",
         environment=pipeline_job_env,
         environment_variables={
@@ -133,12 +165,14 @@ def start_pipeline(
 
     eval_pipeline_component = command(
         name="eval_job",
+        experiment_name=config.experiment_name,
         display_name="Evaluate experiment",
         description="Evaluate experiment",
         inputs={
             "index_name": Input(type="uri_file"),
             "config_path": Input(type="uri_file"),
             "query_result": Input(type="uri_folder"),
+            "mlflow_tracking_uri": Input(type="string"),
         },
         outputs=dict(eval_result=Output(type="uri_folder", mode="rw_mount")),
         code="./",
@@ -146,7 +180,8 @@ def start_pipeline(
                 --config_path ${{inputs.config_path}} \
                 --index_name_path ${{inputs.index_name}} \
                 --query_result_dir ${{inputs.query_result}} \
-                --eval_result_dir ${{outputs.eval_result}} """
+                --eval_result_dir ${{outputs.eval_result}} \
+                --mlflow_tracking_uri ${{inputs.mlflow_tracking_uri}}"""
         + f" --keyvault {environment.azure_key_vault_endpoint}",
         environment=pipeline_job_env,
         environment_variables={
@@ -155,26 +190,40 @@ def start_pipeline(
         },
     )
 
+    job_name = mlflow_run_name(config.job_name)
+
     @dsl.pipeline(
-        name=mlflow_run_name(config),
+        name=job_name,
+        experiment_name=config.experiment_name,
         compute=environment.aml_compute_name,
-        description="RAG Experiment Pipeline",
+        description=config.job_description or "RAG Experiment Pipeline",
+        display_name=job_name,
     )
-    def rag_pipeline(config_path_input, data_input, eval_data_input):
+    def rag_pipeline(
+        config_path_input,
+        data_input,
+        eval_data_input,
+        mlflow_tracking_uri,
+        mlflow_parent_run_id,
+    ):
         index_job = index_pipeline_component(
-            data=data_input, config_path=config_path_input
+            data=data_input,
+            config_path=config_path_input,
+            mlflow_tracking_uri=mlflow_tracking_uri,
         )
 
         query_job = query_pipeline_component(
             index_name=index_job.outputs.index_name,
             config_path=config_path_input,
             eval_data=eval_data_input,
+            mlflow_tracking_uri=mlflow_tracking_uri,
         )
 
         eval_job = eval_pipeline_component(
             index_name=index_job.outputs.index_name,
             config_path=config_path_input,
             query_result=query_job.outputs.query_result,
+            mlflow_tracking_uri=mlflow_tracking_uri,
         )
 
         return {"eval_result": eval_job.outputs.eval_result}
@@ -184,10 +233,13 @@ def start_pipeline(
 
     pipeline = rag_pipeline(
         config_path_input=Input(type="uri_file", path=config_path),
-        data_input=Input(type="uri_folder", path=config.data_dir),
-        eval_data_input=Input(type="uri_file", path=config.EVAL_DATA_JSONL_FILE_PATH),
+        data_input=Input(type="uri_folder", path=config.path.data_dir),
+        eval_data_input=Input(type="uri_file", path=config.path.eval_data_file),
+        mlflow_tracking_uri=mlflow_client.tracking_uri,
     )
-    ml_client.jobs.create_or_update(pipeline, experiment_name=config.EXPERIMENT_NAME)
+    return ml_client.jobs.create_or_update(
+        pipeline, experiment_name=config.experiment_name
+    )
 
 
 if __name__ == "__main__":
@@ -204,13 +256,24 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, args.config_path, args.data_dir)
+    config = Config.from_path(environment, args.config_path, args.data_dir)
+    config.execution_environment = ExecutionEnvironment.AZURE_ML
 
-    if config.SAMPLE_DATA:
+    if config.index.sampling.sample_data:
         logger.error(
             "Can't sample data when running on AzureML pipeline. Please run the pipeline locally"
         )
         exit()
+
+    mlflow_client = initialise_mlflow_client(environment, config)
+
     # Starting multiple pipelines hence unable to stream them
-    for index_config in config.index_configs():
-        start_pipeline(environment, config, index_config, args.config_path)
+    for index_config in config.index.flatten():
+        # with mlflow.start_run(run_name=config.job_name, description=config.job_description, experiment_id=experiment.experiment_id) as run:
+        logger.info(f"Starting pipeline for index: {index_config.index_name()}")
+        job = start_pipeline(
+            environment, config, index_config, args.config_path, mlflow_client
+        )
+        logger.info(
+            f"Pipeline job started...\nIndex name: {index_config.index_name()}\nMonitoring url: {job.studio_url}"
+        )

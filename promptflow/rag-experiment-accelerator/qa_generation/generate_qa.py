@@ -8,8 +8,8 @@ from rag_experiment_accelerator.config.paths import get_all_file_paths
 @tool
 def my_python_tool(config_path: str, should_generate_qa: bool) -> bool:
     environment = Environment.from_env_or_keyvault()
-    config = Config(environment, config_path)
+    config = Config.from_path(environment, config_path)
 
     if should_generate_qa:
-        run(environment, config, get_all_file_paths(config.data_dir))
+        run(environment, config, get_all_file_paths(config.path.data_dir))
     return True

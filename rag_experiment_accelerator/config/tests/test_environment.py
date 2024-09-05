@@ -10,63 +10,47 @@ from rag_experiment_accelerator.config.environment import Environment
 def mock_get_value_from_env_with_keyvault(
     var_name: str, is_optional: bool = False
 ) -> Optional[str]:
-    if var_name == "USE_KEY_VAULT":
-        return "True"
-    elif var_name == "AZURE_KEY_VAULT_ENDPOINT":
-        return "test_keyvault_endpoint"
-    elif var_name == "OPENAI_API_TYPE":
-        return "azure"
-    elif var_name == "OPENAI_API_VERSION":
-        return "test_api_version"
-    elif var_name == "OPENAI_ENDPOINT":
-        return "test_api_endpoint"
-    elif var_name == "AML_SUBSCRIPTION_ID":
-        return "test_subscription_id"
-    elif var_name == "AML_WORKSPACE_NAME":
-        return "test_workspace_name"
-    elif var_name == "AML_RESOURCE_GROUP_NAME":
-        return "test_resource_group_name"
-    elif var_name == "AZURE_SEARCH_SERVICE_ENDPOINT":
-        return "test_search_endpoint"
-    elif var_name == "AZURE_SEARCH_USE_SEMANTIC_SEARCH":
-        return "True"
-    else:
-        return None
+    mapping = {
+        "USE_KEY_VAULT": "True",
+        "AZURE_KEY_VAULT_ENDPOINT": "test_keyvault_endpoint",
+        "OPENAI_API_TYPE": "azure",
+        "OPENAI_API_VERSION": "test_api_version",
+        "OPENAI_ENDPOINT": "test_api_endpoint",
+        "AML_SUBSCRIPTION_ID": "test_subscription_id",
+        "AML_WORKSPACE_NAME": "test_workspace_name",
+        "AML_RESOURCE_GROUP_NAME": "test_resource_group_name",
+        "AZURE_SEARCH_SERVICE_ENDPOINT": "test_search_endpoint",
+        "AZURE_SEARCH_USE_SEMANTIC_SEARCH": "True",
+    }
+    return mapping.get(var_name)
 
 
 def mock_get_secret_value_from_keyvault(
     keyvault: SecretClient, field_name: str, is_optional: bool = False
 ) -> Optional[str]:
-    if field_name == "openai_api_key":
-        return "test_openai_api_key"
-    elif field_name == "azure_search_admin_key":
-        return "test_admin_key"
-    else:
-        return None
+    mapping = {
+        "openai_api_key": "test_openai_api_key",
+        "azure_search_admin_key": "test_admin_key",
+    }
+    return mapping.get(field_name)
 
 
 def mock_get_any_value_from_keyvault(field_name: str) -> Optional[str]:
     return_value = MagicMock()
-    if field_name == "openai-api-type":
-        return_value.value = "azure"
-    elif field_name == "openai-api-key":
-        return_value.value = "test_openai_api_key"
-    elif field_name == "openai-api-version":
-        return_value.value = "test_api_version"
-    elif field_name == "openai-endpoint":
-        return_value.value = "test_api_endpoint"
-    elif field_name == "azure-search-service-endpoint":
-        return_value.value = "test_search_endpoint"
-    elif field_name == "azure-search-use-semantic-search":
-        return_value.value = "True"
-    elif field_name == "azure-search-admin-key":
-        return_value.value = "test_admin_key"
-    elif field_name == "aml-subscription-id":
-        return_value.value = "test_subscription_id"
-    elif field_name == "aml-workspace-name":
-        return_value.value = "test_workspace_name"
-    elif field_name == "aml-resource-group-name":
-        return_value.value = "test_resource_group_name"
+    mapping = {
+        "openai-api-type": "azure",
+        "openai-api-key": "test_openai_api_key",
+        "openai-api-version": "test_api_version",
+        "openai-endpoint": "test_api_endpoint",
+        "azure-search-service-endpoint": "test_search_endpoint",
+        "azure-search-use-semantic-search": "True",
+        "azure-search-admin-key": "test_admin_key",
+        "aml-subscription-id": "test_subscription_id",
+        "aml-workspace-name": "test_workspace_name",
+        "aml-resource-group-name": "test_resource_group_name",
+    }
+    if field_name in mapping:
+        return_value.value = mapping[field_name]
     else:
         raise ResourceNotFoundError(f"Not found secret {field_name}")
     return return_value

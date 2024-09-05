@@ -16,7 +16,7 @@ The main goal of the **RAG Experiment Accelerator** is to make it easier and fas
 
 ## Latest changes
 
-18 March 2024 - Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data.
+18 March 2024: Content sampling has been added. This functionality will allow the dataset to be sampled by a specified percentage. The data is clustered by content and then the sample percentage is taken across each cluster to attempt even distribution of the sampled data.
 
 This is done to ensure representative results in the sample that one would get across the entire dataset.
 
@@ -34,7 +34,7 @@ The **RAG Experiment Accelerator** is config driven and offers a rich set of fea
 
 1. **Multiple Document Loaders**: The tool supports multiple document loaders, including loading via Azure Document Intelligence and basic LangChain loaders. This gives you the flexibility to experiment with different extraction methods and evaluate their effectiveness.
 
-1. **Custom Document Intelligence Loader** : When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables with column headers into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. Since each table row is transformed into a text line, to avoid breaking a row in the middle, chunking is done recursively by paragraph and line.
+1. **Custom Document Intelligence Loader**: When selecting the 'prebuilt-layout' API model for Document Intelligence, the tool utilizes a custom Document Intelligence loader to load the data. This custom loader supports formatting of tables with column headers into key-value pairs (to enhance readability for the LLM), excludes irrelevant parts of the file for the LLM (such as page numbers and footers), removes recurring patterns in the file using regex, and more. Since each table row is transformed into a text line, to avoid breaking a row in the middle, chunking is done recursively by paragraph and line.
 The custom loader resorts to the simpler 'prebuilt-layout' API model as a fallback when the 'prebuilt-layout' fails. Any other API model will utilize LangChain's implementation, which returns the raw response from Document Intelligence's API.
 
 1. **Query Generation**: The tool can generate a variety of diverse and customizable query sets, which can be tailored for specific experimentation needs.
@@ -75,7 +75,7 @@ Install the following software on the host machine you will perform the deployme
 >1. For Windows - [Windows Store Ubuntu 22.04.3 LTS](https://www.microsoft.com/store/productId/9pn20msr04dw)
 >2. [Docker Desktop](https://www.docker.com/products/docker-desktop)
 >3. [Visual Studio Code](https://visualstudio.microsoft.com/downloads/)
->4. [Remote-Containers VS Code Extension](vscode:extension/ms-vscode-remote.remote-containers)
+>4. [VS Code Extension: Remote-Containers](vscode:extension/ms-vscode-remote.remote-containers)
 
 #### Developing in a DevContainer
 
@@ -181,9 +181,15 @@ az deployment sub create --location uksouth --template-file infra/main.bicep \
 To use the **RAG Experiment Accelerator**, follow these steps:
 
 1. Copy the provided `.env.template` file to a file named `.env` and update all of the [required values](./docs/environment-variables.md). Many of the required values for the `.env` file will come from resources which have previously been configured and/or can be gathered from resources provisioned in the [Provision Infrastructure](#provision-infrastructure) section. Also note, by default, `LOGGING_LEVEL` is set to `INFO` but can be changed to any of the following levels: `NOTSET`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`.
-
+    ```bash
+    cp .env.template .env
+    # change parameters manually
+    ```
 1. Copy the provided `config.sample.json` file to a file named `config.json` and change any hyperparameters to tailor to your experiment.
-
+    ```bash
+    cp config.sample.json config.json
+    # change parameters manually
+    ```
 1. Copy any files for ingestion (PDF, HTML, Markdown, Text, JSON or DOCX format) into the `data` folder.
 
 1. Run `01_index.py` (python 01_index.py) to create Azure AI Search indexes and load data into them.
@@ -217,58 +223,88 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 
 # Description of configuration elements
 
+All the values can be lists of elements. Including the nested configurations.
+Every array will produce the combinations of flat configurations when the method `flatten()` is called on a particular node, to select 1 random combination - call the method `sample()`.
+
 ```json
 {
-    "index_name_prefix": "Search index name prefix",
     "experiment_name": "If provided, this will be the experiment name in Azure ML and it will group all job run under the same experiment, otherwise (if left empty) index_name_prefix will be used and there may be more than one experiment",
     "job_name": "If provided, all jobs runs in Azure ML will be named with this property value plus timestamp, otherwise (if left empty) each job with be named only with timestamp",
     "job_description": "You may provide a description for the current job run which describes in words what you are about to experiment with",
-    "sampling": {
-        "sample_data": "Set to true to enable sampling",
-        "sample_percentage": "Percentage of the document corpus to sample",
-        "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
-        "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
-        "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30",
+    "data_formats": "Specifies the supported data formats for the application. You can choose from a variety of formats such as JSON, CSV, PDF, and more. [*] - means all formats included",
+    "main_instruction": "Defines the main instruction prompt coming with queries to LLM",
+    "use_checkpoints": "A boolean. If true, enables use of checkpoints to load data and skip processing that was already done in previous executions.",
+    "index": {
+        "index_name_prefix": "Search index name prefix",
+        "ef_construction": "ef_construction value determines the value of Azure AI Search vector configuration.",
+        "ef_search": "ef_search value determines the value of Azure AI Search vector configuration.",
+        "chunking": {
+            "preprocess": "A boolean. If true, preprocess documents, split into smaller chunks, embed and enrich them, and finally upload documents chunks for retrieval into Azure Search Index.",
+            "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]",
+            "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]",
+            "generate_title": "A boolean. If true, a title is generated for the chunk of content and an embedding is created for it",
+            "generate_summary": "A boolean. If true, a summary is generated for the chunk of content and an embedding is created for it",
+            "override_content_with_summary": "A boolean. If true, The chunk content is replaced with its summary",
+            "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
+            "azure_document_intelligence_model": "represents the Azure Document Intelligence Model. Used when chunking strategy is 'azure-document-intelligence'. When set to 'prebuilt-layout', provides additional features (see above)"
+        },
+        "embedding_model": "see 'Description of embedding models config' below",
+        "sampling": {
+            "sample_data": "Set to true to enable sampling",
+            "percentage": "Percentage of the document corpus to sample",
+            "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+            "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
+            "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30"
+        }
     },
-    "chunking": {
-        "chunk_size": "Size of each chunk e.g. [500, 1000, 2000]" ,
-        "overlap_size": "Overlap Size for each chunk e.g. [100, 200, 300]"
-    },
-    "embedding_models": "see 'Description of embedding models config' below",
-    "embedding_dimension" : "embedding size for each chunk e.g. [384, 1024]. Valid values are 384, 768,1024" ,
-    "ef_construction" : "ef_construction value determines the value of Azure AI Search vector configuration." ,
-    "ef_search":  "ef_search value determines the value of Azure AI Search vector configuration.",
     "language": {
-        "analyzer_name" : "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
-        "index_analyzer_name" : "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
-        "search_analyzer_name" : "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
+        "analyzer": {
+            "analyzer_name": "name of the analyzer to use for the field. This option can be used only with searchable fields and it can't be set together with either searchAnalyzer or indexAnalyzer.",
+            "index_analyzer_name": "name of the analyzer used at indexing time for the field. This option can be used only with searchable fields. It must be set together with searchAnalyzer and it cannot be set together with the analyzer option.",
+            "search_analyzer_name": "name of the analyzer used at search time for the field. This option can be used only with searchable fields. It must be set together with indexAnalyzer and it cannot be set together with the analyzer option. This property cannot be set to the name of a language analyzer; use the analyzer property instead if you need a language analyzer.",
+            "char_filters": "The character filters for the index",
+            "tokenizers": "The tokenizers for the index",
+            "token_filters": "The token filters for the index"
+        },
+        "query_language": "The language of the query. Possible values: en-us, en-gb, fr-fr etc."
     },
-    "experiment_name": "name of the experiment",
-    "rerank": "determines if search results should be re-ranked. Value values are TRUE or FALSE" ,
-    "rerank_type": "determines the type of re-ranking. Value values are llm or crossencoder",
-    "llm_re_rank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10." ,
-    "cross_encoder_at_k": "determines the threshold when using cross-encoding re-ranking. Chunks with given rank value are selected." ,
-    "crossencoder_model" :"determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base",
-    "search_types" : "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic' ]",
-    "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
-    "metric_types" : "determines the metrics used for evaluation (end-to-end or component-wise metrics using LLMs). Valid values for end-to-end metrics are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. Valid values for component-wise LLM-based metrics are llm_answer_relevance, llm_context_precision and llm_context_recall. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens', 'llm_answer_relevance']",
-    "azure_oai_chat_deployment_name":  "determines the Azure OpenAI deployment name",
-    "azure_oai_eval_deployment_name": "determines the Azure OpenAI deployment name used for evaluation",
-    "embedding_model_name": "embedding model name",
-    "openai_temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1.",
-    "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0",
-    "chunking_strategy": "determines the chunking strategy. Valid values are 'azure-document-intelligence' or 'basic'",
-    "query_expansion": "this feature allows you to experiment with various query expansion approaches which may improve the retrieval metrics The possible values are 'disabled' (default), 'generated_hypothetical_answer', 'generated_hypothetical_document_to_answer', 'generated_related_questions' reference article - Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings) - https://arxiv.org/abs/2212.10496"
-    "min_query_expansion_related_question_similarity_score": "minimum similarity score in percentage between LLM generated related queries to the original query using cosine similarly score. default 90%"
-    "azure_document_intelligence_model": "represents the Azure Document Intelligence Model. Used when chunking strategy is 'azure-document-intelligence'. When set to 'prebuilt-layout', provides additional features (see above)", 
+    "rerank": {
+        "enabled": "determines if search results should be re-ranked. Value values are TRUE or FALSE",
+        "type": "determines the type of re-ranking. Value values are llm or cross_encoder",
+        "llm_rerank_threshold": "determines the threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10.",
+        "cross_encoder_at_k": "determines the threshold when using cross-encoding re-ranking. Chunks with given rank value are selected.",
+        "cross_encoder_model": "determines the model used for cross-encoding re-ranking step. Valid value is cross-encoder/stsb-roberta-base"
+    },
+    "search": {
+        "retrieve_num_of_documents": "determines the number of chunks to retrieve from the search index",
+        "search_type": "determines the search types used for experimentation. Valid value are search_for_match_semantic, search_for_match_Hybrid_multi, search_for_match_Hybrid_cross, search_for_match_text, search_for_match_pure_vector, search_for_match_pure_vector_multi, search_for_match_pure_vector_cross, search_for_manual_hybrid. e.g. ['search_for_manual_hybrid', 'search_for_match_Hybrid_multi','search_for_match_semantic']",
+        "search_relevancy_threshold": "the similarity threshold to determine if a doc is relevant. Valid ranges are from 0.0 to 1.0"
+    },
+    "query_expansion": {
+        "expand_to_multiple_questions": "whether the system should expand a single question into multiple related questions. By enabling this feature, you can generate a set of alternative related questions that may improve the retrieval process and provide more accurate results".,
+        "query_expansion": "determines if query expansion feature is on. Value values are TRUE or FALSE",
+        "hyde": "this feature allows you to experiment with various query expansion approaches which may improve the retrieval metrics. The possible values are 'disabled' (default), 'generated_hypothetical_answer', 'generated_hypothetical_document_to_answer' reference article - Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings) - https://arxiv.org/abs/2212.10496",
+        "min_query_expansion_related_question_similarity_score": "minimum similarity score in percentage between LLM generated related queries to the original query using cosine similarly score. default 90%"
+    },
+    "openai": {
+        "azure_oai_chat_deployment_name": "determines the Azure OpenAI deployment name",
+        "azure_oai_eval_deployment_name": "determines the Azure OpenAI deployment name used for evaluation",
+        "temperature": "determines the OpenAI temperature. Valid value ranges from 0 to 1."
+    },
+    "eval": {
+        "metric_types": "determines the metrics used for evaluation (end-to-end or component-wise metrics using LLMs). Valid values for end-to-end metrics are lcsstr, lcsseq, cosine, jaro_winkler, hamming, jaccard, levenshtein, fuzzy, bert_all_MiniLM_L6_v2, bert_base_nli_mean_tokens, bert_large_nli_mean_tokens, bert_large_nli_stsb_mean_tokens, bert_distilbert_base_nli_stsb_mean_tokens, bert_paraphrase_multilingual_MiniLM_L12_v2. Valid values for component-wise LLM-based metrics are llm_answer_relevance, llm_context_precision and llm_context_recall. e.g ['fuzzy','bert_all_MiniLM_L6_v2','cosine','bert_distilbert_base_nli_stsb_mean_tokens', 'llm_answer_relevance']",
+    }
 }
 ```
 
-> NOTE: When changing the config, remember to change both the `config.sample.json` (the example config to be copied by others) and the [Github actions config file](.github/workflows/config.json) to be used by tests on CI.
+> NOTE: When changing the config, remember to change:
+- `config.sample.json` (the example config to be copied by others)
+- [Github actions config file](.github/workflows/config.json) to be used by tests on CI
+- [Unit tests config file](run/tests/data/config.json)
 
 ## Description of embedding models config
 
-`embedding_models` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models.
+`embedding_model` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models.
 
 ### Azure OpenAI embedding model config
 
@@ -295,20 +331,20 @@ Alternatively, you can run the above steps (apart from `02_qa_generation.py`) us
 Giving an example of an hypothetical answer for the question in query, an hypothetical passage which holds an answer to the query, or generate few alternative related question might improve retrieval and thus get more accurate chunks of docs to pass into LLM context.
 Based on the reference article - [Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE - Hypothetical Document Embeddings)](https://arxiv.org/abs/2212.10496).
 
-The following configuration options turns on this experimantation approachs:
+The following configuration options turns on this experimentation approaches:
 
 
 ### Generate hypothetical answer for the question in query
 ```json
 {
-    "query_expansion": "generated_hypothetical_answer"
+    "hyde": "generated_hypothetical_answer"
 }
 ```
 
 ### Generate hypothetical document which includes an answer for the question in query
 ```json
 {
-    "query_expansion": "generated_hypothetical_document_to_answer"
+    "hyde": "generated_hypothetical_document_to_answer"
 }
 ```
 
@@ -321,7 +357,7 @@ default value for `min_query_expansion_related_question_similarity_score` is set
 
 ```json
 {
-    "query_expansion": "generated_related_questions",
+    "query_expansion": true,
     "min_query_expansion_related_question_similarity_score": 90
 }
 ```
@@ -366,31 +402,29 @@ This section outlines common gotchas or pitfalls that engineers/developers/data 
 
 #### Azure Authentication and Authorization
 
-##### Description:
 To successfully utilize this solution, you must first authenticate yourself by logging in to your Azure account. This essential step ensures you have the required permissions to access and manage Azure resources used by it. You might errors related to storing QnA data into Azure Machine Learning Data Assets, executing the query and evaluation step as a result of inappropriate authorization and authentication to Azure. Refer to Point 4 in this document for authentication and authorization.
 
 There might be situations in which the solution would still generate errors despite of valid authentication and authorization. In such cases, start a new session with a brand new terminal instance, login to Azure using steps mentioned in step 4 and also check if the user has contribute access to the Azure resources related to the solution.
 
 #### Configuration
 
-##### Description
-This solution utilizes several configuration parameters in config.json that directly impact its functionality and performance. Please pay close attention to these settings:
+This solution utilizes several configuration parameters in `config.json` that directly impact its functionality and performance. Please pay close attention to these settings:
 
 **retrieve_num_of_documents:** This config controls the initial number of documents retrieved for analysis. Excessively high or low values can lead to "index out of range" errors due to rank processing of Search AI results.
+
 **cross_encoder_at_k:** This config influences the ranking process. A high value might result in irrelevant documents being included in the final results.
-**llm_re_rank_threshold:** This config determines which documents are passed to the language model (LLM) for further processing. Setting this value too high could create an overly large context for the LLM to handle, potentially leading to processing errors or degraded results. This might also result in exception from Azure OpenAI endpoint.
+
+**llm_rerank_threshold:** This config determines which documents are passed to the language model (LLM) for further processing. Setting this value too high could create an overly large context for the LLM to handle, potentially leading to processing errors or degraded results. This might also result in exception from Azure OpenAI endpoint.
 
 #### Azure OpenAI Model and Deployment
 
-##### Description
 Before running this solution, please ensure you've correctly set up both your Azure OpenAI deployment name within config.json file and add relevant secrets to environment variables (.env file). This information is crucial for the application to connect to the appropriate Azure OpenAI resources and function as designed. If you're unsure about the configuration data, please refer to .env.template and config.json file. The solution has been tested with GPT 3.5 turbo model and needs further tests for any other model.
 
 #### QnA Generation and Querying step
 
-##### Description
 During the QnA generation step, you may occasionally encounter errors related to the JSON output received from Azure OpenAI. These errors can prevent the successful generation of few questions and answers. Here's what you need to know:
 
-Possible Causes:
+##### Possible Causes:
 
 **Incorrect Formatting:** The JSON output from Azure OpenAI may not adhere to the expected format, causing issues with the QnA generation process.
 **Content Filtering:** Azure OpenAI has content filters in place. If the input text or generated responses are deemed inappropriate, it could lead to errors.
@@ -398,7 +432,6 @@ Possible Causes:
 
 #### Evaluation step
 
-##### Description
 **End-to-end evaluation metrics:** not all the metrics comparing the generated and ground-truth answers are able to capture differences in semantics. For example, metrics such as `levenshtein` or `jaro_winkler` only measure edit distances. The `cosine` metric doesn't allow the comparison of semantics either: it uses the *textdistance* token-based implementation based on term frequency vectors. To calculate the semantic similarity between the generated answers and the expected responses, consider using embedding-based metrics such as Bert scores (`bert_`).
 
 **Component-wise evaluation metrics:** evaluation metrics using LLM-as-judges aren't deterministic. The `llm_` metrics included in the accelerator use the model indicated in the `azure_oai_eval_deployment_name` config field. The prompts used for evaluation instruction can be adjusted and are included in the `prompts.py` file (`llm_answer_relevance_instruction`, `llm_context_recall_instruction`, `llm_context_precision_instruction`).
