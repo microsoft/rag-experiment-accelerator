@@ -150,6 +150,53 @@
                             "model_name"
                         ]
                     }
+                },
+                "sampling": {
+                    "type": "object",
+                    "properties": {
+                        "sample_data": {
+                            "type": "boolean",
+                            "description": "Set to true to enable sampling"
+                        },
+                        "percentage": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100,
+                            "description": "Percentage of the document corpus to sample"
+                        },
+                        "optimum_k": {
+                            "description": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "auto"
+                                    ]
+                                },
+                                {
+                                    "type": "integer",
+                                    "minimum": 1
+                                }
+                            ]
+                        },
+                        "min_cluster": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Minimum number of clusters to use for sampling"
+                        },
+                        "max_cluster": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Maximum number of clusters to use for sampling"
+                        }
+                    },
+                    "required": [
+                        "sample_data",
+                        "percentage",
+                        "optimum_k",
+                        "min_cluster",
+                        "max_cluster"
+                    ]
                 }
             },
             "required": [

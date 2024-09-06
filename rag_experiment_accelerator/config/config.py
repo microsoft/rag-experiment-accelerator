@@ -92,24 +92,9 @@ class Config(BaseConfig):
         return config
 
     def validate_inputs(self, use_semantic_search: bool = False):
-        if any(val < 100 or val > 1000 for val in self.index.ef_construction):
-            raise ValueError(
-                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
-            )
-        if any(val < 100 or val > 1000 for val in self.index.ef_search):
-            raise ValueError(
-                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-            )
         if max(self.index.chunking.overlap_size) > min(self.index.chunking.chunk_size):
             raise ValueError(
                 "Config param validation error: overlap_size must be less than chunk_size"
-            )
-
-        if self.index.sampling.sample_data and (
-            self.index.sampling.percentage < 0 or self.index.sampling.percentage > 100
-        ):
-            raise ValueError(
-                "Config param validation error: sample percentage must be between 0 and 100 (inclusive)"
             )
 
         if (
