@@ -33,9 +33,18 @@
             "default": "*",
             "description": "List of formats or 'all' to allow any supported format"
         },
+        "main_instruction": {
+            "type": "string",
+            "description": "The main instruction prompt coming with queries to LLM"
+        },
         "use_checkpoints": {
             "type": "boolean",
             "description": "If checkpoints are enabled"
+        },
+        "path": {
+            "type": "object",
+            "properties": {},
+            "required": []
         },
         "index": {
             "type": "object",
@@ -56,6 +65,7 @@
                     "description": "Number of `ef_construction` to use for Azure AI Search vector configuration"
                 },
                 "ef_search": {
+                    "type": "array",
                     "items": {
                         "type": "integer",
                         "minimum": 100,
@@ -168,7 +178,7 @@
                             "description": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
                             "oneOf": [
                                 {
-                                    "type": "string",
+                            "type": "string",
                                     "enum": [
                                         "auto"
                                     ]
@@ -569,7 +579,9 @@
         "job_name",
         "job_description",
         "data_formats",
+        "main_instruction",
         "use_checkpoints",
+        "path",
         "index",
         "language",
         "rerank",
