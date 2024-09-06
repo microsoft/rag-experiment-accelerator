@@ -48,14 +48,18 @@
                 "ef_construction": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 1000
                     },
                     "minItems": 1,
                     "description": "Number of `ef_construction` to use for Azure AI Search vector configuration"
                 },
                 "ef_search": {
                     "items": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 1000
                     },
                     "minItems": 1,
                     "description": "Number of `ef_search` to use for Azure AI Search vector configuration"
