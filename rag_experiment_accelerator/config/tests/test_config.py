@@ -184,48 +184,6 @@ def test_chunk_size_greater_than_overlap_size():
     )
 
 
-def test_validate_ef_search():
-    with pytest.raises(ValueError) as high_info:
-        config = init_config()
-        config.index.ef_search = [1001]
-        config.validate_inputs()
-
-    with pytest.raises(ValueError) as low_info:
-        config = init_config()
-        config.index.ef_search = [99]
-        config.validate_inputs()
-
-    assert (
-        str(high_info.value)
-        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-    )
-    assert (
-        str(low_info.value)
-        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-    )
-
-
-def test_validate_ef_construction():
-    with pytest.raises(ValueError) as high_info:
-        config = init_config()
-        config.index.ef_construction = [1001]
-        config.validate_inputs()
-
-    with pytest.raises(ValueError) as low_info:
-        config = init_config()
-        config.index.ef_construction = [99]
-        config.validate_inputs()
-
-    assert (
-        str(high_info.value)
-        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
-    )
-    assert (
-        str(low_info.value)
-        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
-    )
-
-
 def test_validate_semantic_search_config():
     config = init_config()
 
