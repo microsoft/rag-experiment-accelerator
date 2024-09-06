@@ -346,7 +346,7 @@
                 }
             },
             "required": [
-                "analyzers",
+                "analyzer",
                 "query_language"
             ]
         },
@@ -361,7 +361,7 @@
                     "type": "string",
                     "enum": [
                         "llm",
-                        "crossencoder"
+                        "cross_encoder"
                     ],
                     "description": "Type of re-ranking"
                 },
