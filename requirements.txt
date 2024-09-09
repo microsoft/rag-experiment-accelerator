@@ -14,6 +14,7 @@ docx2txt==0.8
 evaluate==0.4.2
 fuzzywuzzy==0.18.0
 hnswlib==0.8.0
+jsonschema==4.22.0
 kaleido==0.2.1
 langchain==0.2.15
 langchain-community==0.2.15

@@ -19,7 +19,7 @@ from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
 from rag_experiment_accelerator.embedding.factory import create_embedding_model
 from rag_experiment_accelerator.llm.prompt.prompt import Prompt
 from rag_experiment_accelerator.utils.logging import get_logger
-
+from rag_experiment_accelerator.config.config_validator import validate_json_with_schema
 from rag_experiment_accelerator.llm.prompt import main_instruction
 
 
@@ -58,13 +58,18 @@ class Config(BaseConfig):
             config_path = os.path.join(os.getcwd(), "./config.json")
         with open(config_path.strip(), "r") as json_file:
             config_json: dict[str, any] = json.load(json_file)
+            is_valid_config, validation_error = validate_json_with_schema(
+                config_json, config_path.strip()
+            )
+            if not is_valid_config:
+                raise ValueError(f"Config validation error: {validation_error}")
 
         config = Config.from_dict(config_json)
 
         config.path.initialize_paths(config_path, data_dir)
 
-        if not config.main_instruction:
-            config.main_instruction = main_instruction
+        # todo: currently main_instruction in the prompt file and not possible to override in the config
+        config.main_instruction = main_instruction
 
         config.validate_inputs(
             use_semantic_search=environment.azure_search_use_semantic_search.lower()
@@ -87,24 +92,9 @@ class Config(BaseConfig):
         return config
 
     def validate_inputs(self, use_semantic_search: bool = False):
-        if any(val < 100 or val > 1000 for val in self.index.ef_construction):
-            raise ValueError(
-                "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
-            )
-        if any(val < 100 or val > 1000 for val in self.index.ef_search):
-            raise ValueError(
-                "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-            )
         if max(self.index.chunking.overlap_size) > min(self.index.chunking.chunk_size):
             raise ValueError(
                 "Config param validation error: overlap_size must be less than chunk_size"
-            )
-
-        if self.index.sampling.sample_data and (
-            self.index.sampling.percentage < 0 or self.index.sampling.percentage > 100
-        ):
-            raise ValueError(
-                "Config param validation error: sample percentage must be between 0 and 100 (inclusive)"
             )
 
         if (
