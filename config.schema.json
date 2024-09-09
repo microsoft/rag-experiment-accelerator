@@ -1,0 +1,592 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "type": "object",
+    "properties": {
+        "experiment_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Azure ML Experiment name"
+        },
+        "job_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Azure ML Job name prefix"
+        },
+        "job_description": {
+            "type": "string",
+            "description": "Azure ML Job description for the current experimentation"
+        },
+        "data_formats": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "*",
+                    "pdf",
+                    "html",
+                    "markdown",
+                    "json",
+                    "text",
+                    "docx"
+                ]
+            },
+            "default": "*",
+            "description": "List of formats or 'all' to allow any supported format"
+        },
+        "main_instruction": {
+            "type": "string",
+            "description": "The main instruction prompt coming with queries to LLM"
+        },
+        "use_checkpoints": {
+            "type": "boolean",
+            "description": "If checkpoints are enabled"
+        },
+        "path": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        },
+        "index": {
+            "type": "object",
+            "properties": {
+                "index_name_prefix": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Search Index name prefix"
+                },
+                "ef_construction": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 1000
+                    },
+                    "minItems": 1,
+                    "description": "Number of `ef_construction` to use for Azure AI Search vector configuration"
+                },
+                "ef_search": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 1000
+                    },
+                    "minItems": 1,
+                    "description": "Number of `ef_search` to use for Azure AI Search vector configuration"
+                },
+                "chunking": {
+                    "type": "object",
+                    "properties": {
+                        "preprocess": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to preprocess the text"
+                        },
+                        "chunk_size": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 1,
+                            "description": "A list of integers representing the chunk sizes for chunking documents"
+                        },
+                        "overlap_size": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 1,
+                            "description": "A list of integers representing the overlap sizes for chunking documents"
+                        },
+                        "generate_title": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to generate title for chunk content"
+                        },
+                        "generate_summary": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to generate summary for chunk content"
+                        },
+                        "override_content_with_summary": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether or not to override chunk content with generated summary"
+                        },
+                        "chunking_strategy": {
+                            "type": "string",
+                            "enum": [
+                                "azure-document-intelligence",
+                                "basic"
+                            ],
+                            "description": "Chunking strategy to use for the document chunking process"
+                        },
+                        "azure_document_intelligence_model": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "prebuilt-read",
+                            "description": "Azure Document Intelligence model name to use for chunking strategy `azure-document-intelligence`"
+                        }
+                    },
+                    "required": [
+                        "chunk_size",
+                        "overlap_size",
+                        "chunking_strategy"
+                    ]
+                },
+                "embedding_model": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "description": "Array containing the configuration for the embedding models to use",
+                    "items": {
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "azure",
+                                    "sentence-transformer"
+                                ],
+                                "description": "Type of the embedding model. `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models."
+                            },
+                            "model_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the model to use"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "model_name"
+                        ]
+                    }
+                },
+                "sampling": {
+                    "type": "object",
+                    "properties": {
+                        "sample_data": {
+                            "type": "boolean",
+                            "description": "Set to true to enable sampling"
+                        },
+                        "percentage": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100,
+                            "description": "Percentage of the document corpus to sample"
+                        },
+                        "optimum_k": {
+                            "description": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
+                            "oneOf": [
+                                {
+                            "type": "string",
+                                    "enum": [
+                                        "auto"
+                                    ]
+                                },
+                                {
+                                    "type": "integer",
+                                    "minimum": 1
+                                }
+                            ]
+                        },
+                        "min_cluster": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Minimum number of clusters to use for sampling"
+                        },
+                        "max_cluster": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Maximum number of clusters to use for sampling"
+                        }
+                    },
+                    "required": [
+                        "sample_data",
+                        "percentage",
+                        "optimum_k",
+                        "min_cluster",
+                        "max_cluster"
+                    ]
+                }
+            },
+            "required": [
+                "index_name_prefix",
+                "ef_construction",
+                "ef_search",
+                "chunking",
+                "embedding_model"
+            ]
+        },
+        "language": {
+            "type": "object",
+            "properties": {
+                "analyzer": {
+                    "type": "object",
+                    "properties": {
+                        "char_filters": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Name of the char filter"
+                                    },
+                                    "mappings": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "mappings"
+                                ]
+                            }
+                        },
+                        "tokenizers": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Name of the tokenizer"
+                                    },
+                                    "token_chars": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "token_chars"
+                                ]
+                            }
+                        },
+                        "token_filters": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": [
+                        "analyzer_name",
+                        "index_analyzer_name",
+                        "search_analyzer_name",
+                        "char_filters",
+                        "tokenizers",
+                        "token_filters"
+                    ],
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "analyzer_name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Name of the analyzer to use for the field"
+                                },
+                                "index_analyzer_name": {
+                                    "type": "string",
+                                    "enum": [
+                                        ""
+                                    ]
+                                },
+                                "search_analyzer_name": {
+                                    "type": "string",
+                                    "enum": [
+                                        ""
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "analyzer_name": {
+                                    "type": "string",
+                                    "description": "Name of the analyzer to use for the field",
+                                    "enum": [
+                                        ""
+                                    ]
+                                },
+                                "index_analyzer_name": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "search_analyzer_name": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "query_language": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "en-us",
+                        "en-gb",
+                        "en-in",
+                        "en-ca",
+                        "en-au",
+                        "fr-fr",
+                        "fr-ca",
+                        "de-de",
+                        "es-es",
+                        "es-mx",
+                        "zh-cn",
+                        "zh-tw",
+                        "pt-br",
+                        "pt-pt",
+                        "it-it",
+                        "ja-jp",
+                        "ko-kr",
+                        "ru-ru",
+                        "cs-cz",
+                        "nl-be",
+                        "nl-nl",
+                        "hu-hu",
+                        "pl-pl",
+                        "sv-se",
+                        "tr-tr",
+                        "hi-in",
+                        "ar-sa",
+                        "ar-eg",
+                        "ar-ma",
+                        "ar-kw",
+                        "ar-jo",
+                        "da-dk",
+                        "no-no",
+                        "bg-bg",
+                        "hr-hr",
+                        "hr-ba",
+                        "ms-my",
+                        "ms-bn",
+                        "sl-sl",
+                        "ta-in",
+                        "vi-vn",
+                        "el-gr",
+                        "ro-ro",
+                        "is-is",
+                        "id-id",
+                        "th-th",
+                        "lt-lt",
+                        "uk-ua",
+                        "lv-lv",
+                        "et-ee",
+                        "ca-es",
+                        "fi-fi",
+                        "sr-ba",
+                        "sr-me",
+                        "sr-rs",
+                        "sk-sk",
+                        "nb-no",
+                        "hy-am",
+                        "bn-in",
+                        "eu-es",
+                        "gl-es",
+                        "gu-in",
+                        "he-il",
+                        "ga-ie",
+                        "kn-in",
+                        "ml-in",
+                        "mr-in",
+                        "fa-ae",
+                        "pa-in",
+                        "te-in",
+                        "ur-pk"
+                    ],
+                    "description": "The language of the query"
+                }
+            },
+            "required": [
+                "analyzer",
+                "query_language"
+            ]
+        },
+        "rerank": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "If search results should be re-ranked"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "llm",
+                        "cross_encoder"
+                    ],
+                    "description": "Type of re-ranking"
+                },
+                "llm_rerank_threshold": {
+                    "type": "integer",
+                    "description": "Threshold when using llm re-ranking. Chunks with rank above this number are selected in range from 1 - 10."
+                },
+                "cross_encoder_at_k": {
+                    "type": "integer",
+                    "description": "Threshold when using cross-encoding re-ranking. Chunks with given rank value are selected"
+                },
+                "cross_encoder_model": {
+                    "type": "string",
+                    "enum": [
+                        "cross-encoder/stsb-roberta-base"
+                    ],
+                    "description": "Model used for cross-encoding re-ranking step"
+                }
+            }
+        },
+        "search": {
+            "type": "object",
+            "properties": {
+                "retrieve_num_of_documents": {
+                    "type": "integer",
+                    "description": "Number of chunks to retrieve from the search index"
+                },
+                "search_type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "search_for_match_semantic",
+                            "search_for_match_Hybrid_multi",
+                            "search_for_match_Hybrid_cross",
+                            "search_for_match_text",
+                            "search_for_match_pure_vector",
+                            "search_for_match_pure_vector_multi",
+                            "search_for_match_pure_vector_cross",
+                            "search_for_manual_hybrid"
+                        ]
+                    },
+                    "description": "Search types used for experimentation"
+                },
+                "search_relevancy_threshold": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.8,
+                    "description": "Similarity threshold to determine if a document is relevant"
+                }
+            },
+            "required": [
+                "retrieve_num_of_documents",
+                "search_type"
+            ]
+        },
+        "query_expansion": {
+            "type": "object",
+            "properties": {
+                "hyde": {
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "generated_hypothetical_answer",
+                        "generated_hypothetical_document_to_answer"
+                    ],
+                    "default": "disabled",
+                    "description": "Whether or not to generate hypothetical answer or document which holds an answer for the query using LLM"
+                },
+                "query_expansion": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether or not to expand the query using related questions"
+                },
+                "min_query_expansion_related_question_similarity_score": {
+                    "type": "integer",
+                    "default": 90,
+                    "description": "Minimum similarity score for query expansion generated related questions"
+                },
+                "expand_to_multiple_questions": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": ""
+                }
+            },
+            "required": [
+                "hyde",
+                "query_expansion",
+                "min_query_expansion_related_question_similarity_score",
+                "expand_to_multiple_questions"
+            ]
+        },
+        "openai": {
+            "type": "object",
+            "properties": {
+                "azure_oai_chat_deployment_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Azure OpenAI deployment name"
+                },
+                "azure_oai_eval_deployment_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Azure OpenAI evaluation deployment name"
+                },
+                "temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Temperature for OpenAI API"
+                }
+            },
+            "required": [
+                "azure_oai_chat_deployment_name",
+                "azure_oai_eval_deployment_name",
+                "temperature"
+            ]
+        },
+        "eval": {
+            "type": "object",
+            "properties": {
+                "metric_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "lcsstr",
+                            "lcsseq",
+                            "cosine",
+                            "jaro_winkler",
+                            "hamming",
+                            "jaccard",
+                            "levenshtein",
+                            "fuzzy",
+                            "bert_all_MiniLM_L6_v2",
+                            "bert_base_nli_mean_tokens",
+                            "bert_large_nli_mean_tokens",
+                            "bert_large_nli_stsb_mean_tokens",
+                            "bert_distilbert_base_nli_stsb_mean_tokens",
+                            "bert_paraphrase_multilingual_MiniLM_L12_v2",
+                            "llm_answer_relevance",
+                            "llm_context_precision",
+                            "llm_context_recall"
+                        ]
+                    },
+                    "description": "Metrics used for evaluation"
+                }
+            }
+        }
+    },
+    "required": [
+        "experiment_name",
+        "job_name",
+        "job_description",
+        "data_formats",
+        "main_instruction",
+        "use_checkpoints",
+        "path",
+        "index",
+        "language",
+        "rerank",
+        "search",
+        "openai",
+        "eval"
+    ]
+}

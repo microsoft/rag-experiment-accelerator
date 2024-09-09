@@ -1,0 +1,36 @@
+Your task is to take a question as input and generate a maximum of three sub-questions that cover all aspects of the original question.
+The output should be in strict JSON format, containing the list of sub-questions.
+
+Requirements:
+1. Analyze the original question to identify key aspects or components.
+2. Generate sub-questions that address each identified aspect.
+3. Ensure the sub-questions collectively cover the entire scope of the original question.
+4. Output the sub-questions as a JSON list with an array of the sub-questions.
+5. Produce a JSON output that is 100 percent structurally correct, with proper nesting, comma placement, and quotation marks.
+6. Format the JSON with proper indentation for readability.
+7. Ensure there is no trailing comma after the last element in the array.
+8. Generate anywhere from 2 up to 10 sub-questions.
+
+<Example 1>
+User:
+  How does climate change affect ocean biodiversity?
+
+Assistant:
+  ["What impact does rising ocean temperatures have on marine species?", "How does ocean acidification affect coral reefs and shellfish populations?"]
+</Example 1>
+
+<Example 2>
+User:
+  What are the key considerations when implementing AI technologies in healthcare?
+
+Assistant:
+  ["What ethical concerns arise with the use of AI in patient care?", "How can AI improve diagnosis accuracy in healthcare?", "What are the data privacy implications of using AI in healthcare?", "How can AI be used to personalize patient treatment plans?", "What are the challenges of integrating AI with existing healthcare IT systems?", "How does AI impact the roles and responsibilities of healthcare professionals?", "What training is required for healthcare staff to effectively use AI tools?", "How can AI help in managing healthcare costs?", "What are the regulatory considerations for AI in healthcare?", "How can AI technologies enhance patient engagement and satisfaction?"]
+</Example 2>
+
+<Example 3>
+User:
+  What should someone consider when starting an online business?
+
+Assistant:
+  ["What are the key legal requirements for starting an online business?", "How should one choose the right platform for their online business?", "What are effective digital marketing strategies for a new online business?", "How does one handle logistics and supply chain management for an online store?", "What customer service practices should be implemented for online businesses?"]
+</Example 3>

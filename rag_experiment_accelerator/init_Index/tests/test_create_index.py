@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 
+from rag_experiment_accelerator.config.language_config import LanguageAnalyzerConfig
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
 
 from azure.core.credentials import AzureKeyCredential
@@ -33,14 +34,14 @@ class TestCreateIndex(unittest.TestCase):
         dimension = 128
         ef_construction = 100
         ef_search = 100
-        analyzers = {
-            "index_analyzer_name": None,
-            "search_analyzer_name": None,
-            "analyzer_name": None,
-            "tokenizers": None,
-            "token_filters": None,
-            "char_filters": None,
-        }
+        analyzer = LanguageAnalyzerConfig(
+            analyzer_name=None,
+            index_analyzer_name=None,
+            search_analyzer_name=None,
+            char_filters=None,
+            tokenizers=None,
+            token_filters=None,
+        )
 
         # Call the function with the test parameters
         create_acs_index(
@@ -50,7 +51,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension,
             ef_construction,
             ef_search,
-            analyzers,
+            analyzer,
         )
 
         # Assert that the 'create_or_update_index' method was called on the
@@ -67,7 +68,7 @@ class TestCreateIndex(unittest.TestCase):
     @patch.object(SearchField, "__init__", return_value=None)
     @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_analyzer_name_alone(
-        self, mock_create_or_update_index, mock_seearch_field, mock_azure_key_credential
+        self, mock_create_or_update_index, mock_search_field, mock_azure_key_credential
     ):
         service_endpoint = "test_endpoint"
         index_name = "test_index"
@@ -75,11 +76,11 @@ class TestCreateIndex(unittest.TestCase):
         dimension = 128
         ef_construction = 100
         ef_search = 100
-        analyzers = {
-            "analyzer_name": "test_analyzer",
-            "index_analyzer_name": None,
-            "search_analyzer_name": None,
-        }
+        analyzer = LanguageAnalyzerConfig(
+            analyzer_name="test_analyzer",
+            index_analyzer_name=None,
+            search_analyzer_name=None,
+        )
         create_acs_index(
             service_endpoint,
             index_name,
@@ -87,7 +88,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension,
             ef_construction,
             ef_search,
-            analyzers,
+            analyzer,
         )
         mock_create_or_update_index.assert_called()
 
@@ -101,11 +102,11 @@ class TestCreateIndex(unittest.TestCase):
             dimension = 128
             ef_construction = 100
             ef_search = 100
-            analyzers = {
-                "analyzer_name": None,
-                "index_analyzer_name": "test_index_analyzer",
-                "search_analyzer_name": "test_search_analyzer",
-            }
+            analyzer = LanguageAnalyzerConfig(
+                analyzer_name=None,
+                index_analyzer_name="test_index_analyzer",
+                search_analyzer_name="test_search_analyzer",
+            )
             create_acs_index(
                 service_endpoint,
                 index_name,
@@ -113,15 +114,15 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
             # Test if only one of index_analyzer_name or search_analyzer_name is set.
-            analyzers = {
-                "analyzer_name": None,
-                "index_analyzer_name": None,
-                "search_analyzer_name": "test_search_analyzer",
-            }
+            analyzer = LanguageAnalyzerConfig(
+                analyzer_name=None,
+                index_analyzer_name=None,
+                search_analyzer_name="test_search_analyzer",
+            )
             create_acs_index(
                 service_endpoint,
                 index_name,
@@ -129,7 +130,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -140,10 +141,10 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
-            analyzers = {
+            analyzer = {
                 "analyzer_name": None,
                 "index_analyzer_name": "test_index_analyzer",
                 "search_analyzer_name": None,
@@ -155,7 +156,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -166,7 +167,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
     # Test that create_acs_index raiser error when analyzer is set together
@@ -184,11 +185,12 @@ class TestCreateIndex(unittest.TestCase):
             dimension = 128
             ef_construction = 100
             ef_search = 100
-            analyzers = {
-                "analyzer_name": "test_analyzer",
-                "index_analyzer_name": "test_index_analyzer",
-                "search_analyzer_name": None,
-            }
+
+            analyzer = LanguageAnalyzerConfig(
+                analyzer_name="test_analyzer",
+                index_analyzer_name=None,
+                search_analyzer_name="test_search_analyzer",
+            )
             create_acs_index(
                 service_endpoint,
                 index_name,
@@ -196,7 +198,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -207,14 +209,15 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
-            analyzers = {
-                "analyzer_name": "test_analyzer",
-                "index_analyzer_name": None,
-                "search_analyzer_name": "test_search_analyzer",
-            }
+            analyzer = LanguageAnalyzerConfig(
+                analyzer_name="test_analyzer",
+                index_analyzer_name=None,
+                search_analyzer_name="test_search_analyzer",
+            )
+
             create_acs_index(
                 service_endpoint,
                 index_name,
@@ -222,7 +225,7 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
             self.assertRaises(
                 Exception,
@@ -233,53 +236,50 @@ class TestCreateIndex(unittest.TestCase):
                 dimension,
                 ef_construction,
                 ef_search,
-                analyzers,
+                analyzer,
             )
 
-    # Test that create_acs_index works correctly when the analyzers dictionary
+    # Test that create_acs_index works correctly when the analyzer dictionary
     # contains non-None values
     @patch.object(AzureKeyCredential, "__init__", return_value=None)
     @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_analyzers_non_none(
         self, mock_create_or_update_index, mock_azure_key_credential
     ):
-        analyzers = {
-            "index_analyzer_name": "test_index_analyzer",
-            "search_analyzer_name": "test_search_analyzer",
-            "analyzer_name": None,
-            "tokenizers": [
-                {"name": "my_tokenizer", "token_chars": ["letter", "digit"]}
-            ],
-            "token_filters": ["token_filter1", "token_filter2"],
-            "char_filters": [
-                {"name": "my_char_filter", "mappings": ["ph=>f", "qu=>q"]}
-            ],
-        }
+        analyzer = LanguageAnalyzerConfig(
+            analyzer_name=None,
+            index_analyzer_name="test_index_analyzer",
+            search_analyzer_name="test_search_analyzer",
+            char_filters=[{"name": "my_char_filter", "mappings": ["ph=>f", "qu=>q"]}],
+            tokenizers=[{"name": "my_tokenizer", "token_chars": ["letter", "digit"]}],
+            token_filters=["token_filter1", "token_filter2"],
+        )
+
         try:
             create_acs_index(
-                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzers
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzer
             )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
 
-    # Test that create_acs_index works correctly when the analyzers dictionary
+    # Test that create_acs_index works correctly when the analyzer dictionary
     # contains None values
     @patch.object(AzureKeyCredential, "__init__", return_value=None)
     @patch.object(SearchIndexClient, "create_or_update_index", return_value=mock_result)
     def test_create_acs_index_analyzers_none(
         self, mock_create_or_update_index, mock_azure_key_credential
     ):
-        analyzers = {
-            "index_analyzer_name": None,
-            "search_analyzer_name": None,
-            "analyzer_name": None,
-            "tokenizers": None,
-            "token_filters": None,
-            "char_filters": None,
-        }
+        analyzer = LanguageAnalyzerConfig(
+            analyzer_name=None,
+            index_analyzer_name=None,
+            search_analyzer_name=None,
+            char_filters=None,
+            tokenizers=None,
+            token_filters=None,
+        )
         try:
             create_acs_index(
-                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzers
+                "test_endpoint", "test_index", "test_key", 128, 100, 100, analyzer
             )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
@@ -292,7 +292,9 @@ class TestCreateIndex(unittest.TestCase):
         self, mock_create_or_update_index, mock_azure_key_credential
     ):
         with self.assertRaises(ValueError):
-            create_acs_index(None, "test_index", "test_key", 128, 100, 100, {})
+            create_acs_index(
+                None, "test_index", "test_key", 128, 100, 100, LanguageAnalyzerConfig()
+            )
 
     # Test that create_acs_index raises an exception when the
     # create_or_update_index method fails
@@ -303,7 +305,13 @@ class TestCreateIndex(unittest.TestCase):
     ):
         with self.assertRaises(Exception):
             create_acs_index(
-                "test_endpoint", "test_index", "test_key", 128, 100, 100, {}
+                "test_endpoint",
+                "test_index",
+                "test_key",
+                128,
+                100,
+                100,
+                LanguageAnalyzerConfig(),
             )
 
     # Test that create_acs_index works correctly when the
@@ -315,7 +323,13 @@ class TestCreateIndex(unittest.TestCase):
     ):
         try:
             create_acs_index(
-                "test_endpoint", "test_index", "test_key", 128, 100, 100, {}
+                "test_endpoint",
+                "test_index",
+                "test_key",
+                128,
+                100,
+                100,
+                LanguageAnalyzerConfig(),
             )
         except Exception:
             self.fail("create_acs_index raised Exception unexpectedly!")
@@ -344,14 +358,15 @@ class TestCreateIndex(unittest.TestCase):
         dimension = 128
         ef_construction = 100
         ef_search = 100
-        analyzers = {
-            "index_analyzer_name": None,
-            "search_analyzer_name": None,
-            "analyzer_name": None,
-            "tokenizers": None,
-            "token_filters": None,
-            "char_filters": None,
-        }
+        analyzer = LanguageAnalyzerConfig(
+            analyzer_name=None,
+            index_analyzer_name=None,
+            search_analyzer_name=None,
+            char_filters=None,
+            tokenizers=None,
+            token_filters=None,
+        )
+
         # Call the function with the test parameters
         create_acs_index(
             service_endpoint,
@@ -360,7 +375,7 @@ class TestCreateIndex(unittest.TestCase):
             dimension,
             ef_construction,
             ef_search,
-            analyzers,
+            analyzer,
         )
         # Assert that the 'create_or_update_index' method was called with the
         # correct dimension

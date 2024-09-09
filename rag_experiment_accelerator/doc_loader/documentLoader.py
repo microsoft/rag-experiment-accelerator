@@ -1,5 +1,3 @@
-from typing import Union
-
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
 from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
@@ -14,7 +12,7 @@ from rag_experiment_accelerator.doc_loader.documentIntelligenceLoader import (
 )
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.config.config import ChunkingStrategy
+from rag_experiment_accelerator.config.chunking_config import ChunkingStrategy
 
 logger = get_logger(__name__)
 
@@ -52,7 +50,7 @@ def determine_processor(chunking_strategy: ChunkingStrategy, format: str) -> cal
 def load_documents(
     environment: Environment,
     chunking_strategy: ChunkingStrategy,
-    allowed_formats: Union[list[str], str],
+    allowed_formats: list[str],
     file_paths: list[str],
     chunk_size: int,
     overlap_size: int,
@@ -64,7 +62,7 @@ def load_documents(
     Args:
         environment (Environment): The environment class
         chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
-        allowed_formats (Union[list[str], str]): List of formats or 'all' to allow any supported format.
+        allowed_formats (list[str]]): List of formats, ['*'] - to allow any supported format.
         folder_path (str): Path to the folder containing the documents.
         chunk_size (int): Size of each chunk.
         overlap_size (int): Size of overlap between adjacent chunks.
@@ -77,11 +75,10 @@ def load_documents(
         FileNotFoundError: When the specified folder does not exist.
     """
 
-    if allowed_formats == "all":
+    if "*" in allowed_formats:
         allowed_formats = _FORMAT_VERSIONS.keys()
 
-    logger.debug(
-        f"Loading documents with allowed formats {', '.join(allowed_formats)}")
+    logger.debug(f"Loading documents with allowed formats {', '.join(allowed_formats)}")
 
     documents = {}
 

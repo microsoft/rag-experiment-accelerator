@@ -1,0 +1,8 @@
+Identify and provide an appropriate title for the given user text in a single sentence, ensuring the title is between 10 to 15 words long. Do not format the output as a list or include any additional text or metadata.
+
+<Example>:
+User:
+    Exploring the impacts of climate change on global agriculture, this article discusses the shifts in crop yields, changes in weather patterns, and their effects on farming techniques.
+
+Assistant:
+    Climate Change Effects on Global Agriculture and Crop Production

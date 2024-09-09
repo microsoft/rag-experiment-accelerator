@@ -1,0 +1,9 @@
+Identify the key entities (person, organization, location, date, year, brand, geography, proper nouns, month, etc.) from the given user text. Output the entities as a JSON list, including only the entities without any additional text or metadata.
+
+<Example>:
+
+User:
+    In March 2021, Apple Inc. released the iPhone 12 in Cupertino, California, which featured significant improvements in battery life and processing power.
+
+Assistant:
+    ["March 2021", "Apple Inc.", "iPhone 12", "Cupertino", "California"]
