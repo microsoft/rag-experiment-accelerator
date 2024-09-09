@@ -1,4 +1,5 @@
 import json
+from json.decoder import JSONDecodeError
 
 from rag_experiment_accelerator.io.local.loaders.local_loader import LocalLoader
 
@@ -25,7 +26,11 @@ class JsonlLoader(LocalLoader):
         data_load = []
         with open(path, "r") as file:
             for line in file:
-                data = json.loads(line, **kwargs)
+                try:
+                    data = json.loads(line, **kwargs)
+                except JSONDecodeError as jde:
+                    jde.add_note(f'Error occurred on line {len(data_load) + 1} in input file {path}')
+
                 data_load.append(data)
 
         return data_load
