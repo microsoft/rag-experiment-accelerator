@@ -504,7 +504,7 @@ def get_query_output(
             config=config,
             evaluator=evaluator,
             response_generator=response_generator,
-            preprocess=index_config.preprocess,
+            preprocess=index_config.chunking.preprocess,
         )
     else:
         result = query_and_eval_acs(
@@ -517,7 +517,7 @@ def get_query_output(
             evaluator=evaluator,
             config=config,
             response_generator=response_generator,
-            preprocess=index_config.preprocess,
+            preprocess=index_config.chunking.preprocess,
         )
         search_evals.append(result.evaluations)
     if config.rerank.enabled and len(result.documents) > 0:

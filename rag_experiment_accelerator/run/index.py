@@ -40,7 +40,7 @@ def run(
     Returns:
         The name of the index created.
     """
-    pre_process = Preprocess(index_config.preprocess)
+    pre_process = Preprocess(index_config.chunking.preprocess)
 
     index_name = index_config.index_name()
     with TimeTook(f"create Azure Search Index {index_name}", logger=logger):

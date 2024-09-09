@@ -34,8 +34,8 @@ class TestQuerying(unittest.TestCase):
         self.mock_config.index.index_name_prefix = "prefix"
         self.mock_config.index.ef_construction = [400]
         self.mock_config.index.ef_search = [400]
-        self.mock_config.index.preprocess = False
         self.mock_config.index.chunking = MagicMock(spec=ChunkingConfig)
+        self.mock_config.index.chunking.preprocess = False
         self.mock_config.index.chunking.chunk_size = [1]
         self.mock_config.index.chunking.overlap_size = [1]
         self.mock_config.index.embedding_model = MagicMock(spec=EmbeddingModel)
