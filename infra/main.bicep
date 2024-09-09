@@ -77,6 +77,53 @@ param azureOpenAIModelName string = 'gpt-35-turbo'
 @description('Azure OpenAI GPT Model Version')
 param azureOpenAIModelVersion string = '0613'
 
+@description('Whether to deploy Azure Document Intelligence.')
+param useAzureAIDocumentIntelligence bool = true
+
+@description('Location for Azure AI Doc Intelligence.')
+@allowed([
+  'australiaeast'
+  'brazilsouth'
+  'canadacentral'
+  'centralindia'
+  'centralus'
+  'centraluseuap'
+  'eastasia'
+  'eastus'
+  'eastus2'
+  'eastus2euap'
+  'francecentral'
+  'germanywestcentral'
+  'japaneast'
+  'japanwest'
+  'jioindiawest'
+  'koreacentral'
+  'northcentralus'
+  'northeurope'
+  'norwayeast'
+  'qatarcentral'
+  'southafricanorth'
+  'southcentralus'
+  'southeastasia'
+  'swedencentral'
+  'switzerlandnorth'
+  'switzerlandwest'
+  'uaenorth'
+  'uksouth'
+  'westcentralus'
+  'westeurope'
+  'westus'
+  'westus2'
+  'westus3'
+])
+param azureAIDocumentIntelligenceLocation string = location
+
+@description('Name of Azure AI Document Intelligence Resource')
+param azureAIDocumentIntelligenceResourceName string = 'docintel-${resourceToken}'
+
+@description('Name of Azure AI Document Intelligence SKU')
+param azureAIDocumentIntelligenceSkuName string = 'S0'
+
 @description('Name of Azure Application Insights Resource')
 param applicationInsightsName string = 'appinsights-${resourceToken}'
 
@@ -165,6 +212,20 @@ module openai './shared/cognitiveservices.bicep' = {
   }
 }
 
+module documentIntelligence './shared/cognitiveservices.bicep' = if (useAzureAIDocumentIntelligence) {
+  name: azureAIDocumentIntelligenceResourceName
+  scope: rg
+  params: {
+    name: azureAIDocumentIntelligenceResourceName
+    location: azureAIDocumentIntelligenceLocation
+    tags: tags
+    kind: 'FormRecognizer'
+    sku: {
+      name: azureAIDocumentIntelligenceSkuName
+    }
+  }
+}
+
 module storage './shared/storage.bicep' = {
   name: storageAccountName
   scope: rg
@@ -206,6 +267,7 @@ module storekeys './shared/storekeys.bicep' = {
     keyVaultName: keyvault.outputs.name
     azureOpenAIName: openai.outputs.name
     azureAISearchName: search.outputs.name
+    documentIntelligenceName: documentIntelligence.outputs.name
     rgName: rgName
   }
 }
@@ -213,38 +275,37 @@ module storekeys './shared/storekeys.bicep' = {
 // More resources can be added here to deploy with private endpoints.
 // These resources should be added to the azureResources array in the network_resources module.
 // TODO: Add private endpoints to other required resources.
-module network_resources 'network/network_isolation.bicep' =
-  if (vnetAddressSpace != '' && proxySubnetAddressSpace != '' && subnetAddressSpace != '') {
-    name: 'network_isolation_resources'
-    scope: rg
-    params: {
-      vnetName: virtualNetworkName
-      location: location
-      vnetAddressSpace: vnetAddressSpace
-      proxySubnetName: proxySubnetName
-      proxySubnetAddressSpace: proxySubnetAddressSpace
-      azureSubnetName: subnetName
-      azureSubnetAddressSpace: subnetAddressSpace
-      resourcePrefix: environmentName
-      azureResources: [
-        {
-          type: 'blob'
-          name: storage.name
-          resourceId: storage.outputs.id
-        }
-        {
-          type: 'vault'
-          name: keyvault.name
-          resourceId: keyvault.outputs.id
-        }
-        {
-          type: 'amlworkspace'
-          name: machineLearning.name
-          resourceId: machineLearning.outputs.workspaceId
-        }
-      ]
-    }
+module network_resources 'network/network_isolation.bicep' = if (vnetAddressSpace != '' && proxySubnetAddressSpace != '' && subnetAddressSpace != '') {
+  name: 'network_isolation_resources'
+  scope: rg
+  params: {
+    vnetName: virtualNetworkName
+    location: location
+    vnetAddressSpace: vnetAddressSpace
+    proxySubnetName: proxySubnetName
+    proxySubnetAddressSpace: proxySubnetAddressSpace
+    azureSubnetName: subnetName
+    azureSubnetAddressSpace: subnetAddressSpace
+    resourcePrefix: environmentName
+    azureResources: [
+      {
+        type: 'blob'
+        name: storage.name
+        resourceId: storage.outputs.id
+      }
+      {
+        type: 'vault'
+        name: keyvault.name
+        resourceId: keyvault.outputs.id
+      }
+      {
+        type: 'amlworkspace'
+        name: machineLearning.name
+        resourceId: machineLearning.outputs.workspaceId
+      }
+    ]
   }
+}
 
 output USE_KEY_VAULT string = 'true'
 output AZURE_KEY_VAULT_ENDPOINT string = keyvault.outputs.endpoint
@@ -256,7 +317,7 @@ output OPENAI_API_VERSION string = '2023-03-15-preview'
 output AML_SUBSCRIPTION_ID string = subscription().subscriptionId
 output AML_WORKSPACE_NAME string = machineLearning.outputs.workspaceName
 output AML_RESOURCE_GROUP_NAME string = rgName
-// output AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT string = 
+output AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT string = documentIntelligence.outputs.endpoint
 // output AZURE_DOCUMENT_INTELLIGENCE_ADMIN_KEY string =
 // output AZURE_LANGUAGE_SERVICE_ENDPOINT string =
 // output AZURE_LANGUAGE_SERVICE_KEY string =

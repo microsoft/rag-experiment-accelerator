@@ -1,25 +1,27 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 import ntpath
-
 from dotenv import load_dotenv
+import mlflow
 
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.environment import Environment
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
+
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
-from rag_experiment_accelerator.llm.prompts import (
+from rag_experiment_accelerator.llm.prompt import (
     prompt_instruction_title,
     prompt_instruction_summary,
 )
+
 from rag_experiment_accelerator.sampling.clustering import cluster, load_parser
 from rag_experiment_accelerator.nlp.preprocess import Preprocess
 from rag_experiment_accelerator.utils.timetook import TimeTook
 from rag_experiment_accelerator.utils.logging import get_logger
-
 
 logger = get_logger(__name__)
 load_dotenv(override=True)
@@ -30,51 +32,52 @@ def run(
     config: Config,
     index_config: IndexConfig,
     file_paths: list[str],
+    mlflow_client: mlflow.MlflowClient,
     is_local: bool = False,
-) -> dict[str]:
+) -> str:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
 
     Returns:
-        Index dictionary containing the names of the indexes created.
+        The name of the index created.
     """
-    pre_process = Preprocess(True)
-    index_dict = {"indexes": []}
+    pre_process = Preprocess(index_config.chunking.preprocess)
 
-    with TimeTook(
-        f"create Azure Search Index {index_config.index_name()}", logger=logger
-    ):
+    index_name = index_config.index_name()
+    with TimeTook(f"create Azure Search Index {index_name}", logger=logger):
         create_acs_index(
             environment.azure_search_service_endpoint,
-            index_config.index_name(),
+            index_name,
             environment.azure_search_admin_key,
-            index_config.embedding_model.dimension,
+            config.get_embedding_model(
+                index_config.embedding_model.model_name
+            ).dimension,
             index_config.ef_construction,
             index_config.ef_search,
-            config.LANGUAGE["analyzers"],
+            config.language.analyzer,
         )
-    index_dict["indexes"].append(index_config.index_name())
 
     docs = load_documents(
         environment,
-        config.CHUNKING_STRATEGY,
-        config.DATA_FORMATS,
+        index_config.chunking.chunking_strategy,
+        config.data_formats,
         file_paths,
-        index_config.chunk_size,
-        index_config.overlap,
-        config.AZURE_DOCUMENT_INTELLIGENCE_MODEL,
+        index_config.chunking.chunk_size,
+        index_config.chunking.overlap_size,
+        index_config.chunking.azure_document_intelligence_model,
     )
 
-    if is_local and config.SAMPLE_DATA:
+    if is_local and index_config.sampling.sample_data:
         parser = load_parser()
-        docs = cluster(docs, config, parser)
+        docs = cluster(index_config.index_name(), docs, config, parser)
 
-        # If run with "ONLY_RUN_SAMPLING" we exit here after creating the sampled dataset for running in AML
-        if config.ONLY_RUN_SAMPLING:
-            return index_dict
+    if index_config.sampling.only_sample:
+        return index_name
 
+    mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)
-    embed_chunks(index_config, pre_process, docs_ready_to_index)
+    mlflow.log_metric("Number of document chunks", len(docs_ready_to_index))
+    embed_chunks(config, index_config, pre_process, docs_ready_to_index)
 
     generate_titles_from_chunks(
         config, index_config, pre_process, docs_ready_to_index, environment
@@ -84,17 +87,17 @@ def run(
     )
 
     with TimeTook(
-        f"load documents to Azure Search index {index_config.index_name()}",
+        f"load documents to Azure Search index {index_name}",
         logger=logger,
     ):
         upload_data(
             environment=environment,
             config=config,
             chunks=docs_ready_to_index,
-            index_name=index_config.index_name(),
+            index_name=index_name,
         )
 
-    return index_dict
+    return index_name
 
 
 def convert_docs_to_vector_db_records(docs):
@@ -128,26 +131,31 @@ def convert_docs_to_vector_db_records(docs):
     return dicts
 
 
-def embed_chunks(config: IndexConfig, pre_process, chunks):
+def embed_chunks(config: Config, index_config: IndexConfig, pre_process, chunks):
     """
     Generates embeddings for chunks of documents.
 
     Args:
         config (object): A configuration object that holds various settings.
         pre_process (object): An object with a method for preprocessing text.
-        chunks (list): A list of all documents chunks to be embeded.
+        chunks (list): A list of all documents chunks to be embedded.
 
     Returns:
         tuple: A tuple containing the index name and the list of processed documents.
     """
-    with TimeTook(f"generate embeddings for {config.index_name()} ", logger=logger):
+    with TimeTook(
+        f"generate embeddings for {index_config.index_name()} ", logger=logger
+    ):
         embedded_chunks = []
         with ExitStack() as stack:
             executor = stack.enter_context(ThreadPoolExecutor())
 
             futures = {
                 executor.submit(
-                    embed_chunk, pre_process, config.embedding_model, doc
+                    embed_chunk,
+                    pre_process,
+                    config.get_embedding_model(index_config.embedding_model.model_name),
+                    doc,
                 ): doc
                 for doc in chunks
             }
@@ -163,7 +171,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
                 else:
                     embedded_chunks.append(chunk_dict)
 
-    if config.override_content_with_summary:
+    if index_config.chunking.override_content_with_summary:
         for chunk in chunks:
             if "summary" in chunk:
                 chunk["content"] = chunk["summary"]
@@ -176,6 +184,7 @@ def embed_chunks(config: IndexConfig, pre_process, chunks):
     return embedded_chunks
 
 
+@cache_with_checkpoint(id="chunk['content']+embedding_model.name")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -194,7 +203,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
         dict: The chunk dictionary with the added "content_vector" key.
     """
     chunk["content_vector"] = embedding_model.generate_embedding(
-        str(pre_process.preprocess(chunk["content"]))
+        pre_process.preprocess(chunk["content"])
     )
 
     return chunk
@@ -222,7 +231,7 @@ def generate_titles_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(
@@ -261,7 +270,7 @@ def generate_summaries_from_chunks(
         environment (object): An object that holds the environment settings.
     """
     with ExitStack() as stack:
-        executor = stack.enter_context(ThreadPoolExecutor(config.MAX_WORKER_THREADS))
+        executor = stack.enter_context(ThreadPoolExecutor(config.max_worker_threads))
 
         futures = {
             executor.submit(
@@ -280,6 +289,7 @@ def generate_summaries_from_chunks(
                 )
 
 
+@cache_with_checkpoint(id="chunk['content']+str(config.index.chunking.generate_title)")
 def process_title(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -297,13 +307,16 @@ def process_title(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_TITLE:
+    if index_config.chunking.generate_title:
         title = generate_title(
-            chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
+            chunk["content"],
+            config.openai.azure_oai_chat_deployment_name,
+            environment,
+            config,
         )
-        title_vector = index_config.embedding_model.generate_embedding(
-            str(pre_process.preprocess(title))
-        )
+        title_vector = config.get_embedding_model(
+            index_config.embedding_model.model_name
+        ).generate_embedding(pre_process.preprocess(title))
     else:
         title = ""
         title_vector = []
@@ -314,6 +327,9 @@ def process_title(
     return chunk
 
 
+@cache_with_checkpoint(
+    id="chunk['content']+str(config.index.chunking.generate_summary)"
+)
 def process_summary(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -334,13 +350,16 @@ def process_summary(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
-    if config.GENERATE_SUMMARY:
+    if index_config.chunking.generate_summary:
         summary = generate_summary(
-            chunk["content"], config.AZURE_OAI_CHAT_DEPLOYMENT_NAME, environment, config
+            chunk["content"],
+            config.openai.azure_oai_chat_deployment_name,
+            environment,
+            config,
         )
-        summaryVector = index_config.embedding_model.generate_embedding(
-            str(pre_process.preprocess(summary))
-        )
+        summaryVector = config.get_embedding_model(
+            index_config.embedding_model.model_name
+        ).generate_embedding(pre_process.preprocess(summary))
     else:
         summary = ""
         summaryVector = []
@@ -367,7 +386,7 @@ def generate_title(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_title, chunk)
+    ).generate_response(prompt_instruction_title, text=chunk)
     return response
 
 
@@ -389,5 +408,5 @@ def generate_summary(chunk, azure_oai_deployment_name, environment, config):
         environment=environment,
         config=config,
         deployment_name=azure_oai_deployment_name,
-    ).generate_response(prompt_instruction_summary, chunk)
+    ).generate_response(prompt_instruction_summary, text=chunk)
     return response

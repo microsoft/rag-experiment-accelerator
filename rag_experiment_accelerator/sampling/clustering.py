@@ -10,6 +10,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from umap import UMAP
 from scipy.spatial.distance import cdist
+from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
+from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.utils.logging import get_logger
 import shutil
 
@@ -243,11 +245,13 @@ def cluster_kmeans(embeddings_2d, optimum_k, df, result_dir):
     return x, y, text, processed_text, chunk, prediction, prediction_values, filenames
 
 
-def cluster(all_chunks, config, parser):
+@cache_with_checkpoint(id="index_name")
+def cluster(index_name, all_chunks, config: Config, parser):
     """
     Clusters the given chunks of documents using TF-IDF and K-means clustering.
 
     Args:
+        index_name (str): The name of the index - used only for uniqueness as checkpoint key.
         all_chunks (list): A list of document chunks.
         config (object): The configuration object.
 
@@ -258,7 +262,7 @@ def cluster(all_chunks, config, parser):
     logger.info(f"Sampling - Original Document chunk length {len(all_chunks)}")
     df = chunk_dict_to_dataframe(all_chunks)
 
-    # Tokenise and remove punctuation and stop words
+    # Tokenize and remove punctuation and stop words
     tqdm.pandas()
     df["processed_text"] = df["text"].progress_apply(
         lambda text: spacy_tokenizer(text, parser)
@@ -274,18 +278,19 @@ def cluster(all_chunks, config, parser):
     reducer = UMAP()
     embeddings_2d = reducer.fit_transform(X)
 
-    if config.SAMPLE_OPTIMUM_K == "auto":
+    if config.index.sampling.optimum_k == "auto":
         optimum_k = determine_optimum_k_elbow(
             embeddings_2d,
             X,
-            config.SAMPLE_MIN_CLUSTER,
-            config.SAMPLE_MAX_CLUSTER,
-            config.sampling_output_dir,
+            config.index.sampling.min_cluster,
+            config.index.sampling.max_cluster,
+            config.path.sampling_output_dir,
         )
     else:
-        optimum_k = config.SAMPLE_OPTIMUM_K
+        optimum_k = config.index.sampling.optimum_k
 
     # Cluster
+
     (
         x,
         y,
@@ -301,7 +306,7 @@ def cluster(all_chunks, config, parser):
     data = {"x": x, "y": y, "text": text, "prediction": prediction, "chunk": chunk}
     df = pd.DataFrame(data)
     df.to_csv(
-        f"{config.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.SAMPLE_OPTIMUM_K}.csv",
+        f"{config.path.sampling_output_dir}/all_cluster_predictions_cluster_number_{config.index.sampling.optimum_k}.csv",
         sep=",",
     )
 
@@ -311,11 +316,12 @@ def cluster(all_chunks, config, parser):
         g["l_{0}".format(i)] = df[df["prediction"] == i]
 
         if len(g["l_{0}".format(i)]) > round(
-            (len(df) * (config.SAMPLE_PERCENTAGE / 100)) / len(prediction_values)
+            (len(df) * (config.index.sampling.percentage / 100))
+            / len(prediction_values)
         ):
             g["l_{0}".format(i)] = g["l_{0}".format(i)].sample(
                 n=round(
-                    (len(df) * (config.SAMPLE_PERCENTAGE / 100))
+                    (len(df) * (config.index.sampling.percentage / 100))
                     / len(prediction_values)
                 ),
                 random_state=42,
@@ -326,7 +332,7 @@ def cluster(all_chunks, config, parser):
     # Concatenate the list of DataFrames into a single DataFrame
     df_concat = pd.concat(df_list)
     df_concat.to_csv(
-        config._sampled_cluster_predictions_path(),
+        config.path.sampled_cluster_predictions_path(config.index.sampling.optimum_k),
         sep=",",
     )
     # Rebuild sampled chunks dict

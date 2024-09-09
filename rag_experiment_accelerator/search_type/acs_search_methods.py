@@ -14,8 +14,6 @@ from rag_experiment_accelerator.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-pre_process = Preprocess()
-
 
 def create_client(service_endpoint, index_name, key):
     """
@@ -62,6 +60,7 @@ def search_for_match_semantic(
     embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
+    preprocess: bool = False,
 ):
     """
     Searches for documents in the Azure AI Search index that match the given query using semantic search.
@@ -75,9 +74,8 @@ def search_for_match_semantic(
     Returns:
         list: A list of formatted search results.
     """
-    embedding = embedding_model.generate_embedding(
-        chunk=str(pre_process.preprocess(query))
-    )
+    pre_process = Preprocess(enabled=preprocess)
+    embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(query))
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
@@ -121,6 +119,7 @@ def search_for_match_Hybrid_multi(
     embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
+    preprocess: bool = False,
 ):
     """
     Searches for matching documents in Azure AI Search using a hybrid approach that combines
@@ -136,9 +135,8 @@ def search_for_match_Hybrid_multi(
     Returns:
         list: A list of formatted search results.
     """
-    embedding = embedding_model.generate_embedding(
-        chunk=str(pre_process.preprocess(query))
-    )
+    pre_process = Preprocess(enabled=preprocess)
+    embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(query))
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
@@ -177,6 +175,7 @@ def search_for_match_Hybrid_cross(
     embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
+    preprocess: bool = False,
 ):
     """
     Searches for matching documents using a hybrid cross search method.
@@ -190,9 +189,8 @@ def search_for_match_Hybrid_cross(
     Returns:
         A list of formatted search results.
     """
-    embedding = embedding_model.generate_embedding(
-        chunk=str(pre_process.preprocess(query))
-    )
+    pre_process = Preprocess(enabled=preprocess)
+    embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(query))
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
@@ -259,6 +257,7 @@ def search_for_match_pure_vector(
     embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
+    preprocess: bool = False,
 ):
     """
     Searches for documents in the client's database that match the given query using pure vector search.
@@ -273,10 +272,8 @@ def search_for_match_pure_vector(
         A list of dictionaries containing the search results, where each dictionary represents a single document and
         contains the following keys: 'title', 'content', and 'summary'.
     """
-    # function body here
-    embedding = embedding_model.generate_embedding(
-        chunk=str(pre_process.preprocess(query))
-    )
+    pre_process = Preprocess(enabled=preprocess)
+    embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(query))
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
@@ -303,6 +300,7 @@ def search_for_match_pure_vector_multi(
     embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
+    preprocess: bool = False,
 ):
     """
     Searches for matching documents in the given client using the provided query and retrieves the specified number
@@ -317,9 +315,8 @@ def search_for_match_pure_vector_multi(
     Returns:
         A list of formatted search results.
     """
-    embedding = embedding_model.generate_embedding(
-        chunk=str(pre_process.preprocess(query))
-    )
+    pre_process = Preprocess(enabled=preprocess)
+    embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(query))
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
@@ -357,6 +354,7 @@ def search_for_match_pure_vector_cross(
     embedding_model: EmbeddingModel,
     query: str,
     retrieve_num_of_documents: int,
+    preprocess: bool = False,
 ):
     """
     Searches for documents that match the given query using pure vector cross search method.
@@ -370,10 +368,8 @@ def search_for_match_pure_vector_cross(
     Returns:
         A list of dictionaries containing the formatted search results.
     """
-    # Function code here
-    embedding = embedding_model.generate_embedding(
-        chunk=str(pre_process.preprocess(query))
-    )
+    pre_process = Preprocess(enabled=preprocess)
+    embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(query))
 
     vector1 = RawVectorQuery(
         k=retrieve_num_of_documents,
