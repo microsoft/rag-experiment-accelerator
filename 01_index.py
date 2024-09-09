@@ -34,7 +34,7 @@ if __name__ == "__main__":
     do_sample = args.sampling
     index_dict = {"indexes": []}
 
-    file_paths = get_all_file_paths(config.data_dir)
+    file_paths = get_all_file_paths(config.path.data_dir)
     for index_config in config.index.flatten():
         with mlflow.start_run(run_name=mlflow_run_name(f"index_job_{config.job_name}")):
             index_name = run(
