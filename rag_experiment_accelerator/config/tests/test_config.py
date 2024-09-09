@@ -21,7 +21,8 @@ def get_test_config_dir():
 
 
 @patch("rag_experiment_accelerator.config.config.create_embedding_model")
-def test_config_init(mock_create_embedding_model):
+@patch("rag_experiment_accelerator.config.config.validate_json_with_schema")
+def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model):
     # Load mock config data from a YAML file
     config_path = f"{get_test_config_dir()}/config.json"
     with open(config_path, "r") as file:
@@ -35,6 +36,7 @@ def test_config_init(mock_create_embedding_model):
     embedding_model_2.deployment_name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
     mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
+    mock_validate_json_with_schema.return_value = (True, None)
 
     config = Config.from_path(environment, config_path)
 
@@ -154,6 +156,20 @@ def test_config_init(mock_create_embedding_model):
     )
 
 
+@patch("rag_experiment_accelerator.config.config.create_embedding_model")
+@patch("rag_experiment_accelerator.config.config.validate_json_with_schema")
+def test_config_init_raises_error(
+    mock_validate_json_with_schema, mock_create_embedding_model
+):
+    config_path = f"{get_test_config_dir()}/config.json"
+    environment = MagicMock()
+
+    mock_validate_json_with_schema.return_value = (False, ValueError("Invalid JSON"))
+
+    with pytest.raises(ValueError):
+        Config.from_path(environment, config_path)
+
+
 def test_chunk_size_greater_than_overlap_size():
     config = init_config()
     config.index.chunking.chunk_size = [128]
@@ -165,48 +181,6 @@ def test_chunk_size_greater_than_overlap_size():
     assert (
         str(info.value)
         == "Config param validation error: overlap_size must be less than chunk_size"
-    )
-
-
-def test_validate_ef_search():
-    with pytest.raises(ValueError) as high_info:
-        config = init_config()
-        config.index.ef_search = [1001]
-        config.validate_inputs()
-
-    with pytest.raises(ValueError) as low_info:
-        config = init_config()
-        config.index.ef_search = [99]
-        config.validate_inputs()
-
-    assert (
-        str(high_info.value)
-        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-    )
-    assert (
-        str(low_info.value)
-        == "Config param validation error: ef_search must be between 100 and 1000 (inclusive)"
-    )
-
-
-def test_validate_ef_construction():
-    with pytest.raises(ValueError) as high_info:
-        config = init_config()
-        config.index.ef_construction = [1001]
-        config.validate_inputs()
-
-    with pytest.raises(ValueError) as low_info:
-        config = init_config()
-        config.index.ef_construction = [99]
-        config.validate_inputs()
-
-    assert (
-        str(high_info.value)
-        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
-    )
-    assert (
-        str(low_info.value)
-        == "Config param validation error: ef_construction must be between 100 and 1000 (inclusive)"
     )
 
 
