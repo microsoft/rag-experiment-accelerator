@@ -479,9 +479,7 @@ def test_search_for_match_pure_vector(mock_vector_query):
 
 @patch("rag_experiment_accelerator.search_type.acs_search_methods.logger")
 @patch("rag_experiment_accelerator.search_type.acs_search_methods.RawVectorQuery")
-@patch(
-    "rag_experiment_accelerator.search_type.acs_search_methods.pre_process.preprocess"
-)
+@patch("rag_experiment_accelerator.search_type.acs_search_methods.Preprocess")
 def test_search_for_match_pure_vector_handles_exception(
     mock_preprocess, mock_vector_query, mock_logger
 ):
@@ -499,7 +497,7 @@ def test_search_for_match_pure_vector_handles_exception(
     vector1 = "vector1"
     mock_vector_query.return_value = vector1
 
-    mock_preprocess.return_value = query
+    mock_preprocess.preprocess.return_value = query
 
     # Act
     results = search_for_match_pure_vector(
@@ -510,7 +508,7 @@ def test_search_for_match_pure_vector_handles_exception(
     )
 
     # Assert
-    mock_preprocess.assert_called_once_with(query)
+    mock_preprocess.assert_called_once_with(enabled=False)
     mock_vector_query.assert_called_once_with(
         k=retrieve_num_of_documents,
         fields="contentVector",

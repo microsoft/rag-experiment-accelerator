@@ -40,7 +40,7 @@ def run(
     Returns:
         The name of the index created.
     """
-    pre_process = Preprocess(True)
+    pre_process = Preprocess(index_config.chunking.preprocess)
 
     index_name = index_config.index_name()
     with TimeTook(f"create Azure Search Index {index_name}", logger=logger):
@@ -199,7 +199,7 @@ def embed_chunk(pre_process, embedding_model, chunk):
         dict: The chunk dictionary with the added "content_vector" key.
     """
     chunk["content_vector"] = embedding_model.generate_embedding(
-        str(pre_process.preprocess(chunk["content"]))
+        pre_process.preprocess(chunk["content"])
     )
 
     return chunk
@@ -312,7 +312,7 @@ def process_title(
         )
         title_vector = config.get_embedding_model(
             index_config.embedding_model.model_name
-        ).generate_embedding(str(pre_process.preprocess(title)))
+        ).generate_embedding(pre_process.preprocess(title))
     else:
         title = ""
         title_vector = []
@@ -355,7 +355,7 @@ def process_summary(
         )
         summaryVector = config.get_embedding_model(
             index_config.embedding_model.model_name
-        ).generate_embedding(str(pre_process.preprocess(summary)))
+        ).generate_embedding(pre_process.preprocess(summary))
     else:
         summary = ""
         summaryVector = []
