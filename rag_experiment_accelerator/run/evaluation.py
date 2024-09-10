@@ -1,4 +1,3 @@
-import copy
 from typing import MutableMapping
 from azure.ai.ml import MLClient
 from dotenv import load_dotenv
@@ -32,9 +31,6 @@ def get_job_hyper_params(config: Config, index_config: IndexConfig) -> dict:
     """
     Returns the hyper parameters for the current job.
     """
-    config_copy = copy.deepcopy(config)
-    config_copy.index = index_config
-
     config_dict = config.to_dict()
 
     # Remove not needed parameters

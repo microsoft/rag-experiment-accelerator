@@ -370,8 +370,9 @@ Every array will produce the combinations of flat configurations when the method
 ```json
 {
     "type": "azure",
+    "model_name": "the name of the Azure OpenAI model",
     "deployment_name": "the deployment name of the model",
-    "dimension": "the dimension of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
+    "dimension": "the dimension of the embedding model. For example, 1536 which is the dimension of text-embedding-ada-002"
 }
 ```
 
@@ -380,6 +381,7 @@ If you are using a model other than `text-embedding-ada-002`, you must specify t
 ```json
 {
     "type": "azure",
+    "model_name": "text-embedding-3-large",
     "deployment_name": "text-embedding-3-large",
     "dimension": 3072
 }
@@ -392,6 +394,7 @@ When using the [newer embeddings models (v3)](https://openai.com/blog/new-embedd
 ```json
 {
     "type": "azure",
+    "model_name": "text-embedding-3-large",
     "deployment_name": "text-embedding-3-large",
     "dimension": 256,
     "shorten_dimensions": true
