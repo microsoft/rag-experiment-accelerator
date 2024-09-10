@@ -33,6 +33,7 @@ def run(
     index_config: IndexConfig,
     file_paths: list[str],
     mlflow_client: mlflow.MlflowClient,
+    is_local: bool = False,
 ) -> str:
     """
     Runs the main experiment loop, which chunks and uploads data to Azure AI Search indexes based on the configuration specified in the Config class.
@@ -66,9 +67,12 @@ def run(
         index_config.chunking.azure_document_intelligence_model,
     )
 
-    if index_config.sampling.sample_data:
+    if is_local and index_config.sampling.sample_data:
         parser = load_parser()
         docs = cluster(index_config.index_name(), docs, config, parser)
+
+    if index_config.sampling.only_sample:
+        return index_name
 
     mlflow.log_metric("Number of documents", len(docs))
     docs_ready_to_index = convert_docs_to_vector_db_records(docs)

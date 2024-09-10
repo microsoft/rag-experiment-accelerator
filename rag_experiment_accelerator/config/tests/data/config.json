@@ -35,7 +35,8 @@
             "percentage": 5,
             "optimum_k": "auto",
             "min_cluster": 2,
-            "max_cluster": 30
+            "max_cluster": 30,
+            "only_sample": false
         }
     },
     "language":{
