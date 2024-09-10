@@ -316,7 +316,7 @@ Every array will produce the combinations of flat configurations when the method
 }
 ```
 
-If you are using another model than `text-embedding-ada-002`, you can specify the dimension of the model in the `dimension` field; for example:
+If you are using a model other than `text-embedding-ada-002`, you must specify the corresponding dimension for the model in the `dimension` field; for example:
 
 ```json
 {
@@ -326,7 +326,9 @@ If you are using another model than `text-embedding-ada-002`, you can specify th
 }
 ```
 
-When using [newer embeddings models](https://openai.com/blog/new-embedding-models-and-api-updates), you can also leverage their support for shortening embeddings. In this case, specify the number of dimensions you require, and add the `shorten_dimensions` flag to indicate that you want to shorten the embeddings. For example:
+The dimensions for the different Azure OpenAI embeddings models can be found in the [Azure OpenAI Service models](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#embeddings-models) documentation.
+
+When using the [newer embeddings models (v3)](https://openai.com/blog/new-embedding-models-and-api-updates), you can also leverage their support for shortening embeddings. In this case, specify the number of dimensions you require, and add the `shorten_dimensions` flag to indicate that you want to shorten the embeddings. For example:
 
 ```json
 {
