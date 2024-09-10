@@ -57,6 +57,7 @@ def test_run(
         ef_construction=[300, 400],
         ef_search=[300, 400],
         chunking=ChunkingConfig(
+            preprocess=False,
             chunk_size=[10, 20],
             overlap_size=[5, 10],
             chunking_strategy="chunking_strategy",

@@ -17,6 +17,7 @@ class IndexKey(StrEnum):
     SAMPLING_PERCENTAGE = "sp"
     PREPROCESS = "p"
     CHUNK_SIZE = "cs"
+    CHUNKING_STRATEGY = "st"
     OVERLAP_SIZE = "o"
     GENERATE_TITLE = "t"
     GENERATE_SUMMARY = "s"
@@ -61,6 +62,7 @@ class IndexConfig(BaseConfig):
             IndexKey.SAMPLING_PERCENTAGE: self.sampling.percentage,
             IndexKey.PREPROCESS: int(self.chunking.preprocess),
             IndexKey.CHUNK_SIZE: self.chunking.chunk_size,
+            IndexKey.CHUNKING_STRATEGY: self.chunking.chunking_strategy,
             IndexKey.OVERLAP_SIZE: self.chunking.overlap_size,
             IndexKey.GENERATE_TITLE: int(self.chunking.generate_title),
             IndexKey.GENERATE_SUMMARY: int(self.chunking.generate_summary),
@@ -85,6 +87,7 @@ class IndexConfig(BaseConfig):
             chunking=ChunkingConfig(
                 preprocess=bool(properties[IndexKey.PREPROCESS]),
                 chunk_size=int(properties[IndexKey.CHUNK_SIZE]),
+                chunking_strategy=properties[IndexKey.CHUNKING_STRATEGY],
                 overlap_size=int(properties[IndexKey.OVERLAP_SIZE]),
                 generate_title=bool(properties[IndexKey.GENERATE_TITLE]),
                 generate_summary=bool(properties[IndexKey.GENERATE_SUMMARY]),

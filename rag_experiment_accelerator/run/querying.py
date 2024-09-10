@@ -76,6 +76,7 @@ def query_acs(
     user_prompt: str,
     s_v: str,
     retrieve_num_of_documents: str,
+    preprocess: bool = False,
 ):
     """
     Queries the Azure AI Search service using the specified search client and search parameters.
@@ -98,6 +99,7 @@ def query_acs(
         embedding_model=embedding_model,
         query=user_prompt,
         retrieve_num_of_documents=retrieve_num_of_documents,
+        preprocess=preprocess,
     )
 
 
@@ -228,6 +230,7 @@ def query_and_eval_acs(
     evaluator: SpacyEvaluator,
     config: Config,
     response_generator: ResponseGenerator,
+    preprocess: bool = False,
 ) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
@@ -265,6 +268,7 @@ def query_and_eval_acs(
             user_prompt=generated_query,
             s_v=search_type,
             retrieve_num_of_documents=retrieve_num_of_documents,
+            preprocess=preprocess,
         )
         search_results.extend(search_result)
 
@@ -320,6 +324,7 @@ def query_and_eval_acs_multi(
     config: Config,
     evaluator: SpacyEvaluator,
     response_generator: ResponseGenerator,
+    preprocess: bool = False,
 ) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
@@ -353,6 +358,7 @@ def query_and_eval_acs_multi(
             evaluator=evaluator,
             config=config,
             response_generator=response_generator,
+            preprocess=preprocess,
         )
         if len(result.documents) == 0:
             logger.warning(f"No documents found for question: {question}")
@@ -498,6 +504,7 @@ def get_query_output(
             config=config,
             evaluator=evaluator,
             response_generator=response_generator,
+            preprocess=index_config.chunking.preprocess,
         )
     else:
         result = query_and_eval_acs(
@@ -510,6 +517,7 @@ def get_query_output(
             evaluator=evaluator,
             config=config,
             response_generator=response_generator,
+            preprocess=index_config.chunking.preprocess,
         )
         search_evals.append(result.evaluations)
     if config.rerank.enabled and len(result.documents) > 0:
