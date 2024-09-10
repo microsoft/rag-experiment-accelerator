@@ -41,7 +41,7 @@ def test_can_set_embedding_dimension():
 
 
 @patch(
-    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initilize_client"
+    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initialize_client"
 )
 def test_generate_embeddings_no_shortening(mock_client):
     mock_client().embeddings.create.return_value = MagicMock()
@@ -58,7 +58,7 @@ def test_generate_embeddings_no_shortening(mock_client):
 
 
 @patch(
-    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initilize_client"
+    "rag_experiment_accelerator.embedding.aoai_embedding_model.AOAIEmbeddingModel._initialize_client"
 )
 def test_generate_embeddings_with_shortening(mock_client):
     mock_client().embeddings.create.return_value = MagicMock()
