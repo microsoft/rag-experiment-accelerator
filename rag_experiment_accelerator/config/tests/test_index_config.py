@@ -20,20 +20,20 @@ def test_index_config_to_index_name():
             generate_title=False,
             override_content_with_summary=False,
         ),
-        embedding_model=EmbeddingModelConfig(type="type", model_name="modelname", dimension=100),
+        embedding_model=EmbeddingModelConfig(
+            type="type", model_name="modelname", dimension=100
+        ),
         sampling=SamplingConfig(percentage=10),
     )
 
     assert (
         index_config.index_name()
-        == "idx-prefix_efc-3_efs-4_em-modelname_d-100_sp-10_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0"
+        == "idx-prefix_efc-3_efs-4_em-modelname_sp-10_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0_d-100"
     )
 
 
 def test_index_name_to_index_config():
-    index_name = (
-        "idx-prefix_efc-3_efs-4_em-modelname_d-100_sp-10_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0"
-    )
+    index_name = "idx-prefix_efc-3_efs-4_em-modelname_sp-10_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0_d-100"
 
     index_config = IndexConfig.from_index_name(index_name)
 
@@ -47,9 +47,7 @@ def test_index_name_to_index_config():
 
 
 def test_index_name_to_index_config_shuffled_order():
-    index_name = (
-        "idx-prefix_efc-3_efs-4_em-modelname_d-100_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0_sp-10"
-    )
+    index_name = "idx-prefix_efc-3_efs-4_em-modelname_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0_sp-10_d-100"
 
     index_config = IndexConfig.from_index_name(index_name)
 
@@ -64,7 +62,7 @@ def test_index_name_to_index_config_shuffled_order():
 
 def test_index_name_to_index_config_missing_property():
     index_name = (
-        "idx-prefix_efc-3_efs-4_em-modelname_d-100_sp-10_p-0_st-basic_o-2_t-0_s-0_oc-0"
+        "idx-prefix_efc-3_efs-4_em-modelname_sp-10_p-0_st-basic_o-2_t-0_s-0_oc-0_d-100"
     )
 
     try:

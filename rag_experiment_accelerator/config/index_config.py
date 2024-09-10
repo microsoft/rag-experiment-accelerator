@@ -60,7 +60,6 @@ class IndexConfig(BaseConfig):
             IndexKey.EF_CONSTRUCTION: self.ef_construction,
             IndexKey.EF_SEARCH: self.ef_search,
             IndexKey.EMBEDDING_MODEL_NAME: self.embedding_model.model_name.lower(),
-            IndexKey.DIMENSION: self.embedding_model.dimension,
             IndexKey.SAMPLING_PERCENTAGE: self.sampling.percentage,
             IndexKey.PREPROCESS: int(self.chunking.preprocess),
             IndexKey.CHUNK_SIZE: self.chunking.chunk_size,
@@ -72,6 +71,9 @@ class IndexConfig(BaseConfig):
                 self.chunking.override_content_with_summary
             ),
         }
+
+        if self.embedding_model.dimension:
+            properties[IndexKey.DIMENSION] = self.embedding_model.dimension
 
         return properties
 
@@ -99,7 +101,9 @@ class IndexConfig(BaseConfig):
             ),
             embedding_model=EmbeddingModelConfig(
                 model_name=properties[IndexKey.EMBEDDING_MODEL_NAME],
-                dimension=int(properties[IndexKey.DIMENSION]),
+                dimension=int(properties[IndexKey.DIMENSION])
+                if IndexKey.DIMENSION in properties
+                else None,
             ),
             sampling=SamplingConfig(
                 percentage=properties[IndexKey.SAMPLING_PERCENTAGE]
