@@ -152,11 +152,6 @@
                             "model_name": {
                                 "type": "string",
                                 "minLength": 1,
-                                "description": "Name of the model to use"
-                            },
-                            "deployment_name": {
-                                "type": "string",
-                                "minLength": 1,
                                 "description": "Deployment name of the Azure OpenAI model"
                             },
                             "dimension": {

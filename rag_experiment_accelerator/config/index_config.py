@@ -14,6 +14,7 @@ class IndexKey(StrEnum):
     EF_CONSTRUCTION = "efc"
     EF_SEARCH = "efs"
     EMBEDDING_MODEL_NAME = "em"
+    DIMENSION = "d"
     SAMPLING_PERCENTAGE = "sp"
     PREPROCESS = "p"
     CHUNK_SIZE = "cs"
@@ -59,6 +60,7 @@ class IndexConfig(BaseConfig):
             IndexKey.EF_CONSTRUCTION: self.ef_construction,
             IndexKey.EF_SEARCH: self.ef_search,
             IndexKey.EMBEDDING_MODEL_NAME: self.embedding_model.model_name.lower(),
+            IndexKey.DIMENSION: self.embedding_model.dimension,
             IndexKey.SAMPLING_PERCENTAGE: self.sampling.percentage,
             IndexKey.PREPROCESS: int(self.chunking.preprocess),
             IndexKey.CHUNK_SIZE: self.chunking.chunk_size,
@@ -96,7 +98,8 @@ class IndexConfig(BaseConfig):
                 ),
             ),
             embedding_model=EmbeddingModelConfig(
-                model_name=properties[IndexKey.EMBEDDING_MODEL_NAME]
+                model_name=properties[IndexKey.EMBEDDING_MODEL_NAME],
+                dimension=int(properties[IndexKey.DIMENSION]),
             ),
             sampling=SamplingConfig(
                 percentage=properties[IndexKey.SAMPLING_PERCENTAGE]

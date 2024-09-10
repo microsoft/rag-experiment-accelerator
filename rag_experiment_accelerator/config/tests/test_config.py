@@ -30,10 +30,10 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
 
     environment = MagicMock()
     embedding_model_1 = MagicMock()
-    embedding_model_1.deployment_name.return_value = "all-MiniLM-L6-v2"
+    embedding_model_1.model_name.return_value = "all-MiniLM-L6-v2"
     embedding_model_1.dimension.return_value = 384
     embedding_model_2 = MagicMock()
-    embedding_model_2.deployment_name.return_value = "text-embedding-ada-002"
+    embedding_model_2.model_name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
     mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
     mock_validate_json_with_schema.return_value = (True, None)
@@ -89,11 +89,11 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
     assert index.embedding_model[1].model_name == mock_embedding[1]["model_name"]
 
     model1 = config.get_embedding_model(config.index.embedding_model[0].model_name)
-    assert model1.deployment_name.return_value == "all-MiniLM-L6-v2"
+    assert model1.model_name.return_value == "all-MiniLM-L6-v2"
     assert model1.dimension.return_value == 384
 
     model2 = config.get_embedding_model(config.index.embedding_model[1].model_name)
-    assert model2.deployment_name.return_value == "text-embedding-ada-002"
+    assert model2.model_name.return_value == "text-embedding-ada-002"
     assert model2.dimension.return_value == 1536
 
     assert config.language.query_language == mock_config["language"]["query_language"]

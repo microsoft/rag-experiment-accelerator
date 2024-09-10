@@ -9,27 +9,27 @@ class AOAIEmbeddingModel(EmbeddingModel):
     A class representing an AOAI Embedding Model.
 
     Args:
-        deployment_name (str): The name of the deployment.
+        model_name (str): The name of the deployment.
         environment (Environment): The initialized environment.
         dimension (int, optional): The dimension of the embedding. Defaults to 1536 which is the dimension of text-embedding-ada-002.
         **kwargs: Additional keyword arguments.
 
     Attributes:
-        deployment_name (str): The name of the deployment.
+        model_name (str): The name of the deployment.
         _client (AzureOpenAI): The initialized AzureOpenAI client.
 
     """
 
     def __init__(
         self,
-        deployment_name: str,
+        model_name: str,
         environment: Environment,
         dimension: int = 1536,
         shorten_dimensions: bool = False,
         **kwargs
     ) -> None:
-        super().__init__(name=deployment_name, dimension=dimension, **kwargs)
-        self.deployment_name = deployment_name
+        super().__init__(name=model_name, dimension=dimension, **kwargs)
+        self.model_name = model_name
         self.shorten_dimensions = shorten_dimensions
         self._client: AzureOpenAI = self._initialize_client(environment=environment)
 
@@ -67,7 +67,7 @@ class AOAIEmbeddingModel(EmbeddingModel):
             kwargs["dimensions"] = self.dimension
 
         response = self._client.embeddings.create(
-            input=chunk, model=self.deployment_name, **kwargs
+            input=chunk, model=self.model_name, **kwargs
         )
 
         return response.data[0].embedding

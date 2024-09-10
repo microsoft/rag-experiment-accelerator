@@ -37,11 +37,11 @@ def test_run(
     data_dir = "./data"
 
     embedding_model_1 = MagicMock()
-    embedding_model_1.deployment_name.return_value = "all-MiniLM-L6-v2"
+    embedding_model_1.model_name.return_value = "all-MiniLM-L6-v2"
     embedding_model_1.dimension.return_value = 384
 
     embedding_model_2 = MagicMock()
-    embedding_model_2.deployment_name.return_value = "text-embedding-ada-002"
+    embedding_model_2.model_name.return_value = "text-embedding-ada-002"
     embedding_model_2.dimension.return_value = 1536
     mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2]
 
