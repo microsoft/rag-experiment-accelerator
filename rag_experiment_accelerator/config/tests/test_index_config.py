@@ -42,6 +42,7 @@ def test_index_name_to_index_config():
     assert index_config.chunking.chunking_strategy == "abcd"
     assert index_config.chunking.overlap_size == 2
     assert index_config.embedding_model.model_name == "modelname"
+    assert index_config.embedding_model.dimension == 100
     assert index_config.ef_construction == 3
     assert index_config.ef_search == 4
 
@@ -56,6 +57,7 @@ def test_index_name_to_index_config_shuffled_order():
     assert index_config.chunking.chunking_strategy == "abcd"
     assert index_config.chunking.overlap_size == 2
     assert index_config.embedding_model.model_name == "modelname"
+    assert index_config.embedding_model.dimension == 100
     assert index_config.ef_construction == 3
     assert index_config.ef_search == 4
 
