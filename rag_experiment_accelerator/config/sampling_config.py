@@ -24,3 +24,4 @@ class SamplingConfig(BaseConfig):
     optimum_k: str = "auto"
     min_cluster: int = 2
     max_cluster: int = 30
+    only_sample: bool = False

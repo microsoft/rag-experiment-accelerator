@@ -1,7 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/rag-experiment-accelerator/limoat/enforce-json-schema-for-configjson/config.schema.json",
-    "experiment_name": "",
-    "job_name": "",
+    "experiment_name": "exp-name",
+    "job_name": "job-name",
     "job_description": "",
     "data_formats": ["*"],
     "main_instruction": "",
@@ -32,7 +32,8 @@
             "percentage": 5,
             "optimum_k": "auto",
             "min_cluster": 2,
-            "max_cluster": 30
+            "max_cluster": 30,
+            "only_sample": false
         }
     },
     "language": {
