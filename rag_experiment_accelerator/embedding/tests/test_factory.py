@@ -13,7 +13,7 @@ def test_create_aoai_embedding_model():
     environment = MagicMock()
     model = create_embedding_model(
         model_type=embedding_type,
-        deployment_name=model_name,
+        model_name=model_name,
         dimension=dimension,
         environment=environment,
     )

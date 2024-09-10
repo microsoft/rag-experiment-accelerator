@@ -229,7 +229,7 @@ Sampling will be run locally to create a small but representative slice of the d
 
 **Note**: Sampling can only be run locally, at this stage it is not supported on a distributed AML compute cluster. So the process would be to run sampling locally and then use the generated sample dataset to run on AML.
 
-If you have a very large dataset and want to run a similar approach to sample the data, you can use the pyspark in-memory distributed implementation in the [Data Discovery Toolkit](https://github.com/microsoft/Data-Discovery-Toolkit) for [Microsoft Fabric](https://learn.microsoft.com/en-us/fabric/get-started/microsoft-fabric-overview) or [Azure Synapse Analytics](https://learn.microsoft.com/en-gb/azure/synapse-analytics/).  
+If you have a very large dataset and want to run a similar approach to sample the data, you can use the pyspark in-memory distributed implementation in the [Data Discovery Toolkit](https://github.com/microsoft/Data-Discovery-Toolkit) for [Microsoft Fabric](https://learn.microsoft.com/en-us/fabric/get-started/microsoft-fabric-overview) or [Azure Synapse Analytics](https://learn.microsoft.com/en-gb/azure/synapse-analytics/).
 
 #### Available sampling parameters in the config.json file
 
@@ -250,7 +250,7 @@ The sampling process will produce the following artifacts in the sampling direct
 1. A directory named after the config value ```job_name``` containing the subset of files sampled, these can be specified as ```--data_dir``` argument when running the entire process on AML.
 2. A 2 dimensional scatter plot of the clustered files (by content) selected as the sampled dataset in the sampling folder.
 ![images/all_cluster_predictions_cluster_number_5.jpg](images/all_cluster_predictions_cluster_number_5.jpg)
-3. A .cvs file of the entire dataset with cluster predictions named "all_cluster_predictions..." and a cvs file with the sampled cluster predictions named "sampled_cluster_predictions...". This can be used for further enriching the dataset, for example, creating a meaningful label per cluster and updates all record. See the [Heuristics classifier in the Data Discovery Toolkit as an example](https://github.com/microsoft/Data-Discovery-Toolkit/blob/main/walkthroughs/heuristics/standalone_text_heuristics.ipynb) or [Pixplotml for image data](https://github.com/microsoft/Data-Discovery-Toolkit?tab=readme-ov-file#using-pixplotml-to-rapidly-visualise-and-label-data-for-training). 
+3. A .cvs file of the entire dataset with cluster predictions named "all_cluster_predictions..." and a cvs file with the sampled cluster predictions named "sampled_cluster_predictions...". This can be used for further enriching the dataset, for example, creating a meaningful label per cluster and updates all record. See the [Heuristics classifier in the Data Discovery Toolkit as an example](https://github.com/microsoft/Data-Discovery-Toolkit/blob/main/walkthroughs/heuristics/standalone_text_heuristics.ipynb) or [Pixplotml for image data](https://github.com/microsoft/Data-Discovery-Toolkit?tab=readme-ov-file#using-pixplotml-to-rapidly-visualise-and-label-data-for-training).
 4. If the ```"optimum_k": auto``` config value is set to auto, the sampling process will attempt to set the optimum number of clusters automatically. This can be overridden if you know roughly how many broad buckets of content exist in your data. An elbow graph will be generated in the sampling folder.
 ![Optimum k elbow graph](images/elbow_5.png)
 
@@ -370,8 +370,31 @@ Every array will produce the combinations of flat configurations when the method
 ```json
 {
     "type": "azure",
-    "deployment_name": "the deployment name of the model",
-    "dimension": "the dimension of the embedding model. Defaults to 1536 which is the dimension of text-embedding-ada-002"
+    "model_name": "the name of the Azure OpenAI model",
+    "dimension": "the dimension of the embedding model. For example, 1536 which is the dimension of text-embedding-ada-002"
+}
+```
+
+If you are using a model other than `text-embedding-ada-002`, you must specify the corresponding dimension for the model in the `dimension` field; for example:
+
+```json
+{
+    "type": "azure",
+    "model_name": "text-embedding-3-large",
+    "dimension": 3072
+}
+```
+
+The dimensions for the different Azure OpenAI embeddings models can be found in the [Azure OpenAI Service models](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#embeddings-models) documentation.
+
+When using the [newer embeddings models (v3)](https://openai.com/blog/new-embedding-models-and-api-updates), you can also leverage their support for shortening embeddings. In this case, specify the number of dimensions you require, and add the `shorten_dimensions` flag to indicate that you want to shorten the embeddings. For example:
+
+```json
+{
+    "type": "azure",
+    "model_name": "text-embedding-3-large",
+    "dimension": 256,
+    "shorten_dimensions": true
 }
 ```
 

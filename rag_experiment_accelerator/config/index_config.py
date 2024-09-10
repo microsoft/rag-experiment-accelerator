@@ -14,6 +14,7 @@ class IndexKey(StrEnum):
     EF_CONSTRUCTION = "efc"
     EF_SEARCH = "efs"
     EMBEDDING_MODEL_NAME = "em"
+    DIMENSION = "d"
     SAMPLING_PERCENTAGE = "sp"
     PREPROCESS = "p"
     CHUNK_SIZE = "cs"
@@ -71,6 +72,9 @@ class IndexConfig(BaseConfig):
             ),
         }
 
+        if self.embedding_model.dimension:
+            properties[IndexKey.DIMENSION] = self.embedding_model.dimension
+
         return properties
 
     @classmethod
@@ -96,7 +100,10 @@ class IndexConfig(BaseConfig):
                 ),
             ),
             embedding_model=EmbeddingModelConfig(
-                model_name=properties[IndexKey.EMBEDDING_MODEL_NAME]
+                model_name=properties[IndexKey.EMBEDDING_MODEL_NAME],
+                dimension=int(properties[IndexKey.DIMENSION])
+                if IndexKey.DIMENSION in properties
+                else None,
             ),
             sampling=SamplingConfig(
                 percentage=properties[IndexKey.SAMPLING_PERCENTAGE]
