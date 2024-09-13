@@ -1,6 +1,6 @@
 import evaluate
 import textdistance
-from fuzzywuzzy import fuzz
+from rapidfuzz import fuzz
 
 algorithms = textdistance.algorithms
 

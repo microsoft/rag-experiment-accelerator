@@ -12,7 +12,7 @@ beautifulsoup4==4.12.3
 datasets==2.21.0
 docx2txt==0.8
 evaluate==0.4.2
-fuzzywuzzy==0.18.0
+rapidfuzz==3.9.7
 hnswlib==0.8.0
 jsonschema==4.22.0
 kaleido==0.2.1

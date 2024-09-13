@@ -100,13 +100,13 @@ of elements in the union of the two sets.
 The Levenshtein distance is a measure of similarity between two strings. The Levenshtein distance is calculated as the
 minimum number of insertions, deletions, or substitutions required to transform one string into the other.
 
-### FuzzyWuzzy similarity
+### RapidFuzz similarity
 
 | Configuration Key | Calculation Base     | Possible Values       |
 | ----------------- | -------------------- | --------------------- |
 | `fuzzy`           | `actual`, `expected` | Integer (Fuzzy score) |
 
-This metric is backed by the [FuzzyWuzzy Python package](https://pypi.org/project/fuzzywuzzy/).
+This metric is backed by the [RapidfFuzz Python package](https://github.com/rapidfuzz/RapidFuzz).
 Calculates the fuzzy score between two documents using the levenshtein distance.
 
 ## BERT-based semantic similarity

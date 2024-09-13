@@ -61,7 +61,7 @@ def compute_metrics(
             - "hamming": Hamming distance
             - "jaccard": Jaccard similarity
             - "levenshtein": Levenshtein distance
-            - "fuzzy": FuzzyWuzzy similarity
+            - "fuzzy": RapidFuzz similarity
             - "bert_all_MiniLM_L6_v2": BERT-based semantic similarity (MiniLM L6 v2 model)
             - "bert_base_nli_mean_tokens": BERT-based semantic similarity (base model, mean tokens)
             - "bert_large_nli_mean_tokens": BERT-based semantic similarity (large model, mean tokens)
