@@ -39,9 +39,9 @@ from rag_experiment_accelerator.llm.prompt.qna_prompts import (
 )
 
 from rag_experiment_accelerator.llm.prompt.ragas_prompts import (
-    llm_answer_relevance_instruction,
-    llm_context_precision_instruction,
-    llm_context_recall_instruction,
+    ragas_answer_relevance_instruction,
+    ragas_context_precision_instruction,
+    ragas_context_recall_instruction,
 )
 
 from rag_experiment_accelerator.llm.prompt.rerank_prompts import (

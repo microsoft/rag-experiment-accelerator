@@ -2,9 +2,9 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from rag_experiment_accelerator.llm.prompt import (
-    llm_answer_relevance_instruction,
-    llm_context_recall_instruction,
-    llm_context_precision_instruction,
+    ragas_answer_relevance_instruction,
+    ragas_context_recall_instruction,
+    ragas_context_precision_instruction,
 )
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -45,7 +45,7 @@ def llm_answer_relevance(
 
     """
     result = response_generator.generate_response(
-        llm_answer_relevance_instruction, text=answer
+        ragas_answer_relevance_instruction, text=answer
     )
     if result is None:
         logger.warning("Unable to generate answer relevance score")
@@ -79,7 +79,7 @@ def llm_context_precision(
 
     for context in retrieved_contexts:
         result: str | None = response_generator.generate_response(
-            llm_context_precision_instruction,
+            ragas_context_precision_instruction,
             context=context,
             question=question,
         )
@@ -137,7 +137,7 @@ def llm_context_recall(
         + groundtruth_answer
     )
     result = response_generator.generate_response(
-        sys_message=llm_context_recall_instruction,
+        sys_message=ragas_context_recall_instruction,
         prompt=prompt,
     )
     good_response = '"Attributed": "1"'
