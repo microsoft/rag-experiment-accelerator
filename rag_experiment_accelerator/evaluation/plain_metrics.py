@@ -23,7 +23,7 @@ def bleu(predictions: list[str], references: list[str]) -> float:
     return results["bleu"] * 100
 
 
-def fuzzy(str1: str, str2: str, match_type: str) -> float:
+def fuzzy(str1: str, str2: str, match_type: str = "token_set_ratio") -> float:
     """
     Compares two strings using fuzzy string matching and returns a similarity score.
 
@@ -37,6 +37,8 @@ def fuzzy(str1: str, str2: str, match_type: str) -> float:
             - 'partial_ratio'
             - 'partial_token_sort_ratio'
             - 'partial_token_set_ratio'
+            - 'WRatio'
+            - 'QRatio'
 
     Returns:
         A list of the similarity scores.
@@ -68,7 +70,7 @@ def levenshtein(str1: str, str2: str) -> int:
     return score
 
 
-def jaccard(str1: str, str2: str) -> float:
+def jaccard(str1: str, str2: str) -> int:
     """
     Calculates the Jaccard similarity score between two sets of values.
 
@@ -79,7 +81,7 @@ def jaccard(str1: str, str2: str) -> float:
     Returns:
         int: The Jaccard similarity score between the two sets of values, as a percentage.
     """
-    score = alg.jaccard.normalized_similarity(str1, str2) * 100
+    score = int(alg.jaccard.normalized_similarity(str1, str2) * 100)
     return score
 
 
@@ -127,7 +129,7 @@ def cosine(str1: str, str2: str) -> int:
     Returns:
         int: The cosine similarity score between the two vectors, as a percentage.
     """
-    score = int(alg.Cosine.normalized_similarity(str1, str2) * 100)
+    score = int(alg.cosine.normalized_similarity(str1, str2) * 100)
     return score
 
 

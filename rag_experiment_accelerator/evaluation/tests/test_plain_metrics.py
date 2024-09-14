@@ -17,7 +17,8 @@ def test_fuzzy():
     value1 = "Room, 2 Double Beds (19th to 25th Floors)"
     value2 = "Two Double Beds - Location Room (19th to 25th Floors)"
 
-    assert fuzzy(value1, value2) == 97
+    assert int(fuzzy(str1=value1, str2=value2)) == 89
+    assert int(fuzzy(str1=value1, str2=value2, match_type="partial_token_set_ratio")) == 100
 
 
 def test_levenshtein():
