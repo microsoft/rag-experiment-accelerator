@@ -28,7 +28,7 @@ def lower_and_strip(text):
         return text.lower().strip()
 
 
-def llm_answer_relevance(
+def ragas_answer_relevance(
     response_generator: ResponseGenerator, question, answer
 ) -> float:
     """
@@ -60,7 +60,7 @@ def llm_answer_relevance(
     return float(similarity_score[0][0] * 100)
 
 
-def llm_context_precision(
+def ragas_context_precision(
     response_generator: ResponseGenerator, question, retrieved_contexts
 ) -> float:
     """
@@ -101,7 +101,7 @@ def llm_context_precision(
         return (sum(relevancy_scores) / len(relevancy_scores)) * 100
 
 
-def llm_context_recall(
+def ragas_context_recall(
     response_generator: ResponseGenerator,
     question,
     groundtruth_answer,
@@ -158,14 +158,14 @@ def compute_llm_based_score(
     retrieved_contexts,
 ):
     match metric_type:
-        case "llm_answer_relevance":
-            score = llm_answer_relevance(response_generator, question, actual)
-        case "llm_context_precision":
-            score = llm_context_precision(
+        case "ragas_answer_relevance":
+            score = ragas_answer_relevance(response_generator, question, actual)
+        case "ragas_context_precision":
+            score = ragas_context_precision(
                 response_generator, question, retrieved_contexts
             )
-        case "llm_context_recall":
-            score = llm_context_recall(
+        case "ragas_context_recall":
+            score = ragas_context_recall(
                 response_generator, question, expected, retrieved_contexts
             )
         case _:
