@@ -15,10 +15,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.evaluation import plain_metrics
-from rag_experiment_accelerator.evaluation.llm_based_metrics import (
-    compute_llm_based_score,
-    lower_and_strip,
-)
+from rag_experiment_accelerator.evaluation.llm_based_metrics import compute_llm_based_score
 from rag_experiment_accelerator.evaluation.plot_metrics import (
     draw_hist_df,
     draw_search_chart,
@@ -39,6 +36,10 @@ logger = get_logger(__name__)
 
 load_dotenv()
 warnings.filterwarnings("ignore")
+
+
+def lower_and_strip(text: str) -> str:
+    return text.lower().strip()
 
 
 def compute_metrics(
