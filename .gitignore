@@ -157,4 +157,43 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+.idea/
+
+artifacts/
+# OSX system folders
+**/.DS_Store
+
+# Data files
+data/*
+# Keep folders
+!data/pdf/
+!data/html/
+!data/markdown/
+!data/json/
+!data/text/
+# Keep sample files
+!data/pdf/sample-pdf.pdf
+!data/html/sample-html.html
+!data/docx/sample-docx.docx
+!data/markdown/sample-markdown.md
+!data/markdown/sample-txt.txt
+!data/json/sample-json.json
+
+#  promptflow folders
+.promptflow
+.azure
+
+.vscode
+
+<MagicMock*
+checkpoints/
+mlruns
+
+# AzureML config folder
+.azureml/*
+
+# Generated Conda file
+conda.generated.yaml
+
+# User-defined config
+config.json

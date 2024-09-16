@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3
+  
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+    -   id: flake8
+        args: [--extend-ignore=E501]
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.28.5
+    hooks:
+      - id: check-jsonschema
+        files: ^config.sample.json|.github/workflows/config.json$
+        types: [json]
+        args: ["--schemafile", "config.schema.json"]
+
+  - repo: local
+    hooks:
+      - id: bicep
+        name: bicep
+        description: Lint and build Bicep files
+        entry: ./infra/generate_arm_template.sh
+        language: script
+        files: \.bicep$
+        require_serial: true
+        args: # Bicep files that we want to generate ARM templates from
+          - -f=./infra/main.bicep

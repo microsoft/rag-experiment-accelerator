@@ -1,0 +1,58 @@
+name: Build validation
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - development
+      - prerelease
+  push:
+    branches:
+      - main
+      - development
+      - prerelease
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/development' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/prerelease' }}
+
+jobs:
+  validate-code:
+    name: job for validating code and structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Actions
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Load all build validation related dependencies
+        shell: bash
+        run: |
+          set -e # fail on error
+          python -m pip install --upgrade pip
+          python -m pip install -e . -r requirements.txt -r dev-requirements.txt
+
+      - name: Download spacy model
+        shell: bash
+        run: |
+          python -m spacy download en_core_web_sm
+
+      - name: Run flake
+        shell: bash
+        run: |
+          flake8 --extend-ignore=E501
+
+      - name: Execute Unit Tests
+        shell: bash
+        run: |
+          pytest . --cov=. --cov-report=html --cov-config=.coveragerc
+
+      - name: Publish Unit Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: "htmlcov/**"

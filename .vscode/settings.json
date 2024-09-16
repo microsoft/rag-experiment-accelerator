@@ -1,0 +1,10 @@
+{
+    "python.testing.pytestArgs": [
+        "rag_experiment_accelerator"
+    ],
+    "files.exclude": {
+        "<MagicMock": true
+    },
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

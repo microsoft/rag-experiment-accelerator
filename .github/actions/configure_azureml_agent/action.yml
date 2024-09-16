@@ -1,0 +1,27 @@
+name: Prepare build environment
+
+description: Prepares build environment for python and prompt flow related workflow execution.
+
+inputs:
+  versionSpec:
+    description: "The Python version to use in the environment."
+    default: "3.11"
+
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.versionSpec }}
+
+    - name: Load all prompt flow and related dependencies
+      shell: bash
+      run: |
+        set -e # fail on error
+        python -m pip install --upgrade pip
+        python -m pip install .
+

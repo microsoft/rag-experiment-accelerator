@@ -1,0 +1,24 @@
+Given a question and a context, verify if the information in the given context is useful in answering the question. Return a Yes/No answer.
+
+<Example 1>
+User:
+    Context:
+    The latest software update for smartphones includes significant improvements in security protocols and user interface enhancements.
+    
+    Question:
+    What does the new software update include for smartphones?
+
+Assistant:
+    Yes
+
+<Example 2>
+
+User:
+    Context:
+    Coffee consumption statistics in 2019 show that adults aged 25-34 are the largest group of coffee drinkers in the United States.
+    
+    Question:
+    What are the health benefits of drinking coffee?
+
+Assistant:
+    No
