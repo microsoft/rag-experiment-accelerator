@@ -1,6 +1,9 @@
+from typing import List
 import uuid
 import re
 
+from unstructured.partition.pdf import partition_pdf
+from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -38,6 +41,28 @@ def preprocess_pdf_content(content: str):
     return content
 
 
+def _load_pdf_using_pypdf(file_path: str) -> List[Document]:
+    loader = PyPDFLoader(file_path=file_path)
+    return loader.load()
+
+
+def _load_pdf_using_unstructured(file_path: str) -> List[Document]:
+    elements = partition_pdf(filename=file_path, strategy="ocr_only")
+    element_meta = elements[0].to_dict()["metadata"] if elements else {}
+    doc_meta = {
+        key: element_meta[key]
+        for key in [
+            "filetype",
+            "languages",
+            "last_modified",
+            "file_directory",
+            "filename",
+        ]
+    }
+    content = "\n".join([element.text for element in elements])
+    return [Document(page_content=content, metadata=doc_meta)]
+
+
 def load_pdf_files(
     environment: Environment,
     index_config: IndexConfig,
@@ -59,9 +84,13 @@ def load_pdf_files(
 
     logger.info("Loading PDF files")
     documents = []
+    load_pdf_from_path = (
+        _load_pdf_using_pypdf
+        if environment.pypdf_enabled
+        else _load_pdf_using_unstructured
+    )
     for file_path in file_paths:
-        loader = PyPDFLoader(file_path=file_path)
-        documents += loader.load()
+        documents += load_pdf_from_path(file_path)
 
     logger.debug(f"Loaded {len(documents)} pages from PDF files")
     text_splitter = RecursiveCharacterTextSplitter(
