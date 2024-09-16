@@ -16,8 +16,8 @@ fuzzywuzzy==0.18.0
 hnswlib==0.8.0
 jsonschema==4.23.0
 kaleido==0.2.1
-langchain==0.2.16
-langchain-community==0.2.16
+langchain==0.3.0
+langchain-community==0.3.0
 levenshtein==0.25.1
 lxml==5.3.0
 matplotlib==3.9.2
