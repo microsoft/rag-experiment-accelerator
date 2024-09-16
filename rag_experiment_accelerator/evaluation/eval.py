@@ -68,9 +68,9 @@ def compute_metrics(
             - "bert_large_nli_stsb_mean_tokens": BERT-based semantic similarity (large model, STS-B, mean tokens)
             - "bert_distilbert_base_nli_stsb_mean_tokens": BERT-based semantic similarity (DistilBERT base model, STS-B, mean tokens)
             - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
-            - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
-            - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
-            - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+            - "ragas_context_precision": Verifies whether or not a given context is useful for answering a question.
+            - "ragas_answer_relevance": Scores the relevancy of the answer according to the given question.
+            - "ragas_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
         question (str): question text
         actual (str): The first string to compare.
         expected (str): The second string to compare.
@@ -95,8 +95,8 @@ def compute_metrics(
                 question,
                 actual,
                 expected,
-                response_generator,
                 retrieved_contexts,
+                response_generator
             )
         except KeyError:
             logger.error(f"Unsupported metric type: {metric_type}")
