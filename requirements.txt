@@ -1,6 +1,6 @@
 azure-ai-ml==1.19.0
 azure-ai-textanalytics==5.3.0
-azure-core==1.30.2
+azure-core==1.31.0
 azure-identity==1.17.1
 azure-keyvault==4.2.0
 azure-keyvault-secrets==4.8.*
