@@ -11,7 +11,7 @@ azureml-mlflow==1.57.0.post1
 beautifulsoup4==4.12.3
 datasets==2.21.0
 docx2txt==0.8
-evaluate==0.4.2
+evaluate==0.4.3
 fuzzywuzzy==0.18.0
 hnswlib==0.8.0
 jsonschema==4.22.0
