@@ -1,5 +1,6 @@
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
 
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.doc_loader.structuredLoader import (
     load_structured_files,
 )
@@ -11,19 +12,17 @@ logger = get_logger(__name__)
 
 def load_markdown_files(
     environment: Environment,
+    index_config: IndexConfig,
     file_paths: list[str],
-    chunk_size: str,
-    overlap_size: str,
     **kwargs: dict,
 ):
     """
     Load and process Markdown files from a given folder path.
 
     Args:
-        environment (Environment): The environment class
+        environment (Environment): The environment class.
+        index_config (IndexConfig): The index configuration class.
         file_paths (list[str]): Sequence of paths to load.
-        chunk_size (str): The size of the chunks to split the documents into.
-        overlap_size (str): The size of the overlapping parts between chunks.
         **kwargs (dict): Unused.
 
     Returns:
@@ -37,6 +36,6 @@ def load_markdown_files(
         language="markdown",
         loader=UnstructuredMarkdownLoader,
         file_paths=file_paths,
-        chunk_size=chunk_size,
-        overlap_size=overlap_size,
+        chunk_size=index_config.chunking.chunk_size,
+        overlap_size=index_config.chunking.overlap_size,
     )

@@ -57,15 +57,7 @@ def run(
             config.language.analyzer,
         )
 
-    docs = load_documents(
-        environment,
-        index_config.chunking.chunking_strategy,
-        config.data_formats,
-        file_paths,
-        index_config.chunking.chunk_size,
-        index_config.chunking.overlap_size,
-        index_config.chunking.azure_document_intelligence_model,
-    )
+    docs = load_documents(environment, index_config, config.data_formats, file_paths)
 
     if is_local and index_config.sampling.sample_data:
         parser = load_parser()

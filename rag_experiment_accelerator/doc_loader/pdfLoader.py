@@ -4,6 +4,7 @@ import re
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
@@ -39,9 +40,8 @@ def preprocess_pdf_content(content: str):
 
 def load_pdf_files(
     environment: Environment,
+    index_config: IndexConfig,
     file_paths: list[str],
-    chunk_size: int,
-    overlap_size: int,
     **kwargs: dict,
 ):
     """
@@ -49,8 +49,7 @@ def load_pdf_files(
 
     Args:
         environment (Environment): The environment class
-        file_paths (list[str]): Sequence of paths to load.
-        chunk_size (int): The size of each text chunk in characters.
+        index_config (IndexConfig): The index configuration class.
         overlap_size (int): The size of the overlap between text chunks in characters.
         **kwargs (dict): Unused.
 
@@ -66,12 +65,12 @@ def load_pdf_files(
 
     logger.debug(f"Loaded {len(documents)} pages from PDF files")
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=overlap_size,
+        chunk_size=index_config.chunking.chunk_size,
+        chunk_overlap=index_config.chunking.overlap_size,
     )
 
     logger.debug(
-        f"Splitting PDF pages into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
+        f"Splitting PDF pages into chunks of {index_config.chunking.chunk_size} characters with an overlap of {index_config.chunking.overlap_size} characters"
     )
     docs = text_splitter.split_documents(documents)
     docsList = []

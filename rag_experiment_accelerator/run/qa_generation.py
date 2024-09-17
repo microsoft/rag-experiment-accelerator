@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.environment import Environment
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.data_assets.data_asset import create_data_asset
 from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import generate_qna
@@ -34,6 +35,12 @@ def run(
     logger.info("Running QA generation")
 
     all_docs = {}
+    index_config = IndexConfig.from_dict(
+        {
+            **config.index.to_dict(),
+            **{"chunking": {"chunk_size": 2000, "overlap_size": 0}},
+        }
+    )
     # Check if we have already sampled
     if config.index.sampling.sample_data:
         logger.info("Running QA Generation process with sampling")
@@ -47,11 +54,9 @@ def run(
         else:
             all_docs = load_documents(
                 environment,
-                config.index.chunking.chunking_strategy,
+                index_config,
                 config.data_formats,
                 file_paths,
-                2000,
-                0,
             )
             parser = load_parser()
             all_docs = cluster(
@@ -60,11 +65,9 @@ def run(
     else:
         all_docs = load_documents(
             environment,
-            config.index.chunking.chunking_strategy,
+            index_config,
             config.data_formats,
             file_paths,
-            2000,
-            0,
         )
 
     # generate qna

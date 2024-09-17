@@ -1,3 +1,4 @@
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.doc_loader.docxLoader import load_docx_files
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
 from rag_experiment_accelerator.doc_loader.jsonLoader import load_json_files
@@ -49,24 +50,18 @@ def determine_processor(chunking_strategy: ChunkingStrategy, format: str) -> cal
 
 def load_documents(
     environment: Environment,
-    chunking_strategy: ChunkingStrategy,
+    index_config: IndexConfig,
     allowed_formats: list[str],
     file_paths: list[str],
-    chunk_size: int,
-    overlap_size: int,
-    azure_document_intelligence_model: str = None,
 ):
     """
     Load documents from a folder and process them into chunks.
 
     Args:
         environment (Environment): The environment class
-        chunking_strategy (str): The chunking strategy to use between "azure-document-intelligence" and "basic".
+        index_config (IndexConfig): The index configuration class.
         allowed_formats (list[str]]): List of formats, ['*'] - to allow any supported format.
         folder_path (str): Path to the folder containing the documents.
-        chunk_size (int): Size of each chunk.
-        overlap_size (int): Size of overlap between adjacent chunks.
-        azure_document_intelligence_model (str): The model to use for Azure Document Intelligence.
 
     Returns:
         list: A list of dictionaries containing the processed chunks.
@@ -75,6 +70,7 @@ def load_documents(
         FileNotFoundError: When the specified folder does not exist.
     """
 
+    # ['*'] - to allow any supported format.
     if "*" in allowed_formats:
         allowed_formats = _FORMAT_VERSIONS.keys()
 
@@ -93,14 +89,12 @@ def load_documents(
         ]
 
         processor = determine_processor(
-            chunking_strategy=chunking_strategy, format=format
+            chunking_strategy=index_config.chunking.chunking_strategy, format=format
         )
         documents[format] = processor(
             environment=environment,
+            index_config=index_config,
             file_paths=matching_files,
-            chunk_size=chunk_size,
-            overlap_size=overlap_size,
-            azure_document_intelligence_model=azure_document_intelligence_model,
         )
 
     all_documents = []
