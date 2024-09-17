@@ -10,7 +10,7 @@ class EvalConfig(BaseConfig):
             "bert_all_MiniLM_L6_v2",
             "cosine",
             "bert_distilbert_base_nli_stsb_mean_tokens",
-            "llm_answer_relevance",
-            "llm_context_precision",
+            "ragas_answer_relevance",
+            "ragas_context_precision",
         ]
     )
