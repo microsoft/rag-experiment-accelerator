@@ -17,7 +17,7 @@ from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.llm.azure_openai_utils import initialize_azure_openai_client
+from openai import AzureOpenAI
 from rag_experiment_accelerator.llm.prompt.prompt import (
     StructuredPrompt,
     CoTPrompt,
@@ -34,8 +34,15 @@ class ResponseGenerator:
         self.deployment_name = deployment_name
         self.temperature = self.config.openai.temperature
         self.use_long_prompt = True
-        self.client = initialize_azure_openai_client(environment)
+        self.client = self._initialize_azure_openai_client(environment)
         self.json_object_supported = True
+
+    def _initialize_azure_openai_client(environment: Environment):
+        return AzureOpenAI(
+            azure_endpoint=environment.openai_endpoint,
+            api_key=environment.openai_api_key,
+            api_version=environment.openai_api_version,
+        )
 
     def _interpret_response(self, response: str, prompt: Prompt) -> any:
         interpreted_response = response

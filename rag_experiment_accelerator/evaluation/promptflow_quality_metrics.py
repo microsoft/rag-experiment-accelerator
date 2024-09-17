@@ -1,7 +1,3 @@
-from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.llm.azure_openai_utils import (
-    initialize_azure_openai_model_config
-)
 from promptflow.evals.evaluators import (
     CoherenceEvaluator,
     FluencyEvaluator,
@@ -9,15 +5,17 @@ from promptflow.evals.evaluators import (
     RelevanceEvaluator,
     SimilarityEvaluator,
 )
+from promptflow.core import AzureOpenAIModelConfiguration
 
 
 class PromptFlowEvals:
     """Class that leverages the evaluators from the Promptflow evaluation framework
     for LLM pipelines"""
-    def __init__(self, environment: Environment, aoai_deployment_name: str):
-
-        self.model_config = initialize_azure_openai_model_config(
-            environment=environment, aoai_deployment_name=aoai_deployment_name
+    def __init__(self, openai_endpoint: str, openai_api_key: str, openai_deployment_name: str):
+        self.model_config = AzureOpenAIModelConfiguration(
+            azure_endpoint=openai_endpoint,
+            api_key=openai_api_key,
+            azure_deployment=openai_deployment_name
         )
 
     def compute_score(

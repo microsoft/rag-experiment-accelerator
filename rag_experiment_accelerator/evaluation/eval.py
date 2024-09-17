@@ -31,6 +31,7 @@ from rag_experiment_accelerator.evaluation.transformer_based_metrics import (
 )
 
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.evaluation.ragas_metrics import RagasEvals
 from rag_experiment_accelerator.evaluation.promptflow_quality_metrics import PromptFlowEvals
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
@@ -51,7 +52,7 @@ def compute_metrics(
     actual,
     expected,
     retrieved_contexts,
-    response_generator: ResponseGenerator,
+    ragas_evals: RagasEvals,
     pf_evals: PromptFlowEvals
 ):
     """
@@ -85,7 +86,7 @@ def compute_metrics(
         actual (str): The first string to compare.
         expected (str): The second string to compare.
         retrieved_contexts (list[str]): The list of retrieved contexts for the query.
-        response_generator (ResponseGenerator): The response generator to use for generating responses.
+        ragas_evals (RagasEvals): The Ragas evaluators to use for scoring.
         pf_evals (PromptFlowEvals): The PromptFlow evaluators to use for scoring.
 
 
@@ -107,7 +108,7 @@ def compute_metrics(
                 actual,
                 expected,
                 retrieved_contexts,
-                response_generator,
+                ragas_evals,
                 pf_evals
             )
         except KeyError:
@@ -118,7 +119,7 @@ def compute_metrics(
 
 def evaluate_single_prompt(
     data,
-    response_generator,
+    ragas_evals,
     pf_evals,
     metric_types,
     data_list,
@@ -138,7 +139,7 @@ def evaluate_single_prompt(
             actual,
             expected,
             data.retrieved_contexts,
-            response_generator,
+            ragas_evals,
             pf_evals
         )
         metric_dic[metric_type] = score
@@ -199,11 +200,15 @@ def evaluate_prompts(
 
     handler = QueryOutputHandler(config.path.query_data_dir)
 
+    # Ragas and PromptFlow evaluators
     response_generator = ResponseGenerator(
         environment, config, config.openai.azure_oai_eval_deployment_name
     )
+    ragas_evals = RagasEvals(response_generator)
 
-    pf_evals = PromptFlowEvals(environment, config.openai.azure_oai_eval_deployment_name)
+    pf_evals = PromptFlowEvals(openai_endpoint=environment.openai_endpoint,
+                               openai_api_key=environment.openai_api_key,
+                               openai_deployment_name=config.openai.azure_oai_eval_deployment_name)
 
     query_data_load = handler.load(
         index_config.index_name(), config.experiment_name, config.job_name
@@ -216,7 +221,7 @@ def evaluate_prompts(
             executor.submit(
                 evaluate_single_prompt,
                 data,
-                response_generator,
+                ragas_evals,
                 pf_evals,
                 metric_types,
                 data_list,
