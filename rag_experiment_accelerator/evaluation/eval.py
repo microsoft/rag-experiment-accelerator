@@ -15,7 +15,9 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.evaluation import plain_metrics
-from rag_experiment_accelerator.evaluation.llm_based_metrics import compute_llm_based_score
+from rag_experiment_accelerator.evaluation.llm_based_metrics import (
+    compute_llm_based_score,
+)
 from rag_experiment_accelerator.evaluation.plot_metrics import (
     draw_hist_df,
     draw_search_chart,
@@ -29,6 +31,7 @@ from rag_experiment_accelerator.evaluation.transformer_based_metrics import (
 )
 
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.evaluation.promptflow_quality_metrics import PromptFlowEvals
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
@@ -47,8 +50,9 @@ def compute_metrics(
     question,
     actual,
     expected,
-    response_generator: ResponseGenerator,
     retrieved_contexts,
+    response_generator: ResponseGenerator,
+    pf_evals: PromptFlowEvals
 ):
     """
     Computes a score for the similarity between two strings using a specified metric.
@@ -75,8 +79,9 @@ def compute_metrics(
         question (str): question text
         actual (str): The first string to compare.
         expected (str): The second string to compare.
-        response_generator (ResponseGenerator): The response generator to use for generating responses.
         retrieved_contexts (list[str]): The list of retrieved contexts for the query.
+        response_generator (ResponseGenerator): The response generator to use for generating responses.
+        pf_evals (PromptFlowEvals): The PromptFlow evaluators to use for scoring.
 
 
     Returns:
@@ -97,7 +102,8 @@ def compute_metrics(
                 actual,
                 expected,
                 retrieved_contexts,
-                response_generator
+                response_generator,
+                pf_evals
             )
         except KeyError:
             logger.error(f"Unsupported metric type: {metric_type}")
@@ -108,6 +114,7 @@ def compute_metrics(
 def evaluate_single_prompt(
     data,
     response_generator,
+    pf_evals,
     metric_types,
     data_list,
     total_precision_scores_by_search_type,
@@ -125,8 +132,9 @@ def evaluate_single_prompt(
             data.question,
             actual,
             expected,
-            response_generator,
             data.retrieved_contexts,
+            response_generator,
+            pf_evals
         )
         metric_dic[metric_type] = score
 
@@ -190,6 +198,8 @@ def evaluate_prompts(
         environment, config, config.openai.azure_oai_eval_deployment_name
     )
 
+    pf_evals = PromptFlowEvals(environment, config.openai.azure_oai_eval_deployment_name)
+
     query_data_load = handler.load(
         index_config.index_name(), config.experiment_name, config.job_name
     )
@@ -202,6 +212,7 @@ def evaluate_prompts(
                 evaluate_single_prompt,
                 data,
                 response_generator,
+                pf_evals,
                 metric_types,
                 data_list,
                 total_precision_scores_by_search_type,
