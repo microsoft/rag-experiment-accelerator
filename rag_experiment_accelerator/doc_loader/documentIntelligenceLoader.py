@@ -13,6 +13,7 @@ from pathlib import Path
 
 from langchain_community.document_loaders.base import BaseLoader
 from typing import List, Iterator
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.utils.logging import get_logger
 from azure.ai.documentintelligence.models import DocumentParagraph
 
@@ -44,35 +45,33 @@ def is_supported_by_document_intelligence(format: str) -> bool:
 
 def load_with_azure_document_intelligence(
     environment: Environment,
+    index_config: IndexConfig,
     file_paths: list[str],
-    chunk_size: int,
-    overlap_size: int,
-    azure_document_intelligence_model: str,
     **kwargs: dict,
 ) -> list[Document]:
     """
     Load pdf files from a folder using Azure Document Intelligence.
 
     Args:
-        environment (Environment): The environment class
+        environment (Environment): The environment class.
+        index_config (IndexConfig): The index configuration class.
         file_paths (list[str]): Sequence of paths to load.
-        chunk_size (int): The size of each text chunk in characters.
-        overlap_size (int): The size of the overlap between text chunks in characters.
-        azure_document_intelligence_model (str): The model to use for Azure Document Intelligence.
         **kwargs (dict): Unused.
 
     Returns:
         list[Document]: A list of Document objects.
     """
     documents = []
-    logger.info(f"Using model {azure_document_intelligence_model}")
+    logger.info(
+        f"Using model {index_config.chunking.azure_document_intelligence_model}"
+    )
     for file_path in file_paths:
         try:
             loader = DocumentIntelligenceLoader(
                 file_path,
                 environment.azure_document_intelligence_endpoint,
                 environment.azure_document_intelligence_admin_key,
-                azure_document_intelligence_model,
+                index_config.chunking.azure_document_intelligence_model,
                 glob_patterns=["*"],
                 excluded_paragraph_roles=[
                     "pageHeader",
@@ -88,13 +87,13 @@ def load_with_azure_document_intelligence(
     logger.debug(f"Loaded {len(documents)} documents using Azure Document Intelligence")
 
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=overlap_size,
+        chunk_size=index_config.chunking.chunk_size,
+        chunk_overlap=index_config.chunking.overlap_size,
         separators=["\n\n", "\n"],
     )
 
     logger.debug(
-        f"Splitting extracted documents into chunks of {chunk_size} characters with an overlap of {overlap_size} characters"
+        f"Splitting extracted documents into chunks of {index_config.chunking.chunk_size} characters with an overlap of {index_config.chunking.overlap_size} characters"
     )
 
     docs = text_splitter.split_documents(documents)

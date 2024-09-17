@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.doc_loader.htmlLoader import load_html_files
 from rag_experiment_accelerator.config.paths import get_all_file_paths
 
@@ -7,9 +8,10 @@ from rag_experiment_accelerator.config.paths import get_all_file_paths
 def test_load_html_files():
     chunks = load_html_files(
         environment=Mock(),
+        index_config=IndexConfig.from_dict(
+            {"chunking": {"chunk_size": 1000, "overlap_size": 200}}
+        ),
         file_paths=get_all_file_paths("./data/html"),
-        chunk_size=1000,
-        overlap_size=200,
     )
 
     assert len(chunks) == 20

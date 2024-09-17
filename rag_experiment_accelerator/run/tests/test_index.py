@@ -72,6 +72,23 @@ def test_run(
         ],
         sampling=SamplingConfig(sample_data=False),
     )
+    flatten_index_config = IndexConfig(
+        index_name_prefix="prefix",
+        ef_construction=300,
+        ef_search=300,
+        chunking=ChunkingConfig(
+            preprocess=False,
+            chunk_size=10,
+            overlap_size=5,
+            chunking_strategy="chunking_strategy",
+            generate_title=False,
+            generate_summary=False,
+            override_content_with_summary=False,
+            azure_document_intelligence_model="prebuilt-read",
+        ),
+        embedding_model=EmbeddingModelConfig(model_name="model1"),
+        sampling=SamplingConfig(sample_data=False),
+    )
 
     mock_config.language = MagicMock(
         spec=LanguageConfig, analyzer=["analyzer1", "analyzer2"]
@@ -119,8 +136,6 @@ def test_run(
     assert mock_create_acs_index.call_args_list[0][0][0] == "service_endpoint"
     assert mock_create_acs_index.call_args_list[0][0][2] == "admin_key"
 
-    assert mock_load_documents.call_args_list[0][0][1] == "chunking_strategy"
+    assert mock_load_documents.call_args_list[0][0][1] == flatten_index_config
     assert mock_load_documents.call_args_list[0][0][2] == ["format1", "format2"]
     assert mock_load_documents.call_args_list[0][0][3] == file_paths
-    assert mock_load_documents.call_args_list[0][0][4] == 10
-    assert mock_load_documents.call_args_list[0][0][5] == 5
