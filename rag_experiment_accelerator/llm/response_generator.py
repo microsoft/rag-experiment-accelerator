@@ -4,6 +4,8 @@ import json
 import openai
 
 from string import Template
+
+from openai import AzureOpenAI
 from tenacity import (
     after_log,
     before_sleep_log,
@@ -17,7 +19,6 @@ from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from openai import AzureOpenAI
 from rag_experiment_accelerator.llm.prompt.prompt import (
     StructuredPrompt,
     CoTPrompt,
@@ -37,7 +38,7 @@ class ResponseGenerator:
         self.client = self._initialize_azure_openai_client(environment)
         self.json_object_supported = True
 
-    def _initialize_azure_openai_client(environment: Environment):
+    def _initialize_azure_openai_client(self, environment: Environment):
         return AzureOpenAI(
             azure_endpoint=environment.openai_endpoint,
             api_key=environment.openai_api_key,
