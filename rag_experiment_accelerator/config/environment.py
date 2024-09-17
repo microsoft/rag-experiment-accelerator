@@ -92,7 +92,6 @@ class Environment:
     azure_document_intelligence_endpoint: Optional[str]
     azure_document_intelligence_admin_key: Optional[str]
     azure_key_vault_endpoint: Optional[str]
-    pypdf_enabled: Optional[bool]
 
     @classmethod
     def _field_names(cls) -> list[str]:

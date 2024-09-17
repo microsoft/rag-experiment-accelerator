@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
+from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
 
 
@@ -16,16 +17,12 @@ from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
 )
 def test_load_pdf_files(pypdf_enabled: bool, expected_content: str):
     file_path = "./data/pdf/text-as-image.pdf"
-    chunk_size = 1000
-    overlap_size = 400
 
-    environment_mock = Mock(spec=["pypdf_enabled"])
-    environment_mock.pypdf_enabled = pypdf_enabled
+    environment_mock = Mock()
     actual_docs = load_pdf_files(
         environment=environment_mock,
+        index_config=IndexConfig.from_dict({"pypdf_enabled": pypdf_enabled}),
         file_paths=[file_path],
-        chunk_size=chunk_size,
-        overlap_size=overlap_size,
     )
 
     assert len(actual_docs) == 1

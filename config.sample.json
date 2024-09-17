@@ -34,7 +34,8 @@
             "min_cluster": 2,
             "max_cluster": 30,
             "only_sample": false
-        }
+        },
+        "pypdf_enabled": true
     },
     "language": {
         "analyzer": {

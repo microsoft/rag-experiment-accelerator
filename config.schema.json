@@ -211,6 +211,11 @@
                         "min_cluster",
                         "max_cluster"
                     ]
+                },
+                "pypdf_enabled": {
+                  "type": "boolean",
+                  "description": "Whether or not to use PyPDF for PDF extraction",
+                  "default": false
                 }
             },
             "required": [

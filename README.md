@@ -314,7 +314,8 @@ Every array will produce the combinations of flat configurations when the method
             "optimum_k": "Set to 'auto' to automatically determine the optimum cluster number or set to a specific value e.g. 15",
             "min_cluster": "Used by the automated optimum cluster process, this is the minimum number of clusters e.g. 2",
             "max_cluster": "Used by the automated optimum cluster process, this is the maximum number of clusters e.g. 30"
-        }
+        },
+        "pypdf_enabled":  "Whether to use PyPDF for loading PDF. If true, PyPDF is used, otherwise unstructured is used. Defaults to false."
     },
     "language": {
         "analyzer": {

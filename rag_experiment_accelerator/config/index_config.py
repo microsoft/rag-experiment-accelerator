@@ -50,6 +50,7 @@ class IndexConfig(BaseConfig):
     chunking: ChunkingConfig = field(default_factory=ChunkingConfig)
     embedding_model: EmbeddingModelConfig = field(default_factory=EmbeddingModelConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
+    pypdf_enabled: bool = False
 
     def __label_properties(self) -> dict:
         """
