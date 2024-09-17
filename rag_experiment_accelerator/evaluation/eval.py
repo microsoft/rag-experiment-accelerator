@@ -14,6 +14,7 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 )
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
+from promptflow.core import AzureOpenAIModelConfiguration
 from rag_experiment_accelerator.evaluation import plain_metrics
 from rag_experiment_accelerator.evaluation.llm_based_metrics import (
     compute_llm_based_score,
@@ -206,9 +207,13 @@ def evaluate_prompts(
     )
     ragas_evals = RagasEvals(response_generator)
 
-    pf_evals = PromptFlowEvals(openai_endpoint=environment.openai_endpoint,
-                               openai_api_key=environment.openai_api_key,
-                               openai_deployment_name=config.openai.azure_oai_eval_deployment_name)
+    az_openai_model_config = AzureOpenAIModelConfiguration(
+        azure_endpoint=environment.openai_endpoint,
+        api_key=environment.openai_api_key,
+        azure_deployment=config.openai.azure_oai_eval_deployment_name
+    )
+
+    pf_evals = PromptFlowEvals(az_openai_model_config)
 
     query_data_load = handler.load(
         index_config.index_name(), config.experiment_name, config.job_name

@@ -79,7 +79,6 @@ class Environment:
     openai_api_key: str
     openai_api_version: str
     openai_endpoint: str
-    openai_deployment_name: str
     aml_subscription_id: str
     aml_workspace_name: str
     aml_resource_group_name: str

@@ -11,12 +11,8 @@ from promptflow.core import AzureOpenAIModelConfiguration
 class PromptFlowEvals:
     """Class that leverages the evaluators from the Promptflow evaluation framework
     for LLM pipelines"""
-    def __init__(self, openai_endpoint: str, openai_api_key: str, openai_deployment_name: str):
-        self.model_config = AzureOpenAIModelConfiguration(
-            azure_endpoint=openai_endpoint,
-            api_key=openai_api_key,
-            azure_deployment=openai_deployment_name
-        )
+    def __init__(self, az_openai_model_config: AzureOpenAIModelConfiguration):
+        self.model_config = az_openai_model_config
 
     def compute_score(
         self,
