@@ -48,5 +48,5 @@ def compute_llm_based_score(
         )
     else:
         raise KeyError(f"Invalid metric type: {metric_type}")
-    
+
     return score

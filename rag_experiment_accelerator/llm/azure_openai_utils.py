@@ -11,7 +11,7 @@ def initialize_azure_openai_client(environment: Environment):
     )
 
 
-def initialize_azure_openai_model_config(environment: Environment, 
+def initialize_azure_openai_model_config(environment: Environment,
                                          aoai_deployment_name: str):
     return AzureOpenAIModelConfiguration(
         azure_endpoint=environment.openai_endpoint,

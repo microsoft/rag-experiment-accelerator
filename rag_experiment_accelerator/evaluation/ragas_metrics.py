@@ -46,8 +46,8 @@ class RagasEvals:
             case "ragas_context_precision":
                 score = self.ragas_context_precision(question=question, retrieved_contexts=retrieved_contexts)
             case "ragas_context_recall":
-                score = self.ragas_context_recall(question=question, 
-                                                  groundtruth_answer=ground_truth_answer, 
+                score = self.ragas_context_recall(question=question,
+                                                  groundtruth_answer=ground_truth_answer,
                                                   retrieved_contexts=retrieved_contexts)
             case _:
                 raise KeyError(f"Invalid metric type: {metric_type}")
