@@ -76,6 +76,11 @@ def compute_metrics(
             - "ragas_context_precision": Verifies whether or not a given context is useful for answering a question.
             - "ragas_answer_relevance": Scores the relevancy of the answer according to the given question.
             - "ragas_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+            - "pf_answer_relevance": Scores the relevancy of the answer according to the given question.
+            - "pf_answer_coherence": Scores the coherence of the answer according to the given question.
+            - "pf_answer_similarity": Scores the similarity of the answer to the ground truth answer.
+            - "pf_answer_fluency": Scores the fluency of the answer according to the given question.
+            - "pf_answer_groundedness": Scores the groundedness of the answer according to the retrieved contexts.
         question (str): question text
         actual (str): The first string to compare.
         expected (str): The second string to compare.
