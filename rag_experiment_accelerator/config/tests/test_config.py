@@ -88,6 +88,8 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
     assert index.embedding_model[1].type == mock_embedding[1]["type"]
     assert index.embedding_model[1].model_name == mock_embedding[1]["model_name"]
 
+    assert index.pypdf_enabled == mock_config["index"]["pypdf_enabled"]
+
     model1 = config.get_embedding_model(config.index.embedding_model[0].model_name)
     assert model1.model_name.return_value == "all-MiniLM-L6-v2"
     assert model1.dimension.return_value == 384
