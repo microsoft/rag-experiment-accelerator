@@ -17,7 +17,7 @@ from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
-from rag_experiment_accelerator.llm.az_openai_utils import initialize_azure_openai_client
+from rag_experiment_accelerator.llm.azure_openai_utils import initialize_azure_openai_client
 from rag_experiment_accelerator.llm.prompt.prompt import (
     StructuredPrompt,
     CoTPrompt,
