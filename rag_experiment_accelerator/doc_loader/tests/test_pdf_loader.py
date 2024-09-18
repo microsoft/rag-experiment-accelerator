@@ -26,5 +26,7 @@ def test_load_pdf_files(pypdf_enabled: bool, expected_content: str):
     )
 
     assert len(actual_docs) == 1
-    actual_content = list(actual_docs[0].values())[0]["content"]
+    actual_doc = list(actual_docs[0].values())[0]
+    actual_content = actual_doc["content"]
     assert actual_content == expected_content
+    assert actual_doc["metadata"]["source"] == file_path

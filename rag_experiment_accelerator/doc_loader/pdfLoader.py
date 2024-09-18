@@ -2,10 +2,10 @@ from typing import List
 import uuid
 import re
 
-from unstructured.partition.pdf import partition_pdf
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from unstructured.partition.pdf import partition_pdf
 
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.utils.logging import get_logger
@@ -62,6 +62,7 @@ def _load_pdf_with_unstructured(file_path: str) -> List[Document]:
         ]
         if key in element_meta
     }
+    doc_meta["source"] = file_path
     content = "\n".join([element.text for element in elements])
     return [Document(page_content=content, metadata=doc_meta)]
 
@@ -88,7 +89,9 @@ def load_pdf_files(
     logger.info("Loading PDF files")
     documents = []
     load_pdf_from_path = (
-        _load_pdf_with_pypdf if index_config.pypdf_enabled else _load_pdf_with_unstructured
+        _load_pdf_with_pypdf
+        if index_config.pypdf_enabled
+        else _load_pdf_with_unstructured
     )
     for file_path in file_paths:
         documents += load_pdf_from_path(file_path)
