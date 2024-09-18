@@ -49,7 +49,7 @@ def _load_pdf_with_pypdf(file_path: str) -> List[Document]:
 
 def _load_pdf_with_unstructured(file_path: str) -> List[Document]:
     logger.debug("Loading PDF file with unstructured: %s", file_path)
-    elements = partition_pdf(filename=file_path, strategy="ocr_only")
+    elements = partition_pdf(filename=file_path, strategy="hi_res")
     element_meta = elements[0].to_dict()["metadata"] if elements else {}
     doc_meta = {
         key: element_meta[key]
@@ -88,7 +88,9 @@ def load_pdf_files(
     logger.info("Loading PDF files")
     documents = []
     load_pdf_from_path = (
-        _load_pdf_with_pypdf if index_config.pypdf_enabled else _load_pdf_with_unstructured
+        _load_pdf_with_pypdf
+        if index_config.pypdf_enabled
+        else _load_pdf_with_unstructured
     )
     for file_path in file_paths:
         documents += load_pdf_from_path(file_path)
