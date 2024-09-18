@@ -132,7 +132,7 @@ class IndexConfig(BaseConfig):
         Reverse of index_name().
         """
 
-        key_values = [kv.split("-") for kv in index_name.split("_")]
+        key_values = [kv.split("-", 1) for kv in index_name.split("_")]
         properties = {kv[0]: kv[1].strip() for kv in key_values}
 
         try:
