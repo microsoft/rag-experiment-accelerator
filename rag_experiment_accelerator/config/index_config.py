@@ -93,8 +93,8 @@ class IndexConfig(BaseConfig):
                 chunk_size=int(properties[IndexKey.CHUNK_SIZE]),
                 chunking_strategy=properties[IndexKey.CHUNKING_STRATEGY],
                 overlap_size=int(properties[IndexKey.OVERLAP_SIZE]),
-                generate_title=bool(properties[IndexKey.GENERATE_TITLE]),
-                generate_summary=bool(properties[IndexKey.GENERATE_SUMMARY]),
+                generate_title=bool(int(properties[IndexKey.GENERATE_TITLE])),
+                generate_summary=bool(int(properties[IndexKey.GENERATE_SUMMARY])),
                 override_content_with_summary=bool(
                     properties[IndexKey.OVERRIDE_CONTENT_WITH_SUMMARY]
                 ),
