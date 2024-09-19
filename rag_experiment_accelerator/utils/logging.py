@@ -22,6 +22,9 @@ def get_logger(name: str) -> logging.Logger:
     global _cached_logging_level
     if _cached_logging_level is None:
         _cached_logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
+    # Make sure the _cached_logging_level is not an empty string
+    if not _cached_logging_level:
+        _cached_logging_level = "INFO"
 
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter(

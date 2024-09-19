@@ -66,4 +66,4 @@ def run(input_paths: List[str]) -> str:
 
     index_run(environment, config, index_config, input_paths, mlflow_client)
 
-    return args.index_name
+    return [args.index_name]
