@@ -125,7 +125,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
             new_df = new_df._append(data, ignore_index=True)
         else:
             logger.info(
-                f"Skipping chunk with less than 50 characters: {chunk['filename']}"
+                f"Skipping chunk with less than 50 characters: {chunk.get('filename')}"
             )
 
     if new_df.empty:

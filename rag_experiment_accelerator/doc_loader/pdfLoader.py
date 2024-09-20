@@ -49,7 +49,7 @@ def _load_pdf_with_pypdf(file_path: str) -> List[Document]:
 
 def _load_pdf_with_unstructured(file_path: str) -> List[Document]:
     logger.debug("Loading PDF file with unstructured: %s", file_path)
-    elements = partition_pdf(filename=file_path, strategy="ocr_only")
+    elements = partition_pdf(filename=file_path, strategy="hi_res")
     element_meta = elements[0].to_dict()["metadata"] if elements else {}
     doc_meta = {
         key: element_meta[key]

@@ -8,15 +8,15 @@ from rag_experiment_accelerator.doc_loader.pdfLoader import load_pdf_files
 @pytest.mark.parametrize(
     "pypdf_enabled, expected_content",
     [
-        (True, "this is a sample pdf with text."),
+        (True, "col1  col2  col3  a b c 1 2 3        this is a sample text."),
         (
             False,
-            "this is a sample of text captured as an image and stored as pdf.this is a sample pdf with text.",
+            "col1 col2 col3 a b c 1 2 3this is a sample of text captured as an image and stored as pdf.this is a sample text.",
         ),
     ],
 )
 def test_load_pdf_files(pypdf_enabled: bool, expected_content: str):
-    file_path = "./data/pdf/text-as-image.pdf"
+    file_path = "./data/pdf/sample-pdf.pdf"
 
     environment_mock = Mock()
     actual_docs = load_pdf_files(
