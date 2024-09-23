@@ -37,4 +37,4 @@ textdistance==4.6.3
 tiktoken==0.7.0
 tqdm==4.66.5
 umap-learn==0.5.6
-unstructured==0.15.12
+unstructured==0.15.13
