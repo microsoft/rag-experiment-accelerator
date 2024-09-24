@@ -33,7 +33,7 @@ def test_index_config_to_index_name():
 
 
 def test_index_name_to_index_config():
-    index_name = "idx-prefix_efc-3_efs-4_em-modelname_sp-10_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0_d-100"
+    index_name = "idx-prefix_efc-3_efs-4_em-modelname_sp-10_p-0_cs-1_st-abcd_o-2_t-0_s-1_oc-0_d-100"
 
     index_config = IndexConfig.from_index_name(index_name)
 
@@ -41,6 +41,8 @@ def test_index_name_to_index_config():
     assert index_config.chunking.chunk_size == 1
     assert index_config.chunking.chunking_strategy == "abcd"
     assert index_config.chunking.overlap_size == 2
+    assert index_config.chunking.generate_summary is True
+    assert index_config.chunking.generate_title is False
     assert index_config.embedding_model.model_name == "modelname"
     assert index_config.embedding_model.dimension == 100
     assert index_config.ef_construction == 3
@@ -48,7 +50,7 @@ def test_index_name_to_index_config():
 
 
 def test_index_name_to_index_config_shuffled_order():
-    index_name = "idx-prefix_efc-3_efs-4_em-modelname_p-0_cs-1_st-abcd_o-2_t-0_s-0_oc-0_sp-10_d-100"
+    index_name = "idx-prefix_efc-3_efs-4_em-modelname_p-0_cs-1_st-abcd_o-2_t-0_s-1_oc-0_sp-10_d-100"
 
     index_config = IndexConfig.from_index_name(index_name)
 
@@ -56,6 +58,8 @@ def test_index_name_to_index_config_shuffled_order():
     assert index_config.chunking.chunk_size == 1
     assert index_config.chunking.chunking_strategy == "abcd"
     assert index_config.chunking.overlap_size == 2
+    assert index_config.chunking.generate_summary is True
+    assert index_config.chunking.generate_title is False
     assert index_config.embedding_model.model_name == "modelname"
     assert index_config.embedding_model.dimension == 100
     assert index_config.ef_construction == 3
@@ -73,3 +77,20 @@ def test_index_name_to_index_config_missing_property():
         assert True
     else:
         assert False, "Expected ValueError to be thrown"
+
+
+def test_index_name_to_index_config_hyphens():
+    index_name = (
+        "idx-prefix_efc-3_efs-4_em-model-name_sp-10_p-0_cs-1_st-ab-cd_o-2_t-0_s-0_oc-0_d-100"
+    )
+
+    index_config = IndexConfig.from_index_name(index_name)
+
+    assert index_config.index_name_prefix == "prefix"
+    assert index_config.chunking.chunk_size == 1
+    assert index_config.chunking.chunking_strategy == "ab-cd"
+    assert index_config.chunking.overlap_size == 2
+    assert index_config.embedding_model.model_name == "model-name"
+    assert index_config.embedding_model.dimension == 100
+    assert index_config.ef_construction == 3
+    assert index_config.ef_search == 4

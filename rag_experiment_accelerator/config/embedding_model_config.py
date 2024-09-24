@@ -7,3 +7,4 @@ class EmbeddingModelConfig(BaseConfig):
     type: str = "sentence-transformer"
     model_name: str = "all-mpnet-base-v2"
     dimension: int = None
+    shorten_dimensions: bool = False
