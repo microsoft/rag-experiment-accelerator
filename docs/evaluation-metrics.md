@@ -21,7 +21,16 @@ You can choose which metrics should be calculated in your experiment by updating
     "hamming",
     "jaccard",
     "levenshtein",
-    "fuzzy",
+    "fuzzy_score",
+    "rouge1_precision",
+    "rouge1_recall",
+    "rouge1_fmeasure",
+    "rouge2_precision",
+    "rouge2_recall",
+    "rouge2_fmeasure",
+    "rougeL_precision",
+    "rougeL_recall",
+    "rougeL_fmeasure",
     "bert_all_MiniLM_L6_v2",
     "bert_base_nli_mean_tokens",
     "bert_large_nli_mean_tokens",
@@ -104,7 +113,7 @@ minimum number of insertions, deletions, or substitutions required to transform 
 
 | Configuration Key | Calculation Base     | Possible Values       |
 | ----------------- | -------------------- | --------------------- |
-| `fuzzy`           | `actual`, `expected` | Integer (Fuzzy score) |
+| `fuzzy_score`           | `actual`, `expected` | Integer (Fuzzy score) |
 
 This metric is backed by the [RapidfFuzz Python package](https://github.com/rapidfuzz/RapidFuzz).
 Calculates the fuzzy score between two documents using the levenshtein distance.
