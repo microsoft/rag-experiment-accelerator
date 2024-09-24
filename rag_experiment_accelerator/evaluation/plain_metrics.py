@@ -1,7 +1,7 @@
 import evaluate
 from rapidfuzz import fuzz
-from rapidfuzz import distance as d
-from textdistance import algorithms as alg
+from rapidfuzz import distance
+from textdistance import algorithms
 
 
 # https://huggingface.co/spaces/evaluate-metric/bleu
@@ -18,12 +18,18 @@ def bleu(predictions: list[str], references: list[str]) -> float:
     """
     bleu = evaluate.load("bleu")
 
+    # Match length of predictions and references and check they are both lists of strings
+    if len(predictions) != len(references) or not all(isinstance(x, str) for x in predictions) or not all(
+        isinstance(x, list) for x in references
+    ):
+        raise ValueError("Predictions and references must be lists of strings with the same length.")
+
     results = bleu.compute(predictions=predictions, references=references, max_order=2)
     # multiplying by 100 to maintain consistency with previous implementation
     return results["bleu"] * 100
 
 
-def fuzzy(str1: str, str2: str, match_type: str = "token_set_ratio") -> float:
+def fuzzy_score(str1: str, str2: str, match_type: str = "token_set_ratio") -> float:
     """
     Compares two strings using fuzzy string matching and returns a similarity score.
 
@@ -66,7 +72,7 @@ def levenshtein(str1: str, str2: str) -> int:
     Returns:
         int: The normalized similarity score as a percentage.
     """
-    score = d.Levenshtein.normalized_similarity(str1, str2) * 100
+    score = distance.Levenshtein.normalized_similarity(str1, str2) * 100
     return score
 
 
@@ -81,7 +87,7 @@ def jaccard(str1: str, str2: str) -> int:
     Returns:
         int: The Jaccard similarity score between the two sets of values, as a percentage.
     """
-    score = int(alg.jaccard.normalized_similarity(str1, str2) * 100)
+    score = int(algorithms.jaccard.normalized_similarity(str1, str2) * 100)
     return score
 
 
@@ -96,7 +102,7 @@ def hamming(str1: str, str2: str) -> int:
     Returns:
         int: The Hamming similarity score between the two values, as a percentage.
     """
-    score = int(d.Hamming.normalized_similarity(str1, str2) * 100)
+    score = int(distance.Hamming.normalized_similarity(str1, str2) * 100)
     return score
 
 
@@ -111,25 +117,7 @@ def jaro_winkler(str1: str, str2: str) -> int:
     Returns:
         int: The Jaro-Winkler similarity score between the two strings, as an integer between 0 and 100.
     """
-    score = int(d.JaroWinkler.normalized_similarity(str1, str2) * 100)
-    return score
-
-
-def cosine(str1: str, str2: str) -> int:
-    """
-    Calculates the cosine similarity (Ochiai coefficient) between two strings
-    using token-frequency vectors
-
-    https://en.wikipedia.org/wiki/Cosine_similarity.
-
-    Args:
-        str1 (list): The first vector.
-        str2 (list): The second vector.
-
-    Returns:
-        int: The cosine similarity score between the two vectors, as a percentage.
-    """
-    score = int(alg.cosine.normalized_similarity(str1, str2) * 100)
+    score = int(distance.JaroWinkler.normalized_similarity(str1, str2) * 100)
     return score
 
 
@@ -144,7 +132,7 @@ def lcsseq(str1: str, str2: str) -> int:
     Returns:
         int: The LCS similarity score between the two input strings, as a percentage (0-100).
     """
-    score = int(d.LCSseq.normalized_similarity(str1, str2) * 100)
+    score = int(distance.LCSseq.normalized_similarity(str1, str2) * 100)
     return score
 
 
@@ -159,5 +147,5 @@ def lcsstr(str1: str, str2: str) -> int:
     Returns:
         int: The LCS similarity score between the two strings, as a percentage (0-100).
     """
-    score = int(alg.lcsstr.normalized_similarity(str1, str2) * 100)
+    score = int(algorithms.lcsstr.normalized_similarity(str1, str2) * 100)
     return score
