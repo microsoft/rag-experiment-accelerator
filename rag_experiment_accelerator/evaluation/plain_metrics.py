@@ -47,16 +47,25 @@ def fuzzy_score(str1: str, str2: str, match_type: str = "token_set_ratio") -> fl
             - 'QRatio'
 
     Returns:
-        A list of the similarity scores.
+        A similarity score.
 
     Raises:
         ValueError: If the match type is not recognized.
     """
-    try:
-        fuzzy_match_fn = getattr(fuzz, match_type)
-    except AttributeError:
+    # validate match_type to be one of the supported fuzzy matching functions
+    supported_match_types = {"ratio",
+                             "token_set_ratio",
+                             "token_sort_ratio",
+                             "partial_ratio",
+                             "partial_token_sort_ratio",
+                             "partial_token_set_ratio",
+                             "WRatio",
+                             "QRatio"}
+    if match_type not in supported_match_types:
         raise ValueError(f"Match type '{match_type}' is not recognized.")
 
+    # get the fuzzy matching function based on the match_type
+    fuzzy_match_fn = getattr(fuzz, match_type)
     similarity_score = fuzzy_match_fn(str1, str2)
     return similarity_score
 
