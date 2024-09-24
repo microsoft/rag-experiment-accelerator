@@ -81,13 +81,13 @@ def rouge_score(ground_truth: str, prediction: str, rouge_metric_name: str) -> f
         rouge_metric_name: list of rouge metrics to use for evaluation. Options include:
             - 'rouge1_precision'
             - 'rouge1_recall'
-            - 'rouge1_f1'
+            - 'rouge1_fmeasure'
             - 'rouge2_precision'
             - 'rouge2_recall'
-            - 'rouge2_f1'
+            - 'rouge2_fmeasure'
             - 'rougeL_precision'
             - 'rougeL_recall'
-            - 'rougeL_f1'
+            - 'rougeL_fmeasure'
     Returns:
         score: ROUGE score.
     """
@@ -98,13 +98,13 @@ def rouge_score(ground_truth: str, prediction: str, rouge_metric_name: str) -> f
         raise ValueError(f"Rouge type '{rouge_type}' is not recognized. "
                          "Supported types are {supported_rouge_types}.")
 
-    if metric_type not in {"precision", "recall", "f1"}:
+    if metric_type not in {"precision", "recall", "fmeasure"}:
         raise ValueError(f"Rouge metric type '{rouge_type}' is not recognized. "
-                         "Supported metric types are {'precision', 'recall', 'f1'}.")
+                         "Supported metric types are {'precision', 'recall', 'fmeasure'}.")
 
     scorer = rouge_scorer.RougeScorer(rouge_types=[rouge_type], use_stemmer=True)
     scores = scorer.score(target=ground_truth, prediction=prediction)
-    return scores[rouge_type][metric_type]
+    return getattr(scores[rouge_type], metric_type) * 100
 
 
 def levenshtein(str1: str, str2: str) -> int:
