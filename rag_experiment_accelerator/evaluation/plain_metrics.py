@@ -102,16 +102,16 @@ def jaccard(str1: str, str2: str) -> int:
 
 def hamming(str1: str, str2: str) -> int:
     """
-    Calculates the Hamming similarity score between two values.
+    Calculates the Hamming similarity score between two strings.
 
     Args:
-        str1 (str): The first value to compare.
-        str2 (str): The second value to compare.
+        str1 (str): The first string to compare.
+        str2 (str): The second string to compare.
 
     Returns:
         int: The Hamming similarity score between the two values, as a percentage.
     """
-    score = int(distance.Hamming.normalized_similarity(str1, str2) * 100)
+    score = int(distance.Hamming.normalized_similarity(str1, str2, pad=True) * 100)
     return score
 
 
