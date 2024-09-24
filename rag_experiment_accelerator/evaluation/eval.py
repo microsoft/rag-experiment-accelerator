@@ -56,12 +56,29 @@ def compute_metrics(
         metric_type (str): The type of metric to use for comparison. Valid options are:
             - "lcsstr": Longest common substring
             - "lcsseq": Longest common subsequence
-            - "cosine": Cosine similarity (Ochiai coefficient)
             - "jaro_winkler": Jaro-Winkler distance
             - "hamming": Hamming distance
             - "jaccard": Jaccard similarity
             - "levenshtein": Levenshtein distance
-            - "fuzzy": RapidFuzz similarity
+            - "fuzzy_score": RapidFuzz similarity. This is faster than the associated function in FuzzyWuzzy.
+                             Default match type is "token_set_ratio".
+            - "rouge1_precision": The ROUGE-1 precision score. This is the number of overlapping unigrams 
+                                  between the actual and expected strings divided by the number of unigrams 
+                                  in the expected string.
+            - "rouge1_recall": The ROUGE-1 recall score. This is the number of overlapping unigrams between
+                               the actual and expected strings divided by the number of unigrams in the actual string.
+            - "rouge1_f1": ROUGE-1 F1 score. This is the harmonic mean of the ROUGE-1 precision and recall scores.
+            - "rouge2_precision": The ROUGE-2 precision score. This is the number of overlapping bigrams between
+                                    the actual and expected strings divided by the number of bigrams in the expected string.
+            - "rouge2_recall": The ROUGE-2 recall score. This is the number of overlapping bigrams between the actual
+                               and expected strings divided by the number of bigrams in the actual string.
+            - "rouge2_f1": ROUGE-2 F1 score. This is the harmonic mean of the ROUGE-2 precision and recall scores.
+            - "rougeL_precision": The ROUGE-L precision score. This is the number of overlapping longest common subsequences
+                                  between the actual and expected strings divided by the number of longest common subsequences
+                                  in the expected string.
+            - "rougeL_recall": The ROUGE-L recall score. This is the number of overlapping longest common subsequences between
+                               the actual and expected strings divided by the number of longest common subsequences in the actual string.
+            - "rougeL_f1": ROUGE-L F1 score. This is the harmonic mean of the ROUGE-L precision and recall scores.
             - "bert_all_MiniLM_L6_v2": BERT-based semantic similarity (MiniLM L6 v2 model)
             - "bert_base_nli_mean_tokens": BERT-based semantic similarity (base model, mean tokens)
             - "bert_large_nli_mean_tokens": BERT-based semantic similarity (large model, mean tokens)
@@ -82,9 +99,12 @@ def compute_metrics(
         float: The similarity score between the two strings, as determined by the specified metric.
     """
 
-    plain_metric_func = getattr(plain_metrics, metric_type, None)
-    if plain_metric_func:
-        return plain_metric_func(actual, expected)
+    if metric_type.startswith("rouge"):
+        return plain_metrics.rouge_score(ground_truth=expected, prediction=actual, rouge_metric_name=metric_type)
+    else:
+        plain_metric_func = getattr(plain_metrics, metric_type, None)
+        if plain_metric_func:
+            return plain_metric_func(actual, expected)
 
     try:
         score = compute_transformer_based_score(actual, expected, metric_type)

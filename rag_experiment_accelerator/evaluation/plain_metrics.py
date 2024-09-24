@@ -71,29 +71,40 @@ def fuzzy_score(str1: str, str2: str, match_type: str = "token_set_ratio") -> fl
     return similarity_score
 
 
-def rouge_score(ground_truth: str, prediction: str, rouge_types: list[str]) -> list[dict]:
+def rouge_score(ground_truth: str, prediction: str, rouge_metric_name: str) -> float:
     """
     Calculates the ROUGE scores (rouge1, rouge2, rougeL) between two strings - ground truth and prediction.
 
     Args:
         ground_truth: reference string to compare
         prediction: string that is an output of a model, a system or a generating process
-        rouge_types: list of rouge metrics to use for evaluation. Options include:
-            - 'rouge1'
-            - 'rouge2'
-            - 'rougeL'
+        rouge_metric_name: list of rouge metrics to use for evaluation. Options include:
+            - 'rouge1_precision'
+            - 'rouge1_recall'
+            - 'rouge1_f1'
+            - 'rouge2_precision'
+            - 'rouge2_recall'
+            - 'rouge2_f1'
+            - 'rougeL_precision'
+            - 'rougeL_recall'
+            - 'rougeL_f1'
     Returns:
-        scores (list[dict]): A list of dictionaries containing the ROUGE scores.
+        score: ROUGE score.
     """
     # validate rouge_types to be one of the supported rouge metrics
     supported_rouge_types = {"rouge1", "rouge2", "rougeL"}
-    for rouge_type in rouge_types:
-        if rouge_type not in supported_rouge_types:
-            raise ValueError(f"Rouge type '{rouge_type}' is not recognized.")
+    rouge_type, metric_type = rouge_metric_name.split("_")
+    if rouge_type not in supported_rouge_types:
+        raise ValueError(f"Rouge type '{rouge_type}' is not recognized. "
+                         "Supported types are {supported_rouge_types}.")
 
-    scorer = rouge_scorer.RougeScorer(rouge_types=rouge_types, use_stemmer=True)
+    if metric_type not in {"precision", "recall", "f1"}:
+        raise ValueError(f"Rouge metric type '{rouge_type}' is not recognized. "
+                         "Supported metric types are {'precision', 'recall', 'f1'}.")
+
+    scorer = rouge_scorer.RougeScorer(rouge_types=[rouge_type], use_stemmer=True)
     scores = scorer.score(target=ground_truth, prediction=prediction)
-    return scores
+    return scores[rouge_type][metric_type]
 
 
 def levenshtein(str1: str, str2: str) -> int:

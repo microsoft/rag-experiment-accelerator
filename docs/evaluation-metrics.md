@@ -109,6 +109,46 @@ minimum number of insertions, deletions, or substitutions required to transform 
 This metric is backed by the [RapidfFuzz Python package](https://github.com/rapidfuzz/RapidFuzz).
 Calculates the fuzzy score between two documents using the levenshtein distance.
 
+### Rouge retrieval metrics (Token based)
+
+**Rouge** short for Recall-Oriented Understudy for Gisting Evaluation, is typically used in summarization evaluation tasks, comparing human produced references and system generated summaries. But the core idea is to compare and validate sufficient overlap of common words or phrases in both reference and prediction. String metrics look at character level differences, whereas Rouge can help us compare token level matches. We use the [`rouge-score`](https://pypi.org/project/rouge-score/) to compute these measures. Here are some of the metrics we capture.
+
+- **retr_rouge_1_prec**:  
+  - **Description**: ROUGE-1 precision score based on unigram overlap.  
+  - **Interpretation**: This metric measures the precision of unigrams (individual words) between the ground truth context and the retrieved results. Higher precision indicates more relevant retrievals.
+   
+- **retr_rouge_1_recall**:  
+  - **Description**: ROUGE-1 recall score based on unigram overlap.  
+  - **Interpretation**: This metric measures the recall of unigrams between the ground truth context and the retrieved results. Higher recall indicates that more relevant information from the ground truth is captured in the retrievals.  
+   
+- **retr_rouge_1_f1**:  
+  - **Description**: ROUGE-1 F1 score based on unigram overlap.  
+  - **Interpretation**: This metric is the harmonic mean of ROUGE-1 precision and recall, providing a balanced measure of relevance.  
+   
+- **retr_rouge2_prec**:  
+  - **Description**: ROUGE-2 precision score based on bigram overlap.  
+  - **Interpretation**: This metric measures the precision of bigrams (pairs of consecutive words) between the ground truth context and the retrieved results. Higher precision indicates more relevant retrievals.  
+   
+- **retr_rouge2_recall**:  
+  - **Description**: ROUGE-2 recall score based on bigram overlap.  
+  - **Interpretation**: This metric measures the recall of bigrams between the ground truth context and the retrieved results. Higher recall indicates that more relevant information from the ground truth is captured in the retrievals.  
+   
+- **retr_rouge2_f1**:  
+  - **Description**: ROUGE-2 F1 score based on bigram overlap.  
+  - **Interpretation**: This metric is the harmonic mean of ROUGE-2 precision and recall, providing a balanced measure of relevance.  
+   
+- **retr_rougel_prec**:  
+  - **Description**: ROUGE-L precision based on longest common subsequence overlap.  
+  - **Interpretation**: This metric measures the precision based on the longest common subsequence between the ground truth context and the retrieved results. Higher precision indicates more relevant retrievals.  
+   
+- **retr_rougel_recall**:  
+  - **Description**: ROUGE-L recall based on longest common subsequence overlap.  
+  - **Interpretation**: This metric measures the recall based on the longest common subsequence between the ground truth context and the retrieved results. Higher recall indicates that more relevant information from the ground truth is captured in the retrievals.  
+   
+- **retr_rougel_f1**:  
+  - **Description**: ROUGE-L F1 score based on longest common subsequence overlap
+
+
 ## BERT-based semantic similarity
 
 The following set of metrics calculates semantic similarity between two strings as percentage of differences based on
