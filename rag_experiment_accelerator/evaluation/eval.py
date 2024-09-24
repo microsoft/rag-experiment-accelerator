@@ -67,18 +67,18 @@ def compute_metrics(
                                   in the expected string.
             - "rouge1_recall": The ROUGE-1 recall score. This is the number of overlapping unigrams between
                                the actual and expected strings divided by the number of unigrams in the actual string.
-            - "rouge1_f1": ROUGE-1 F1 score. This is the harmonic mean of the ROUGE-1 precision and recall scores.
+            - "rouge1_fmeasure": ROUGE-1 F1 score. This is the harmonic mean of the ROUGE-1 precision and recall scores.
             - "rouge2_precision": The ROUGE-2 precision score. This is the number of overlapping bigrams between
                                     the actual and expected strings divided by the number of bigrams in the expected string.
             - "rouge2_recall": The ROUGE-2 recall score. This is the number of overlapping bigrams between the actual
                                and expected strings divided by the number of bigrams in the actual string.
-            - "rouge2_f1": ROUGE-2 F1 score. This is the harmonic mean of the ROUGE-2 precision and recall scores.
+            - "rouge2_fmeasure": ROUGE-2 F1 score. This is the harmonic mean of the ROUGE-2 precision and recall scores.
             - "rougeL_precision": The ROUGE-L precision score. This is the number of overlapping longest common subsequences
                                   between the actual and expected strings divided by the number of longest common subsequences
                                   in the expected string.
             - "rougeL_recall": The ROUGE-L recall score. This is the number of overlapping longest common subsequences between
                                the actual and expected strings divided by the number of longest common subsequences in the actual string.
-            - "rougeL_f1": ROUGE-L F1 score. This is the harmonic mean of the ROUGE-L precision and recall scores.
+            - "rougeL_fmeasure": ROUGE-L F1 score. This is the harmonic mean of the ROUGE-L precision and recall scores.
             - "bert_all_MiniLM_L6_v2": BERT-based semantic similarity (MiniLM L6 v2 model)
             - "bert_base_nli_mean_tokens": BERT-based semantic similarity (base model, mean tokens)
             - "bert_large_nli_mean_tokens": BERT-based semantic similarity (large model, mean tokens)
