@@ -62,6 +62,7 @@ def compute_metrics(
             - "levenshtein": Levenshtein distance
             - "fuzzy_score": RapidFuzz similarity. This is faster than the associated function in FuzzyWuzzy.
                              Default match type is "token_set_ratio".
+            - "cosine_ochiai": Cosine similarity (Ochiai coefficient)
             - "rouge1_precision": The ROUGE-1 precision score. This is the number of overlapping unigrams
                                   between the actual and expected strings divided by the number of unigrams
                                   in the expected string.

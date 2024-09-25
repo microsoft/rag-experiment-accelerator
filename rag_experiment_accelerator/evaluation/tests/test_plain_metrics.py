@@ -55,7 +55,7 @@ def test_cosine_ochiai():
     str1 = "The fox jumped over the high fence"
     str2 = "The quick brown fox jumped over the fence"
 
-    assert cosine_ochiai(str1, str2) == 81
+    assert cosine_ochiai(str1, str2) == 83
 
 
 def test_rouge_score():

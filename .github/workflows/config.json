@@ -77,6 +77,7 @@
         "metric_types": [
             "fuzzy_score",
             "cosine_ochiai",
+            "rouge2_recall",
             "bert_all_MiniLM_L6_v2",
             "bert_distilbert_base_nli_stsb_mean_tokens",
             "llm_answer_relevance",
