@@ -561,6 +561,7 @@
                             "jaccard",
                             "levenshtein",
                             "fuzzy_score",
+                            "cosine_ochiai",
                             "rouge1_precision",
                             "rouge1_recall",
                             "rouge1_fmeasure",

@@ -8,6 +8,7 @@ from rag_experiment_accelerator.evaluation.plain_metrics import (
     jaccard,
     hamming,
     jaro_winkler,
+    cosine_ochiai,
     rouge_score,
     lcsseq,
     lcsstr,
@@ -48,6 +49,13 @@ def test_jaro_winkler():
     value2 = "trace"
 
     assert jaro_winkler(value1, value2) == 73
+
+
+def test_cosine_ochiai():
+    str1 = "The fox jumped over the high fence"
+    str2 = "The quick brown fox jumped over the fence"
+
+    assert cosine_ochiai(str1, str2) == 81
 
 
 def test_rouge_score():

@@ -167,6 +167,21 @@ def jaro_winkler(str1: str, str2: str) -> int:
     return score
 
 
+def cosine_ochiai(str1: str, str2: str) -> float:
+    """
+    Calculates the cosine similarity (Ochiai coefficient) between two strings
+    using token-frequency vectors
+    https://en.wikipedia.org/wiki/Cosine_similarity.
+    Args:
+        str1 (str): The first string.
+        str2 (str): The second string.
+    Returns:
+        float: The cosine similarity score between the two strings, as a percentage.
+    """
+    score = int(algorithms.cosine.normalized_similarity(str1, str2) * 100)
+    return score
+
+
 def lcsseq(str1: str, str2: str) -> int:
     """
     Computes the longest common subsequence (LCS) similarity score between two input strings.
