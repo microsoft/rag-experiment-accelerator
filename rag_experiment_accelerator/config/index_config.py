@@ -89,14 +89,14 @@ class IndexConfig(BaseConfig):
             ef_construction=int(properties[IndexKey.EF_CONSTRUCTION]),
             ef_search=int(properties[IndexKey.EF_SEARCH]),
             chunking=ChunkingConfig(
-                preprocess=bool(properties[IndexKey.PREPROCESS]),
+                preprocess=bool(int(properties[IndexKey.PREPROCESS])),
                 chunk_size=int(properties[IndexKey.CHUNK_SIZE]),
                 chunking_strategy=properties[IndexKey.CHUNKING_STRATEGY],
                 overlap_size=int(properties[IndexKey.OVERLAP_SIZE]),
-                generate_title=bool(properties[IndexKey.GENERATE_TITLE]),
-                generate_summary=bool(properties[IndexKey.GENERATE_SUMMARY]),
+                generate_title=bool(int(properties[IndexKey.GENERATE_TITLE])),
+                generate_summary=bool(int(properties[IndexKey.GENERATE_SUMMARY])),
                 override_content_with_summary=bool(
-                    properties[IndexKey.OVERRIDE_CONTENT_WITH_SUMMARY]
+                    int(properties[IndexKey.OVERRIDE_CONTENT_WITH_SUMMARY])
                 ),
             ),
             embedding_model=EmbeddingModelConfig(
@@ -132,7 +132,7 @@ class IndexConfig(BaseConfig):
         Reverse of index_name().
         """
 
-        key_values = [kv.split("-") for kv in index_name.split("_")]
+        key_values = [kv.split("-", 1) for kv in index_name.split("_")]
         properties = {kv[0]: kv[1].strip() for kv in key_values}
 
         try:
