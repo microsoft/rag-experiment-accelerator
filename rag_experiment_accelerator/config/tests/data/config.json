@@ -28,7 +28,6 @@
             {
                 "type": "azure",
                 "model_name": "text-embedding-ada-002"
-<<<<<<< HEAD
             },
             {
                 "type": "azure",
@@ -40,8 +39,6 @@
                 "model_name": "text-embedding-3-small",
                 "dimension": 256,
                 "shorten_dimensions": true
-=======
->>>>>>> main
             }
         ],
         "sampling": {
