@@ -56,10 +56,15 @@ def compute_metrics(
         metric_type (str): The type of metric to use for comparison. Valid options are:
             - "lcsstr": Longest common substring
             - "lcsseq": Longest common subsequence
+<<<<<<< HEAD
+=======
+            - "cosine": Cosine similarity (Ochiai coefficient)
+>>>>>>> main
             - "jaro_winkler": Jaro-Winkler distance
             - "hamming": Hamming distance
             - "jaccard": Jaccard similarity
             - "levenshtein": Levenshtein distance
+<<<<<<< HEAD
             - "fuzzy_score": RapidFuzz similarity. This is faster than the associated function in FuzzyWuzzy.
                              Default match type is "token_set_ratio".
             - "cosine_ochiai": Cosine similarity (Ochiai coefficient)
@@ -81,6 +86,9 @@ def compute_metrics(
                                between the actual and expected strings divided by the number of unigrams in the
                                actual string.
             - "rougeL_fmeasure": ROUGE-L F1 score. This is the harmonic mean of the ROUGE-L precision and recall scores.
+=======
+            - "fuzzy": FuzzyWuzzy similarity
+>>>>>>> main
             - "bert_all_MiniLM_L6_v2": BERT-based semantic similarity (MiniLM L6 v2 model)
             - "bert_base_nli_mean_tokens": BERT-based semantic similarity (base model, mean tokens)
             - "bert_large_nli_mean_tokens": BERT-based semantic similarity (large model, mean tokens)
@@ -101,12 +109,18 @@ def compute_metrics(
         float: The similarity score between the two strings, as determined by the specified metric.
     """
 
+<<<<<<< HEAD
     if metric_type.startswith("rouge"):
         return plain_metrics.rouge_score(ground_truth=expected, prediction=actual, rouge_metric_name=metric_type)
     else:
         plain_metric_func = getattr(plain_metrics, metric_type, None)
         if plain_metric_func:
             return plain_metric_func(actual, expected)
+=======
+    plain_metric_func = getattr(plain_metrics, metric_type, None)
+    if plain_metric_func:
+        return plain_metric_func(actual, expected)
+>>>>>>> main
 
     try:
         score = compute_transformer_based_score(actual, expected, metric_type)

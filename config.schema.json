@@ -556,10 +556,15 @@
                         "enum": [
                             "lcsstr",
                             "lcsseq",
+<<<<<<< HEAD
+=======
+                            "cosine",
+>>>>>>> main
                             "jaro_winkler",
                             "hamming",
                             "jaccard",
                             "levenshtein",
+<<<<<<< HEAD
                             "fuzzy_score",
                             "cosine_ochiai",
                             "rouge1_precision",
@@ -571,6 +576,9 @@
                             "rougeL_precision",
                             "rougeL_recall",
                             "rougeL_fmeasure",
+=======
+                            "fuzzy",
+>>>>>>> main
                             "bert_all_MiniLM_L6_v2",
                             "bert_base_nli_mean_tokens",
                             "bert_large_nli_mean_tokens",
