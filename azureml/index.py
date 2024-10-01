@@ -2,7 +2,10 @@ from rag_experiment_accelerator.checkpoint import init_checkpoint
 import os
 import sys
 import argparse
+<<<<<<< HEAD
+=======
 from typing import List
+>>>>>>> main
 
 import mlflow
 
@@ -57,7 +60,11 @@ def init():
     mlflow_client = mlflow.MlflowClient(args.mlflow_tracking_uri)
 
 
+<<<<<<< HEAD
+def run(input_paths: list[str]) -> list[str]:
+=======
 def run(input_paths: List[str]) -> str:
+>>>>>>> main
     global args
     global config
     global environment
@@ -66,4 +73,8 @@ def run(input_paths: List[str]) -> str:
 
     index_run(environment, config, index_config, input_paths, mlflow_client)
 
+<<<<<<< HEAD
+    return [args.index_name]
+=======
     return args.index_name
+>>>>>>> main

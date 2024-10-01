@@ -20,7 +20,11 @@ def get_logger(name: str) -> logging.Logger:
         return logger
 
     global _cached_logging_level
+<<<<<<< HEAD
+    if not _cached_logging_level:
+=======
     if _cached_logging_level is None:
+>>>>>>> main
         _cached_logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
 
     handler = logging.StreamHandler(sys.stdout)

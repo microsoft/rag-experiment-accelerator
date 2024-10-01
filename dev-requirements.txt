@@ -1,6 +1,10 @@
 promptflow==1.15.0
 promptflow-tools==1.4.0
+<<<<<<< HEAD
+pytest==8.3.3
+=======
 pytest==8.3.2
+>>>>>>> main
 pytest-cov==5.0.0
 flake8==7.1.1
 pre-commit==3.8.0
