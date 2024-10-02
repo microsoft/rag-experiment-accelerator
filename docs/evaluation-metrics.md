@@ -10,6 +10,13 @@ guide](/docs/script-inputs-outputs.md#03_queryingpy) for more information.
 You can choose which metrics should be calculated in your experiment by updating the `metric_types` field in the
 `search_config.json` configuration file.
 
+Additionally, it is important to note that when evaluating your RAG solution, it is best practice to
+determine the stability of LLM-based responses by reporting the average metrics over several runs of
+the same inputs. Furthermore, if using LLM-based evaluators/metrics, it is crucial to validate these
+evaluators/metrics by assessing their performance on specific data and tasks. One way to achieve this is by
+calibrating them against human-evaluated responses that are balanced and range from “good” to “bad.”
+A general guidance about evaluating LLMs can be found [here](https://github.com/cse-labs/opsplaybook/blob/99f7cb69d9d0c2887d803c45e633a14f0d0e7825/docs/code-with-mlops/technology-guidance/generative-ai/working-with-llms/evaluation/general-evaluation-guidance.md).
+
 ## Configuration Example
 
 ```json
@@ -125,7 +132,6 @@ Calculates the fuzzy score between two documents using the levenshtein distance.
 | Configuration Key                            | Calculation Base             | Possible Values       |
 | -------------------------------------------- | ---------------------------- | --------------------- |
 | `rouge{1 \| 2 \| L}_{precision \| recall \| fmeasure}` | `ground_truth`, `prediction` | Percentage (0 - 100)  |
-
 
 - **rouge1_precision**: The ROUGE-1 precision score is the number of overlapping unigrams between the predicted and ground_truth strings divided by the number of unigrams in the ground_truth string.
 - **rouge1_recall**: The ROUGE-1 recall score is the number of overlapping unigrams between the predicted and ground_truth strings divided by the number of unigrams in the predicted string.
