@@ -33,7 +33,7 @@ from rag_experiment_accelerator.evaluation.transformer_based_metrics import (
 
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.evaluation.ragas_metrics import RagasEvals
-from rag_experiment_accelerator.evaluation.promptflow_quality_metrics import PromptFlowEvals
+from rag_experiment_accelerator.evaluation.azure_ai_quality_metrics import PromptFlowEvals
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 

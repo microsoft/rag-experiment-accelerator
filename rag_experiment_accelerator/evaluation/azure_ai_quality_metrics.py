@@ -1,4 +1,4 @@
-from promptflow.evals.evaluators import (
+from azure.ai.evaluation import (
     CoherenceEvaluator,
     FluencyEvaluator,
     GroundednessEvaluator,
@@ -8,7 +8,7 @@ from promptflow.evals.evaluators import (
 from promptflow.core import AzureOpenAIModelConfiguration
 
 
-class PromptFlowEvals:
+class AzureAIEvals:
     """Class that leverages the evaluators from the Promptflow evaluation framework
     for LLM pipelines"""
     def __init__(self, az_openai_model_config: AzureOpenAIModelConfiguration):

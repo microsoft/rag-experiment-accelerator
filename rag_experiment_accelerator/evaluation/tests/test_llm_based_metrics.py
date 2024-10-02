@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from rag_experiment_accelerator.evaluation.ragas_metrics import RagasEvals
-from rag_experiment_accelerator.evaluation.promptflow_quality_metrics import PromptFlowEvals
+from rag_experiment_accelerator.evaluation.azure_ai_quality_metrics import PromptFlowEvals
 
 
 @patch("rag_experiment_accelerator.evaluation.eval.ResponseGenerator")
