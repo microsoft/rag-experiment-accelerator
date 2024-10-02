@@ -16,7 +16,7 @@ You can choose which metrics should be calculated in your experiment by updating
 "metric_types": [
     "lcsstr",
     "lcsseq",
-    "cosine",
+    "cosine_ochiai",
     "jaro_winkler",
     "hamming",
     "jaccard",
@@ -66,9 +66,9 @@ Computes the longest common subsequence (LCS) similarity score between two input
 
 ### Cosine similarity (Ochiai coefficient)
 
-| Configuration Key | Calculation Base     | Possible Values    |
-| ----------------- | -------------------- | ------------------ |
-| `cosine`          | `actual`, `expected` | Percentage (0-100) |
+| Configuration Key        | Calculation Base     | Possible Values    |
+| -------------------------| -------------------- | ------------------ |
+| `cosine_ochiai`          | `actual`, `expected` | Percentage (0-100) |
 
 This coefficient is calculated as the intersection of the term-frequency vectors of the generated answer (actual) and the ground-truth answer (expected) divided by the geometric mean of the sizes of these vectors.
 
