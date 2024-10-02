@@ -21,7 +21,16 @@ You can choose which metrics should be calculated in your experiment by updating
     "hamming",
     "jaccard",
     "levenshtein",
-    "fuzzy",
+    "fuzzy_score",
+    "rouge1_precision",
+    "rouge1_recall",
+    "rouge1_fmeasure",
+    "rouge2_precision",
+    "rouge2_recall",
+    "rouge2_fmeasure",
+    "rougeL_precision",
+    "rougeL_recall",
+    "rougeL_fmeasure",
     "bert_all_MiniLM_L6_v2",
     "bert_base_nli_mean_tokens",
     "bert_large_nli_mean_tokens",
@@ -100,14 +109,33 @@ of elements in the union of the two sets.
 The Levenshtein distance is a measure of similarity between two strings. The Levenshtein distance is calculated as the
 minimum number of insertions, deletions, or substitutions required to transform one string into the other.
 
-### FuzzyWuzzy similarity
+### RapidFuzz similarity
 
 | Configuration Key | Calculation Base     | Possible Values       |
 | ----------------- | -------------------- | --------------------- |
-| `fuzzy`           | `actual`, `expected` | Integer (Fuzzy score) |
+| `fuzzy_score`           | `actual`, `expected` | Percentage (0 - 100) |
 
-This metric is backed by the [FuzzyWuzzy Python package](https://pypi.org/project/fuzzywuzzy/).
+This metric is backed by the [RapidfFuzz Python package](https://github.com/rapidfuzz/RapidFuzz).
 Calculates the fuzzy score between two documents using the levenshtein distance.
+
+### Rouge retrieval metrics (Token based)
+
+**Rouge** short for Recall-Oriented Understudy for Gisting Evaluation, is typically used in summarization evaluation tasks, comparing human produced references and system generated summaries. The core idea is to compare and validate sufficient overlap of common words or phrases in both reference and prediction. String metrics look at character level differences, whereas Rouge can help us compare token level matches. We use the [`rouge-score`](https://pypi.org/project/rouge-score/) to compute these measures. Here are some of the metrics we capture.
+
+| Configuration Key                            | Calculation Base             | Possible Values       |
+| -------------------------------------------- | ---------------------------- | --------------------- |
+| `rouge{1 \| 2 \| L}_{precision \| recall \| fmeasure}` | `ground_truth`, `prediction` | Percentage (0 - 100)  |
+
+
+- **rouge1_precision**: The ROUGE-1 precision score is the number of overlapping unigrams between the predicted and ground_truth strings divided by the number of unigrams in the ground_truth string.
+- **rouge1_recall**: The ROUGE-1 recall score is the number of overlapping unigrams between the predicted and ground_truth strings divided by the number of unigrams in the predicted string.
+- **rouge1_fmeasure**: This is the harmonic mean of the ROUGE-1 precision and recall scores.
+- **rouge2_precision**: The ROUGE-2 precision score is the number of overlapping bigrams between the predicted and ground_truth strings divided by the number of bigrams in the ground_truth string.
+- **rouge2_recall**: The ROUGE-2 recall score is the number of overlapping bigrams between the predicted and ground_truth strings divided by the number of bigrams in the predicted string.
+- **rouge2_fmeasure**: This is the harmonic mean of the ROUGE-2 precision and recall scores.
+- **rougeL_precision**: The ROUGE-L precision score is the length of overlapping longest common subsequence between the predicted and ground_truth strings divided by the number of unigrams in the predicted string.
+- **rougeL_recall**: The ROUGE-L recall score is the length of overlapping longest common subsequence between the predicted and ground_truth strings divided by the number of unigrams in the ground truth string.
+- **rougeL_fmeasure**: This is the harmonic mean of the ROUGE-L precision and recall scores.
 
 ## BERT-based semantic similarity
 
