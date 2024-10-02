@@ -21,7 +21,6 @@ You can choose which metrics should be calculated in your experiment by updating
     "hamming",
     "jaccard",
     "levenshtein",
-<<<<<<< HEAD
     "fuzzy_score",
     "rouge1_precision",
     "rouge1_recall",
@@ -32,9 +31,6 @@ You can choose which metrics should be calculated in your experiment by updating
     "rougeL_precision",
     "rougeL_recall",
     "rougeL_fmeasure",
-=======
-    "fuzzy",
->>>>>>> main
     "bert_all_MiniLM_L6_v2",
     "bert_base_nli_mean_tokens",
     "bert_large_nli_mean_tokens",
@@ -113,7 +109,6 @@ of elements in the union of the two sets.
 The Levenshtein distance is a measure of similarity between two strings. The Levenshtein distance is calculated as the
 minimum number of insertions, deletions, or substitutions required to transform one string into the other.
 
-<<<<<<< HEAD
 ### RapidFuzz similarity
 
 | Configuration Key | Calculation Base     | Possible Values       |
@@ -142,17 +137,6 @@ Calculates the fuzzy score between two documents using the levenshtein distance.
 - **rougeL_recall**: The ROUGE-L recall score is the length of overlapping longest common subsequence between the predicted and ground_truth strings divided by the number of unigrams in the ground truth string.
 - **rougeL_fmeasure**: This is the harmonic mean of the ROUGE-L precision and recall scores.
 
-=======
-### FuzzyWuzzy similarity
-
-| Configuration Key | Calculation Base     | Possible Values       |
-| ----------------- | -------------------- | --------------------- |
-| `fuzzy`           | `actual`, `expected` | Integer (Fuzzy score) |
-
-This metric is backed by the [FuzzyWuzzy Python package](https://pypi.org/project/fuzzywuzzy/).
-Calculates the fuzzy score between two documents using the levenshtein distance.
-
->>>>>>> main
 ## BERT-based semantic similarity
 
 The following set of metrics calculates semantic similarity between two strings as percentage of differences based on
