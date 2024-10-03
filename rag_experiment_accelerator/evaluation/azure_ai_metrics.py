@@ -5,14 +5,19 @@ from azure.ai.evaluation import (
     RelevanceEvaluator,
     SimilarityEvaluator,
 )
-from promptflow.core import AzureOpenAIModelConfiguration
+
+from rag_experiment_accelerator.config.environment import Environment
 
 
 class AzureAIEvals:
     """Class that leverages the evaluators from the Promptflow evaluation framework
     for LLM pipelines"""
-    def __init__(self, az_openai_model_config: AzureOpenAIModelConfiguration):
-        self.model_config = az_openai_model_config
+    def __init__(self, environment: Environment, deployment_name: str):
+        self.model_config = {
+            "azure_endpoint": environment.openai_endpoint,
+            "api_key": environment.openai_api_key,
+            "deployment_name": deployment_name
+        }
 
     def compute_score(
         self,
@@ -26,25 +31,25 @@ class AzureAIEvals:
         Compute LLM as a judge score based on the Promptflow evaluation framework.
         """
         match metric_name:
-            case "pf_answer_relevance":
+            case "azai_answer_relevance":
                 score = self.relevance_evaluator(
                     question=question, answer=generated_answer
                 )
-            case "pf_answer_coherence":
+            case "azai_answer_coherence":
                 score = self.coherence_evaluator(
                     question=question, answer=generated_answer
                 )
-            case "pf_answer_similarity":
+            case "azai_answer_similarity":
                 score = self.similarity_evaluator(
                     question=question,
                     answer=generated_answer,
                     ground_truth=ground_truth_answer,
                 )
-            case "pf_answer_fluency":
+            case "azai_answer_fluency":
                 score = self.fluency_evaluator(
                     question=question, answer=generated_answer
                 )
-            case "pf_answer_groundedness":
+            case "azai_answer_groundedness":
                 score = self.groundedness_evaluator(
                     answer=generated_answer, retrieved_contexts=retrieved_contexts
                 )
