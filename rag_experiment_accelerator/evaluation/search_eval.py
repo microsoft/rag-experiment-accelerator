@@ -30,9 +30,7 @@ def evaluate_search_result(
         logger.info(f"Search Score: {doc['@search.score']}")
 
         precision_score = round(
-            metrics.precision_score(
-                is_relevant_results[:k], precision_predictions[:k]
-            ),
+            metrics.precision_score(is_relevant_results[:k], precision_predictions[:k]),
             2,
         )
         precision_scores.append(precision_score)

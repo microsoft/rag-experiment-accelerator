@@ -14,10 +14,10 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
 )
 from rag_experiment_accelerator.config.config import Config
 from rag_experiment_accelerator.config.index_config import IndexConfig
+from promptflow.core import AzureOpenAIModelConfiguration
 from rag_experiment_accelerator.evaluation import plain_metrics
 from rag_experiment_accelerator.evaluation.llm_based_metrics import (
     compute_llm_based_score,
-    lower_and_strip,
 )
 from rag_experiment_accelerator.evaluation.plot_metrics import (
     draw_hist_df,
@@ -32,6 +32,8 @@ from rag_experiment_accelerator.evaluation.transformer_based_metrics import (
 )
 
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.evaluation.ragas_metrics import RagasEvals
+from rag_experiment_accelerator.evaluation.azure_ai_quality_metrics import PromptFlowEvals
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
@@ -41,13 +43,18 @@ load_dotenv()
 warnings.filterwarnings("ignore")
 
 
+def lower_and_strip(text: str) -> str:
+    return text.lower().strip()
+
+
 def compute_metrics(
     metric_type,
     question,
     actual,
     expected,
-    response_generator: ResponseGenerator,
     retrieved_contexts,
+    ragas_evals: RagasEvals,
+    pf_evals: PromptFlowEvals
 ):
     """
     Computes a score for the similarity between two strings using a specified metric.
@@ -87,14 +94,20 @@ def compute_metrics(
             - "bert_large_nli_stsb_mean_tokens": BERT-based semantic similarity (large model, STS-B, mean tokens)
             - "bert_distilbert_base_nli_stsb_mean_tokens": BERT-based semantic similarity (DistilBERT base model, STS-B, mean tokens)
             - "bert_paraphrase_multilingual_MiniLM_L12_v2": BERT-based semantic similarity (multilingual paraphrase model, MiniLM L12 v2)
-            - "llm_context_precision": Verifies whether or not a given context is useful for answering a question.
-            - "llm_answer_relevance": Scores the relevancy of the answer according to the given question.
-            - "llm_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+            - "ragas_context_precision": Verifies whether or not a given context is useful for answering a question.
+            - "ragas_answer_relevance": Scores the relevancy of the answer according to the given question.
+            - "ragas_context_recall": Scores context recall by estimating TP and FN using annotated answer (ground truth) and retrieved context.
+            - "pf_answer_relevance": Scores the relevancy of the answer according to the given question.
+            - "pf_answer_coherence": Scores the coherence of the answer according to the given question.
+            - "pf_answer_similarity": Scores the similarity of the answer to the ground truth answer.
+            - "pf_answer_fluency": Scores the fluency of the answer according to the given question.
+            - "pf_answer_groundedness": Scores the groundedness of the answer according to the retrieved contexts.
         question (str): question text
         actual (str): The first string to compare.
         expected (str): The second string to compare.
-        response_generator (ResponseGenerator): The response generator to use for generating responses.
         retrieved_contexts (list[str]): The list of retrieved contexts for the query.
+        ragas_evals (RagasEvals): The Ragas evaluators to use for scoring.
+        pf_evals (PromptFlowEvals): The PromptFlow evaluators to use for scoring.
 
 
     Returns:
@@ -117,8 +130,9 @@ def compute_metrics(
                 question,
                 actual,
                 expected,
-                response_generator,
                 retrieved_contexts,
+                ragas_evals,
+                pf_evals
             )
         except KeyError:
             logger.error(f"Unsupported metric type: {metric_type}")
@@ -128,7 +142,8 @@ def compute_metrics(
 
 def evaluate_single_prompt(
     data,
-    response_generator,
+    ragas_evals,
+    pf_evals,
     metric_types,
     data_list,
     total_precision_scores_by_search_type,
@@ -146,8 +161,9 @@ def evaluate_single_prompt(
             data.question,
             actual,
             expected,
-            response_generator,
             data.retrieved_contexts,
+            ragas_evals,
+            pf_evals
         )
         metric_dic[metric_type] = score
 
@@ -207,9 +223,19 @@ def evaluate_prompts(
 
     handler = QueryOutputHandler(config.path.query_data_dir)
 
+    # Ragas and PromptFlow evaluators
     response_generator = ResponseGenerator(
         environment, config, config.openai.azure_oai_eval_deployment_name
     )
+    ragas_evals = RagasEvals(response_generator)
+
+    az_openai_model_config = AzureOpenAIModelConfiguration(
+        azure_endpoint=environment.openai_endpoint,
+        api_key=environment.openai_api_key,
+        azure_deployment=config.openai.azure_oai_eval_deployment_name
+    )
+
+    pf_evals = PromptFlowEvals(az_openai_model_config)
 
     query_data_load = handler.load(
         index_config.index_name(), config.experiment_name, config.job_name
@@ -222,7 +248,8 @@ def evaluate_prompts(
             executor.submit(
                 evaluate_single_prompt,
                 data,
-                response_generator,
+                ragas_evals,
+                pf_evals,
                 metric_types,
                 data_list,
                 total_precision_scores_by_search_type,
