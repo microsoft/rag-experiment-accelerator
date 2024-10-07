@@ -28,7 +28,7 @@ pytesseract==0.3.13
 python-dotenv==1.0.1
 PyMuPDF==1.24.10
 PyPDF2~=3.0
-rapidfuzz==3.9.7
+rapidfuzz==3.10.0
 rouge-score==0.1.2
 scikit-learn==1.5.2
 sentence-transformers==3.1.1
