@@ -26,7 +26,7 @@ plotly==5.24.1
 pypdf==4.3.1
 pytesseract==0.3.13
 python-dotenv==1.0.1
-PyMuPDF==1.24.10
+PyMuPDF==1.24.11
 PyPDF2~=3.0
 rapidfuzz==3.9.7
 rouge-score==0.1.2
