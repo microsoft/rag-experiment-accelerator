@@ -1,4 +1,4 @@
-azure-ai-ml==1.20.0
+azure-ai-ml==1.21.0
 azure-ai-textanalytics==5.3.0
 azure-core==1.31.0
 azure-identity==1.18.0
