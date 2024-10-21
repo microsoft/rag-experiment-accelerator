@@ -6,7 +6,7 @@ azure-keyvault==4.2.0
 azure-keyvault-secrets==4.8.*
 azure-search-documents==11.4.b11
 azure.ai.documentintelligence==1.0.0b4
-azureml-core==1.57.0.post1
+azureml-core==1.58.0
 azureml-mlflow==1.57.0.post1
 beautifulsoup4==4.12.3
 datasets==3.0.0
