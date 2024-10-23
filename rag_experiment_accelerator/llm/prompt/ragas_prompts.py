@@ -16,11 +16,10 @@ def validate_context_recall(text: str) -> bool:
 
     def is_valid_entry(entry):
         statement_key_pattern = re.compile(r"^statement_\d+$")
-        for key in entry.keys():
-            if key not in ["reason", "attributed"] or not statement_key_pattern.match(
-                key
-            ):
-                return False
+        return all(
+            key in ["reason", "attributed"] or statement_key_pattern.match(key)
+            for key in entry.keys()
+        )
 
     return isinstance(json_text, list) and all(
         is_valid_entry(entry) for entry in json_text
