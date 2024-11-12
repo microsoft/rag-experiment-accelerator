@@ -8,7 +8,7 @@ from rag_experiment_accelerator.config.embedding_model_config import (
 )
 from rag_experiment_accelerator.config.index_config import IndexConfig
 from rag_experiment_accelerator.config.language_config import LanguageConfig
-from rag_experiment_accelerator.config.llm_config import LLMConfig
+from rag_experiment_accelerator.config.llm_config import LLMConfig, BaseLLMConfig
 from rag_experiment_accelerator.config.query_expansion import QueryExpansionConfig
 from rag_experiment_accelerator.config.sampling_config import SamplingConfig
 from rag_experiment_accelerator.run.index import run
@@ -81,8 +81,10 @@ def test_run(
         spec=QueryExpansionConfig, query_expansion=False
     )
 
-    mock_config.openai = MagicMock(spec=LLMConfig)
-    mock_config.openai.azure_oai_chat_deployment_name = "test-deployment"
+    mock_config.llm = MagicMock(spec=LLMConfig)
+    mock_config.llm.chat_llm = MagicMock(spec=BaseLLMConfig)
+    mock_config.llm.chat_llm.model_name = "model_name"
+    mock_config.llm.chat_llm.llm_type = "openai"
 
     mock_environment.azure_search_service_endpoint = "service_endpoint"
     mock_environment.azure_search_admin_key = "admin_key"
