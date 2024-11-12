@@ -68,10 +68,19 @@
         "min_query_expansion_related_question_similarity_score": 90,
         "expand_to_multiple_questions": true
     },
-    "openai": {
-        "azure_oai_chat_deployment_name": "gpt-35-turbo",
-        "azure_oai_eval_deployment_name": "gpt-35-turbo",
-        "temperature": 0
+    "llm": {
+        "chat_llm": {
+            "llm_type": "openai",
+            "model_name": "gpt-3.5-turbo",
+            "temperature": 0,
+            "max_tokens": 4096
+        },
+        "eval_llm": {
+            "llm_type": "openai",
+            "model_name": "gpt-3.5-turbo",
+            "temperature": 0,
+            "max_tokens": 4096
+        }
     },
     "eval": {
         "metric_types": [
