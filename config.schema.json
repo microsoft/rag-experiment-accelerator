@@ -520,31 +520,65 @@
                 "expand_to_multiple_questions"
             ]
         },
-        "openai": {
+        "llm": {
             "type": "object",
             "properties": {
-                "azure_oai_chat_deployment_name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Azure OpenAI deployment name"
+                "chat_llm": {
+                    "type": "object",
+                    "properties": {
+                        "llm_type": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Type of the LLM provider, e.g., 'openai'"
+                        },
+                        "model_name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Model name, e.g., 'gpt-3.5-turbo'"
+                        },
+                        "temperature": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "description": "Temperature for generating responses"
+                        },
+                        "max_tokens": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Maximum number of tokens allowed for the response"
+                        }
+                    },
+                    "required": ["llm_type", "model_name", "temperature", "max_tokens"]
                 },
-                "azure_oai_eval_deployment_name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Azure OpenAI evaluation deployment name"
-                },
-                "temperature": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 1,
-                    "description": "Temperature for OpenAI API"
+                "eval_llm": {
+                    "type": "object",
+                    "properties": {
+                        "llm_type": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Type of the LLM provider, e.g., 'openai'"
+                        },
+                        "model_name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Model name, e.g., 'gpt-3.5-turbo'"
+                        },
+                        "temperature": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "description": "Temperature for generating responses"
+                        },
+                        "max_tokens": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Maximum number of tokens allowed for the response"
+                        }
+                    },
+                    "required": ["llm_type", "model_name", "temperature", "max_tokens"]
                 }
             },
-            "required": [
-                "azure_oai_chat_deployment_name",
-                "azure_oai_eval_deployment_name",
-                "temperature"
-            ]
+            "required": ["chat_llm", "eval_llm"]
         },
         "eval": {
             "type": "object",
@@ -599,7 +633,7 @@
         "language",
         "rerank",
         "search",
-        "openai",
+        "llm",
         "eval"
     ]
 }

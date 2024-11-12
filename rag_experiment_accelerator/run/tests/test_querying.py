@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.checkpoint import init_checkpoint
 from rag_experiment_accelerator.config.chunking_config import ChunkingConfig
-from rag_experiment_accelerator.config.openai_config import OpenAIConfig
+from rag_experiment_accelerator.config.llm_config import LLMConfig
 from rag_experiment_accelerator.config.path_config import PathConfig
 from rag_experiment_accelerator.config.query_expansion import QueryExpansionConfig
 from rag_experiment_accelerator.config.rerank_config import RerankConfig
@@ -49,8 +49,11 @@ class TestQuerying(unittest.TestCase):
         )
         self.mock_config.query_expansion.expand_to_multiple_questions = True
 
-        self.mock_config.openai = MagicMock(spec=OpenAIConfig)
-        self.mock_config.openai.azure_oai_chat_deployment_name = "test-deployment"
+        self.mock_config.llm = MagicMock(spec=LLMConfig)
+        self.mock_config.llm.chat_llm = MagicMock(spec=LLMConfig)
+        self.mock_config.llm.chat_llm.llm_type = "openai"
+        self.mock_config.llm.chat_llm.model_name = "test-deployment"
+        self.mock_config.llm.chat_llm.temperature = 0.0
 
         self.mock_config.rerank = MagicMock(spec=RerankConfig)
         self.mock_config.rerank.enabled = True
@@ -309,6 +312,7 @@ class TestQuerying(unittest.TestCase):
     @patch("rag_experiment_accelerator.run.querying.SpacyEvaluator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutputHandler")
     @patch("rag_experiment_accelerator.run.querying.ResponseGenerator")
+    @patch("rag_experiment_accelerator.run.querying.get_response_generator")
     @patch("rag_experiment_accelerator.run.querying.QueryOutput")
     @patch("rag_experiment_accelerator.run.querying.do_we_need_multiple_questions")
     @patch("rag_experiment_accelerator.run.querying.query_and_eval_acs")
@@ -318,6 +322,7 @@ class TestQuerying(unittest.TestCase):
         mock_do_we_need_multiple_questions,
         mock_query_output,
         mock_response_generator,
+        mock_get_response_generator,
         mock_query_output_handler,
         mock_spacy_evaluator,
         mock_environment,
