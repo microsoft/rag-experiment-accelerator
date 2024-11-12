@@ -312,7 +312,7 @@ def process_title(
     if index_config.chunking.generate_title:
         title = generate_title(
             chunk["content"],
-            config.openai.azure_oai_chat_deployment_name,
+            config.llm.chat_llm.model_name,
             environment,
             config,
         )
@@ -355,7 +355,7 @@ def process_summary(
     if index_config.chunking.generate_summary:
         summary = generate_summary(
             chunk["content"],
-            config.openai.azure_oai_chat_deployment_name,
+            config.llm.chat_llm.model_name,
             environment,
             config,
         )

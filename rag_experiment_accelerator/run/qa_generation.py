@@ -68,9 +68,7 @@ def run(
         )
 
     # generate qna
-    df = generate_qna(
-        environment, config, all_docs, config.openai.azure_oai_chat_deployment_name
-    )
+    df = generate_qna(environment, config, all_docs, config.llm.chat_llm.model_name)
     # write to jsonl
     df.to_json(config.path.eval_data_file, orient="records", lines=True)
     # create data asset in mlstudio
