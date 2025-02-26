@@ -75,7 +75,7 @@ param azureOpenAIModel string = 'gpt-35-turbo'
 param azureOpenAIModelName string = 'gpt-35-turbo'
 
 @description('Azure OpenAI GPT Model Version')
-param azureOpenAIModelVersion string = '0613'
+param azureOpenAIModelVersion string = '0125'
 
 @description('Whether to deploy Azure Document Intelligence.')
 param useAzureAIDocumentIntelligence bool = true
