@@ -9,11 +9,13 @@ on:
       - main
       - development
       - prerelease
+      - ritesh/loginissue
   push:
     branches:
       - main
       - development
       - prerelease
+      - ritesh/loginissue
   merge_group:
 
 concurrency:
@@ -46,6 +48,8 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.azure_credentials }}
+        env:
+          ACTIONS_STEP_DEBUG: true
       - name: Configure Azure ML Agent
         uses: ./.github/actions/configure_azureml_agent
       - name: execute index creation step
