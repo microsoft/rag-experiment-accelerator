@@ -128,25 +128,26 @@ def llm_context_recall(
         double: The context recall score generated between the ground truth (expected) and context.
     """
     context = "\n".join(retrieved_contexts)
-    prompt = (
-        "\nquestion: "
-        + question
-        + "\ncontext: "
-        + context
-        + "\nanswer: "
-        + groundtruth_answer
-    )
-    result = response_generator.generate_response(
-        sys_message=llm_context_recall_instruction,
-        prompt=prompt,
-    )
-    good_response = '"Attributed": "1"'
-    bad_response = '"Attributed": "0"'
 
-    return (
-        result.count(good_response)
-        / (result.count(good_response) + result.count(bad_response))
-    ) * 100
+    result: list | None = response_generator.generate_response(
+        llm_context_recall_instruction,
+        context=context,
+        question=question,
+        answer=groundtruth_answer,
+    )
+
+    good_responses = 0
+
+    for response in result:
+        try:
+            score = response.get("attributed", 0)
+            good_responses += int(score)
+        except ValueError:
+            logger.warning(f"Unable to parse {score} as int.")
+    if not result:
+        return -1
+    else:
+        return (good_responses / len(result)) * 100
 
 
 def compute_llm_based_score(
