@@ -34,4 +34,9 @@ def my_python_tool(connection: CustomConnection):
     if "LOGGING_LEVEL" in connection.configs:
         os.environ["LOGGING_LEVEL"] = connection.configs["LOGGING_LEVEL"]
 
+    if "RAG_GLOBAL_CACHE" in connection.configs:
+        os.environ["RAG_GLOBAL_CACHE"] = connection.configs[
+            "RAG_GLOBAL_CACHE"
+        ]
+
     return True

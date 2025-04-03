@@ -28,6 +28,8 @@ from rag_experiment_accelerator.ingest_data.acs_ingest import (
     do_we_need_multiple_questions,
     generate_multiple_questions,
 )
+from rag_experiment_accelerator.nlp.preprocess import Preprocess
+from rag_experiment_accelerator.rag_cache.rag_cache import RagCache
 from rag_experiment_accelerator.reranking.reranker import (
     cross_encoder_rerank_documents,
     llm_rerank_documents,
@@ -71,12 +73,12 @@ search_mapping = {
 
 
 def query_acs(
-    search_client: SearchClient,
-    embedding_model: EmbeddingModel,
-    user_prompt: str,
-    s_v: str,
-    retrieve_num_of_documents: str,
-    preprocess: bool = False,
+        search_client: SearchClient,
+        embedding_model: EmbeddingModel,
+        user_prompt: str,
+        s_v: str,
+        retrieve_num_of_documents: str,
+        preprocess: bool = False,
 ):
     """
     Queries the Azure AI Search service using the specified search client and search parameters.
@@ -104,11 +106,11 @@ def query_acs(
 
 
 def rerank_documents(
-    docs: list[str],
-    user_prompt: str,
-    output_prompt: str,
-    config: Config,
-    response_generator: ResponseGenerator,
+        docs: list[str],
+        user_prompt: str,
+        output_prompt: str,
+        config: Config,
+        response_generator: ResponseGenerator,
 ) -> list[str]:
     """
     Reranks a list of documents based on a given user prompt and configuration.
@@ -143,9 +145,9 @@ def rerank_documents(
 
 
 def hyde(
-    config: Config,
-    response_generator: ResponseGenerator,
-    queries: list[str],
+        config: Config,
+        response_generator: ResponseGenerator,
+        queries: list[str],
 ):
     if config.query_expansion.hyde == "disabled":
         return queries
@@ -170,10 +172,10 @@ def hyde(
 
 
 def query_expansion(
-    config: Config,
-    response_generator: ResponseGenerator,
-    embedding_model: EmbeddingModel,
-    query: str,
+        config: Config,
+        response_generator: ResponseGenerator,
+        embedding_model: EmbeddingModel,
+        query: str,
 ) -> list[str]:
     # Query expansion with generated questions
     augmented_questions = response_generator.generate_response(
@@ -199,10 +201,12 @@ def query_expansion(
 def deduplicate_search_results(search_results: list[dict]) -> list[dict]:
     doc_set = set()
     score_dict = {}
+    doc_ids = []
 
     # deduplicate and sort retrieved documents by using a set
     for doc in search_results:
-        doc_set.add(doc["content"])
+        doc_set.add(doc["content"])  # Create a tuple of content and id
+        doc_ids.append(doc["id"])
         score_dict[doc["content"]] = doc["@search.score"]
 
     search_result = list(doc_set)
@@ -211,26 +215,27 @@ def deduplicate_search_results(search_results: list[dict]) -> list[dict]:
     ]
     search_result.sort(key=lambda x: x["@search.score"], reverse=True)
 
-    return search_result
+    return search_result, doc_ids
 
 
 class QueryAndEvalACSResult:
-    def __init__(self, documents: list[str], evaluations: dict[str, any]):
+    def __init__(self, documents: list[str], evaluations: dict[str, any], doc_ids: list[str] = None):
         self.documents = documents
         self.evaluations = evaluations
+        self.doc_ids = doc_ids
 
 
 def query_and_eval_acs(
-    search_client: SearchClient,
-    embedding_model: EmbeddingModel,
-    query: str,
-    search_type: str,
-    evaluation_content: str,
-    retrieve_num_of_documents: int,
-    evaluator: SpacyEvaluator,
-    config: Config,
-    response_generator: ResponseGenerator,
-    preprocess: bool = False,
+        search_client: SearchClient,
+        embedding_model: EmbeddingModel,
+        query: str,
+        search_type: str,
+        evaluation_content: str,
+        retrieve_num_of_documents: int,
+        evaluator: SpacyEvaluator,
+        config: Config,
+        response_generator: ResponseGenerator,
+        preprocess: bool = False,
 ) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service using the provided search client and parameters, and evaluates the search
@@ -272,7 +277,7 @@ def query_and_eval_acs(
         )
         search_results.extend(search_result)
 
-    search_results = deduplicate_search_results(search_results)
+    search_results, doc_ids = deduplicate_search_results(search_results)
     search_result = search_result[: config.search.retrieve_num_of_documents]
 
     docs, evaluation = evaluate_search_result(
@@ -280,14 +285,14 @@ def query_and_eval_acs(
     )
 
     evaluation["query"] = query
-    return QueryAndEvalACSResult(docs, evaluation)
+    return QueryAndEvalACSResult(docs, evaluation, doc_ids)
 
 
 def filter_non_related_questions(
-    query,
-    generated_questions,
-    embedding_model,
-    min_query_expansion_related_question_similarity_score,
+        query,
+        generated_questions,
+        embedding_model,
+        min_query_expansion_related_question_similarity_score,
 ):
     questions = [query]
 
@@ -298,11 +303,11 @@ def filter_non_related_questions(
             generated_question
         )
         similarity_score_array = (
-            cosine_similarity(
-                np.array(query_vector).reshape(1, -1),
-                np.array(generated_question_vector).reshape(1, -1),
-            )
-            * 100
+                cosine_similarity(
+                    np.array(query_vector).reshape(1, -1),
+                    np.array(generated_question_vector).reshape(1, -1),
+                )
+                * 100
         )
         similarity_score = int(
             sum(similarity_score_array) / len(similarity_score_array)
@@ -314,17 +319,17 @@ def filter_non_related_questions(
 
 
 def query_and_eval_acs_multi(
-    search_client: SearchClient,
-    embedding_model: EmbeddingModel,
-    questions: list[str],
-    original_prompt: str,
-    output_prompt: str,
-    search_type: str,
-    evaluation_content: str,
-    config: Config,
-    evaluator: SpacyEvaluator,
-    response_generator: ResponseGenerator,
-    preprocess: bool = False,
+        search_client: SearchClient,
+        embedding_model: EmbeddingModel,
+        questions: list[str],
+        original_prompt: str,
+        output_prompt: str,
+        search_type: str,
+        evaluation_content: str,
+        config: Config,
+        evaluator: SpacyEvaluator,
+        response_generator: ResponseGenerator,
+        preprocess: bool = False,
 ) -> QueryAndEvalACSResult:
     """
     Queries the Azure AI Search service with multiple questions, evaluates the results, and generates a response
@@ -377,8 +382,8 @@ def query_and_eval_acs_multi(
         # Current solution is just forcefully limiting the number of documents to retrieve assuming they are sorted
         if len(prompt_instruction_context) > config.search.retrieve_num_of_documents:
             prompt_instruction_context = prompt_instruction_context[
-                : config.search.retrieve_num_of_documents
-            ]
+                                         : config.search.retrieve_num_of_documents
+                                         ]
 
         request_context = "\n".join(prompt_instruction_context)
         request_question = original_prompt
@@ -396,16 +401,17 @@ def query_and_eval_acs_multi(
 
 
 def query_and_eval_single_line(
-    line: str,
-    line_number: int,
-    handler: QueryOutputHandler,
-    environment: Environment,
-    config: Config,
-    index_config: IndexConfig,
-    response_generator: ResponseGenerator,
-    search_client: SearchClient,
-    evaluator: SpacyEvaluator,
-    question_count: int,
+        line: str,
+        line_number: int,
+        handler: QueryOutputHandler,
+        environment: Environment,
+        config: Config,
+        index_config: IndexConfig,
+        response_generator: ResponseGenerator,
+        search_client: SearchClient,
+        evaluator: SpacyEvaluator,
+        question_count: int,
+        rag_cache: RagCache,
 ):
     logger.info(f"Processing question {line_number + 1} out of {question_count}\n\n")
     data: dict[str, any] = json.loads(line)
@@ -414,8 +420,8 @@ def query_and_eval_single_line(
     qna_context = data.get("context", "")
 
     is_multi_question = (
-        config.query_expansion.expand_to_multiple_questions
-        and do_we_need_multiple_questions(user_prompt, response_generator, config)
+            config.query_expansion.expand_to_multiple_questions
+            and do_we_need_multiple_questions(user_prompt, response_generator, config)
     )
 
     new_questions = []
@@ -432,7 +438,23 @@ def query_and_eval_single_line(
 
     evaluation_content = user_prompt + qna_context
 
+    embedding_model1 = config.get_embedding_model(
+        index_config.embedding_model.model_name
+    )
+
+    # pre_process = Preprocess(enabled=index_config.chunking.preprocess)
+    # embedding = embedding_model1.generate_embedding(chunk=pre_process.preprocess(user_prompt))
+    # results = None
+
     try:
+        # if environment.rag_global_cache:
+        #     # print("== calling prompt cache")
+        #     print(f"\n Query to LLM: {user_prompt} ")
+        #     results = rag_cache.getFromRagCache(embedding)
+        #     if results is not None and results:
+        #         print(f"Prompt cache Response:", results["content"])
+        #
+        # if results is None or not results:
         for s_v in config.search.search_type:
             output = get_query_output(
                 environment,
@@ -449,6 +471,7 @@ def query_and_eval_single_line(
                 new_questions,
                 evaluation_content,
                 s_v,
+                rag_cache
             )
             handler.save(
                 index_name=index_config.index_name(),
@@ -456,6 +479,7 @@ def query_and_eval_single_line(
                 experiment_name=config.experiment_name,
                 job_name=config.job_name,
             )
+
     except BadRequestError as e:
         logger.error(
             "Invalid request. Skipping question: {user_prompt}",
@@ -463,24 +487,25 @@ def query_and_eval_single_line(
         )
 
 
-@cache_with_checkpoint(
-    id="user_prompt+output_prompt+qna_context+index_config.index_name()"
-)
+# @cache_with_checkpoint(
+#     id="user_prompt+output_prompt+qna_context+index_config.index_name()"
+# )
 def get_query_output(
-    environment,
-    config,
-    index_config,
-    response_generator,
-    search_client,
-    evaluator,
-    question_count,
-    user_prompt,
-    output_prompt,
-    qna_context,
-    is_multi_question,
-    new_questions,
-    evaluation_content,
-    s_v,
+        environment,
+        config,
+        index_config,
+        response_generator,
+        search_client,
+        evaluator,
+        question_count,
+        user_prompt,
+        output_prompt,
+        qna_context,
+        is_multi_question,
+        new_questions,
+        evaluation_content,
+        s_v,
+        rag_cache=None,
 ):
     search_evals = []
 
@@ -531,11 +556,38 @@ def get_query_output(
     else:
         prompt_instruction_context = result.documents
 
-    openai_response = response_generator.generate_response(
-        main_instruction,
-        context="\n".join(prompt_instruction_context),
-        question=user_prompt,
-    )
+    pre_process = Preprocess(enabled=index_config.chunking.preprocess)
+    user_prompt_embedding = embedding_model.generate_embedding(chunk=pre_process.preprocess(user_prompt))
+    cached_response = None
+
+    if rag_cache is not None:
+        # Check if result is available in cache
+        cached_response = rag_cache.getFromRagCache(user_prompt_embedding)
+
+    if cached_response:
+        logger.info("**** Reading from RAG cache instead of making an OpenAI call ****")
+        logger.info(" cached response", cached_response)
+        openai_response = cached_response
+    else:
+        logger.info("**** Cache miss or no cache, making OpenAI call ****")
+        # Generate response using OpenAI
+        openai_response = response_generator.generate_response(
+            main_instruction,
+            context="\n".join(prompt_instruction_context),
+            question=user_prompt,
+        )
+
+        # Add to cache if doc IDs exist
+        doc_ids_str = ""
+        if result.doc_ids is not None:
+            doc_ids_str = ", ".join(result.doc_ids)
+
+        knowledge_base_docIds = doc_ids_str
+        logger.info("\n Adding to cache")
+        if rag_cache is not None:
+            rag_cache.addToCache(user_prompt, user_prompt_embedding, openai_response, knowledge_base_docIds)
+
+
 
     output = QueryOutput(
         rerank=config.rerank.enabled,
@@ -551,17 +603,17 @@ def get_query_output(
         search_evals=search_evals,
         context=qna_context,
         retrieved_contexts=prompt_instruction_context,
-        question=user_prompt,
+        question=user_prompt
     )
 
     return output
 
 
 def run(
-    environment: Environment,
-    config: Config,
-    index_config: IndexConfig,
-    mlflow_client: mlflow.MlflowClient,
+        environment: Environment,
+        config: Config,
+        index_config: IndexConfig,
+        mlflow_client: mlflow.MlflowClient,
 ):
     """
     Runs the main experiment loop, which evaluates a set of search configurations against a given dataset.
@@ -598,6 +650,15 @@ def run(
             index_name,
             environment.azure_search_admin_key,
         )
+
+        if environment.rag_global_cache:
+            rag_cache = RagCache(
+                environment=environment,
+                config=config,
+                index_name=index_name
+            )
+            rag_cache.create_rag_cache_index()
+
         with open(config.path.eval_data_file, "r") as file:
             with ExitStack() as stack:
                 executor = stack.enter_context(
@@ -616,6 +677,7 @@ def run(
                         search_client,
                         evaluator,
                         question_count,
+                        rag_cache
                     ): line
                     for line_number, line in enumerate(file)
                 }

@@ -12,7 +12,6 @@ from rag_experiment_accelerator.artifact.handlers.query_output_handler import (
     QueryOutputHandler,
 )
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -35,7 +34,10 @@ if __name__ == "__main__":
     mlflow.set_experiment(config.experiment_name)
 
     handler = QueryOutputHandler(config.path.query_data_dir)
-    init_checkpoint(config)
+
+    # disable check point in case of RAG cache
+    if not environment.rag_global_cache:
+        init_checkpoint(config)
 
     for index_config in config.index.flatten():
         with mlflow.start_run(run_name=mlflow_run_name(config.job_name)):
