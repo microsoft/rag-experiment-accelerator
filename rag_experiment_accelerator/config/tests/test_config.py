@@ -45,7 +45,12 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
     embedding_model_4.model_name.return_value = "text-embedding-3-small"
     embedding_model_4.dimension.return_value = 256
     embedding_model_4.shorten_dimensions.return_value = True
-    mock_create_embedding_model.side_effect = [embedding_model_1, embedding_model_2, embedding_model_3, embedding_model_4]
+    mock_create_embedding_model.side_effect = [
+        embedding_model_1,
+        embedding_model_2,
+        embedding_model_3,
+        embedding_model_4,
+    ]
     mock_validate_json_with_schema.return_value = (True, None)
 
     config = Config.from_path(environment, config_path)
@@ -105,7 +110,10 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
     assert index.embedding_model[3].type == mock_embedding[3]["type"]
     assert index.embedding_model[3].model_name == mock_embedding[3]["model_name"]
     assert index.embedding_model[3].dimension == mock_embedding[3]["dimension"]
-    assert index.embedding_model[3].shorten_dimensions == mock_embedding[3]["shorten_dimensions"]
+    assert (
+        index.embedding_model[3].shorten_dimensions
+        == mock_embedding[3]["shorten_dimensions"]
+    )
 
     model1 = config.get_embedding_model(config.index.embedding_model[0].model_name)
     assert model1.model_name.return_value == "all-MiniLM-L6-v2"
@@ -156,17 +164,17 @@ def test_config_init(mock_validate_json_with_schema, mock_create_embedding_model
         == mock_query_expansion["expand_to_multiple_questions"]
     )
 
-    openai = config.openai
-    mock_openai = mock_config["openai"]
-    assert (
-        openai.azure_oai_chat_deployment_name
-        == mock_openai["azure_oai_chat_deployment_name"]
-    )
-    assert (
-        openai.azure_oai_eval_deployment_name
-        == mock_openai["azure_oai_eval_deployment_name"]
-    )
-    assert openai.temperature == mock_openai["temperature"]
+    llm = config.llm
+    mock_llm = mock_config["llm"]
+    assert llm.chat_llm.model_name == mock_llm["chat_llm"]["model_name"]
+    assert llm.chat_llm.llm_type == mock_llm["chat_llm"]["llm_type"]
+    assert llm.chat_llm.temperature == mock_llm["chat_llm"]["temperature"]
+    assert llm.chat_llm.max_tokens == mock_llm["chat_llm"]["max_tokens"]
+
+    assert llm.eval_llm.model_name == mock_llm["eval_llm"]["model_name"]
+    assert llm.eval_llm.llm_type == mock_llm["eval_llm"]["llm_type"]
+    assert llm.eval_llm.temperature == mock_llm["eval_llm"]["temperature"]
+    assert llm.eval_llm.max_tokens == mock_llm["eval_llm"]["max_tokens"]
 
     assert config.eval.metric_types == mock_config["eval"]["metric_types"]
 
