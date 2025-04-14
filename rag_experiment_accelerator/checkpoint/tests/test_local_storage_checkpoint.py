@@ -32,7 +32,7 @@ class TestLocalStorageCheckpoint(unittest.TestCase):
     def test_wrapped_method_is_cached(self):
         config = MagicMock()
         config.use_checkpoints = True
-        config.artifacts_dir = self.temp_dir
+        config.path.artifacts_dir = self.temp_dir
         init_checkpoint(config)
         checkpoint = get_checkpoint()
         assert isinstance(checkpoint, LocalStorageCheckpoint)
