@@ -10,7 +10,7 @@ azureml-core==1.57.0.post1
 azureml-mlflow==1.57.0.post1
 beautifulsoup4==4.12.3
 datasets==3.0.0
-docx2txt==0.8
+docx2txt==0.9
 evaluate==0.4.3
 hnswlib==0.8.0
 jsonschema==4.23.0
