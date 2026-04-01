@@ -24,8 +24,7 @@ def lower_and_strip(text):
     """
     if text is None:
         return ""
-    else:
-        return text.lower().strip()
+    return text.lower().strip()
 
 
 def llm_answer_relevance(
