@@ -184,7 +184,6 @@ def embed_chunks(config: Config, index_config: IndexConfig, pre_process, chunks)
     return embedded_chunks
 
 
-@cache_with_checkpoint(id="chunk['content']+embedding_model.name")
 def embed_chunk(pre_process, embedding_model, chunk):
     """
     Generates an embedding for a chunk of content.
@@ -202,11 +201,15 @@ def embed_chunk(pre_process, embedding_model, chunk):
     Returns:
         dict: The chunk dictionary with the added "content_vector" key.
     """
-    chunk["content_vector"] = embedding_model.generate_embedding(
-        pre_process.preprocess(chunk["content"])
-    )
+    content_vector = _generate_content_vector(pre_process, embedding_model, chunk)
+    chunk["content_vector"] = content_vector
 
     return chunk
+
+
+@cache_with_checkpoint(id="chunk['content']+embedding_model.name")
+def _generate_content_vector(pre_process, embedding_model, chunk):
+    return embedding_model.generate_embedding(pre_process.preprocess(chunk["content"]))
 
 
 def generate_titles_from_chunks(
@@ -289,7 +292,6 @@ def generate_summaries_from_chunks(
                 )
 
 
-@cache_with_checkpoint(id="chunk['content']+str(config.index.chunking.generate_title)")
 def process_title(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -307,6 +309,19 @@ def process_title(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
+    title, title_vector = _generate_title(
+        config, index_config, pre_process, chunk, environment
+    )
+    chunk["title"] = title
+    chunk["title_vector"] = title_vector
+
+    return chunk
+
+
+@cache_with_checkpoint(id="chunk['content']+str(config.index.chunking.generate_title)")
+def _generate_title(
+    config: Config, index_config: IndexConfig, pre_process, chunk, environment
+):
     if index_config.chunking.generate_title:
         title = generate_title(
             chunk["content"],
@@ -321,15 +336,9 @@ def process_title(
         title = ""
         title_vector = []
 
-    chunk["title"] = title
-    chunk["title_vector"] = title_vector
-
-    return chunk
+    return title, title_vector
 
 
-@cache_with_checkpoint(
-    id="chunk['content']+str(config.index.chunking.generate_summary)"
-)
 def process_summary(
     config: Config, index_config: IndexConfig, pre_process, chunk, environment
 ):
@@ -350,6 +359,21 @@ def process_summary(
     Returns:
         dict: The chunk dictionary with the added title and title vector.
     """
+    summary, summary_vector = _generate_summary(
+        config, index_config, pre_process, chunk, environment
+    )
+    chunk["summary"] = summary
+    chunk["summary_vector"] = summary_vector
+
+    return chunk
+
+
+@cache_with_checkpoint(
+    id="chunk['content']+str(config.index.chunking.generate_summary)"
+)
+def _generate_summary(
+    config: Config, index_config: IndexConfig, pre_process, chunk, environment
+):
     if index_config.chunking.generate_summary:
         summary = generate_summary(
             chunk["content"],
@@ -357,17 +381,14 @@ def process_summary(
             environment,
             config,
         )
-        summaryVector = config.get_embedding_model(
+        summary_vector = config.get_embedding_model(
             index_config.embedding_model.model_name
         ).generate_embedding(pre_process.preprocess(summary))
     else:
         summary = ""
-        summaryVector = []
+        summary_vector = []
 
-    chunk["summary"] = summary
-    chunk["summary_vector"] = summaryVector
-
-    return chunk
+    return summary, summary_vector
 
 
 def generate_title(chunk, azure_oai_deployment_name, environment, config):
