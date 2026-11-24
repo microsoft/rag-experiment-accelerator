@@ -7,6 +7,9 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from rag_experiment_accelerator.checkpoint import cache_with_checkpoint
 from rag_experiment_accelerator.config.config import Config
+from rag_experiment_accelerator.llm.response_generator_factory import (
+    get_response_generator,
+)
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.llm.prompt import (
     do_need_multiple_prompt_instruction,
@@ -103,9 +106,7 @@ def generate_qna(environment, config, docs, azure_oai_deployment_name):
     column_names = ["user_prompt", "output_prompt", "context"]
 
     new_df = pd.DataFrame(columns=column_names)
-    response_generator = ResponseGenerator(
-        environment, config, azure_oai_deployment_name
-    )
+    response_generator = get_response_generator(config.llm.chat_llm, environment)
 
     for doc in docs:
         chunk = list(doc.values())[0]

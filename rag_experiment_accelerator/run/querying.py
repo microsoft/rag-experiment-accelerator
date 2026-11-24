@@ -46,6 +46,9 @@ from rag_experiment_accelerator.search_type.acs_search_methods import (
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
 
+from rag_experiment_accelerator.llm.response_generator_factory import (
+    get_response_generator,
+)
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.llm.prompt import (
     prompt_generate_hypothetical_answer,
@@ -484,9 +487,7 @@ def get_query_output(
 ):
     search_evals = []
 
-    response_generator = ResponseGenerator(
-        environment, config, config.openai.azure_oai_chat_deployment_name
-    )
+    response_generator = get_response_generator(config.llm.chat_llm, environment)
 
     embedding_model = config.get_embedding_model(
         index_config.embedding_model.model_name
@@ -582,9 +583,7 @@ def run(
 
     evaluator = SpacyEvaluator(config.search.search_relevancy_threshold)
     handler = QueryOutputHandler(config.path.query_data_dir)
-    response_generator = ResponseGenerator(
-        environment, config, config.openai.azure_oai_chat_deployment_name
-    )
+    response_generator = get_response_generator(config.llm.chat_llm, environment)
     for index_config in config.index.flatten():
         index_name = index_config.index_name()
         logger.info(f"Processing index: {index_name}")

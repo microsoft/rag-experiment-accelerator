@@ -12,7 +12,9 @@ from rag_experiment_accelerator.doc_loader.documentLoader import load_documents
 from rag_experiment_accelerator.ingest_data.acs_ingest import upload_data
 from rag_experiment_accelerator.init_Index.create_index import create_acs_index
 
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.llm.response_generator_factory import (
+    get_response_generator,
+)
 from rag_experiment_accelerator.llm.prompt import (
     prompt_instruction_title,
     prompt_instruction_summary,
@@ -310,7 +312,7 @@ def process_title(
     if index_config.chunking.generate_title:
         title = generate_title(
             chunk["content"],
-            config.openai.azure_oai_chat_deployment_name,
+            config.llm.chat_llm.model_name,
             environment,
             config,
         )
@@ -353,7 +355,7 @@ def process_summary(
     if index_config.chunking.generate_summary:
         summary = generate_summary(
             chunk["content"],
-            config.openai.azure_oai_chat_deployment_name,
+            config.llm.chat_llm.model_name,
             environment,
             config,
         )
@@ -382,10 +384,8 @@ def generate_title(chunk, azure_oai_deployment_name, environment, config):
     Returns:
         str: The generated title.
     """
-    response = ResponseGenerator(
-        environment=environment,
-        config=config,
-        deployment_name=azure_oai_deployment_name,
+    response = get_response_generator(
+        config.llm.chat_llm, environment
     ).generate_response(prompt_instruction_title, text=chunk)
     return response
 
@@ -404,9 +404,7 @@ def generate_summary(chunk, azure_oai_deployment_name, environment, config):
     Returns:
         str: The generated summary.
     """
-    response = ResponseGenerator(
-        environment=environment,
-        config=config,
-        deployment_name=azure_oai_deployment_name,
+    response = get_response_generator(
+        config.llm.chat_llm, environment
     ).generate_response(prompt_instruction_summary, text=chunk)
     return response

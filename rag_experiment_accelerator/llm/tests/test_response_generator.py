@@ -1,8 +1,10 @@
 import unittest
 import json
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 from rag_experiment_accelerator.llm.exceptions import ContentFilteredException
-from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
+from rag_experiment_accelerator.llm.openai_response_generator import (
+    OpenAIResponseGenerator,
+)
 from rag_experiment_accelerator.llm.prompt import (
     StructuredPrompt,
     CoTPrompt,
@@ -11,10 +13,15 @@ from rag_experiment_accelerator.llm.prompt import (
 )
 
 
-class TestResponseGenerator(unittest.TestCase):
+class TestOpenAIResponseGenerator(unittest.TestCase):
     def setUp(self):
-        self.generator = ResponseGenerator.__new__(ResponseGenerator)
-        self.generator.config = Mock()
+        self.generator = OpenAIResponseGenerator.__new__(OpenAIResponseGenerator)
+        self.generator.config = MagicMock()
+        self.generator.config.llm = MagicMock()
+        self.generator.config.llm.chat_llm = MagicMock()
+        self.generator.config.llm.chat_llm.llm_type = "openai"
+        self.generator.config.llm.eval_llm = MagicMock()
+        self.generator.config.llm.eval_llm.llm_type = "openai"
         self.generator.temperature = 0.5
         self.generator.deployment_name = "deployment_name"
         self.generator.client = Mock()
@@ -75,7 +82,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.generator.client.chat.completions.create.return_value = mock_response
 
         # Test
-        result = self.generator._get_response("message", self.prompt)
+        result = self.generator._get_response("message", self.prompt, temperature=0.0)
         self.assertEqual(result, "test response")
         self.generator.client.chat.completions.create.assert_called_once()
 
@@ -90,7 +97,7 @@ class TestResponseGenerator(unittest.TestCase):
 
         # Test and assert exception
         with self.assertRaises(ContentFilteredException):
-            self.generator._get_response("message", self.prompt)
+            self.generator._get_response("message", self.prompt, temperature=0.0)
 
     @patch("rag_experiment_accelerator.llm.response_generator.logger")
     def test_get_response_retries_on_random_exception(self, mock_logger):
@@ -108,12 +115,12 @@ class TestResponseGenerator(unittest.TestCase):
         ]
 
         # Test
-        result = self.generator._get_response("message", self.prompt)
+        result = self.generator._get_response("message", self.prompt, temperature=0.0)
         self.assertEqual(result, "recovered response")
         self.assertEqual(self.generator.client.chat.completions.create.call_count, 2)
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._get_response"
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._get_response"
     )
     def test_generate_response_full_system_message(self, mock_get_response):
         # Setup
@@ -129,7 +136,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.assertEqual(response, "valid response")
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._get_response"
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._get_response"
     )
     def test_generate_response_full_user_template(self, mock_get_response):
         # Setup
@@ -145,7 +152,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.assertEqual(response, "valid response")
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._get_response"
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._get_response"
     )
     def test_generate_response_mixed_messages(self, mock_get_response):
         # Setup
@@ -161,7 +168,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.assertEqual(response, "valid response")
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._get_response"
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._get_response"
     )
     def test_generate_response_missing_system_argument(self, mock_get_response):
         # Setup
@@ -173,7 +180,7 @@ class TestResponseGenerator(unittest.TestCase):
             self.generator.generate_response(prompt, None, **kwargs)
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._get_response"
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._get_response"
     )
     def test_generate_response_missing_user_argument_non_strict(
         self, mock_get_response
@@ -190,7 +197,7 @@ class TestResponseGenerator(unittest.TestCase):
         self.assertIsNone(response)
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._get_response",
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._get_response",
         side_effect=Exception("Random failure"),
     )
     def test_generate_response_exception_handling_strict(self, mock_get_response):
@@ -203,7 +210,7 @@ class TestResponseGenerator(unittest.TestCase):
             self.generator.generate_response(prompt, None, **kwargs)
 
     @patch(
-        "rag_experiment_accelerator.llm.response_generator.ResponseGenerator._initialize_azure_openai_client"
+        "rag_experiment_accelerator.llm.openai_response_generator.OpenAIResponseGenerator._initialize_azure_openai_client"
     )
     def test_initialize_azure_openai_client(self, mock_initialize_azure_openai_client):
         # Arrange

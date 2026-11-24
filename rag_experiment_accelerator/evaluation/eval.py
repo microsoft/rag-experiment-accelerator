@@ -31,6 +31,9 @@ from rag_experiment_accelerator.evaluation.transformer_based_metrics import (
     compute_transformer_based_score,
 )
 
+from rag_experiment_accelerator.llm.response_generator_factory import (
+    get_response_generator,
+)
 from rag_experiment_accelerator.llm.response_generator import ResponseGenerator
 from rag_experiment_accelerator.utils.logging import get_logger
 from rag_experiment_accelerator.config.environment import Environment
@@ -102,7 +105,9 @@ def compute_metrics(
     """
 
     if metric_type.startswith("rouge"):
-        return plain_metrics.rouge_score(ground_truth=expected, prediction=actual, rouge_metric_name=metric_type)
+        return plain_metrics.rouge_score(
+            ground_truth=expected, prediction=actual, rouge_metric_name=metric_type
+        )
     else:
         plain_metric_func = getattr(plain_metrics, metric_type, None)
         if plain_metric_func:
@@ -207,9 +212,7 @@ def evaluate_prompts(
 
     handler = QueryOutputHandler(config.path.query_data_dir)
 
-    response_generator = ResponseGenerator(
-        environment, config, config.openai.azure_oai_eval_deployment_name
-    )
+    response_generator = get_response_generator(config.llm.eval_llm, environment)
 
     query_data_load = handler.load(
         index_config.index_name(), config.experiment_name, config.job_name

@@ -12,7 +12,7 @@ from rag_experiment_accelerator.config.language_config import LanguageConfig
 from rag_experiment_accelerator.config.rerank_config import RerankConfig
 from rag_experiment_accelerator.config.search_config import SearchConfig
 from rag_experiment_accelerator.config.query_expansion import QueryExpansionConfig
-from rag_experiment_accelerator.config.openai_config import OpenAIConfig
+from rag_experiment_accelerator.config.llm_config import LLMConfig
 from rag_experiment_accelerator.config.eval_config import EvalConfig
 
 from rag_experiment_accelerator.embedding.embedding_model import EmbeddingModel
@@ -47,7 +47,7 @@ class Config(BaseConfig):
     rerank: RerankConfig = field(default_factory=RerankConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     query_expansion: QueryExpansionConfig = field(default_factory=QueryExpansionConfig)
-    openai: OpenAIConfig = field(default_factory=OpenAIConfig)
+    llm: LLMConfig = field(default_factory=LLMConfig)
     eval: EvalConfig = field(default_factory=EvalConfig)
 
     @classmethod
