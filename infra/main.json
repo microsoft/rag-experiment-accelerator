@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.28.1.47646",
-      "templateHash": "5972590653853251843"
+      "version": "0.33.93.31351",
+      "templateHash": "3734939098898673524"
     }
   },
   "parameters": {
@@ -125,9 +125,58 @@
     },
     "azureOpenAIModelVersion": {
       "type": "string",
-      "defaultValue": "0613",
+      "defaultValue": "0125",
       "metadata": {
         "description": "Azure OpenAI GPT Model Version"
+      }
+    },
+    "useAzureAIDocumentIntelligence": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to deploy Azure Document Intelligence."
+      }
+    },
+    "azureAIDocumentIntelligenceLocation": {
+      "type": "string",
+      "defaultValue": "[parameters('location')]",
+      "allowedValues": [
+        "australiaeast",
+        "brazilsouth",
+        "canadacentral",
+        "centralindia",
+        "centralus",
+        "centraluseuap",
+        "eastasia",
+        "eastus",
+        "eastus2",
+        "eastus2euap",
+        "francecentral",
+        "germanywestcentral",
+        "japaneast",
+        "japanwest",
+        "jioindiawest",
+        "koreacentral",
+        "northcentralus",
+        "northeurope",
+        "norwayeast",
+        "qatarcentral",
+        "southafricanorth",
+        "southcentralus",
+        "southeastasia",
+        "swedencentral",
+        "switzerlandnorth",
+        "switzerlandwest",
+        "uaenorth",
+        "uksouth",
+        "westcentralus",
+        "westeurope",
+        "westus",
+        "westus2",
+        "westus3"
+      ],
+      "metadata": {
+        "description": "Location for Azure AI Doc Intelligence."
       }
     },
     "azureAIDocumentIntelligenceResourceName": {
@@ -242,8 +291,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "11344700457585105755"
+              "version": "0.33.93.31351",
+              "templateHash": "10999930840516601810"
             }
           },
           "parameters": {
@@ -340,8 +389,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "3835024889022694318"
+              "version": "0.33.93.31351",
+              "templateHash": "7819355646820135989"
             },
             "description": "Creates an Azure AI Search instance."
           },
@@ -510,8 +559,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "9219454040579563054"
+              "version": "0.33.93.31351",
+              "templateHash": "6679441353908685187"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -621,6 +670,7 @@
       ]
     },
     {
+      "condition": "[parameters('useAzureAIDocumentIntelligence')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
       "name": "[parameters('azureAIDocumentIntelligenceResourceName')]",
@@ -635,7 +685,7 @@
             "value": "[parameters('azureAIDocumentIntelligenceResourceName')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[parameters('azureAIDocumentIntelligenceLocation')]"
           },
           "tags": {
             "value": "[variables('tags')]"
@@ -655,8 +705,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "9219454040579563054"
+              "version": "0.33.93.31351",
+              "templateHash": "6679441353908685187"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -794,8 +844,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "16657182853649829034"
+              "version": "0.33.93.31351",
+              "templateHash": "7728407485257525690"
             },
             "description": "Creates an Azure storage account."
           },
@@ -893,7 +943,7 @@
           "resources": [
             {
               "copy": {
-                "name": "container",
+                "name": "storage::blobServices::container",
                 "count": "[length(parameters('containers'))]"
               },
               "condition": "[not(empty(parameters('containers')))]",
@@ -909,7 +959,7 @@
             },
             {
               "copy": {
-                "name": "queue",
+                "name": "storage::queueServices::queue",
                 "count": "[length(parameters('queues'))]"
               },
               "condition": "[not(empty(parameters('queues')))]",
@@ -1018,8 +1068,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "14422276109150612921"
+              "version": "0.33.93.31351",
+              "templateHash": "10217001386747127501"
             }
           },
           "parameters": {
@@ -1128,8 +1178,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "16096020836949906486"
+              "version": "0.33.93.31351",
+              "templateHash": "12055830244132803404"
             },
             "description": "Creates an Azure Machine Learning Workspace."
           },
@@ -1224,8 +1274,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "971357261098316609"
+              "version": "0.33.93.31351",
+              "templateHash": "10865238309388217738"
             }
           },
           "parameters": {
@@ -1377,8 +1427,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.28.1.47646",
-              "templateHash": "284038938591552097"
+              "version": "0.33.93.31351",
+              "templateHash": "14374675790816184883"
             }
           },
           "parameters": {
