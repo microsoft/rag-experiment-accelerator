@@ -363,7 +363,7 @@ Every array will produce the combinations of flat configurations when the method
 
 ## Description of embedding models config
 
-`embedding_model` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models and `sentence-transformer` for HuggingFace sentence transformer models.
+`embedding_model` is an array containing the configuration for the embedding models to use. Embedding model `type` must be `azure` for Azure OpenAI models, `sentence-transformer` for HuggingFace sentence transformer models and `custom-embedding` for custom embeddings deployed as Azure Online Endpoints.
 
 ### Azure OpenAI embedding model config
 
@@ -407,6 +407,18 @@ When using the [newer embeddings models (v3)](https://openai.com/blog/new-embedd
     "dimension": "the dimension of the model. This field is not required if model name is one of ['all-MiniLM-L6-v2', 'all-mpnet-base-v2', 'bert-large-nli-mean-tokens]"
 }
 ```
+
+### Custom embedding model
+
+```json
+{
+    "type": "custom-embedding",
+    "model_name": "the name of the Azure deployment of the custom embedding model",
+    "dimension": "the dimension of the custom embedding model. This field is not required"
+}
+```
+
+The variables `azure_model_api_key` and `azure_model_api_endpoint` should also be set in the environment variables (.env file).
 
 ## Query Expansion
 

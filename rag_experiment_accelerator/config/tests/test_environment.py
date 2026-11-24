@@ -125,7 +125,9 @@ def test_to_keyvault(mock_init_keyvault):
         azure_language_service_key=None,
         azure_key_vault_endpoint="test_endpoint",
         azure_search_use_semantic_search="True",
+        azure_model_api_key="mock_key",
+        azure_model_api_endpoint="mock_endpoint",
     )
     environment.to_keyvault()
 
-    assert mock_keyvault.set_secret.call_count == 17
+    assert mock_keyvault.set_secret.call_count == 19
