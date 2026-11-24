@@ -50,6 +50,7 @@ def format_results(results):
         context_item = {}
         context_item["@search.score"] = result["@search.score"]
         context_item["content"] = result["content"]
+        context_item["id"] = result["id"]
         formatted_results.append(context_item)
 
     return formatted_results
@@ -94,7 +95,7 @@ def search_for_match_semantic(
             search_text=query,
             vector_queries=[vector1, vector2],
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
             query_type=QueryType.SEMANTIC,
             query_language=QueryLanguage.EN_US,
             semantic_configuration_name="my-semantic-config",
@@ -160,7 +161,7 @@ def search_for_match_Hybrid_multi(
             search_text=query,
             vector_queries=[vector1, vector2, vector3],
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
         )
 
         formatted_search_results = format_results(results)
@@ -209,7 +210,7 @@ def search_for_match_Hybrid_cross(
             search_text=query,
             vector_queries=[vector1, vector2],
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
         )
 
         formatted_search_results = format_results(results)
@@ -242,7 +243,7 @@ def search_for_match_text(
         results = client.search(
             search_text=query,
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
         )
 
         formatted_search_results = format_results(results)
@@ -286,7 +287,7 @@ def search_for_match_pure_vector(
             search_text=None,
             vector_queries=[vector1],
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
         )
         formatted_search_results = format_results(results)
 
@@ -340,7 +341,7 @@ def search_for_match_pure_vector_multi(
             search_text=None,
             vector_queries=[vector1, vector2, vector3],
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
         )
         formatted_search_results = format_results(results)
 
@@ -383,7 +384,7 @@ def search_for_match_pure_vector_cross(
             search_text=None,
             vector_queries=[vector1],
             top=retrieve_num_of_documents,
-            select=["title", "content", "summary"],
+            select=["title", "content", "summary", "id"],
         )
 
         formatted_search_results = format_results(results)
